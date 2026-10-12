@@ -30,6 +30,12 @@ and sovereign, web3-native, owned by no one.
   hack.
 - **Local-first, like Rúnmál.** SQLite history, self-hostable, no corporate
   middleware in the message path.
+- **Flexible by law (Volmarr's ruling 2026-10-12).** Single-machine
+  local-first *and* scalable server deployment are both first-class.
+  SQLite serves the single hall; the storage and transport seams must
+  admit Postgres, a message bus, and horizontal scale when the hall grows —
+  without rewrites. Never architect yourself into a corner that only fits
+  one machine.
 - **Web3-native identity.** Agents and humans are known by decentralized
   identifiers (DIDs), not corporate accounts; wallet-based sign-in for
   humans who want it. No central account king — identity is proven, not
