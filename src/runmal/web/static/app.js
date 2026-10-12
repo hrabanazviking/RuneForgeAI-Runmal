@@ -66,13 +66,43 @@ function renderChatList() {
   }
 }
 
-function appendMessage(role, text) {
+function renderInto(div, text) {
+  // Completed messages render as markdown-lite (renderer escapes first).
+  div.innerHTML = window.RunmalRenderer.renderMarkdownLite(text);
+}
+
+function appendMessage(role, text, rendered) {
   const div = document.createElement("div");
   div.className = "msg " + role;
-  div.textContent = text;
+  if (rendered) renderInto(div, text);
+  else div.textContent = text;
   $("thread").appendChild(div);
   div.scrollIntoView({ block: "end" });
   return div;
+}
+
+const THREAD_WINDOW = 100; // S302: virtualized thread window size
+state.allMessages = [];
+state.windowShown = THREAD_WINDOW;
+
+function renderThread() {
+  const thread = $("thread");
+  thread.textContent = "";
+  const { visible, hidden } = window.RunmalRenderer.windowMessages(
+    state.allMessages, state.windowShown
+  );
+  if (hidden > 0) {
+    const more = document.createElement("button");
+    more.type = "button";
+    more.id = "show-earlier";
+    more.textContent = "Show earlier messages (" + hidden + " hidden)";
+    more.addEventListener("click", () => {
+      state.windowShown += THREAD_WINDOW;
+      renderThread();
+    });
+    thread.appendChild(more);
+  }
+  for (const m of visible) appendMessage(m.role, m.content, true);
 }
 
 async function loadChats() {
@@ -86,9 +116,10 @@ async function selectChat(chatId) {
   if (state.generating) return;
   state.currentChatId = chatId;
   renderChatList();
-  $("thread").textContent = "";
   const chat = await (await api("/api/v1/chats/" + chatId)).json();
-  for (const m of chat.messages) appendMessage(m.role, m.content);
+  state.allMessages = chat.messages;
+  state.windowShown = THREAD_WINDOW;
+  renderThread();
 }
 
 async function newChat() {
@@ -107,27 +138,23 @@ function setGenerating(on) {
   $("send").disabled = on;
 }
 
-async function sendMessage() {
-  const input = $("input");
-  const text = input.value.trim();
-  if (!text || state.generating || !state.currentChatId) return;
-  input.value = "";
-  hideError();
-  const chatId = state.currentChatId;
-  try {
-    await api("/api/v1/chats/" + chatId + "/messages", {
-      method: "POST",
-      body: JSON.stringify({ role: "user", content: text }),
-    });
-    appendMessage("user", text);
+function setRetryVisible(on) {
+  $("retry").classList.toggle("hidden", !on);
+}
 
-    const history = await (await api("/api/v1/chats/" + chatId + "/messages")).json();
-    const requestId = crypto.randomUUID();
-    state.requestId = requestId;
-    setGenerating(true);
-    const bubble = appendMessage("assistant", "");
-    let full = "";
-    let stopped = false;
+/* Stream one generation for the chat's current history into a fresh
+ * assistant bubble (S302: shared by send + retry; completed bubbles are
+ * re-rendered as markdown-lite, stopped/failed runs expose Retry). */
+async function streamGeneration(chatId) {
+  const history = await (await api("/api/v1/chats/" + chatId + "/messages")).json();
+  const requestId = crypto.randomUUID();
+  state.requestId = requestId;
+  setGenerating(true);
+  setRetryVisible(false);
+  const bubble = appendMessage("assistant", "");
+  let full = "";
+  let stopped = false;
+  try {
     const res = await fetch("/api/v1/generate", {
       method: "POST",
       headers: {
@@ -163,17 +190,47 @@ async function sendMessage() {
         }
       }
     }
-    if (stopped) bubble.textContent = full + " \u2014 stopped";
+    const finalText = stopped ? full + " \u2014 stopped" : full;
+    renderInto(bubble, finalText || "(no output)");
     await api("/api/v1/chats/" + chatId + "/messages", {
       method: "POST",
       body: JSON.stringify({ role: "assistant", content: full || "(no output)" }),
     });
+    state.allMessages.push({ role: "assistant", content: full || "(no output)" });
+    if (stopped) setRetryVisible(true);
   } catch (err) {
     showError("Generation failed: " + err.message);
+    setRetryVisible(true);
   } finally {
     state.requestId = null;
     setGenerating(false);
   }
+}
+
+async function sendMessage() {
+  const input = $("input");
+  const text = input.value.trim();
+  if (!text || state.generating || !state.currentChatId) return;
+  input.value = "";
+  hideError();
+  const chatId = state.currentChatId;
+  try {
+    await api("/api/v1/chats/" + chatId + "/messages", {
+      method: "POST",
+      body: JSON.stringify({ role: "user", content: text }),
+    });
+    state.allMessages.push({ role: "user", content: text });
+    appendMessage("user", text, true);
+    await streamGeneration(chatId);
+  } catch (err) {
+    showError("Generation failed: " + err.message);
+  }
+}
+
+async function retryGeneration() {
+  if (state.generating || !state.currentChatId) return;
+  hideError();
+  await streamGeneration(state.currentChatId);
 }
 
 async function stopGeneration() {
@@ -283,6 +340,16 @@ async function exportChat(chatId) {
 function init() {
   $("send").addEventListener("click", sendMessage);
   $("stop").addEventListener("click", stopGeneration);
+  $("retry").addEventListener("click", retryGeneration);
+  // Code-block copy buttons (S302): rendered inside <pre class="code-block">.
+  $("thread").addEventListener("click", (e) => {
+    const btn = e.target.closest ? e.target.closest(".copy-btn") : null;
+    if (!btn) return;
+    const code = btn.parentElement.querySelector("code");
+    if (code && navigator.clipboard) {
+      navigator.clipboard.writeText(code.textContent).catch(() => {});
+    }
+  });
   $("new-chat").addEventListener("click", newChat);
   $("error-dismiss").addEventListener("click", hideError);
   $("confirm-ok").addEventListener("click", doDeleteChat);

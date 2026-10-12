@@ -148,3 +148,15 @@ button#stop { background: var(--danger); }
 #confirm-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: var(--space-4); }
 #confirm-cancel { background: var(--panel-hover); }
 #theme-toggle { background: var(--panel-hover); color: var(--text); }
+
+/* -- S302: rendered messages ------------------------------------------------ */
+.code-block { position: relative; background: var(--code-bg);
+              border: 1px solid var(--line); border-radius: var(--radius-m);
+              padding: var(--space-3); overflow-x: auto; }
+.code-block code { background: transparent; padding: 0; }
+.copy-btn { position: absolute; top: var(--space-1); right: var(--space-1);
+            padding: 2px var(--space-2); font-size: 12px;
+            background: var(--panel-hover); color: var(--text); }
+#show-earlier { align-self: center; background: var(--panel-hover);
+                color: var(--text); }
+#retry { background: var(--panel-hover); color: var(--text); }
