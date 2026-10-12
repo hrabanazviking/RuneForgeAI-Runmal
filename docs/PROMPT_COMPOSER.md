@@ -67,6 +67,14 @@ Lore Service returns structured activated entries including trigger metadata, re
 
 Recursive activation must already have terminated safely before slots arrive.
 
+As implemented (S202–S204), the pipeline is three pure stages over the book's entries, in service order (priority descending, then creation order):
+
+1. **Scan** — the last `scan_depth` messages (book-level setting, default 4) are searched for each non-constant entry's primary keys; a primary hit counts only when at least one secondary key also matches, when the entry defines secondary keys. Whole-word and case-sensitivity are per-entry toggles. Disabled and constant entries are not scanned.
+2. **Activation** — one tick over the scan hits plus runtime state: `constant` entries always activate; key-hit entries activate unless a `delay_prompts` countdown is merely armed; `sticky_prompts` keeps an entry active after its trigger; `cooldown_prompts` suppresses re-triggering. Entry content may reference sibling entries with `{{lore:Entry Name}}`; references resolve depth-first, cycles and references past the hard depth cap (5) stay literal, and referenced entries activate regardless of keys. Runtime counters live outside the canonical entry definition.
+3. **Budget** — activated entries become candidates packed greedily by priority (stable tie-break by entry id) under the book's token budget; seeded probability gates may discard with reason `probability_skip`, overflow with `over_budget`. Discards are data, not errors: they surface in the trace (see §9).
+
+The lorebook editor's **activation preview** (S209) runs this exact pipeline — same functions, the book's stored rows, one tick from a clean runtime state — over author-supplied sample messages, and reports per entry: status (`included` / `discarded` + reason / `not_triggered` / `disabled`), activation path (`constant` / `key` / `sticky` / `delay` / `reference`), matched keys, and token cost. Because preview and production share the pipeline code, a preview verdict is the engine's verdict, not an approximation of it.
+
 ## 6. Memory candidates
 
 Memory Service returns only witness-eligible candidates with temporal/status metadata and retrieval scores. Prompt Composer may apply budget/priority but does not bypass witness filtering or revive superseded memories by searching the vector store directly.
@@ -146,3 +154,16 @@ Golden fixtures cover:
 ## 12. Invariant
 
 No extension/backend/lore/memory module gets a side door to mutate the final prompt after the Composer's trace/budget decision. Extensions participate by registering typed slots/hooks that remain visible to the same budgeting and trace system.
+
+## 13. Group speaker selection
+
+Group rooms (S210) hold a roster of member characters and one shared transcript. Every transcript message records its speaker explicitly — the speaking character's id plus a snapshot of its display name — so later membership changes or renames never rewrite who said what. When the Composer builds a group prompt for one participant, that participant's own past messages render as assistant turns, the owner's as user turns, and other participants' as user turns labeled `Name: text`: one shared state, per-persona viewpoint.
+
+Who speaks next is chosen by the room's **speaker policy** (S211), stored on the group with its JSON configuration; per-member knobs are `talkativeness` (0.0–1.0) and `muted`. Mute is absolute in every policy. All policies are deterministic for a fixed seed + state:
+
+- **manual** — only the explicitly designated speaker talks. No designation, an unknown id, or a muted designee yields silence; manual never substitutes.
+- **natural** — an @-mentioned unmuted member talks (roster order if several). Otherwise a talkativeness-weighted pick among unmuted members; all-zero weights degrade to a uniform pick; all muted yields silence.
+- **list** — cycles a configured id order, skipping departed or muted members; an empty effective order yields silence.
+- **pooled** — uniform pick from unmuted members who have not spoken since the pool last reset; the pool resets when it empties.
+
+Policies implement the **director interface** (S212): `select(context) -> character id | None`, plus a `note_selected` hook for stateful policies. Custom directors register by name at runtime and immediately become valid group policy values — no group-service change. The built-in `fake-director` is the deterministic stand-in for a future LLM director: an @-mention wins, otherwise the least-recently-spoken member (never-spoken first, talkativeness and roster order break ties). A real LLM director will implement the same interface behind the same registry.
