@@ -85,7 +85,12 @@ async def test_destroy_and_rebuild_under_new_embedding_profile(tmp_path):
         hits_a = await scoped_retrieve(
             session, uid, Viewer(character_id="char-a"),
             RetrievalQuery(text="amber"), store=store, backend=backend_b)
-        assert hits_a == []  # A still cannot (witness scenario)
+        # A still cannot reach B's private memory (witness scenario);
+        # unrelated eligible memories may surface via the fake hash
+        # vectors, but the private one must never be among them.
+        private_ids = {m.id for m in await service.list_memories(session, uid)
+                       if m.character_id == "char-b"}
+        assert private_ids and not (private_ids & {h.memory_id for h in hits_a})
         current = await current_fact(session, uid, "Volmarr", "lives_in")
         assert current is not None and "New Mexico" in current.content
         traced = [m for m in await service.list_memories(session, uid)]
