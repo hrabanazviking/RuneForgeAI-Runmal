@@ -7,7 +7,9 @@ wall-clock reads, so fake-clock tests are exact.
 
 Strength model (deterministic, versioned as ``STRENGTH_MODEL``):
 
-    age_days   = (now - created_at) in days, floored at 0
+    age_days   = days since the memory was last refreshed — its
+                 creation, or its last relevant recall (rehearsal
+                 refreshes the decay anchor), floored at 0
     decay      = exp(-DECAY_PER_DAY * age_days * (1 - stability))
     recall_boost = 1 + 0.15 * log1p(recall_count)
     strength   = salience * decay * recall_boost
@@ -39,12 +41,12 @@ def strength_multiplier(memory: Memory, now: datetime) -> float:
     if memory.pinned or memory.state == "pinned" or memory.stability >= 0.999:
         decay = 1.0
     else:
-        created = memory.created_at
-        if created is not None and created.tzinfo is None and now.tzinfo is not None:
+        anchor = memory.last_recalled_at or memory.created_at
+        if anchor is not None and anchor.tzinfo is None and now.tzinfo is not None:
             from datetime import UTC
 
-            created = created.replace(tzinfo=UTC)
-        age_days = max(0.0, (now - created).total_seconds() / 86400.0) if created else 0.0
+            anchor = anchor.replace(tzinfo=UTC)
+        age_days = max(0.0, (now - anchor).total_seconds() / 86400.0) if anchor else 0.0
         decay = math.exp(-DECAY_PER_DAY * age_days * (1.0 - memory.stability))
     boost = 1.0 + RECALL_BOOST * math.log1p(memory.recall_count)
     return memory.salience * decay * boost
