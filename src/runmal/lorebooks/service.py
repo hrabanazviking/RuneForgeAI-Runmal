@@ -40,6 +40,12 @@ def _decode_keys(raw: str) -> list[str]:
     return [str(k) for k in decoded]
 
 
+def _check_prompts(name: str, value: int) -> int:
+    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+        raise ValueError(f"{name} must be an integer >= 0")
+    return value
+
+
 def _check_position(position: str) -> str:
     if position not in VALID_POSITIONS:
         raise ValueError(f"invalid position: {position!r} (valid: {sorted(VALID_POSITIONS)})")
@@ -72,6 +78,9 @@ def entry_to_dict(entry: LoreEntry) -> dict:
         "constant": bool(entry.constant),
         "case_sensitive": bool(entry.case_sensitive),
         "whole_word": bool(entry.whole_word),
+        "sticky_prompts": int(entry.sticky_prompts),
+        "cooldown_prompts": int(entry.cooldown_prompts),
+        "delay_prompts": int(entry.delay_prompts),
         "created_at": entry.created_at.isoformat(),
         "updated_at": entry.updated_at.isoformat() if entry.updated_at else None,
     }
@@ -189,6 +198,9 @@ async def create_entry(
     constant: bool = False,
     case_sensitive: bool = False,
     whole_word: bool = True,
+    sticky_prompts: int = 0,
+    cooldown_prompts: int = 0,
+    delay_prompts: int = 0,
 ) -> LoreEntry:
     if await _get_owned_book(session, user_id, book_id) is None:
         raise KeyError(book_id)
@@ -205,6 +217,9 @@ async def create_entry(
         constant=constant,
         case_sensitive=case_sensitive,
         whole_word=whole_word,
+        sticky_prompts=_check_prompts("sticky_prompts", sticky_prompts),
+        cooldown_prompts=_check_prompts("cooldown_prompts", cooldown_prompts),
+        delay_prompts=_check_prompts("delay_prompts", delay_prompts),
     )
     session.add(entry)
     await session.commit()
@@ -253,6 +268,9 @@ async def update_entry(
     for flag in ("enabled", "constant", "case_sensitive", "whole_word"):
         if flag in fields:
             setattr(entry, flag, bool(fields[flag]))
+    for knob in ("sticky_prompts", "cooldown_prompts", "delay_prompts"):
+        if knob in fields:
+            setattr(entry, knob, _check_prompts(knob, fields[knob]))
     entry.updated_at = _now()
     await session.commit()
     return entry

@@ -38,6 +38,9 @@ class EntryCreate(BaseModel):
     constant: bool = False
     case_sensitive: bool = False
     whole_word: bool = True
+    sticky_prompts: int = Field(default=0, ge=0)
+    cooldown_prompts: int = Field(default=0, ge=0)
+    delay_prompts: int = Field(default=0, ge=0)
 
 
 class EntryUpdate(BaseModel):
@@ -51,6 +54,9 @@ class EntryUpdate(BaseModel):
     constant: bool | None = None
     case_sensitive: bool | None = None
     whole_word: bool | None = None
+    sticky_prompts: int | None = Field(default=None, ge=0)
+    cooldown_prompts: int | None = Field(default=None, ge=0)
+    delay_prompts: int | None = Field(default=None, ge=0)
 
 
 def _service_error(exc: ValueError) -> HTTPException:
@@ -160,6 +166,9 @@ async def create_entry(
             constant=body.constant,
             case_sensitive=body.case_sensitive,
             whole_word=body.whole_word,
+            sticky_prompts=body.sticky_prompts,
+            cooldown_prompts=body.cooldown_prompts,
+            delay_prompts=body.delay_prompts,
         )
     except KeyError:
         raise HTTPException(status_code=404, detail="lorebook not found") from None

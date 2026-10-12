@@ -23,10 +23,11 @@ def make_client(tmp_path, monkeypatch):
 
 
 def test_migration_0004_reaches_head(tmp_path) -> None:
+    # NOTE (S203): 0005 now follows 0004; HEAD is 0005.
     db_path = tmp_path / "m.db"
     applied = migrate_to_head(db_path)
-    assert applied[-1] == "0004"
-    assert current_revision(db_path) == "0004"
+    assert applied[-1] == "0005"
+    assert current_revision(db_path) == "0005"
 
 
 def test_lorebook_crud(tmp_path, monkeypatch) -> None:
@@ -94,6 +95,43 @@ def test_entry_crud(tmp_path, monkeypatch) -> None:
         client.delete(f"/api/v1/lorebooks/{book_id}/entries/{entry_id}").json()["deleted"] is True
     )
     assert client.get(f"/api/v1/lorebooks/{book_id}/entries/{entry_id}").status_code == 404
+
+
+def test_entry_activation_timing_fields(tmp_path, monkeypatch) -> None:
+    # S203: sticky/cooldown/delay knobs round-trip through the API.
+    client = make_client(tmp_path, monkeypatch)
+    book_id = client.post("/api/v1/lorebooks", json={"name": "B"}).json()["id"]
+    created = client.post(
+        f"/api/v1/lorebooks/{book_id}/entries",
+        json={
+            "name": "Echo",
+            "content": "Echoes.",
+            "keys": ["echo"],
+            "sticky_prompts": 2,
+            "cooldown_prompts": 3,
+            "delay_prompts": 1,
+        },
+    )
+    assert created.status_code == 201
+    entry = created.json()
+    entry_id = entry["id"]
+    assert entry["sticky_prompts"] == 2
+    assert entry["cooldown_prompts"] == 3
+    assert entry["delay_prompts"] == 1
+
+    updated = client.patch(
+        f"/api/v1/lorebooks/{book_id}/entries/{entry_id}",
+        json={"sticky_prompts": 5, "delay_prompts": 0},
+    ).json()
+    assert updated["sticky_prompts"] == 5
+    assert updated["delay_prompts"] == 0
+    assert updated["cooldown_prompts"] == 3
+
+    bad = client.post(
+        f"/api/v1/lorebooks/{book_id}/entries",
+        json={"name": "Bad", "keys": ["x"], "sticky_prompts": -1},
+    )
+    assert bad.status_code == 422
 
 
 def test_entry_validation(tmp_path, monkeypatch) -> None:

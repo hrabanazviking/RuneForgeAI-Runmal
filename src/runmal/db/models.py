@@ -124,5 +124,8 @@ class LoreEntry(Base):
     constant: Mapped[bool] = mapped_column(nullable=False, default=False)
     case_sensitive: Mapped[bool] = mapped_column(nullable=False, default=False)
     whole_word: Mapped[bool] = mapped_column(nullable=False, default=True)
+    sticky_prompts: Mapped[int] = mapped_column(nullable=False, default=0)
+    cooldown_prompts: Mapped[int] = mapped_column(nullable=False, default=0)
+    delay_prompts: Mapped[int] = mapped_column(nullable=False, default=0)
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
     updated_at: Mapped[datetime | None] = mapped_column(nullable=True, default=None)
