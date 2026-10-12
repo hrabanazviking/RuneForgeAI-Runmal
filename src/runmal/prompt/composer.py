@@ -75,6 +75,55 @@ def _order_key(slot: Slot) -> tuple:
     return (slot.order, -slot.priority, slot.id)
 
 
+def _depth_inject(
+    slot: Slot,
+    messages: list[ComposedMessage],
+    included: list[SlotUsage],
+    discarded: list[SlotDiscard],
+    history_ref: tuple[int, list[str], int] | None,
+    used: int,
+    input_budget: int,
+) -> tuple[int | None, tuple[int, list[str], int] | None]:
+    """S206: splice a depth-note N messages from the end of history.
+
+    Returns ``(tokens_consumed, new_history_ref)``. ``tokens_consumed`` is
+    None when there is no history to splice into (caller emits normally).
+    """
+    tokens = estimate_tokens(slot.content)
+    if history_ref is None:
+        return None, None
+    if tokens > input_budget - used:
+        discarded.append(SlotDiscard(slot.id, tokens, "over_input_budget"))
+        return 0, history_ref
+    msg_idx, parts, usage_idx = history_ref
+    split_at = max(0, len(parts) - slot.depth)
+    head, tail = parts[:split_at], parts[split_at:]
+    hist_msg = messages[msg_idx]
+    replacement: list[ComposedMessage] = []
+    if head:
+        replacement.append(
+            ComposedMessage(hist_msg.role, "\n".join(head), hist_msg.slot_id)
+        )
+    replacement.append(ComposedMessage(slot.role, slot.content, slot.id))
+    tail_idx: int | None = None
+    if tail:
+        tail_idx = msg_idx + (1 if head else 0) + 1
+        replacement.append(
+            ComposedMessage(hist_msg.role, "\n".join(tail), hist_msg.slot_id)
+        )
+    messages[msg_idx : msg_idx + 1] = replacement
+    hist_tokens = sum(estimate_tokens("\n".join(p)) for p in (head, tail) if p)
+    old_usage = included[usage_idx]
+    included[usage_idx] = SlotUsage(
+        old_usage.slot_id, hist_tokens, trimmed_parts=old_usage.trimmed_parts
+    )
+    included.append(SlotUsage(slot.id, tokens))
+    new_ref = (
+        (tail_idx, tail, usage_idx) if tail_idx is not None else None
+    )
+    return tokens, new_ref
+
+
 def compose(
     slots: list[Slot],
     context_limit: int,
@@ -107,6 +156,9 @@ def compose(
     included: list[SlotUsage] = []
     discarded: list[SlotDiscard] = []
     used = 0
+    # S206: (message index, surviving parts, usage index) of the history
+    # slot, so depth-notes can splice N messages from its end.
+    history_ref: tuple[int, list[str], int] | None = None
 
     for slot in ordered:
         if slot.slot_budget is not None and slot_tokens(slot) > slot.slot_budget:
@@ -114,6 +166,16 @@ def compose(
                 SlotDiscard(slot.id, slot_tokens(slot), "over_slot_budget")
             )
             continue
+        if slot.depth is not None:
+            consumed, history_ref = _depth_inject(
+                slot, messages, included, discarded, history_ref, used,
+                input_budget,
+            )
+            if consumed is None:
+                pass  # no history: fall through to normal emission
+            else:
+                used += consumed
+                continue
         if slot.splittable and slot.parts:
             # Newest-first packing: drop oldest parts until it fits.
             parts = list(slot.parts)
@@ -131,6 +193,8 @@ def compose(
             used += tokens
             messages.append(ComposedMessage(slot.role, text, slot.id))
             included.append(SlotUsage(slot.id, tokens, trimmed_parts=trimmed))
+            if slot.kind == "history" and history_ref is None:
+                history_ref = (len(messages) - 1, parts, len(included) - 1)
             continue
         tokens = slot_tokens(slot)
         if tokens > input_budget - used:

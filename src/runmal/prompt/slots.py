@@ -50,6 +50,10 @@ class Slot:
     # and oldest parts trim first on overflow.
     splittable: bool = False
     parts: tuple[str, ...] = ()
+    # Depth injection (S206): when set, this slot is spliced N messages from
+    # the end of the surviving history parts instead of taking its normal
+    # order position. None = normal ordered slot.
+    depth: int | None = None
 
     def __post_init__(self) -> None:
         if self.role not in VALID_ROLES:
@@ -58,6 +62,8 @@ class Slot:
             raise ValueError("slot_budget must be >= 1 or None")
         if self.splittable and not self.parts:
             raise ValueError("splittable slots require parts")
+        if self.depth is not None and self.depth < 0:
+            raise ValueError("depth must be >= 0 or None")
 
 
 def baseline_order(kind: str) -> int:
