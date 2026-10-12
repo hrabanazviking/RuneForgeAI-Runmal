@@ -1,0 +1,7 @@
+data: {"id": "gen-1", "model": "openai/gpt-4o-mini", "choices": [{"index": 0, "delta": {"role": "assistant", "content": "Hello"}, "finish_reason": null}]}
+
+data: {"id": "gen-1", "model": "openai/gpt-4o-mini", "choices": [{"index": 0, "delta": {"content": " from OpenRouter"}, "finish_reason": null}]}
+
+data: {"id": "gen-1", "model": "openai/gpt-4o-mini", "choices": [{"index": 0, "delta": {}, "finish_reason": "stop"}], "usage": {"prompt_tokens": 9, "completion_tokens": 5, "total_tokens": 14}}
+
+data: [DONE]

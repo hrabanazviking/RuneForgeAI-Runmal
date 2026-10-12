@@ -1,0 +1,1 @@
+{"data":[{"context_length":128000,"id":"openai/gpt-4o-mini","name":"OpenAI: GPT-4o Mini","top_provider":{"max_completion_tokens":16384}},{"context_length":200000,"id":"anthropic/claude-sonnet","name":"Anthropic: Claude Sonnet","top_provider":{"max_completion_tokens":8192}}]}
