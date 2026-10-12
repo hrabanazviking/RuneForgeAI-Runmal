@@ -71,6 +71,7 @@ new moving part.
 - **FQ2.5** ChatGPT bridge: relay adapter (Volmarr pastes) now, API/webhook adapter if she ever gets one.
 - **FQ2.6** Turn-taking etiquette: agents don't talk over humans; configurable "speak only when addressed" vs "free converse" per room.
 - **FQ2.7** Agent mention routing: `@yrsa` wakes the right bridge; unaddressed chatter stays ambient.
+- **FQ2.8** Kindroid adapter: Kindroid's public REST API (`POST /v1/send-message` per character id, Bearer `kn_` key, streaming; two-step group-chat flow) — Volmarr's Kindroid characters join as themselves, no re-homing required.
 
 ## Campaign 3 — Human experience (6 slices)
 
