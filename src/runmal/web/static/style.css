@@ -90,6 +90,7 @@
   --radius-s: 4px;
   --radius-m: 8px;
   --radius-l: 12px;
+  --touch-target: 44px;
   --font-s: 13px;
   --font-m: 15px;
   --font-l: 20px;
@@ -261,4 +262,37 @@ button#stop { background: var(--danger); }
   *, *::before, *::after { transition: none !important;
                            animation: none !important;
                            scroll-behavior: auto !important; }
+}
+
+/* -- S310: mobile / responsive --------------------------------------------------- */
+#sidebar-toggle { display: none; }
+#scrim { position: fixed; inset: 0; background: var(--overlay); z-index: 35; }
+#composer { padding-bottom: calc(var(--space-3) + env(safe-area-inset-bottom)); }
+.page { padding-bottom: calc(var(--space-5) + env(safe-area-inset-bottom)); }
+
+/* Touch devices: interactive elements meet the 44px target guideline. */
+@media (pointer: coarse) {
+  button, select, input, textarea { min-height: var(--touch-target); }
+  #chat-list li { min-height: var(--touch-target); }
+  .var-chip { min-height: var(--touch-target); }
+}
+
+/* Tablet: slimmer sidebar, roomier bubbles. */
+@media (max-width: 1024px) {
+  #sidebar { width: 220px; }
+  .msg { max-width: 85%; }
+}
+
+/* Phone: single column; the chat sidebar is an off-canvas drawer. */
+@media (max-width: 720px) {
+  #sidebar-toggle { display: block; margin: var(--space-2); align-self: flex-start; }
+  #sidebar { position: fixed; left: 0; top: 0; bottom: 0; z-index: 40;
+             width: min(300px, 85vw); transform: translateX(-105%);
+             transition: transform 0.2s ease; }
+  #sidebar.open { transform: none; }
+  .msg { max-width: 92%; }
+  .page { padding: var(--space-3); }
+  .group-layout { grid-template-columns: 1fr; }
+  #gallery-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  #palette { padding-top: 6vh; }
 }

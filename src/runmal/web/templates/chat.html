@@ -9,6 +9,7 @@
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
 <div id="app">
+  <div id="scrim" class="hidden"></div>
   <aside id="sidebar" aria-label="Chats and app navigation">
     <h1>Rúnmál</h1>
     <button id="new-chat" type="button">+ New chat</button>
@@ -21,6 +22,8 @@
     <ul id="chat-list"></ul>
   </aside>
   <main id="main">
+    <button id="sidebar-toggle" type="button" aria-label="Toggle chat list"
+            aria-expanded="false" aria-controls="sidebar">☰ Chats</button>
     <div id="error-banner" class="hidden" role="alert">
       <span id="error-text"></span>
       <button id="error-dismiss" type="button">Dismiss</button>
@@ -59,6 +62,7 @@
   </div>
 </div>
 <script src="/static/theme.js"></script>
+<script src="/static/drawer.js"></script>
 <script src="/static/renderer.js"></script>
 <script src="/static/app.js"></script>
 

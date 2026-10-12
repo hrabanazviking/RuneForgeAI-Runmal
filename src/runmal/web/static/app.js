@@ -141,6 +141,7 @@ async function loadChats() {
 async function selectChat(chatId) {
   if (state.generating) return;
   state.currentChatId = chatId;
+  if (window.RunmalDrawer) window.RunmalDrawer.close();
   renderChatList();
   const chat = await (await api("/api/v1/chats/" + chatId)).json();
   state.allMessages = chat.messages;
