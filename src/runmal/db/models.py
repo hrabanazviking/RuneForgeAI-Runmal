@@ -284,3 +284,84 @@ class SecretEntry(Base):
     )
     value: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
+
+
+class Memory(Base):
+    """Canonical living-memory record (Campaign IV, MEMORY_ARCH §2)."""
+
+    __tablename__ = "memories"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_new_id)
+    user_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    kind: Mapped[str] = mapped_column(String(20), nullable=False, default="semantic")
+    content: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    subject: Mapped[str] = mapped_column(String(200), nullable=False, default="")
+    predicate: Mapped[str] = mapped_column(String(200), nullable=False, default="")
+    state: Mapped[str] = mapped_column(String(20), nullable=False, default="active")
+    salience: Mapped[float] = mapped_column(nullable=False, default=0.5)
+    stability: Mapped[float] = mapped_column(nullable=False, default=0.5)
+    pinned: Mapped[bool] = mapped_column(nullable=False, default=False)
+    confidence: Mapped[float] = mapped_column(nullable=False, default=1.0)
+    scope: Mapped[str] = mapped_column(String(20), nullable=False, default="user")
+    witnesses_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
+    character_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    chat_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
+    valid_from: Mapped[datetime | None] = mapped_column(nullable=True, default=None)
+    valid_until: Mapped[datetime | None] = mapped_column(nullable=True, default=None)
+    last_confirmed_at: Mapped[datetime | None] = mapped_column(nullable=True, default=None)
+    recall_count: Mapped[int] = mapped_column(nullable=False, default=0)
+    last_recalled_at: Mapped[datetime | None] = mapped_column(nullable=True, default=None)
+    supersedes_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    extractor_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    embedding_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+
+
+class MemorySource(Base):
+    """Many-to-many evidence link: memory -> canonical source (MEMORY_ARCH §4)."""
+
+    __tablename__ = "memory_sources"
+
+    memory_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("memories.id", ondelete="CASCADE"), primary_key=True
+    )
+    source_kind: Mapped[str] = mapped_column(String(20), primary_key=True, default="message")
+    source_id: Mapped[str] = mapped_column(String(200), primary_key=True, default="")
+    chat_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
+
+
+class MemoryChunk(Base):
+    """One embedded chunk of a memory, with full embedding provenance (S402)."""
+
+    __tablename__ = "memory_chunks"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_new_id)
+    memory_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("memories.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    chunk_index: Mapped[int] = mapped_column(nullable=False, default=0)
+    text: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    provider: Mapped[str] = mapped_column(String(100), nullable=False, default="")
+    model: Mapped[str] = mapped_column(String(200), nullable=False, default="")
+    dims: Mapped[int] = mapped_column(nullable=False, default=0)
+    version: Mapped[str] = mapped_column(String(40), nullable=False, default="")
+
+
+class ChatSummary(Base):
+    """Rolling conversation summary with source range + version (S404)."""
+
+    __tablename__ = "chat_summaries"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_new_id)
+    user_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    chat_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
+    version: Mapped[int] = mapped_column(nullable=False, default=1)
+    summary: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    source_first_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    source_last_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    source_count: Mapped[int] = mapped_column(nullable=False, default=0)
+    created_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)

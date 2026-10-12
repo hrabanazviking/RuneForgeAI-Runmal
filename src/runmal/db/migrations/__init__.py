@@ -21,6 +21,7 @@ from runmal.db.migrations import (
     m0011_speaker_policies,
     m0012_backend_profiles,
     m0013_embedding_activation,
+    m0014_memory_core,
 )
 
 MIGRATIONS: list[tuple[str, str, object]] = [
@@ -84,5 +85,10 @@ MIGRATIONS: list[tuple[str, str, object]] = [
         m0013_embedding_activation.REVISION,
         m0013_embedding_activation.DESCRIPTION,
         m0013_embedding_activation,
+    ),
+    (
+        m0014_memory_core.REVISION,
+        m0014_memory_core.DESCRIPTION,
+        m0014_memory_core,
     ),
 ]
