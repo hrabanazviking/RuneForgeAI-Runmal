@@ -216,6 +216,7 @@ class STTBenchmarkResult:
     items: list[dict] = field(default_factory=list)
     wer: float = 0.0
     rtf_p50: float = 0.0
+    rtf_p95: float = 0.0
     rtf_max: float = 0.0
 
     def meets_contract(self) -> dict:
@@ -258,6 +259,10 @@ def benchmark_stt(backend: STTBackend, corpus: list[CorpusItem]) -> STTBenchmark
         })
     result.wer = total_errors_weighted / total_ref_words if total_ref_words else 0.0
     result.rtf_p50 = _median(rtfs) if rtfs else 0.0
+    if rtfs:
+        from runmal.voice.metrics import percentile
+
+        result.rtf_p95 = percentile(rtfs, 95)
     result.rtf_max = max(rtfs, default=0.0)
     return result
 
