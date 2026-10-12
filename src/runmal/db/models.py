@@ -41,6 +41,8 @@ class Character(Base):
     card_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
     avatar_asset: Mapped[str | None] = mapped_column(String(128), nullable=True)
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
+    # Soft delete (S303): trashed characters are hidden but recoverable.
+    deleted_at: Mapped[datetime | None] = mapped_column(nullable=True, default=None)
 
 
 class Chat(Base):

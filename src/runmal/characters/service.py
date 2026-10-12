@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import posixpath
 import shutil
+from datetime import UTC, datetime
 from pathlib import Path
 
 from sqlalchemy import delete, select
@@ -78,16 +79,66 @@ async def create_character(
 
 async def list_characters(session: AsyncSession, user_id: str) -> list[Character]:
     result = await session.execute(
-        select(Character).where(Character.user_id == user_id).order_by(Character.created_at)
+        select(Character)
+        .where(Character.user_id == user_id, Character.deleted_at.is_(None))
+        .order_by(Character.created_at)
     )
     return list(result.scalars().all())
 
 
-async def get_character(session: AsyncSession, user_id: str, character_id: str) -> Character | None:
-    result = await session.execute(
-        select(Character).where(Character.id == character_id, Character.user_id == user_id)
+async def get_character(
+    session: AsyncSession,
+    user_id: str,
+    character_id: str,
+    include_deleted: bool = False,
+) -> Character | None:
+    stmt = select(Character).where(
+        Character.id == character_id, Character.user_id == user_id
     )
+    if not include_deleted:
+        stmt = stmt.where(Character.deleted_at.is_(None))
+    result = await session.execute(stmt)
     return result.scalar_one_or_none()
+
+
+async def duplicate_character(
+    session: AsyncSession, user_id: str, character_id: str
+) -> Character | None:
+    """Copy a character (card + avatar assets) under a fresh id (S303)."""
+    source = await get_character(session, user_id, character_id)
+    if source is None:
+        return None
+    clone = Character(
+        user_id=user_id,
+        name=f"{source.name} (copy)",
+        card_json=source.card_json,
+        avatar_asset=source.avatar_asset,
+    )
+    session.add(clone)
+    await session.flush()
+    src_dir = character_asset_dir(source.id)
+    if any(src_dir.iterdir()):
+        shutil.copytree(
+            src_dir, character_asset_dir(clone.id), dirs_exist_ok=True
+        )
+    await session.commit()
+    return clone
+
+
+async def restore_character(
+    session: AsyncSession, user_id: str, character_id: str
+) -> Character | None:
+    """Undo a soft delete (S303). Raises ValueError when not deleted."""
+    character = await get_character(
+        session, user_id, character_id, include_deleted=True
+    )
+    if character is None:
+        return None
+    if character.deleted_at is None:
+        raise ValueError("character is not deleted")
+    character.deleted_at = None
+    await session.commit()
+    return character
 
 
 async def update_character(
@@ -195,9 +246,10 @@ async def delete_character(session: AsyncSession, user_id: str, character_id: st
     character = await get_character(session, user_id, character_id)
     if character is None:
         return False
-    await session.execute(delete(Character).where(Character.id == character_id))
+    # Soft delete (S303): stamp and hide; assets and the row are retained
+    # so the deletion can be undone (restore_character).
+    character.deleted_at = datetime.now(UTC)
     await session.commit()
-    shutil.rmtree(character_asset_dir(character_id), ignore_errors=True)
     return True
 
 

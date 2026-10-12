@@ -160,3 +160,18 @@ button#stop { background: var(--danger); }
 #show-earlier { align-self: center; background: var(--panel-hover);
                 color: var(--text); }
 #retry { background: var(--panel-hover); color: var(--text); }
+
+/* -- S303: gallery ------------------------------------------------------------ */
+#gallery-grid { display: grid; gap: var(--space-4); margin-top: var(--space-4);
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+.gallery-card { background: var(--panel); border: 1px solid var(--line);
+                border-radius: var(--radius-l); padding: var(--space-4);
+                display: flex; flex-direction: column; gap: var(--space-2); }
+.gallery-card img { max-width: 100%; border-radius: var(--radius-m); }
+#dropzone { border: 2px dashed var(--line); border-radius: var(--radius-l);
+            padding: var(--space-5); margin-top: var(--space-4);
+            text-align: center; color: var(--dim); }
+#dropzone.dragover { border-color: var(--accent); color: var(--text); }
+#undo-banner { background: var(--panel-hover); border: 1px solid var(--accent);
+               border-radius: var(--radius-m); padding: var(--space-3);
+               display: flex; gap: var(--space-3); align-items: center; }

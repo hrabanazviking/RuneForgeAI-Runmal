@@ -60,3 +60,12 @@ async def tools_page(request: Request):
         "tools.html",
         {"credential_hint": str(data_dir() / CREDENTIAL_FILENAME)},
     )
+
+
+@router.get("/gallery", response_class=HTMLResponse)
+async def gallery_page(request: Request):
+    return templates.TemplateResponse(
+        request,
+        "gallery.html",
+        {"credential_hint": str(data_dir() / CREDENTIAL_FILENAME)},
+    )

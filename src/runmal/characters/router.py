@@ -126,6 +126,37 @@ async def update_editor(
     return view
 
 
+@router.post(
+    "/characters/{character_id}/duplicate", status_code=status.HTTP_201_CREATED
+)
+async def duplicate_character(
+    character_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    character = await service.duplicate_character(session, user_id, character_id)
+    if character is None:
+        raise HTTPException(status_code=404, detail="character not found")
+    return character_to_dict(character)
+
+
+@router.post("/characters/{character_id}/restore")
+async def restore_character(
+    character_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    try:
+        character = await service.restore_character(session, user_id, character_id)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail=str(exc)
+        ) from exc
+    if character is None:
+        raise HTTPException(status_code=404, detail="character not found")
+    return character_to_dict(character)
+
+
 @router.delete("/characters/{character_id}")
 async def delete_character(
     character_id: str,
@@ -134,7 +165,8 @@ async def delete_character(
 ):
     if not await service.delete_character(session, user_id, character_id):
         raise HTTPException(status_code=404, detail="character not found")
-    return {"deleted": True, "id": character_id}
+    # Soft delete: recoverable via POST /characters/{id}/restore (S303).
+    return {"deleted": True, "id": character_id, "undoable": True}
 
 
 @router.post("/characters/{character_id}/avatar")

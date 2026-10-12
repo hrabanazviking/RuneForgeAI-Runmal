@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rúnmál — character gallery</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<main id="gallery-main" class="page">
+  <h1>Characters</h1>
+  <p class="hint">Search, duplicate, delete (with undo), and import cards.
+     Token file: <code>{{ credential_hint }}</code></p>
+  <div id="error-banner" class="hidden" role="alert">
+    <span id="error-text"></span>
+    <button id="error-dismiss" type="button">Dismiss</button>
+  </div>
+  <div id="undo-banner" class="hidden" role="status">
+    <span id="undo-text"></span>
+    <button id="undo-btn" type="button">Undo delete</button>
+  </div>
+  <label>Search <input id="search" type="search" placeholder="Name…"></label>
+  <div id="dropzone" tabindex="0">
+    Drop a character card (.json) here, or
+    <input id="import-file" type="file" accept=".json,application/json">
+  </div>
+  <div id="gallery-grid"></div>
+</main>
+<script src="/static/theme.js"></script>
+<script src="/static/gallery.js"></script>
+</body>
+</html>
