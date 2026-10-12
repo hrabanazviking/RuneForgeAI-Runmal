@@ -18,8 +18,10 @@ from runmal.backends.fake import FakeChatBackend
 from runmal.backends.messages import ChatMessage
 from runmal.backends.models import Capabilities, HealthStatus, ModelInfo
 from runmal.backends.params import SamplingParams
+from runmal.backends.retry import AttemptRecord, RetryPolicy, stream_with_retry
 
 __all__ = [
+    "AttemptRecord",
     "AuthenticationFailed",
     "BackendError",
     "BackendTimeout",
@@ -39,7 +41,9 @@ __all__ = [
     "ModelNotFound",
     "ProviderError",
     "RateLimited",
+    "RetryPolicy",
     "SamplingParams",
     "TextDelta",
     "UsageUpdate",
+    "stream_with_retry",
 ]

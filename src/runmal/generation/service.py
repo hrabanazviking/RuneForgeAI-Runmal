@@ -25,6 +25,7 @@ from runmal.backends.events import Done, ErrorEvent, Event, TextDelta, UsageUpda
 from runmal.backends.fake import FakeChatBackend
 from runmal.backends.messages import ChatMessage
 from runmal.backends.params import SamplingParams
+from runmal.backends.retry import RetryPolicy, stream_with_retry
 
 _cancel_tokens: dict[str, asyncio.Event] = {}
 
@@ -72,16 +73,25 @@ async def generate_events(
     messages: list[ChatMessage] | None = None,
     backend: ChatBackend | None = None,
     params: SamplingParams | None = None,
+    retry_policy: RetryPolicy | None = None,
 ):
     """Yield UI-shaped SSE dicts for `request_id` through the backend seam.
 
     `prompt` is the legacy single-string form (wrapped as one user
     message); `messages` carries the full conversation when available.
+    With `retry_policy` set, the stream runs through the S309 retry
+    contract (§7): retries happen only before visible output, under the
+    same request identity — the events seen here are still one turn.
     """
     token = _cancel_tokens.setdefault(request_id, asyncio.Event())
     backend = backend or default_backend()
     chat_messages = messages or [ChatMessage(role="user", content=prompt)]
-    stream = backend.chat_stream(chat_messages, params or SamplingParams(), token)
+    if retry_policy is not None:
+        stream = stream_with_retry(
+            backend, chat_messages, params or SamplingParams(), token,
+            request_id=request_id, policy=retry_policy)
+    else:
+        stream = backend.chat_stream(chat_messages, params or SamplingParams(), token)
     saw_done = False
     try:
         async for event in stream:
