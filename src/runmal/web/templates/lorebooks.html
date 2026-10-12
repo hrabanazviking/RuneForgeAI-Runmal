@@ -52,6 +52,19 @@
     <button type="submit">Save entry</button>
     <button id="e-clear" type="button">Clear</button>
   </form>
+  <section id="preview-panel">
+    <h2>Activation preview</h2>
+    <p class="hint">Runs the server activation engine (scan → activation →
+       budget) over sample messages, from a clean state. Blank fields use
+       the book's stored scan depth / token budget.</p>
+    <label>Sample messages (one per line)
+      <textarea id="p-messages" rows="4"></textarea></label>
+    <label>Scan depth <input id="p-depth" type="number" min="1"></label>
+    <label>Token budget <input id="p-budget" type="number" min="1"></label>
+    <button id="p-run" type="button">Preview activation</button>
+    <p id="p-summary" class="hint"></p>
+    <ul id="p-results"></ul>
+  </section>
 </main>
 <script src="/static/theme.js"></script>
 <script src="/static/lorebooks.js"></script>

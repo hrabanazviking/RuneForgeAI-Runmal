@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.db.deps import get_owner_id, get_session
 from runmal.lorebooks import service, transfer
+from runmal.lorebooks.preview import preview_activation
 from runmal.lorebooks.service import entry_to_dict, lorebook_to_dict
 
 router = APIRouter(tags=["lorebooks"])
@@ -57,6 +58,13 @@ class EntryUpdate(BaseModel):
     sticky_prompts: int | None = Field(default=None, ge=0)
     cooldown_prompts: int | None = Field(default=None, ge=0)
     delay_prompts: int | None = Field(default=None, ge=0)
+
+
+class PreviewRequest(BaseModel):
+    messages: list[str] = Field(default_factory=list)
+    scan_depth: int | None = Field(default=None, ge=1)
+    token_budget: int | None = Field(default=None, ge=1)
+    seed: int | None = None
 
 
 def _service_error(exc: ValueError) -> HTTPException:
@@ -125,6 +133,33 @@ async def export_lorebook(
         lorebook_to_dict(book, len(entries or [])),
         [entry_to_dict(e) for e in entries or []],
     )
+
+
+@router.post("/lorebooks/{book_id}/preview")
+async def preview_lorebook(
+    book_id: str,
+    body: PreviewRequest,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Activation preview (roadmap S209): run the server scan/activation/
+    budget pipeline over sample messages and report, per entry, whether it
+    would be injected and why. Unset scan_depth/token_budget fall back to
+    the book's stored values."""
+    book = await service.get_lorebook(session, user_id, book_id)
+    if book is None:
+        raise HTTPException(status_code=404, detail="lorebook not found")
+    entries = await service.list_entries(session, user_id, book_id) or []
+    scan_depth = body.scan_depth if body.scan_depth is not None else book.scan_depth
+    token_budget = body.token_budget if body.token_budget is not None else book.token_budget
+    try:
+        result = preview_activation(
+            entries, body.messages, scan_depth, token_budget, seed=body.seed
+        )
+    except ValueError as exc:
+        raise _service_error(exc) from exc
+    result["book_id"] = book.id
+    return result
 
 
 @router.get("/lorebooks/{book_id}")

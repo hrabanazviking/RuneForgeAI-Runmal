@@ -180,4 +180,46 @@ $("import-file").addEventListener("change", async (e) => {
   }
 });
 
+function renderPreview(result) {
+  const list = $("p-results");
+  list.textContent = "";
+  $("p-summary").textContent =
+    "Tokens used: " + result.tokens_used +
+    " / budget " + (result.token_budget === null ? "∞" : result.token_budget) +
+    " · scan depth " + result.scan_depth;
+  for (const row of result.entries) {
+    const li = document.createElement("li");
+    let text = row.name + " — " + row.status;
+    if (row.via) text += " (via " + row.via + ")";
+    if (row.matched_primary.length)
+      text += " · keys: " + row.matched_primary.join(", ");
+    if (row.matched_secondary.length)
+      text += " · secondary: " + row.matched_secondary.join(", ");
+    if (row.tokens !== null) text += " · " + row.tokens + " tokens";
+    if (row.discard_reason) text += " · discarded: " + row.discard_reason;
+    li.textContent = text;
+    list.appendChild(li);
+  }
+}
+
+$("p-run").addEventListener("click", async () => {
+  hideError();
+  const payload = {
+    messages: $("p-messages").value.split("\n").filter((m) => m.trim()),
+  };
+  const depth = $("p-depth").value;
+  if (depth) payload.scan_depth = Number(depth);
+  const budget = $("p-budget").value;
+  if (budget) payload.token_budget = Number(budget);
+  try {
+    const result = await api(
+      "/api/v1/lorebooks/" + bookId() + "/preview",
+      { method: "POST", body: JSON.stringify(payload) }
+    );
+    renderPreview(result);
+  } catch (err) {
+    showError(String(err));
+  }
+});
+
 loadBooks().catch((err) => showError(String(err)));
