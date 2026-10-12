@@ -184,6 +184,25 @@ class VadSegmenter:
         """True while a candidate or confirmed segment is open."""
         return self._segment is not None or bool(self._candidate)
 
+    @property
+    def segment_open(self) -> bool:
+        """True only once a segment is CONFIRMED (>= min_speech frames)."""
+        return self._segment is not None
+
+    @property
+    def open_segment_frames(self) -> list[bytes]:
+        """Frames of the currently open segment (incl. its onset frames)."""
+        return list(self._segment) if self._segment is not None else []
+
+    @property
+    def open_segment_speech_frames(self) -> list[bytes]:
+        """Open-segment frames trimmed to the last speech frame — the
+        hangover tail the segmenter is still holding is excluded."""
+        if self._segment is None:
+            return []
+        keep = self._last_speech_end - self._segment_start
+        return list(self._segment[:keep])
+
     def reset(self) -> None:
         self.model.reset()
         self._history.clear()
