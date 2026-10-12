@@ -86,6 +86,20 @@ new moving part.
 
 ---
 
+## Campaign 5 — The war table: TTRPG (6 slices)
+
+*Samtal is also the table where sagas are played. The map is not
+decoration — it is where the fellowship's D&D lives.*
+
+- **FQ5.1** Shared battle map: grid canvas with pan/zoom, keeper-uploaded or generated maps.
+- **FQ5.2** Tokens: characters as movable tokens — humans drag their own; agents move via commands (`move Elara to C7`).
+- **FQ5.3** Fog of war: keeper-controlled visibility; players see only what their characters would.
+- **FQ5.4** Dice: `/roll` with full D&D notation (`2d20kh1+5`), public rolls in chat, roll history.
+- **FQ5.5** Character sheets: lightweight sheet model linked to tokens (HP, stats, conditions).
+- **FQ5.6** DM tools: hidden keeper notes, whispers to single players, initiative tracker.
+
+---
+
 ## Acceptance bar
 
 A keeper (Volmarr) can open a room, invite a human and two agents, and hold
