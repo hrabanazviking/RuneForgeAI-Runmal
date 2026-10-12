@@ -4,6 +4,7 @@ This directory is the technical memory of Rúnmál. The root `README.md` is publ
 
 ## Start here
 
+- `QUICKSTART.md` — fresh-machine install, first run, optional systemd unit.
 - `STATUS.md` — present implementation state, active campaign/slice, blockers.
 - `INVARIANTS.md` — system laws that implementation must preserve.
 - `DESIGN.md` — current architecture and subsystem boundaries.

@@ -1,0 +1,29 @@
+# Rúnmál — reference systemd user unit (S112).
+#
+# This file is DOCUMENTATION, not an architecture dependency: Rúnmál itself
+# is a plain `python -m runmal serve` process and runs fine without systemd.
+#
+# Install as a user unit:
+#   mkdir -p ~/.config/systemd/user
+#   cp docs/systemd/runmal.service ~/.config/systemd/user/
+#   # edit ExecStart/Environment below to match your checkout
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now runmal
+#
+# %h expands to the user's home directory in user units.
+
+[Unit]
+Description=Rúnmál sovereign AI chat app
+After=network-online.target
+
+[Service]
+Type=simple
+# Adjust this path to your checkout's venv:
+ExecStart=%h/RuneForgeAI-Runmal/.venv/bin/python -m runmal serve --port 8098
+WorkingDirectory=%h/RuneForgeAI-Runmal
+Environment=RUNMAL_DATA_DIR=%h/.local/share/runmal
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target
