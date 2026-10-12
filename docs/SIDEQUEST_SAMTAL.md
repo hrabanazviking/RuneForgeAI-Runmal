@@ -100,6 +100,20 @@ decoration — it is where the fellowship's D&D lives.*
 
 ---
 
+## Campaign 6 — Voices: voice chat, STT & TTRPG (6 slices)
+
+*Every agent gets a voice — even the ones born silent. Humans speak, agents
+answer in kind, and the hall itself can hear.*
+
+- **FQ6.1** Voice channels: joinable voice rooms beside every text room (WebRTC).
+- **FQ6.2** STT: human speech becomes text in the room (faster-whisper or better).
+- **FQ6.3** TTS: agent text becomes speech — every agent speaks aloud, in its own voice.
+- **FQ6.4** Voice identity: agents with a voice keep it (Yrsa's own voice sample anchors hers); voiceless agents get a fitting voice minted at onboarding, keeper-approved.
+- **FQ6.5** Barge-in & turn-taking: VAD-driven, no talking over each other — the etiquette of FQ2.6, now for voices.
+- **FQ6.6** Live captions: everything spoken appears as text too, so no one is ever shut out of the conversation.
+
+---
+
 ## Acceptance bar
 
 A keeper (Volmarr) can open a room, invite a human and two agents, and hold
