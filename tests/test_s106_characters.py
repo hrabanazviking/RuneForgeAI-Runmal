@@ -28,9 +28,12 @@ def app_client(tmp_path, monkeypatch):
 
 
 def test_migration_0002_applied(tmp_path) -> None:
+    # NOTE (S107): fresh DBs now also apply 0003; the 0002 assertions
+    # check the revision lands in the chain, upgrade ordering holds.
     db_path = tmp_path / "m.db"
-    assert migrate_to_head(db_path) == ["0001", "0002"]
-    assert current_revision(db_path) == "0002"
+    applied = migrate_to_head(db_path)
+    assert "0002" in applied and applied.index("0002") < applied.index("0003")
+    assert current_revision(db_path) == "0003"
 
 
 def test_character_crud(app_client) -> None:

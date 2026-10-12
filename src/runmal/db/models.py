@@ -67,3 +67,19 @@ class Message(Base):
     role: Mapped[str] = mapped_column(String(20), nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False, default="")
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
+    updated_at: Mapped[datetime | None] = mapped_column(nullable=True, default=None)
+
+
+class ChatEvent(Base):
+    """Durable mutation event log per chat (S107): feeds future memory sync."""
+
+    __tablename__ = "chat_events"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_new_id)
+    chat_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("chats.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    message_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
+    kind: Mapped[str] = mapped_column(String(40), nullable=False)
+    data: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    created_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
