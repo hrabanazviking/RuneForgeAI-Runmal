@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rúnmál — connections</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<main id="connections-main">
+  <h1>Connections</h1>
+  <p class="hint">Backend connection profiles. Exactly one is active.
+     Token file: <code>{{ credential_hint }}</code></p>
+  <div id="error-banner" class="hidden" role="alert">
+    <span id="error-text"></span>
+    <button id="error-dismiss" type="button">Dismiss</button>
+  </div>
+  <ul id="connection-list"></ul>
+  <section id="health-panel" class="hidden">
+    <h2>Health</h2>
+    <pre id="health-result"></pre>
+  </section>
+  <form id="create-form">
+    <h2>New profile</h2>
+    <label>Name <input id="f-name" required></label>
+    <label>Backend
+      <select id="f-backend">
+        <option value="fake">fake</option>
+        <option value="ollama">ollama</option>
+        <option value="openai">openai</option>
+      </select>
+    </label>
+    <label>Base URL <input id="f-url" placeholder="http://localhost:11434"></label>
+    <label>Model <input id="f-model"></label>
+    <button type="submit">Create</button>
+  </form>
+</main>
+<script src="/static/connections.js"></script>
+</body>
+</html>

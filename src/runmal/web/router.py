@@ -33,3 +33,12 @@ async def chat_page(request: Request):
         "chat.html",
         {"credential_hint": str(data_dir() / CREDENTIAL_FILENAME)},
     )
+
+
+@router.get("/connections", response_class=HTMLResponse)
+async def connections_page(request: Request):
+    return templates.TemplateResponse(
+        request,
+        "connections.html",
+        {"credential_hint": str(data_dir() / CREDENTIAL_FILENAME)},
+    )

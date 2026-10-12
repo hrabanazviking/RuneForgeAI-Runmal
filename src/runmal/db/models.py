@@ -145,3 +145,21 @@ class SamplingPreset(Base):
     template_ref: Mapped[str] = mapped_column(String(200), nullable=False, default="")
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
     updated_at: Mapped[datetime | None] = mapped_column(nullable=True, default=None)
+
+
+class ConnectionProfile(Base):
+    """Backend connection profile (S211). Secrets are never stored here."""
+
+    __tablename__ = "connection_profiles"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_new_id)
+    user_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    backend: Mapped[str] = mapped_column(String(40), nullable=False, default="fake")
+    base_url: Mapped[str] = mapped_column(String(500), nullable=False, default="")
+    model: Mapped[str] = mapped_column(String(200), nullable=False, default="")
+    is_active: Mapped[bool] = mapped_column(nullable=False, default=False)
+    created_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
+    updated_at: Mapped[datetime | None] = mapped_column(nullable=True, default=None)
