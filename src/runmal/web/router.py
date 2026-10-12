@@ -69,3 +69,12 @@ async def gallery_page(request: Request):
         "gallery.html",
         {"credential_hint": str(data_dir() / CREDENTIAL_FILENAME)},
     )
+
+
+@router.get("/lorebooks", response_class=HTMLResponse)
+async def lorebooks_page(request: Request):
+    return templates.TemplateResponse(
+        request,
+        "lorebooks.html",
+        {"credential_hint": str(data_dir() / CREDENTIAL_FILENAME)},
+    )

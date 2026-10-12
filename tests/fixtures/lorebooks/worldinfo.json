@@ -1,0 +1,1 @@
+{"entries":{"0":{"comment":"Dragon","constant":false,"content":"Dragons sleep under the mountain.","disable":false,"key":["dragon","wyrm"],"keysecondary":["mountain"],"order":200,"position":0},"1":{"comment":"Ale","constant":true,"content":"The ale is strong and dark.","disable":true,"key":["ale"],"keysecondary":[],"order":10,"position":1}},"name":"Fixture World Info"}

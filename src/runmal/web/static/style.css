@@ -175,3 +175,10 @@ button#stop { background: var(--danger); }
 #undo-banner { background: var(--panel-hover); border: 1px solid var(--accent);
                border-radius: var(--radius-m); padding: var(--space-3);
                display: flex; gap: var(--space-3); align-items: center; }
+
+/* -- S304: lorebook editor ---------------------------------------------------- */
+#entry-table { width: 100%; border-collapse: collapse; margin-top: var(--space-4); }
+#entry-table th, #entry-table td { border-bottom: 1px solid var(--line);
+               padding: var(--space-2); text-align: left; }
+#entry-form { display: flex; flex-direction: column; gap: var(--space-2);
+              margin-top: var(--space-5); max-width: 640px; }

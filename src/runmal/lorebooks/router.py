@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.db.deps import get_owner_id, get_session
-from runmal.lorebooks import service
+from runmal.lorebooks import service, transfer
 from runmal.lorebooks.service import entry_to_dict, lorebook_to_dict
 
 router = APIRouter(tags=["lorebooks"])
@@ -92,6 +92,39 @@ async def list_lorebooks(
         lorebook_to_dict(book, count)
         for book, count in await service.list_lorebooks(session, user_id)
     ]
+
+
+@router.post("/lorebooks/import", status_code=status.HTTP_201_CREATED)
+async def import_lorebook(
+    body: dict,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Import a lorebook in native or world-info shape (S304)."""
+    try:
+        book = await transfer.import_book(session, user_id, body)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)
+        ) from exc
+    entries = await service.list_entries(session, user_id, book.id)
+    return lorebook_to_dict(book, len(entries or []))
+
+
+@router.get("/lorebooks/{book_id}/export")
+async def export_lorebook(
+    book_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    book = await service.get_lorebook(session, user_id, book_id)
+    if book is None:
+        raise HTTPException(status_code=404, detail="lorebook not found")
+    entries = await service.list_entries(session, user_id, book_id)
+    return transfer.export_book(
+        lorebook_to_dict(book, len(entries or [])),
+        [entry_to_dict(e) for e in entries or []],
+    )
 
 
 @router.get("/lorebooks/{book_id}")

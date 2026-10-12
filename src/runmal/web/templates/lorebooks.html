@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rúnmál — lorebooks</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<main id="lorebooks-main" class="page">
+  <h1>Lorebooks</h1>
+  <p class="hint">Book/entry editor with key editing and import/export
+     (native + world-info shapes). Token file:
+     <code>{{ credential_hint }}</code></p>
+  <div id="error-banner" class="hidden" role="alert">
+    <span id="error-text"></span>
+    <button id="error-dismiss" type="button">Dismiss</button>
+  </div>
+  <section>
+    <label>Book <select id="book-select"></select></label>
+    <button id="new-book" type="button">New book</button>
+    <button id="delete-book" type="button" class="danger">Delete book</button>
+    <a id="export-link" href="#">Export JSON</a>
+    <label>Import <input id="import-file" type="file" accept=".json,application/json"></label>
+  </section>
+  <table id="entry-table">
+    <thead>
+      <tr><th>Name</th><th>Keys</th><th>Priority</th><th>Position</th>
+          <th>Constant</th><th></th></tr>
+    </thead>
+    <tbody id="entry-rows"></tbody>
+  </table>
+  <form id="entry-form">
+    <h2>Entry</h2>
+    <input id="e-id" type="hidden">
+    <label>Name <input id="e-name"></label>
+    <label>Content <textarea id="e-content" rows="4"></textarea></label>
+    <label>Keys (comma separated) <input id="e-keys"></label>
+    <label>Secondary keys (comma separated) <input id="e-secondary"></label>
+    <label>Priority <input id="e-priority" type="number" value="100"></label>
+    <label>Position
+      <select id="e-position">
+        <option value="before_char">before_char</option>
+        <option value="after_char">after_char</option>
+      </select>
+    </label>
+    <label>Constant <input id="e-constant" type="checkbox"></label>
+    <label>Sticky prompts <input id="e-sticky" type="number" value="0" min="0"></label>
+    <label>Cooldown prompts <input id="e-cooldown" type="number" value="0" min="0"></label>
+    <label>Delay prompts <input id="e-delay" type="number" value="0" min="0"></label>
+    <button type="submit">Save entry</button>
+    <button id="e-clear" type="button">Clear</button>
+  </form>
+</main>
+<script src="/static/theme.js"></script>
+<script src="/static/lorebooks.js"></script>
+</body>
+</html>
