@@ -172,6 +172,35 @@ Voice tests should include:
   `REMAP_REQUIRED` with no device bound — the OS default is *offered* by
   enumeration but never silently substituted. Audio format contract for
   the whole campaign: PCM16 LE mono @ 16 kHz, 512-sample (32 ms) frames.
+- **S502 VAD** — `voice/vad.py`: hysteresis segmenter (start/end
+  thresholds, min-speech, hangover, pre-roll) over a `VadModel` seam; the
+  real model is Silero's official ONNX graph via onnxruntime (tagged
+  optional), tests use a deterministic energy fixture model. Predeclared
+  segmentation contract lives in `SEGMENTATION_CONTRACT`.
+- **S503 STT** — `voice/stt.py` + `voice/corpus.py`: `STTBackend` seam,
+  faster-whisper `small` int8 baseline with word timestamps (tagged
+  optional), fixed Flite-synthesized fixture corpus, WER/RTF contract
+  predeclared in `STT_CONTRACT`.
+- **S504 TTS + license gate** — `voice/tts.py` + `voice/license_audit.py`:
+  independent ONNX inference over Kokoro-82M (Apache-2.0) with Misaki
+  G2P and NO eSpeak fallback; the gate is executable and refuses
+  eSpeak-carrying trees (see the filled matrix in
+  `VOICE_LICENSE_MATRIX.md`). Output is resampled to the 16 kHz pipeline
+  format; sentence streaming honors cancellation.
+- **S505–S507 Loop** — `voice/orchestrator.py` (explicit state machine,
+  deterministic simulated transitions), `voice/turntaking.py` (endpoint
+  hangover, preemptive finalize, resume cancellation), `voice/bargein.py`
+  (one interruption event → LLM/TTS/playback arms; backchannels
+  tolerated; predeclared 100 ms stop budget).
+- **S508 Playback truth ledger** — `voice/ledger.py`: per-chunk playback
+  records; heard-text reconstruction is conservative (INV-020).
+- **S509 Support contract** — `voice/support.py`: supported modes are
+  HEADSET, SEPARATED_OUTPUT and OPEN_SPEAKER_AEC (AEC *verified on the
+  route*). **Open speakers without verified AEC on a shared capture are
+  UNSUPPORTED** — the companion would hear itself; the assessment says
+  so plainly and live voice must not silently degrade into that mode.
+  `SelfOutputSuppressor` separates known self-output by playback
+  reference where the route is separable.
 
 ## 12. VRChat implication
 
