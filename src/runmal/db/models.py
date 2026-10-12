@@ -62,6 +62,9 @@ class Chat(Base):
     title: Mapped[str] = mapped_column(String(500), nullable=False, default="")
     # Applied sampling preset (S306); plain id, integrity kept by service.
     preset_id: Mapped[str | None] = mapped_column(String(36), nullable=True, default=None)
+    # Selected backend profile (S306/S307); plain id, integrity by service.
+    backend_profile_id: Mapped[str | None] = mapped_column(
+        String(36), nullable=True, default=None)
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
 
 
@@ -210,3 +213,44 @@ class GroupMember(Base):
     # Speaker-policy knobs (S211): selection weight + absolute mute.
     talkativeness: Mapped[float] = mapped_column(nullable=False, default=0.5)
     muted: Mapped[bool] = mapped_column(nullable=False, default=False)
+
+
+class BackendProfile(Base):
+    """Backend modality profile (S306, BACKEND_CONTRACT §10).
+
+    Composes a chat backend+model, an embedding backend+model, and STT/TTS
+    references. Stores ONLY secret references — values live in SecretEntry.
+    """
+
+    __tablename__ = "backend_profiles"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_new_id)
+    user_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    chat_backend: Mapped[str] = mapped_column(String(40), nullable=False, default="fake")
+    chat_model: Mapped[str] = mapped_column(String(200), nullable=False, default="")
+    embedding_backend: Mapped[str] = mapped_column(String(40), nullable=False, default="")
+    embedding_model: Mapped[str] = mapped_column(String(200), nullable=False, default="")
+    stt_ref: Mapped[str] = mapped_column(String(200), nullable=False, default="")
+    tts_ref: Mapped[str] = mapped_column(String(200), nullable=False, default="")
+    chat_secret_ref: Mapped[str] = mapped_column(String(64), nullable=False, default="")
+    embedding_secret_ref: Mapped[str] = mapped_column(String(64), nullable=False, default="")
+    config_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    created_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
+    updated_at: Mapped[datetime | None] = mapped_column(nullable=True, default=None)
+
+
+class SecretEntry(Base):
+    """Server-side secret value (S306). Referenced by profiles via ``ref``;
+    values are never serialized into API responses, logs, or exports."""
+
+    __tablename__ = "secrets"
+
+    ref: Mapped[str] = mapped_column(String(64), primary_key=True)
+    user_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    value: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
