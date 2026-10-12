@@ -365,3 +365,25 @@ class ChatSummary(Base):
     source_last_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
     source_count: Mapped[int] = mapped_column(nullable=False, default=0)
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
+
+
+class CharacterVoiceProfile(Base):
+    """Per-character TTS reference (S512): backend + voice + params.
+
+    Deliberately NOT part of backend_profiles: a persona's voice switch
+    must never move the chat/embedding composition (S512 acceptance).
+    """
+
+    __tablename__ = "character_voice_profiles"
+
+    character_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("characters.id", ondelete="CASCADE"), primary_key=True
+    )
+    user_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    tts_backend: Mapped[str] = mapped_column(String(100), nullable=False, default="")
+    voice_id: Mapped[str] = mapped_column(String(200), nullable=False, default="")
+    language: Mapped[str] = mapped_column(String(20), nullable=False, default="en-us")
+    params_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    updated_at: Mapped[str] = mapped_column(String(40), nullable=False, default="")
