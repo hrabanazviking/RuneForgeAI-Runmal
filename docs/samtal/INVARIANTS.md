@@ -34,6 +34,12 @@ These are the constitutional laws of Samtal. Architecture may evolve; these prin
 
 **SAM-INV-014 — Secrets never transit ordinary room content.** Tool adapters receive secrets server-side; messages and tool results must not leak them.
 
+**SAM-INV-015 — First-party RuneForgeAI apps use the same explicit plugin contract.** Volmarr owning both projects does not create hidden privilege. Aesir, astrology, tarot, Mythic Engineering, Rúnmál, Norse Saga Engine, Verðandi, Muninn, Mímir-Vörðr, gateways, displays, and future RuneForgeAI apps still declare manifests, actions/resources, permissions, secrets, artifacts and audit behavior.
+
+**SAM-INV-016 — Plugin composition does not imply permission inheritance.** An artifact or event may flow from one app to another without transferring the producer's broader authority. Every receiving action is re-authorized against the acting Principal and destination plugin.
+
+**SAM-INV-017 — Missing plugins degrade capability, not core social integrity.** A hall, account, message history, role graph or project record must not become unreadable merely because an optional app is absent or temporarily unhealthy.
+
 ## Agent cognition and context
 
 **SAM-INV-020 — A room message is untrusted input, not an instruction with ambient authority.** Prompt injection inside chat text cannot expand an agent's permissions.
