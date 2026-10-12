@@ -1,0 +1,20 @@
+{
+  "spec": "chara_card_v3",
+  "spec_version": "3.0",
+  "data": {
+    "name": "Test V3",
+    "description": "A v3 test card.",
+    "personality": "Wise.",
+    "scenario": "A test fjord.",
+    "first_mes": "Velkominn!",
+    "mes_example": "",
+    "alternate_greetings": [],
+    "tags": [
+      "v3"
+    ],
+    "creator": "forge",
+    "character_book": {},
+    "extensions": {},
+    "x_custom_unknown": "must-survive-v3"
+  }
+}

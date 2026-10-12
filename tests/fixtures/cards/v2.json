@@ -1,0 +1,30 @@
+{
+  "spec": "chara_card_v2",
+  "spec_version": "2.0",
+  "name": "Test V2",
+  "description": "A v2 test card.",
+  "personality": "Playful.",
+  "scenario": "A test hall.",
+  "first_mes": "Hail, traveler!",
+  "mes_example": "<START>Yo<END>",
+  "creator_notes": "notes",
+  "system_prompt": "You are Test.",
+  "post_history_instructions": "Stay in character.",
+  "alternate_greetings": [
+    "Hi!",
+    "Hey!"
+  ],
+  "tags": [
+    "test",
+    "fixture"
+  ],
+  "creator": "forge",
+  "character_book": {
+    "name": "Lore",
+    "entries": []
+  },
+  "extensions": {
+    "talkativeness": 0.5
+  },
+  "x_custom_unknown": "must-survive"
+}

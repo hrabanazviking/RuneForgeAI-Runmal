@@ -1,0 +1,8 @@
+{
+  "name": "Test V1",
+  "description": "A v1 test card.",
+  "personality": "Curious.",
+  "scenario": "A test room.",
+  "first_mes": "Hello!",
+  "mes_example": "<START>Hi<END>"
+}
