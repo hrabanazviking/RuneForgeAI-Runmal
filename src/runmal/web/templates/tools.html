@@ -19,6 +19,12 @@
 
   <section id="compose-panel">
     <h2>Compose preview</h2>
+    <div id="variable-chips" role="group" aria-label="Insert variable"></div>
+    <label>Resolve as — character <input id="v-char" value=""></label>
+    <label>Resolve as — user <input id="v-user" value="User"></label>
+    <button id="resolve-btn" type="button">Resolve preview</button>
+    <pre id="resolve-result"></pre>
+    <p id="unknown-vars" class="hidden" role="alert"></p>
     <label>System <textarea id="c-system" rows="2"></textarea></label>
     <label>Persona <textarea id="c-persona" rows="2"></textarea></label>
     <label>History (one message per line)

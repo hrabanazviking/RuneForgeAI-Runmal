@@ -35,6 +35,12 @@ class SessionActionIn(BaseModel):
     delta: int = 0
 
 
+class ResolveIn(BaseModel):
+    text: str
+    char: str = ""
+    user: str = "User"
+
+
 def _visible(exc: Exception) -> HTTPException:
     return HTTPException(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)
@@ -70,3 +76,20 @@ async def session_tool(body: SessionActionIn):
         )
     except (InvalidTransitionError, PromptChangedError, ValueError, KeyError) as exc:
         raise _visible(exc) from exc
+
+
+@router.get("/tools/variables")
+async def variables_tool():
+    """The composer's variable registry (S307): chips for the helper UI."""
+    from runmal.prompt.variables import list_variables
+
+    return list_variables()
+
+
+@router.post("/tools/resolve")
+async def resolve_tool(body: ResolveIn):
+    """Resolve variables in a preview text; unknown ones are flagged."""
+    from runmal.prompt.variables import resolve_variables
+
+    result = resolve_variables(body.text, char_name=body.char, user_name=body.user)
+    return result.to_dict()

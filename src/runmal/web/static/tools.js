@@ -34,6 +34,58 @@ async function api(path, opts = {}) {
   return res.json();
 }
 
+/* Variable helper (S307): chips insert {{variables}} at the cursor in the
+   system field; the resolve preview shows substitutions and flags any
+   unknown variables instead of dropping them silently. */
+async function loadVariableChips() {
+  const vars = await api("/api/v1/tools/variables");
+  const row = $("variable-chips");
+  for (const v of vars) {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "var-chip";
+    chip.textContent = "{{" + v.name + "}}";
+    chip.title = v.description;
+    chip.addEventListener("click", () => {
+      const ta = $("c-system");
+      const token = "{{" + v.name + "}}";
+      const start = ta.selectionStart || ta.value.length;
+      ta.value = ta.value.slice(0, start) + token + ta.value.slice(start);
+      ta.focus();
+      ta.selectionStart = ta.selectionEnd = start + token.length;
+    });
+    row.appendChild(chip);
+  }
+}
+
+$("resolve-btn").addEventListener("click", async () => {
+  hideError();
+  try {
+    const out = await api("/api/v1/tools/resolve", {
+      method: "POST",
+      body: JSON.stringify({
+        text: $("c-system").value,
+        char: $("v-char").value,
+        user: $("v-user").value,
+      }),
+    });
+    $("resolve-result").textContent = out.text;
+    const warn = $("unknown-vars");
+    if (out.unknown.length) {
+      warn.textContent =
+        "Unknown variables (left as-is): " +
+        out.unknown.map((n) => "{{" + n + "}}").join(", ");
+      warn.classList.remove("hidden");
+    } else {
+      warn.classList.add("hidden");
+    }
+  } catch (err) {
+    showError(String(err));
+  }
+});
+
+loadVariableChips().catch((err) => showError(String(err)));
+
 function promptMessages() {
   const msgs = [];
   if ($("c-persona").value) msgs.push({ role: "system", content: $("c-persona").value });
