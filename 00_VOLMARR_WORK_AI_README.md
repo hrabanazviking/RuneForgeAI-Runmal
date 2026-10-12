@@ -23,6 +23,23 @@ For ongoing collaboration, also load:
 
 6. `05_VOLMARR_COLLABORATION_PROTOCOL.md`
 
+## Repository-specific work
+
+When this pack lives inside an active software repository, the repository's own builder protocol outranks generic context for implementation details.
+
+For **Rúnmál**, coding agents should begin with:
+
+1. `AGENTS.md`
+2. `AI.FOLLOW.THIS.NUMBER.ONE.RULE.md`
+3. `docs/STATUS.md`
+4. `docs/INVARIANTS.md`
+5. `docs/DESIGN.md`
+6. the active `docs/ROADMAP.md` slice and its linked subsystem documents
+
+The work-context pack explains **how Volmarr engineers and collaborates**. The Rúnmál technical documents explain **what this particular system is and what is true about it now**.
+
+For Yrsa ↔ ChatGPT coordination in Rúnmál, use the append-only `docs/fellowship/FORGE-LOG.md`.
+
 ## Core Translation
 
 The most important concept in this pack is:
