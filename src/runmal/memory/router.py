@@ -18,6 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.db.deps import get_owner_id, get_session
 from runmal.memory import service
+from runmal.memory.graph import provenance_graph
 from runmal.memory.models import memory_to_dict, source_to_dict
 
 router = APIRouter(tags=["memories"])
@@ -54,7 +55,9 @@ async def get_memory(
     if memory is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail="memory not found")
-    return await _describe(session, memory)
+    data = await _describe(session, memory)
+    data["graph"] = await provenance_graph(session, owner_id, memory_id)
+    return data
 
 
 @router.get("/memories-browser", response_class=HTMLResponse)
