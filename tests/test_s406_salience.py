@@ -77,4 +77,5 @@ async def test_reinforcement_lifts_strength_and_retrieval_rank(tmp_path):
         await session.commit()
         scores = await strength_map(session, uid, later)
         assert scores[fragile_id] > scores[durable_id]
-        assert fragile.recall_count == 30 and fragile.last_recalled_at == later
+        assert fragile.recall_count == 30
+        assert fragile.last_recalled_at.replace(tzinfo=UTC) == later
