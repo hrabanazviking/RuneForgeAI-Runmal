@@ -8,7 +8,8 @@ Token counting: :func:`estimate_tokens` is a deterministic heuristic
 (``max(1, len(text) // 4)``). It is an *estimate* -- good enough for budget
 decisions, cheap, and dependency-free. A real tokenizer can replace it
 later without changing this module's contract (S214's trace records which
-estimator was used).
+estimator was used). The canonical implementation lives in
+:mod:`runmal.tokens` and is re-exported here.
 
 Resolution algorithm (deterministic):
 1. Candidates sort by priority descending; equal priorities tie-break by
@@ -35,12 +36,16 @@ from __future__ import annotations
 import random
 from dataclasses import dataclass, field
 
+from runmal.tokens import estimate_tokens
 
-def estimate_tokens(text: str) -> int:
-    """Deterministic token estimate for budget decisions."""
-    if not isinstance(text, str):
-        raise ValueError("text must be a string")
-    return max(1, len(text) // 4)
+__all__ = [
+    "estimate_tokens",
+    "BudgetCandidate",
+    "BudgetedEntry",
+    "DiscardedEntry",
+    "BudgetResult",
+    "resolve_budget",
+]
 
 
 @dataclass(frozen=True)
