@@ -8,9 +8,9 @@
 
 ## Current campaign
 
-**Campaign V — Real-time voice loop (roadmap definitions)**
+**Campaign V — Real-time voice loop (roadmap definitions)** — ⚠️ **IMPLEMENTED on branch `surge-c5`, NOT landed.** All 14 slices (S501–S514, commits `867b261`–`59be0b7`) are implemented and VM-verified, but purplelongship went offline 2026-10-12 ~18:54 UTC during the voice-dependency install, so laptop evidence, the tagged real-model runs (S502 VAD, S503 STT, S514 `--real` benchmark) and the S504 real-tree license audit are still owed. `main` remains at the Campaign IV close (`1494cbf`, 429 tests green on the laptop). **Blocking issue: purplelongship offline — likely needs Volmarr's hands.** Resume: on the laptop, finish the voice-deps pip install, check out `surge-c5`, run the full suite + tagged real-model tests + S514 `--real`, complete the S504 license audit on the real installed tree (if the real tree fails the gate, that is a STOP for Volmarr's licensing call), then fast-forward `main` to `surge-c5`.
 
-Active slice: **S501 — Audio plumbing**. Last completed roadmap slice: **S415 — Full rebuild/reindex**. Campaign IV closed with: vector-store interface + sqlite-vec adapter (S401), embedding ingestion (S402), hybrid retrieval (S403), chat auto-summarization (S404), event/fact extraction (S405), salience + decay (S406), witness-scoped recall (S407), memory nucleus (S408), mutation sync (S409), memory browser UI (S410), provenance graph (S411), deduplication + consolidation (S412), contradiction + supersession engine (S413), recall trace + memory evaluator (S414), full rebuild/reindex (S415).
+Active slice: **S501 — Audio plumbing** (implemented on `surge-c5`, pending laptop verification). Last completed roadmap slice on `main`: **S415 — Full rebuild/reindex**. Campaign IV closed with: vector-store interface + sqlite-vec adapter (S401), embedding ingestion (S402), hybrid retrieval (S403), chat auto-summarization (S404), event/fact extraction (S405), salience + decay (S406), witness-scoped recall (S407), memory nucleus (S408), mutation sync (S409), memory browser UI (S410), provenance graph (S411), deduplication + consolidation (S412), contradiction + supersession engine (S413), recall trace + memory evaluator (S414), full rebuild/reindex (S415).
 
 ## Documentation foundation now present
 
