@@ -18,20 +18,20 @@ def db_path(tmp_path):
 
 
 def test_fresh_db_migrates_to_head(db_path) -> None:
-    # NOTE (S107/S201/S203): expectations deliberately extended — migrations
-    # 0002, 0003, 0004 and 0005 now exist and a fresh DB must reach HEAD.
+    # NOTE (S107/S201/S203/S207): expectations deliberately extended —
+    # migrations 0002 through 0006 now exist and a fresh DB must reach HEAD.
     applied = migrate_to_head(db_path)
-    assert applied == ["0001", "0002", "0003", "0004", "0005"]
-    assert current_revision(db_path) == "0005"
-    assert applied_revisions(db_path) == ["0001", "0002", "0003", "0004", "0005"]
+    assert applied == ["0001", "0002", "0003", "0004", "0005", "0006"]
+    assert current_revision(db_path) == "0006"
+    assert applied_revisions(db_path) == ["0001", "0002", "0003", "0004", "0005", "0006"]
     inspector = inspect(sqlalchemy.create_engine(f"sqlite:///{db_path}"))
     tables = set(inspector.get_table_names())
     assert {"users", "characters", "chats", "messages", "schema_migrations"} <= tables
 
 
 def test_migrate_is_idempotent(db_path) -> None:
-    # NOTE (S203): 0005 appended; idempotency re-verified at new HEAD.
-    assert migrate_to_head(db_path) == ["0001", "0002", "0003", "0004", "0005"]
+    # NOTE (S203/S207): 0005 and 0006 appended; idempotency re-verified at HEAD.
+    assert migrate_to_head(db_path) == ["0001", "0002", "0003", "0004", "0005", "0006"]
     assert migrate_to_head(db_path) == []
 
 
