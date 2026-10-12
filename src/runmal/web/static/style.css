@@ -231,3 +231,18 @@ button#stop { background: var(--danger); }
 .gmsg.author-c4 .author { color: var(--author-5); }
 .gmsg.author-c5 .author { color: var(--author-6); }
 .typing { color: var(--dim); font-style: italic; }
+
+/* -- S308: command palette ------------------------------------------------------ */
+#palette { position: fixed; inset: 0; background: var(--overlay);
+           display: flex; align-items: flex-start; justify-content: center;
+           padding-top: 12vh; z-index: 50; }
+#palette-card { background: var(--panel); border: 1px solid var(--line);
+                border-radius: var(--radius-l); padding: var(--space-3);
+                width: min(560px, 92vw); }
+#palette-input { width: 100%; }
+#palette-list { list-style: none; margin: var(--space-2) 0 0; padding: 0;
+                max-height: 320px; overflow-y: auto; }
+#palette-list li { padding: var(--space-2); border-radius: var(--radius-m);
+                   cursor: pointer; }
+#palette-list li.selected { background: var(--panel-hover);
+                            outline: 1px solid var(--accent); }
