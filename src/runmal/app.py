@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from runmal import __version__
 from runmal.auth import get_or_create_credential, verify_credential
+from runmal.backups.router import router as backups_router
 from runmal.characters.router import router as characters_router
 from runmal.chats.router import router as chats_router
 from runmal.db.base import create_db_engine, create_session_factory
@@ -62,6 +63,11 @@ def create_app(
     )
     app.include_router(
         chats_router,
+        prefix="/api/v1",
+        dependencies=[Depends(require_local_auth)],
+    )
+    app.include_router(
+        backups_router,
         prefix="/api/v1",
         dependencies=[Depends(require_local_auth)],
     )
