@@ -4,13 +4,13 @@
 
 ## Current phase
 
-**Implementation — Campaign III.** Campaign I (S101–S114) and Campaign II (S201–S215) are complete and verified on the forge laptop (purplelongship); the full suite stands at 235 tests green at the Campaign II close (commit `789fd86`).
+**Implementation — Campaign II (roadmap definitions), resumed 2026-10-12.** Campaign I (S101–S114) is complete and verified on the forge laptop (purplelongship). In roadmap Campaign II, slices S201–S208 are complete. An inserted **extra UI campaign** (see `docs/ROADMAP.md`, "Extra campaign (inserted, complete)") was also landed on 2026-10-12 under historical commit labels `S209`–`S215` / `S301`–`S311` that collide with roadmap numbers but are **not** roadmap slices; the full suite stands at 287 tests green at that wave's close (commit `5bd28cd`). A numbering divergence between the landed labels and this roadmap was found, reported, and resolved by Volmarr's ruling of 2026-10-12: the UI wave is kept as an extra campaign in the docs, the roadmap keeps its numbering, and the surge resumes at the true roadmap S209. True roadmap progress: **22/94** (S101–S114 + S201–S208) plus the extra UI campaign.
 
 ## Current campaign
 
-**Campaign III — Hearth UI**
+**Campaign II — Lorebooks, presets, prompt template, groups (roadmap definitions)**
 
-Active slice: **S301 — Hearth design tokens + layout shell**. Last completed slice: **S215 — Lorebook/group/prompt integration test + hardening**.
+Active slice: **S209 — Lorebook editor UI** (roadmap definition: htmx editor + activation preview; preview matches server activation engine). Last completed roadmap slice: **S208 — Backend parameter filtering**. Next after S209–S215: Campaign III — Backend seams (S301–S311, roadmap definitions).
 
 ## Documentation foundation now present
 

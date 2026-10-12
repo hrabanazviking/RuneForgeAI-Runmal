@@ -31,6 +31,37 @@
 
 ---
 
+## Extra campaign (inserted, complete) — UI wave, 2026-10-12
+
+*Recorded per Volmarr's ruling of 2026-10-12. This campaign is **not** part of the 94-slice roadmap above; it does not change the roadmap's numbering or totals.*
+
+During the 2026-10-12 mega surge, a wave of UI work was landed under commit labels `S209`–`S215` and `S301`–`S311` that **collide with the roadmap slice numbers in this document but are not those slices**. The work is real, tested (287 tests green on purplelongship at the wave's close), and kept — but the roadmap slices S209–S215 and S301–S311 defined below remained open at the time this note was added and are being implemented afterwards, in roadmap order.
+
+Landed extra-campaign work (historical commit label → what it actually built):
+
+- `S209` Impersonation controls (`e0d92a2`)
+- `S210` Group chat core (`8041c41`)
+- `S211` Connection profiles UI + health (`6536d55`)
+- `S212` Persona/scenario/greeting UI (`2d7e9dd`)
+- `S213` Impersonation/depth tools UI (`5425a87`)
+- `S214` Token counting (`e099a8f`)
+- `S215` Lorebook/group/prompt integration test + hardening (`789fd86`)
+- `S301` Hearth design tokens + layout shell (`d2c0bb3`)
+- `S302` Chat thread + streaming renderer (`de9ad23`)
+- `S303` Character gallery + editor shell (`c4f8a15`)
+- `S304` Lorebook editor (`9809fd1`)
+- `S305` Group chat UI (`44c6617`)
+- `S306` Connection + preset UI completion (`42bdaf5`)
+- `S307` Macro/variable helper UI (`3473b91`)
+- `S308` Command palette + keyboard map (`46c7171`)
+- `S309` Accessibility pass (`99cc4d6`)
+- `S310` Mobile/responsive pass (`7fa308b`)
+- `S311` UI regression + visual fixtures (`5bd28cd`)
+
+**Reading rule:** in commit history and Forge-Log entries dated 2026-10-12, labels `S209`–`S215` and `S301`–`S311` refer to this extra campaign unless explicitly tied to this roadmap. Roadmap slices with the same numbers carry the roadmap titles defined below (e.g. roadmap S209 = *Lorebook editor UI*, S211 = *Speaker policies*, S301 = *Backend interfaces*).
+
+---
+
 ## CAMPAIGN I — Foundation, text chat, personas
 
 *Goal: a running local app where Volmarr can chat in text with an imported character, on a schema that can safely evolve.*
