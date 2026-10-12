@@ -16,6 +16,7 @@ from runmal.characters.router import router as characters_router
 from runmal.chats.router import router as chats_router
 from runmal.db.base import create_db_engine, create_session_factory
 from runmal.db.migrate import migrate_to_head
+from runmal.generation.router import router as generation_router
 
 bearer_scheme = HTTPBearer(auto_error=False)
 
@@ -58,6 +59,11 @@ def create_app(
     )
     app.include_router(
         chats_router,
+        prefix="/api/v1",
+        dependencies=[Depends(require_local_auth)],
+    )
+    app.include_router(
+        generation_router,
         prefix="/api/v1",
         dependencies=[Depends(require_local_auth)],
     )
