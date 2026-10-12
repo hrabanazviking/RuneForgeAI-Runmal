@@ -179,6 +179,11 @@ class VadSegmenter:
         self._silence_run = 0
         self._last_speech_end = 0
 
+    @property
+    def in_speech(self) -> bool:
+        """True while a candidate or confirmed segment is open."""
+        return self._segment is not None or bool(self._candidate)
+
     def reset(self) -> None:
         self.model.reset()
         self._history.clear()
