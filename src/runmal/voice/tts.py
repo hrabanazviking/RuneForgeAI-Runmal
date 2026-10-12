@@ -74,6 +74,11 @@ class AudioChunk:
     text: str  # the exact source text span this chunk synthesizes
     index: int
     sample_rate: int = SAMPLE_RATE
+    #: Optional (word, start_s, end_s) alignment inside this chunk, when
+    #: the backend can provide it. The S508 ledger uses it — and when it
+    #: is absent, the ledger MUST stay conservative (no certain words
+    #: from a partially played chunk).
+    word_timings: tuple[tuple[str, float, float], ...] = ()
 
     @property
     def duration_s(self) -> float:
@@ -163,7 +168,13 @@ class FakeTTSBackend(TTSBackend):
             pcm = floats_to_pcm16(
                 [self.amplitude * math.sin(2 * math.pi * 220 * i / SAMPLE_RATE)
                  for i in range(samples)])
-            yield AudioChunk(pcm=pcm, text=piece, index=index)
+            duration = samples / SAMPLE_RATE
+            words = piece.split()
+            step = duration / len(words) if words else 0.0
+            timings = tuple(
+                (w, round(i * step, 4), round((i + 1) * step, 4))
+                for i, w in enumerate(words))
+            yield AudioChunk(pcm=pcm, text=piece, index=index, word_timings=timings)
 
 
 # ------------------------------------------------------------- phonemizers
