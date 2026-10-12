@@ -1,103 +1,342 @@
-# DESIGN.md — Sovereign AI Chat App (clean-room)
+# DESIGN.md — Rúnmál Sovereign AI Chat Architecture
 
-*Architecture for Volmarr's sovereign Python chat app. Derived from RESEARCH.md. All component shapes are original design; SillyTavern's ideas were studied, never its code.*
+*Clean-room architecture for Rúnmál. Derived from public specifications/research and RuneForgeAI's independent system design. No studied project's source code is copied here.*
 
-> **Name:** placeholder until Volmarr names it (his call, his joy).
-> **Language:** Python. **License:** Volmarr's own (permissive, no copyleft taint — see License taint register in RESEARCH.md).
+> **Name:** Rúnmál — whisper-speech, rune-talk  
+> **Language:** Python  
+> **License:** Apache License 2.0  
+> **Posture:** local-first, provider-replaceable, data-portable, API-first
+
+Read `INVARIANTS.md` with this document. Detailed subsystem contracts live in the linked architecture documents; this file owns the top-level shape and boundaries.
 
 ## 1. Component map
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        CLIENTS                                   │
-│  Web UI (Jinja + htmx + Alpine; SSE token stream)                │
-│  Voice island (vanilla JS: mic capture, audio playback, WS audio)│
-│  Bridge clients: VRChat OSC bridge · Conan RCON bridge ·         │
-│                  Skyrim-style HTTP bridge (scoped tokens)        │
-└──────────────┬──────────────────────────────────────────────────┘
-               │  HTTP REST + SSE (chat) · WebSocket (voice audio)
-┌──────────────▼──────────────────────────────────────────────────┐
-│                     FASTAPI APP (single service)                 │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌───────────────────┐    │
-│  │ Chat     │ │ Persona  │ │ Lorebook │ │ Prompt Composer   │    │
-│  │ Service  │ │ Service  │ │ Service  │ │ (ordered slots)   │    │
-│  └────┬─────┘ └────┬─────┘ └────┬─────┘ └─────────┬─────────┘    │
-│  ┌────▼────────────▼────────────▼─────────────────▼─────────┐    │
-│  │              INFERENCE SEAM (abstract)                    │    │
-│  │  OllamaBackend (native /api) · OpenRouterBackend         │    │
-│  │  (OpenAI-compat) · AesirBackend (Campaign VII)           │    │
-│  └──────────────────────────┬───────────────────────────────┘    │
-│  ┌──────────────────────────▼───────────────────────────────┐    │
-│  │  MEMORY SUBSYSTEM: event extraction → sqlite-vec + FTS5   │    │
-│  │  (hybrid retrieval, salience/decay, witness scoping)      │    │
-│  └──────────────────────────┬───────────────────────────────┘    │
-│  ┌──────────────────────────▼───────────────────────────────┐    │
-│  │  VOICE PIPELINE (Campaign V): VAD → STT → LLM → TTS       │    │
-│  │  (Silero VAD · faster-whisper small · Kokoro-82M ·        │    │
-│  │   asyncio frame pipeline or Pipecat BSD-2)                │    │
-│  └──────────────────────────────────────────────────────────┘    │
-│  Hooks (typed server-side events) · Extension registry          │
-│  (namespaced settings) · Secrets vault (server-side only)       │
-└──────────────┬──────────────────────────────────────────────────┘
-               │
-┌──────────────▼──────────────────────────────────────────────────┐
-│  STORAGE: single SQLite file (+ sqlite-vec) — chats, messages,  │
-│  characters, lorebooks, presets, memories, vectors, settings    │
-│  user_id columns from day one (multi-user later)                │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-## 2. Data flow — text path
-
-1. Client POSTs a message → Chat Service appends it to the chat's message rows.
-2. Prompt Composer assembles the prompt from **ordered slots**: system/main instruction → persona (character card fields: description, personality, scenario) → memory nucleus → retrieved lorebook entries (before/after positions) → RAG memory events → example dialogue → chat history (token-budgeted, oldest summarized/trimmed) → Author's Note (depth-injected N messages from end) → post-history instructions.
-3. Sampling preset resolves to `SamplingParams`; the Inference Seam's adapter filters params per backend.
-4. `chat_stream` yields normalized `ChatEvent`s; FastAPI re-emits them as UI SSE events (never raw provider bytes).
-5. Completed reply is persisted; memory subsystem extracts events/facts asynchronously (never blocks the reply).
-6. Client disconnect cancels the upstream generation (no burned tokens).
-
-## 3. Data flow — voice path
-
-```
-mic (16 kHz mono, ring buffer)
- → Silero VAD (512-sample frames, hysteresis 0.5/0.35, pre-roll 300–500 ms)
- → utterance segments → faster-whisper small int8 (beam 1, word timestamps)
- → turn detector (silence hangover ~400 ms; preemptive trigger on VAD-end + final transcript)
- → Prompt Composer (same slots as text; voice persona may set shorter-reply instructions)
- → Inference Seam chat_stream → sentence chunker
- → Kokoro-82M TTS per sentence (streaming; play while rest generates)
- → audio out (headset/speakers; virtual-cable route into VRChat)
-BARGE-IN (parallel): VAD confirms user speech (~300 ms) → interruption event
- → cancel LLM stream + TTS playback → flush partial audio
- → HISTORY RECORDS ONLY AUDIO ACTUALLY PLAYED (the context-rewind rule)
- → new utterance becomes priority input
-Backchannel tolerance: brief sounds ("mm-hm") don't interrupt; sustained speech does.
-Per-stage latency metrics logged from day one.
+```text
+┌───────────────────────────────────────────────────────────────────────┐
+│                               CLIENTS                                 │
+│ Web UI (Jinja + htmx + Alpine; SSE)                                  │
+│ Voice island / host audio client (WS audio where bidirectional)       │
+│ External bridges: VRChat · Conan · Skyrim-style · future companions   │
+└──────────────────┬────────────────────────────────────────────────────┘
+                   │ HTTP REST/SSE · WebSocket voice · versioned bridge API
+┌──────────────────▼────────────────────────────────────────────────────┐
+│                         FASTAPI APPLICATION                            │
+│                                                                       │
+│ Chat Service · Persona Service · Lorebook Service · Group Service     │
+│ Prompt Composer · Prompt Trace · Memory Service · Bridge Service      │
+│                                                                       │
+│ ┌───────────────────────────────────────────────────────────────────┐ │
+│ │ BACKEND PROFILE / PROVIDER SEAMS                                 │ │
+│ │ ChatBackend: Ollama · OpenRouter · Aesir · future adapters       │ │
+│ │ EmbeddingBackend: independently selectable                       │ │
+│ │ STTBackend / TTSBackend: independently selectable                │ │
+│ └───────────────────────────────────────────────────────────────────┘ │
+│                                                                       │
+│ ┌───────────────────────────────────────────────────────────────────┐ │
+│ │ LIVING MEMORY                                                    │ │
+│ │ extraction → provenance → consolidation/supersession             │ │
+│ │ → FTS5 + compatible-vector retrieval → witness filtering         │ │
+│ └───────────────────────────────────────────────────────────────────┘ │
+│                                                                       │
+│ ┌───────────────────────────────────────────────────────────────────┐ │
+│ │ REAL-TIME VOICE                                                  │ │
+│ │ VAD → STT → turn coordinator → LLM → TTS → playback ledger       │ │
+│ │ parallel barge-in/cancellation + explicit audio routing          │ │
+│ └───────────────────────────────────────────────────────────────────┘ │
+│                                                                       │
+│ Typed hooks · Extension registry · Settings · Secrets references      │
+└──────────────────┬────────────────────────────────────────────────────┘
+                   │
+┌──────────────────▼────────────────────────────────────────────────────┐
+│ STORAGE: SQLite + FTS5 + sqlite-vec adapter                           │
+│ versioned migrations · WAL/foreign-key policy · user_id from day one │
+│ canonical data separated conceptually from rebuildable derived state  │
+└───────────────────────────────────────────────────────────────────────┘
 ```
 
-Echo/self-interruption is treated as a first-class bug: verify with the agent speaking while room/game audio plays; headset separation or OS-level AEC.
+## 2. Text-generation path
 
-## 4. Prompt composition (the durable idea, structured)
+1. Client submits a message; Chat Service validates and persists it.
+2. Lorebook and Memory services produce eligible candidates. Witness/privacy filtering occurs before memory reaches the prompt.
+3. Prompt Composer assembles typed ordered slots.
+4. Context budgeting reserves response tokens first, then admits prompt material according to policy.
+5. Prompt Trace records what was included/discarded and why when tracing is enabled.
+6. Sampling preset resolves to canonical `SamplingParams`.
+7. Selected `ChatBackend` maps canonical parameters to provider-native controls and yields normalized events.
+8. FastAPI re-emits application events to the UI/bridge. Raw provider bytes never escape the adapter.
+9. Cancellation/client disconnect propagates to the provider.
+10. Completed reply is persisted once. Memory extraction runs asynchronously after persistence.
 
-Slots are first-class (not string macros): each slot has a role, position, and token budget. Order: system → persona → memory nucleus → lorebook (before) → RAG events → examples → history → lorebook (after) → author's note (depth-injected) → post-history instructions. Lorebook scanning runs against recent messages (configurable depth); matched entries inject content only. Token budget enforced with per-slot priority; overflow trims oldest history first, then summarizes.
+Retry rule: before visible output, configured retry/fallback may be used. After visible output begins, Rúnmál does not silently continue the same answer on a different model/provider.
 
-## 5. Storage schema sketch
+## 3. Prompt composition
 
-Tables (SQLite, SQLAlchemy async; `user_id` on everything from day one):
-- `users` (later), `characters` (card fields as columns + raw JSON for lossless round-trip + `extensions` opaque), `chats` (id, character/group refs, backend, preset, created), `messages` (chat_id, role, speaker, content, tokens, timestamps, *played_text* for voice), `lorebooks`, `lore_entries` (keys, secondary keys, constant/selective/sticky/cooldown/delay, order, position, priority, enabled), `presets` (name, param bag JSON, prompt-block order), `groups` (members, speaker policy, talkativeness, muted), `memories` (events/facts, salience, decay, witness chat/character refs), `vectors` (sqlite-vec `vec0` + (provider, model, dims) provenance), `settings` (namespaced), `secrets` (server-side only, never serialized to clients), `bridge_tokens` (scoped, revocable).
+Prompt slots are structured domain objects, not hidden concatenation conventions. A slot has at least:
 
-## 6. API sketch
+- stable slot ID/type;
+- message role;
+- position/order/depth behavior;
+- priority;
+- token budget/limit policy;
+- provenance/source references;
+- optional debug metadata.
 
-REST domains (adopted from the studied shape, original implementation): `/api/characters`, `/api/chats`, `/api/groups`, `/api/lorebooks`, `/api/presets`, `/api/settings`, `/api/secrets` (server-only), `/api/backends` (list/configure/test), `/api/memory`, `/api/vector`. Generation: single `POST /api/generate` (SSE stream of normalized events) dispatching to provider adapters. Voice: WebSocket `/api/voice/session` (audio frames up, events + audio down). Bridges: `/api/bridge/*` (conversation state, persona switching, TTS hooks) behind scoped tokens. Frontend never holds secrets — the server injects auth headers.
+Baseline ordering:
 
-## 7. Inference seam (recap from RESEARCH.md §4)
+```text
+system/main instruction
+→ persona/card prompt fields
+→ memory nucleus
+→ lorebook before
+→ retrieved eligible memories
+→ example dialogue
+→ token-budgeted history/summary
+→ lorebook after
+→ depth-injected author's note
+→ post-history instructions
+```
 
-Abstract `InferenceBackend`: `chat_stream` (only streaming is implemented per backend; `chat` accumulates), `embed` (raises `EmbeddingsUnsupported` → RAG falls back to FTS5), `list_models`, `health_check`, `count_tokens`. Normalized `ChatEvent` (`TextDelta`/`Done`/`Error`), `SamplingParams` value object, `ModelInfo`. Adapters: Ollama via **native `/api/*`** (never the lossy `/v1` shim), OpenRouter via OpenAI-compat client, Aesir later (cheapest if it ships `/v1`-style endpoints). The seam absorbs all wire-format, param-name, auth-shape, and default-value divergence.
+Exact ordering can be represented by a prompt template/preset, but hidden provider-specific prompt mutation is forbidden.
 
-## 8. Extension model
+### Prompt Trace
 
-Server-side Python hooks with typed payloads, keyed to the studied event taxonomy: message lifecycle (created/received/edited/deleted/streaming), generation lifecycle (prompt-ready, before/after assembly, started/stopped), chat/character/lorebook/preset/setting/backend changes. Extensions register prompt slots by name and get namespaced settings storage. No browser/Node dual runtime — a clean HTTP API with webhook-style callbacks covers the ground. Group-chat speaker selection is a pluggable policy (Manual/Natural/List/Pooled built in; LLM "director" later).
+A generation may emit/persist a safe trace manifest containing:
 
-## 9. Non-goals (phase one)
+- token budget and counting method;
+- included slots and token cost;
+- discarded slots and reason;
+- lore matches/triggers/priority;
+- recalled memory IDs and score factors;
+- backend/model/profile metadata;
+- warnings about estimated token counts or unsupported controls.
 
-Multi-user accounts, visual-novel sprite machinery, image generation UI, cloud hosting, mobile apps, plugin marketplace. The backend stays API-first so all of these can attach later without rewrites.
+Prompt Trace must never expose secrets.
+
+## 4. Character-card compatibility
+
+Rúnmál targets v1, v2 and current v3 character cards, including current **CHARX** archive support and supported v3 assets.
+
+Rules:
+
+- treat current normative format specifications as authoritative;
+- preserve opaque extensions and unknown compatible metadata;
+- preserve supported assets safely;
+- keep creator metadata out of prompts unless a specification explicitly makes a field prompt material;
+- tolerant import may accept older variants, while export should emit a deliberate supported version;
+- imported archives/assets are untrusted input and must be path/size validated.
+
+See `COMPATIBILITY.md` and `TESTING.md`.
+
+## 5. Lorebooks
+
+Lore entry activation includes keys, secondary/selective keys, constant entries, scan depth, positions, ordering/priority, timed states (sticky/cooldown/delay), recursion and token budgeting.
+
+Requirements:
+
+- matched keys are metadata, not injected content;
+- recursive activation has cycle detection and hard maximum depth;
+- under fixed state/RNG seed, activation/discard is deterministic;
+- equal-priority budget ties use an explicit stable tie-break rule;
+- Prompt Trace explains activation and discard.
+
+## 6. Storage and migrations
+
+SQLite is the canonical phase-one database. SQLAlchemy async may abstract persistence, but SQLite behavior is intentionally specified.
+
+Foundation requirements:
+
+- versioned schema migrations from the first persisted schema;
+- `PRAGMA foreign_keys=ON`;
+- deliberate WAL/checkpoint policy;
+- busy timeout/concurrency policy;
+- integrity checking/backup tooling;
+- `user_id`/ownership columns from day one where future multi-user separation would otherwise require destructive redesign.
+
+Conceptual domains/tables include:
+
+- users/owners;
+- characters + source card JSON + extensions + assets;
+- chats/messages/message revisions or mutation metadata;
+- groups/members/speaker policy;
+- lorebooks/lore entries;
+- presets/prompt templates;
+- backend profiles/settings + secret references;
+- memories + provenance links + temporal/supersession relations;
+- vector metadata/index rows;
+- voice profiles + playback ledger;
+- scoped bridge credentials + durable event outbox;
+- extension registry/settings;
+- migration metadata.
+
+Derived indexes/vectors must be rebuildable from canonical data where feasible.
+
+## 7. Living memory
+
+Memory behavior is specified in `MEMORY_ARCHITECTURE.md`.
+
+Key architectural properties:
+
+- nucleus + episodic + semantic + summary memory classes;
+- many-to-many provenance to source messages/chats;
+- witness-scoped access;
+- hybrid FTS5/vector retrieval;
+- salience/decay/stability;
+- duplicate consolidation;
+- contradiction/dispute/supersession/temporal truth;
+- mutation synchronization;
+- user-visible memory browser and recall trace;
+- embedding-space provenance and isolation.
+
+A derived memory store is not allowed to become an opaque unrecoverable second source of truth.
+
+## 8. Backend profiles and inference
+
+Detailed contract: `BACKEND_CONTRACT.md`.
+
+The old assumption that one `InferenceBackend` necessarily owns both chat and embeddings is removed. Rúnmál composes independent modality backends into named profiles.
+
+### ChatBackend
+
+Normalizes streaming generation, capabilities, model metadata, errors, token counting/estimation and cancellation.
+
+Initial adapters:
+
+- Ollama native `/api/*` chat surface;
+- OpenRouter OpenAI-compatible chat surface;
+- Aesir adapter in Campaign VII.
+
+### EmbeddingBackend
+
+Independently selectable. Stores provider/model/dimensions/version provenance with every vector. If unavailable, memory/RAG falls back to FTS5/structured retrieval.
+
+Current Ollama native embedding endpoint is `POST /api/embed`; implementation must re-verify official docs at build time.
+
+## 9. Voice path
+
+Detailed contract: `VOICE_ARCHITECTURE.md`.
+
+```text
+mic / selected ingress
+→ pre-roll ring buffer
+→ VAD
+→ endpointing
+→ STT partial/final
+→ Prompt Composer
+→ ChatBackend stream
+→ sentence/chunk assembler
+→ TTS
+→ playback queue/device
+```
+
+Parallel barge-in cancels generation, synthesis and playback.
+
+### Playback truth
+
+Generated text and heard text are different states. Voice history is derived from a playback ledger that records text spans/audio chunks actually started/completed/interrupted. If exact word alignment is unavailable, interrupted-chunk history remains conservative rather than inventing certainty.
+
+### Echo/audio routing
+
+Audio roles are explicit. VRChat room listening requires host audio ingress in addition to OSC. Headset-first support is acceptable initially; open-speaker production support requires a verified AEC/routing strategy rather than documentation-only notes.
+
+### Voice licensing
+
+A permissive model/wrapper is insufficient if runtime dependencies introduce incompatible licenses. Voice dependency-tree review occurs before adoption, not only at Campaign V hardening.
+
+## 10. API surface
+
+Internal/application REST domains use `/api/v1/...` once public/bridge compatibility matters. Representative domains:
+
+- `/api/v1/characters`
+- `/api/v1/chats`
+- `/api/v1/groups`
+- `/api/v1/lorebooks`
+- `/api/v1/presets`
+- `/api/v1/backend-profiles`
+- `/api/v1/memory`
+- `/api/v1/generate`
+- `/api/v1/voice/...`
+- `/api/v1/bridge/...`
+
+The browser UI may use internal routes as convenient, but external bridges depend only on the versioned contract.
+
+Bridge details: `BRIDGE_PROTOCOL.md`.
+
+## 11. Bridge/event architecture
+
+Bridge credentials are per-bridge, scoped and revocable. Writes that may be retried use idempotency keys.
+
+A durable event outbox supports proactive companion behavior and reconnect/replay. Game-specific protocol details remain in adapters/reference bridges, never as game-name branches in core chat logic.
+
+## 12. Security boundary
+
+Detailed threat model: `SECURITY_MODEL.md`.
+
+Phase one binds localhost by default. Secrets are referenced by configuration and omitted from all ordinary serialization. Imported cards/assets are untrusted input. Browser auth requires an explicit session/CSRF/origin model rather than assuming API bearer auth automatically solves browser security.
+
+Extensions execute server-side Python and are therefore trusted code unless a real sandbox is introduced. Do not describe them as sandboxed.
+
+## 13. Backup, export and recovery
+
+Detailed contract: `BACKUP_AND_RECOVERY.md`.
+
+Rúnmál distinguishes:
+
+- installation backup;
+- portable `.runmal` user-state archive;
+- rebuildable derived indexes/vectors.
+
+Portable exports include characters, chats, lorebooks, memories/provenance, presets and assets but exclude secrets. A clean-machine restore test is a release-level acceptance target.
+
+## 14. Extension model
+
+Server-side Python hooks use typed payloads and namespaced settings. Hooks cover message, generation, chat, character, lorebook, preset, backend and memory lifecycle events.
+
+Extensions may register named prompt slots through the Prompt Composer contract, not mutate final prompt strings invisibly.
+
+No browser/Node dual-runtime plugin requirement is introduced in phase one.
+
+## 15. Observability
+
+Structured logs and metrics should make failures inspectable while respecting redaction.
+
+Track at least:
+
+- generation/provider latency and cancellation;
+- prompt token budget/overflow warnings;
+- memory extraction/retrieval/consolidation health;
+- voice per-stage p50/p95;
+- bridge auth/idempotency/event-outbox failures;
+- migration/backup/restore outcomes.
+
+## 16. Non-goals for initial campaigns
+
+Not initial requirements:
+
+- public cloud hosting platform;
+- mobile native apps;
+- full multi-user product/account system;
+- visual-novel sprite engine;
+- image-generation UI;
+- untrusted plugin marketplace;
+- mandatory Docker/Kubernetes infrastructure.
+
+The architecture remains API-first so future clients/features can attach without rewriting domain ownership.
+
+## 17. Architecture ownership map
+
+| Concern | Canonical document |
+|---|---|
+| System laws | `INVARIANTS.md` |
+| Top-level boundaries | `DESIGN.md` |
+| Memory semantics | `MEMORY_ARCHITECTURE.md` |
+| Provider contracts | `BACKEND_CONTRACT.md` |
+| Voice state machine | `VOICE_ARCHITECTURE.md` |
+| Bridge protocol | `BRIDGE_PROTOCOL.md` |
+| Security | `SECURITY_MODEL.md` |
+| Compatibility | `COMPATIBILITY.md` |
+| Tests/evidence | `TESTING.md` |
+| Backup/recovery | `BACKUP_AND_RECOVERY.md` |
+| Implementation sequencing | `ROADMAP.md` |
+| Research/source evidence | `RESEARCH.md` |
+
+When two documents disagree, resolve the contradiction rather than choosing whichever wording is convenient.
