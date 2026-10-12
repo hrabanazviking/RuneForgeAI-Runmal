@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rúnmál — prompt inspector</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<a class="skip-link" href="#inspector-main">Skip to content</a>
+<main id="inspector-main" class="page">
+  <h1>Prompt inspector</h1>
+  <p class="hint">Compose a hypothetical prompt from stored data and see
+     exactly why each piece was injected or discarded (Prompt Trace).
+     Token file: <code>{{ credential_hint }}</code></p>
+  <div id="error-banner" class="hidden" role="alert">
+    <span id="error-text"></span>
+    <button id="error-dismiss" type="button">Dismiss</button>
+  </div>
+  <form id="inspect-form">
+    <label>Character <select id="inspect-character"></select></label>
+    <label>Lorebook <select id="inspect-lorebook"></select></label>
+    <label>Sample messages (one per line)
+      <textarea id="inspect-messages" rows="4"></textarea></label>
+    <label>Context limit <input id="inspect-context" type="number" value="4096" min="64"></label>
+    <label>Reserve response <input id="inspect-reserve" type="number" value="512" min="0"></label>
+    <button id="inspect-run" type="submit">Inspect prompt</button>
+  </form>
+  <section id="ledger-section" class="hidden">
+    <h2>Token ledger</h2>
+    <p id="ledger-summary"></p>
+  </section>
+  <section id="trace-section" class="hidden">
+    <h2>Slots — why each was injected or discarded</h2>
+    <table id="trace-table">
+      <thead>
+        <tr><th>Slot</th><th>Kind</th><th>Status</th><th>Tokens</th>
+            <th>Trigger</th><th>Reason / source</th></tr>
+      </thead>
+      <tbody id="trace-rows"></tbody>
+    </table>
+  </section>
+</main>
+<div id="palette" class="hidden" role="dialog" aria-label="Command palette">
+  <div id="palette-card">
+    <input id="palette-input" type="text" placeholder="Type a command…" aria-label="Command search">
+    <ul id="palette-list" role="listbox" aria-label="Commands"></ul>
+  </div>
+</div>
+<script src="/static/palette.js"></script>
+<script src="/static/inspector.js"></script>
+</body>
+</html>

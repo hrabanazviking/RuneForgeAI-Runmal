@@ -29,6 +29,7 @@ PAGES = {
     "editor": "/editor",
     "gallery": "/gallery",
     "group": "/group",
+    "inspector": "/inspector",
     "lorebooks": "/lorebooks",
     "tools": "/tools",
 }

@@ -89,11 +89,15 @@ def build_trace(
     composed: ComposedPrompt,
     slots: list[Slot],
     backend: dict | None = None,
+    extra_discards: tuple[TraceSlot, ...] = (),
 ) -> PromptTrace:
     """Build the safe trace for a composed prompt.
 
     ``slots`` are the composer's inputs (joined by id for metadata);
     ``backend`` is raw backend metadata, whitelisted before inclusion.
+    ``extra_discards`` are slots an upstream stage rejected before the
+    composer ever saw them (e.g. lore-budget discards) -- the trace is
+    the single explainability artifact, so their reasons live here too.
     """
     manifest = composed.manifest
     source = {s.id: s for s in slots}
@@ -116,6 +120,7 @@ def build_trace(
         describe(u.slot_id, "included", u.tokens, None, u.trimmed_parts) for u in manifest.included
     ]
     traced += [describe(d.slot_id, "discarded", d.tokens, d.reason) for d in manifest.discarded]
+    traced += list(extra_discards)
     ledger = TokenLedger(
         context_limit=manifest.context_limit,
         reserved_response=manifest.reserved_response,

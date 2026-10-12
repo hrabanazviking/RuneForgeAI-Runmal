@@ -87,3 +87,12 @@ async def group_page(request: Request):
         "group.html",
         {"credential_hint": str(data_dir() / CREDENTIAL_FILENAME)},
     )
+
+
+@router.get("/inspector", response_class=HTMLResponse)
+async def inspector_page(request: Request):
+    return templates.TemplateResponse(
+        request,
+        "inspector.html",
+        {"credential_hint": str(data_dir() / CREDENTIAL_FILENAME)},
+    )

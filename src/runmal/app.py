@@ -16,13 +16,14 @@ from runmal.auth import get_or_create_credential, verify_credential
 from runmal.backups.router import router as backups_router
 from runmal.characters.router import router as characters_router
 from runmal.chats.router import router as chats_router
+from runmal.connections.router import router as connections_router
 from runmal.db.base import create_db_engine, create_session_factory
 from runmal.db.migrate import migrate_to_head
 from runmal.generation.router import router as generation_router
-from runmal.lorebooks.router import router as lorebooks_router
-from runmal.connections.router import router as connections_router
 from runmal.groupchat.router import router as group_router
+from runmal.lorebooks.router import router as lorebooks_router
 from runmal.presets.router import router as presets_router
+from runmal.prompt.router import router as prompt_router
 from runmal.tools.router import router as tools_router
 from runmal.web.router import _HERE as _WEB_DIR
 from runmal.web.router import router as web_router
@@ -103,6 +104,11 @@ def create_app(
     )
     app.include_router(
         generation_router,
+        prefix="/api/v1",
+        dependencies=[Depends(require_local_auth)],
+    )
+    app.include_router(
+        prompt_router,
         prefix="/api/v1",
         dependencies=[Depends(require_local_auth)],
     )
