@@ -7,8 +7,13 @@ upgrade(conn) — apply DDL on a raw sqlite3 connection (committed by runner)
 
 from __future__ import annotations
 
-from runmal.db.migrations import m0001_initial
+from runmal.db.migrations import m0001_initial, m0002_character_card_columns
 
 MIGRATIONS: list[tuple[str, str, object]] = [
     (m0001_initial.REVISION, m0001_initial.DESCRIPTION, m0001_initial),
+    (
+        m0002_character_card_columns.REVISION,
+        m0002_character_card_columns.DESCRIPTION,
+        m0002_character_card_columns,
+    ),
 ]

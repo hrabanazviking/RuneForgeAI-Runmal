@@ -43,9 +43,9 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "serve":
         import uvicorn
 
-        from runmal.app import create_app
+        from runmal.app import create_app, default_session_factory
 
-        uvicorn.run(create_app(), host=args.host, port=args.port)
+        uvicorn.run(create_app(default_session_factory()), host=args.host, port=args.port)
     return 0
 
 

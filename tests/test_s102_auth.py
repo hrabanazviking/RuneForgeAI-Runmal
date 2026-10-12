@@ -71,7 +71,8 @@ def test_credential_stable_across_calls(isolated_data_dir) -> None:
     assert get_or_create_credential() == get_or_create_credential()
 
 
-def test_serve_binds_loopback_by_default(monkeypatch) -> None:
+def test_serve_binds_loopback_by_default(monkeypatch, tmp_path) -> None:
+    monkeypatch.setenv("RUNMAL_DATA_DIR", str(tmp_path))
     assert cli.DEFAULT_HOST == "127.0.0.1"
     args = cli.build_parser().parse_args(["serve"])
     assert args.host == "127.0.0.1"

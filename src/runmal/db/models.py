@@ -1,5 +1,5 @@
-"""ORM models (S103). DDL source of truth lives in the migrations; these
-classes must match m0001_initial."""
+"""ORM models. DDL source of truth lives in the migrations; these classes
+must match the migrated schema."""
 
 from __future__ import annotations
 
@@ -38,6 +38,8 @@ class Character(Base):
         String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
     name: Mapped[str] = mapped_column(String(200), nullable=False)
+    card_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    avatar_asset: Mapped[str | None] = mapped_column(String(128), nullable=True)
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
 
 

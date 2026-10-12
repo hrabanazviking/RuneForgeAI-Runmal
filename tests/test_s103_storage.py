@@ -18,17 +18,19 @@ def db_path(tmp_path):
 
 
 def test_fresh_db_migrates_to_head(db_path) -> None:
+    # NOTE (S106): expectations deliberately extended from ["0001"] —
+    # migration 0002 now exists and a fresh DB must reach HEAD.
     applied = migrate_to_head(db_path)
-    assert applied == ["0001"]
-    assert current_revision(db_path) == "0001"
-    assert applied_revisions(db_path) == ["0001"]
+    assert applied == ["0001", "0002"]
+    assert current_revision(db_path) == "0002"
+    assert applied_revisions(db_path) == ["0001", "0002"]
     inspector = inspect(sqlalchemy.create_engine(f"sqlite:///{db_path}"))
     tables = set(inspector.get_table_names())
     assert {"users", "characters", "chats", "messages", "schema_migrations"} <= tables
 
 
 def test_migrate_is_idempotent(db_path) -> None:
-    assert migrate_to_head(db_path) == ["0001"]
+    assert migrate_to_head(db_path) == ["0001", "0002"]
     assert migrate_to_head(db_path) == []
 
 

@@ -17,6 +17,7 @@ dependencies = [
     "sqlalchemy>=2.0",
     "aiosqlite>=0.19",
     "greenlet>=3.0",
+    "python-multipart>=0.0.18",
 ]
 
 [project.optional-dependencies]
@@ -34,6 +35,11 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "UP", "B"]
+
+[tool.ruff.lint.per-file-ignores]
+"src/runmal/app.py" = ["B008"]
+"src/runmal/characters/router.py" = ["B008"]
+"src/runmal/db/deps.py" = ["B008"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
