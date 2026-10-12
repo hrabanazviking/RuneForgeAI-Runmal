@@ -12,6 +12,12 @@ The great chat frontends are either closed kingdoms or carry licenses that chain
 
 It is the hearthstone of a sovereign AI ecosystem: the app whose voices will walk with you in VRChat's temples, stand beside you in the Exiled Lands and Skyrim, and one day speak through **Project Aesir** — inference on your own iron.
 
+---
+
+![https://github.com/hrabanazviking/RuneForgeAI-Runmal/blob/main/Nordic_Aurora_Techno-Fantasy_Guardian.png](https://github.com/hrabanazviking/RuneForgeAI-Runmal/blob/main/Nordic_Aurora_Techno-Fantasy_Guardian.png)
+
+---
+
 ## The saga ahead
 
 - 🎭 **Personas** — TavernCard v2/v3 import-compatible, so every character card you own walks in freely
