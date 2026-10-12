@@ -51,7 +51,7 @@ API / events / actions / SDKs / adapters
 
 A human dragging a TTRPG token and an agent invoking `move_token` should create the same canonical event with different Principal attribution.
 
-See `DUAL_INTERFACE_CONTRACT.md`.
+See `DUAL_INTERFACE_CONTRACT.md` and `FEATURE_PARITY_GATES.md`.
 
 ## Bring your whole AI circle
 
@@ -167,6 +167,7 @@ One-node excellence comes before distributed complexity.
 - `INVARIANTS.md` — non-negotiable architectural laws.
 - `DESIGN.md` — core system architecture and domain model.
 - `DUAL_INTERFACE_CONTRACT.md` — equal human GUI and agent API/action access.
+- `FEATURE_PARITY_GATES.md` — Definition of Done and cross-interface parity tests.
 - `PARTICIPANT_AND_IDENTITY.md` — accounts, roles, ownership, authentication, Principal identity.
 - `MESSAGE_AND_EVENT_PROTOCOL.md` — durable messages/events, replies, threads, streaming.
 
