@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import random
 from dataclasses import dataclass, field
+from typing import Protocol, runtime_checkable
 
 from runmal.groupchat.core import _is_mentioned
 
@@ -51,6 +52,8 @@ class SelectionContext:
     list_order: list[str] = field(default_factory=list)
     list_cursor: int = 0
     pool_spoken: set[str] = field(default_factory=set)
+    # Character ids in speaking order, oldest first ("user" for the owner).
+    history_speakers: list[str] = field(default_factory=list)
 
     def eligible(self) -> list[MemberState]:
         return [m for m in self.members if not m.muted]
@@ -152,3 +155,90 @@ def get_policy(name: str) -> SpeakerPolicy:
         return POLICIES[name]
     except KeyError:
         raise ValueError(f"unknown speaker policy: {name!r} (valid: {sorted(POLICIES)})") from None
+
+
+# -- Pluggable director interface (roadmap S212) ---------------------------
+#
+# A SpeakerDirector is anything with the policy shape: ``select(ctx)``
+# returning a character id (or None for silence) plus an optional
+# ``note_selected`` state hook. The S211 policies already conform. Custom
+# directors register by name at runtime and immediately become valid
+# group speaker-policy values -- the group service validates names
+# against this registry, so plugging one in needs no group-service
+# change. An LLM-backed director implements the same shape later; the
+# deterministic FakeDirector below is the testable seam stand-in.
+
+
+@runtime_checkable
+class SpeakerDirector(Protocol):
+    """The director shape: choose the next speaker, then be told who
+    spoke. Implementations also carry a ``name`` attribute (not part of
+    the checked protocol -- data members cannot be runtime-checked)."""
+
+    def select(self, ctx: SelectionContext) -> str | None: ...
+
+    def note_selected(self, ctx: SelectionContext, character_id: str) -> None: ...
+
+
+DIRECTORS: dict[str, SpeakerDirector] = dict(POLICIES)
+
+
+def register_director(name: str, director: SpeakerDirector, replace: bool = False) -> None:
+    """Plug a custom director in under ``name``. Refuses to shadow an
+    existing registration unless ``replace`` is set."""
+    if not name or not isinstance(name, str):
+        raise ValueError("director name must be a non-empty string")
+    if not callable(getattr(director, "select", None)):
+        raise ValueError("director must provide select(ctx)")
+    if name in DIRECTORS and not replace:
+        raise ValueError(f"director already registered: {name!r}")
+    DIRECTORS[name] = director
+    POLICIES[name] = director  # group-service validation reads POLICIES
+
+
+def get_director(name: str) -> SpeakerDirector:
+    if name in DIRECTORS:
+        return DIRECTORS[name]
+    valid = ", ".join(sorted(DIRECTORS))
+    raise ValueError(f"unknown speaker director: {name!r} (valid: {valid})")
+
+
+class FakeDirector:
+    """Deterministic fake-LLM director: the seam an LLM director will fill.
+
+    Stands in for a model that reads the room and names the next speaker.
+    Its "judgment" is a fixed, explainable heuristic -- an @-mention wins;
+    otherwise the member who has spoken least recently (never-spoken
+    first, roster order breaks ties, talkativeness breaks remaining
+    ties). No randomness: the same room state always yields the same
+    speaker, so tests can pin its behavior exactly.
+    """
+
+    name = "fake-director"
+
+    def select(self, ctx: SelectionContext) -> str | None:
+        eligible = ctx.eligible()
+        if not eligible:
+            return None
+        if ctx.last_user_text:
+            mentioned = [m for m in eligible if _is_mentioned(ctx.last_user_text, m.name)]
+            if mentioned:
+                return mentioned[0].character_id
+
+        def rank(item: tuple[int, MemberState]) -> tuple[int, int, float, int]:
+            roster_index, member = item
+            spoken = [i for i, s in enumerate(ctx.history_speakers) if s == member.character_id]
+            times_spoken = len(spoken)
+            last_spoke = spoken[-1] if spoken else -1
+            # Least-spoken first; among equals, the one idle longest
+            # (never-spoke = -1 beats any real index); then chattier;
+            # then roster order. Fully deterministic.
+            return (times_spoken, last_spoke, -member.talkativeness, roster_index)
+
+        return min(enumerate(eligible), key=rank)[1].character_id
+
+    def note_selected(self, ctx: SelectionContext, character_id: str) -> None:
+        ctx.history_speakers.append(character_id)
+
+
+register_director(FakeDirector.name, FakeDirector())
