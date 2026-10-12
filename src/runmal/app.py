@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from runmal import __version__
@@ -17,6 +18,8 @@ from runmal.chats.router import router as chats_router
 from runmal.db.base import create_db_engine, create_session_factory
 from runmal.db.migrate import migrate_to_head
 from runmal.generation.router import router as generation_router
+from runmal.web.router import _HERE as _WEB_DIR
+from runmal.web.router import router as web_router
 
 bearer_scheme = HTTPBearer(auto_error=False)
 
@@ -67,4 +70,8 @@ def create_app(
         prefix="/api/v1",
         dependencies=[Depends(require_local_auth)],
     )
+    # Browser UI: public page (no secrets in it; loopback bind is the boundary
+    # per ADR-0003). All /api/v1/* calls from the page stay bearer-gated.
+    app.include_router(web_router)
+    app.mount("/static", StaticFiles(directory=_WEB_DIR / "static"), name="static")
     return app

@@ -1,0 +1,35 @@
+"""Web routes (S109).
+
+The chat page itself is public: it carries no secrets (per ADR-0003 the
+loopback bind is the boundary; every /api/v1/* route stays bearer-gated).
+The page only shows the credential *file path* as a hint — never the secret.
+"""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+from fastapi import APIRouter, Request
+from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.templating import Jinja2Templates
+
+from runmal.auth import CREDENTIAL_FILENAME, data_dir
+
+_HERE = Path(__file__).parent
+templates = Jinja2Templates(directory=_HERE / "templates")
+
+router = APIRouter(tags=["web"])
+
+
+@router.get("/", include_in_schema=False)
+async def index():
+    return RedirectResponse(url="/chat")
+
+
+@router.get("/chat", response_class=HTMLResponse)
+async def chat_page(request: Request):
+    return templates.TemplateResponse(
+        request,
+        "chat.html",
+        {"credential_hint": str(data_dir() / CREDENTIAL_FILENAME)},
+    )

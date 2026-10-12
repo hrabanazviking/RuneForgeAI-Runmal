@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rúnmál — chat</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div id="app">
+  <aside id="sidebar">
+    <h1>Rúnmál</h1>
+    <button id="new-chat" type="button">+ New chat</button>
+    <ul id="chat-list"></ul>
+  </aside>
+  <main id="main">
+    <div id="error-banner" class="hidden" role="alert">
+      <span id="error-text"></span>
+      <button id="error-dismiss" type="button">Dismiss</button>
+    </div>
+    <div id="thread"></div>
+    <div id="composer">
+      <textarea id="input" rows="2" placeholder="Speak, wanderer…" aria-label="Message"></textarea>
+      <button id="send" type="button">Send</button>
+      <button id="stop" type="button" class="hidden">Stop</button>
+    </div>
+  </main>
+</div>
+<div id="token-gate" class="hidden">
+  <div id="token-card">
+    <h2>Local credential</h2>
+    <p>Paste the bearer credential so this page can call the local API.
+       Find it in <code>{{ credential_hint }}</code> on this machine.</p>
+    <input id="token-input" type="password" autocomplete="off" spellcheck="false"
+           placeholder="paste credential" aria-label="Local credential">
+    <button id="token-save" type="button">Save</button>
+    <p class="note">Stored only in this browser's local storage, sent only to this server.</p>
+  </div>
+</div>
+<script src="/static/app.js"></script>
+</body>
+</html>
