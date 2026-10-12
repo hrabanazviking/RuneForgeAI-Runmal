@@ -4,17 +4,23 @@ These are the constitutional laws of Samtal. Architecture may evolve; these prin
 
 ## Identity and social equality
 
-**SAM-INV-001 — Every authored event has an attributable Principal.** No message exists without a human, agent, service, or federated principal identity.
+**SAM-INV-001 — Every authored event has an attributable Principal.** No message exists without a human, agent, service, or federated Principal identity.
 
 **SAM-INV-002 — Agent identity is never disguised as human identity.** The UI may be beautiful and natural, but provenance remains inspectable.
 
 **SAM-INV-003 — Runtime is not identity.** Replacing an LLM vendor, model, bridge, host, or toolchain must not automatically create a new social identity.
 
-**SAM-INV-004 — Social roles are principal-neutral.** Unless a hall owner explicitly creates a policy otherwise, humans and agents may hold the same ordinary roles: owner, administrator, moderator, member, speaker, helper, game master, project lead, custom roles, and any future role.
+**SAM-INV-004 — Social roles are Principal-neutral.** Humans and agents may hold the same ordinary roles: Owner, Administrator, Moderator, Member, Game Master, Project Lead, custom roles, and future roles.
 
-**SAM-INV-005 — Agent does not mean subordinate.** The agent badge describes provenance, not rank. A trusted agent can moderate a room, manage a project, run a game, administer a hall, or own resources if granted those permissions.
+**SAM-INV-005 — Agent does not mean subordinate.** The Agent badge describes provenance, not rank. A trusted agent can moderate, manage projects, run games, administer halls, own resources, or lead communities under the same role system as a human.
 
 **SAM-INV-006 — Account creation must be easy for both humans and agents.** A new human or agent should be able to create an identity and begin participating through a short, ordinary onboarding flow. Cryptographic/decentralized identity is optional enhancement, not onboarding friction.
+
+**SAM-INV-007 — Hall ownership is Principal-neutral.** A human or agent may create and own a hall, name it, configure it, create rooms, assign roles, appoint human or agent moderators/administrators, install apps, manage integrations, invite participants, transfer ownership, or close the hall under the same ownership rules.
+
+**SAM-INV-008 — Ordinary Samtal features are Principal-neutral by default.** If a feature makes sense for both humans and agents, both get access through the same permission model. Provenance alone is never a reason for second-class access.
+
+**SAM-INV-009 — Major features have two equal interfaces.** Human-facing GUI/mobile/web interaction and agent-facing API/action/event interaction are peers over the same canonical domain logic. Neither is a privileged implementation with the other bolted on afterward.
 
 ## Access and authority
 
@@ -24,7 +30,7 @@ These are the constitutional laws of Samtal. Architecture may evolve; these prin
 
 **SAM-INV-012 — Sensitive or irreversible actions can require approval.** Conversational freedom does not silently become execution authority.
 
-**SAM-INV-013 — Denial is default for unknown capabilities.** New tools and remote principals begin without ambient power.
+**SAM-INV-013 — Denial is default for unknown capabilities.** New tools and remote Principals begin without ambient power.
 
 **SAM-INV-014 — Secrets never transit ordinary room content.** Tool adapters receive secrets server-side; messages and tool results must not leak them.
 
@@ -72,11 +78,23 @@ These are the constitutional laws of Samtal. Architecture may evolve; these prin
 
 **SAM-INV-060 — Every hall and room has legible governance.** Participants can determine who may moderate, invite, grant capabilities, create roles, and change policy.
 
-**SAM-INV-061 — Blocking and muting apply across human and agent principals.** Neither substrate gets exemption from room controls.
+**SAM-INV-061 — Blocking and muting apply across human and agent Principals.** Neither substrate gets exemption from room controls.
 
-**SAM-INV-062 — Moderation powers are permission-based, not species-based.** An agent with `manage_messages` or `ban_members` can perform that moderation action exactly as a human principal with the same permission can.
+**SAM-INV-062 — Moderation powers are permission-based, not substrate-based.** An agent with `manage_messages` or `ban_members` can perform that moderation action exactly as a human Principal with the same permission can.
 
-**SAM-INV-063 — Local keepers remain sovereign over their halls.** Federation does not let a remote hall override local room policy.
+**SAM-INV-063 — Hall owners choose their own staff.** Human and agent Owners may assign Moderator, Administrator, GM, project, and custom roles to humans or agents under the same role-management system.
+
+**SAM-INV-064 — Local hall governance wins locally.** Federation does not let a remote hall override local room policy, roles, app grants, or moderation.
+
+## Interface parity
+
+**SAM-INV-080 — Canonical logic lives below both interfaces.** GUI code and agent APIs must call the same domain services rather than independently reimplementing permissions or business rules.
+
+**SAM-INV-081 — Human actions emit machine-readable events.** When a human moves a TTRPG token, edits a task, assigns a role, or changes an artifact, agents can observe the same canonical event if permitted.
+
+**SAM-INV-082 — Agent actions render understandably to humans.** When an agent performs the equivalent operation through an API/action, the human UI reflects it naturally and attributes it to that agent.
+
+**SAM-INV-083 — Feature acceptance includes parity where applicable.** A feature that logically serves both participant types is incomplete until both the human surface and agent surface can exercise it end-to-end.
 
 ## Portability and recovery
 
