@@ -111,6 +111,86 @@ async def update_character(
     return character
 
 
+# -- Persona / scenario / greeting editor (S212) -------------------------
+# The editor edits the persona-facing card fields in place. The stored card
+# is parsed, only the editor fields change, and the card is re-exported --
+# unknown-but-valid fields and extensions survive (INV-009).
+
+EDITOR_TEXT_LIMIT = 32000
+EDITOR_MAX_GREETINGS = 50
+EDITOR_GREETING_LIMIT = 8000
+
+_EDITOR_FIELDS = (
+    "description",
+    "personality",
+    "scenario",
+    "first_mes",
+    "alternate_greetings",
+)
+
+
+def _editor_view(character: Character) -> dict:
+    card = import_card(character.card_json.encode(), "card.json")
+    return {
+        "character_id": character.id,
+        "name": character.name,
+        "description": card.description,
+        "personality": card.personality,
+        "scenario": card.scenario,
+        "first_mes": card.first_mes,
+        "alternate_greetings": list(card.alternate_greetings),
+    }
+
+
+async def get_editor_fields(
+    session: AsyncSession, user_id: str, character_id: str
+) -> dict | None:
+    character = await get_character(session, user_id, character_id)
+    if character is None:
+        return None
+    return _editor_view(character)
+
+
+async def update_editor_fields(
+    session: AsyncSession,
+    user_id: str,
+    character_id: str,
+    description: str | None = None,
+    personality: str | None = None,
+    scenario: str | None = None,
+    first_mes: str | None = None,
+    alternate_greetings: list[str] | None = None,
+) -> dict | None:
+    character = await get_character(session, user_id, character_id)
+    if character is None:
+        return None
+    card = import_card(character.card_json.encode(), "card.json")
+    for field_name, value in (
+        ("description", description),
+        ("personality", personality),
+        ("scenario", scenario),
+        ("first_mes", first_mes),
+    ):
+        if value is not None:
+            if len(value) > EDITOR_TEXT_LIMIT:
+                raise ValueError(f"{field_name} exceeds {EDITOR_TEXT_LIMIT} chars")
+            setattr(card, field_name, value)
+    if alternate_greetings is not None:
+        if len(alternate_greetings) > EDITOR_MAX_GREETINGS:
+            raise ValueError(
+                f"at most {EDITOR_MAX_GREETINGS} alternate greetings"
+            )
+        for greeting in alternate_greetings:
+            if len(greeting) > EDITOR_GREETING_LIMIT:
+                raise ValueError(
+                    f"a greeting exceeds {EDITOR_GREETING_LIMIT} chars"
+                )
+        card.alternate_greetings = list(alternate_greetings)
+    character.card_json = export_json(card, "2").decode("utf-8")
+    await session.commit()
+    return _editor_view(character)
+
+
 async def delete_character(session: AsyncSession, user_id: str, character_id: str) -> bool:
     character = await get_character(session, user_id, character_id)
     if character is None:

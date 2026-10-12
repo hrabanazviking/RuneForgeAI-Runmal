@@ -42,3 +42,12 @@ async def connections_page(request: Request):
         "connections.html",
         {"credential_hint": str(data_dir() / CREDENTIAL_FILENAME)},
     )
+
+
+@router.get("/editor", response_class=HTMLResponse)
+async def editor_page(request: Request):
+    return templates.TemplateResponse(
+        request,
+        "editor.html",
+        {"credential_hint": str(data_dir() / CREDENTIAL_FILENAME)},
+    )

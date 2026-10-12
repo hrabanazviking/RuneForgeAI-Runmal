@@ -25,6 +25,16 @@ class CharacterUpdate(BaseModel):
     name: str | None = None
 
 
+class EditorUpdate(BaseModel):
+    """Persona/scenario/greeting editor payload (S212)."""
+
+    description: str | None = None
+    personality: str | None = None
+    scenario: str | None = None
+    first_mes: str | None = None
+    alternate_greetings: list[str] | None = None
+
+
 @router.post("/characters", status_code=status.HTTP_201_CREATED)
 async def create_character(
     body: CharacterCreate,
@@ -75,6 +85,45 @@ async def update_character(
     if character is None:
         raise HTTPException(status_code=404, detail="character not found")
     return character_to_dict(character)
+
+
+@router.get("/characters/{character_id}/editor")
+async def get_editor(
+    character_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    view = await service.get_editor_fields(session, user_id, character_id)
+    if view is None:
+        raise HTTPException(status_code=404, detail="character not found")
+    return view
+
+
+@router.patch("/characters/{character_id}/editor")
+async def update_editor(
+    character_id: str,
+    body: EditorUpdate,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    try:
+        view = await service.update_editor_fields(
+            session,
+            user_id,
+            character_id,
+            description=body.description,
+            personality=body.personality,
+            scenario=body.scenario,
+            first_mes=body.first_mes,
+            alternate_greetings=body.alternate_greetings,
+        )
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)
+        ) from exc
+    if view is None:
+        raise HTTPException(status_code=404, detail="character not found")
+    return view
 
 
 @router.delete("/characters/{character_id}")

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rúnmál — persona editor</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<main id="editor-main">
+  <h1>Persona / scenario / greetings</h1>
+  <p class="hint">Edits save to the character card; greetings round-trip
+     exactly. Token file: <code>{{ credential_hint }}</code></p>
+  <div id="error-banner" class="hidden" role="alert">
+    <span id="error-text"></span>
+    <button id="error-dismiss" type="button">Dismiss</button>
+  </div>
+  <div id="save-notice" class="hidden" role="status">Saved.</div>
+  <label>Character
+    <select id="character-select"></select>
+  </label>
+  <form id="editor-form">
+    <label>Description
+      <textarea id="f-description" rows="4"></textarea>
+    </label>
+    <label>Personality
+      <textarea id="f-personality" rows="3"></textarea>
+    </label>
+    <label>Scenario
+      <textarea id="f-scenario" rows="3"></textarea>
+    </label>
+    <label>First message
+      <textarea id="f-first-mes" rows="3"></textarea>
+    </label>
+    <fieldset>
+      <legend>Alternate greetings</legend>
+      <div id="greetings-list"></div>
+      <button id="add-greeting" type="button">Add greeting</button>
+    </fieldset>
+    <button type="submit">Save</button>
+  </form>
+</main>
+<script src="/static/editor.js"></script>
+</body>
+</html>
