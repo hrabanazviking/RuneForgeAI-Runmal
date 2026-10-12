@@ -32,7 +32,7 @@ from enum import StrEnum
 from runmal.voice import FRAME_MS
 from runmal.voice.audio import PlaybackSink, frame_bytes
 from runmal.voice.tts import AudioChunk
-from runmal.voice.vad import VadModel, VadSegmenter, VadConfig
+from runmal.voice.vad import VadConfig, VadModel, VadSegmenter
 
 #: Predeclared S507 budget: interruption detection -> playback stop.
 INTERRUPTION_STOP_BUDGET_MS = 100

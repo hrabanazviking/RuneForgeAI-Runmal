@@ -15,7 +15,7 @@ from runmal.voice.bargein import (
     InterruptionOutcome,
     PlaybackQueue,
 )
-from runmal.voice.tts import AudioChunk, FakeTTSBackend, VoiceInfo
+from runmal.voice.tts import FakeTTSBackend, VoiceInfo
 from runmal.voice.vad import EnergyVadModel
 
 

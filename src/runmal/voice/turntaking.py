@@ -27,7 +27,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import StrEnum
 
-from runmal.voice.vad import VadModel, VadSegmenter, VadConfig
+from runmal.voice.vad import VadConfig, VadModel, VadSegmenter
 
 
 @dataclass(frozen=True)

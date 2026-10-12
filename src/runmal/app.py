@@ -27,6 +27,8 @@ from runmal.memory.router import router as memories_router
 from runmal.presets.router import router as presets_router
 from runmal.prompt.router import router as prompt_router
 from runmal.tools.router import router as tools_router
+from runmal.voice.router import router as voice_router
+from runmal.voice.router import voice_page
 from runmal.web.router import _HERE as _WEB_DIR
 from runmal.web.router import router as web_router
 
@@ -115,6 +117,12 @@ def create_app(
         dependencies=[Depends(require_local_auth)],
     )
     app.get("/memories", response_class=None)(memories_browser_page)
+    app.include_router(
+        voice_router,
+        prefix="/api/v1",
+        dependencies=[Depends(require_local_auth)],
+    )
+    app.get("/voice", response_class=None)(voice_page)
     app.include_router(
         prompt_router,
         prefix="/api/v1",

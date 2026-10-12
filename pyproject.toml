@@ -24,6 +24,17 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "ruff>=0.8", "pytest-asyncio>=0.24"]
+# Campaign V voice extras — every entry passed the S504 license gate
+# (docs/VOICE_LICENSE_MATRIX.md): Apache-2.0 / MIT / BSD only. Model
+# weights (Whisper small, Kokoro-82M, Silero VAD) download separately
+# into cache dirs; no eSpeak-NG carrier is permitted in this tree.
+voice = [
+    "numpy>=1.26",
+    "onnxruntime>=1.17",
+    "sounddevice>=0.4",
+    "faster-whisper>=1.0",
+    "misaki[en]>=0.9",
+]
 
 [project.scripts]
 runmal = "runmal.__main__:main"
@@ -52,3 +63,6 @@ select = ["E", "F", "W", "I", "N", "UP", "B"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+markers = [
+    "manual: tagged manual/hardware tests (may skip when hardware is absent)",
+]
