@@ -22,6 +22,8 @@ from runmal.db.migrate import migrate_to_head
 from runmal.generation.router import router as generation_router
 from runmal.groupchat.router import router as group_router
 from runmal.lorebooks.router import router as lorebooks_router
+from runmal.memory.router import memories_browser_page
+from runmal.memory.router import router as memories_router
 from runmal.presets.router import router as presets_router
 from runmal.prompt.router import router as prompt_router
 from runmal.tools.router import router as tools_router
@@ -107,6 +109,12 @@ def create_app(
         prefix="/api/v1",
         dependencies=[Depends(require_local_auth)],
     )
+    app.include_router(
+        memories_router,
+        prefix="/api/v1",
+        dependencies=[Depends(require_local_auth)],
+    )
+    app.get("/memories", response_class=None)(memories_browser_page)
     app.include_router(
         prompt_router,
         prefix="/api/v1",
