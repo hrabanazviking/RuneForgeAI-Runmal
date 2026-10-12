@@ -1,7 +1,9 @@
 """Character Card export (S105): deliberate supported JSON/PNG versions.
 
 Supported exports: JSON v2 (`chara_card_v2`), JSON v3 (`chara_card_v3`),
-PNG with a `chara` tEXt chunk (v2 JSON payload). CHARX export is S113.
+PNG with a `chara` tEXt chunk (v2 JSON payload). CHARX export lives in
+archive.py (`export_charx`) — the v3 container format needs the archive
+writer, not just the JSON serializer.
 
 Unknown-but-valid fields from the imported card are preserved (INV-009):
 export starts from the card's raw mapping and overlays the normalized

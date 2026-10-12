@@ -58,6 +58,29 @@ V3 = {
 }
 
 
+V3_FULL = {
+    "spec": "chara_card_v3",
+    "spec_version": "3.0",
+    "data": {
+        "name": "Test V3 Full",
+        "description": "A normative v3 card with assets.",
+        "personality": "Thorough.",
+        "scenario": "A test archive.",
+        "first_mes": "Hail!",
+        "mes_example": "",
+        "alternate_greetings": ["Ho!"],
+        "tags": ["v3", "charx"],
+        "creator": "forge",
+        "character_book": {
+            "name": "Lore",
+            "entries": [{"keys": ["fjord"], "content": "Cold water."}],
+        },
+        "extensions": {"talkativeness": 0.7, "avatar": "embedded://avatar.png"},
+        "x_custom_unknown": "must-survive-charx",
+    },
+}
+
+
 def png_chunk(ctype: bytes, data: bytes) -> bytes:
     chunk = struct.pack(">I", len(data)) + ctype + data
     return chunk + struct.pack(">I", zlib.crc32(ctype + data) & 0xFFFFFFFF)
@@ -87,6 +110,11 @@ def main() -> None:
     with zipfile.ZipFile(HERE / "card.charx", "w", zipfile.ZIP_DEFLATED) as zf:
         zf.writestr("card.json", json.dumps(V3))
         zf.writestr("avatar.png", b"FAKEPNGDATA")
+    # Normative current-v3 CHARX: rich metadata + multiple assets (S113)
+    with zipfile.ZipFile(HERE / "card_full.charx", "w", zipfile.ZIP_DEFLATED) as zf:
+        zf.writestr("card.json", json.dumps(V3_FULL))
+        zf.writestr("avatar.png", b"FAKEPNGDATA-FULL")
+        zf.writestr("lore/notes.txt", b"fjord notes")
     # CHARX with traversal attack
     with zipfile.ZipFile(HERE / "traversal.charx", "w", zipfile.ZIP_DEFLATED) as zf:
         zf.writestr("card.json", json.dumps(V3))

@@ -15,11 +15,11 @@ import base64
 import binascii
 import io
 import json
-import posixpath
 import struct
 import zipfile
 import zlib
 
+from runmal.cards.archive import validate_archive_name
 from runmal.cards.errors import CardErrorKind, CardParseError
 from runmal.cards.models import CharacterCard
 
@@ -181,14 +181,6 @@ def parse_png_card(data: bytes) -> CharacterCard:
     raise CardParseError(CardErrorKind.NO_CARD_DATA, "PNG has no chara/ccv3 metadata chunk")
 
 
-def _validate_asset_name(name: str) -> None:
-    if not name or name.startswith(("/", "\\")):
-        raise CardParseError(CardErrorKind.PATH_TRAVERSAL, f"unsafe archive name: {name!r}")
-    normalized = posixpath.normpath(name)
-    if normalized != name or normalized.startswith("..") or "\\" in name:
-        raise CardParseError(CardErrorKind.PATH_TRAVERSAL, f"unsafe archive name: {name!r}")
-
-
 def parse_charx(data: bytes) -> CharacterCard:
     _check_size(data)
     try:
@@ -208,7 +200,7 @@ def parse_charx(data: bytes) -> CharacterCard:
         for name in names:
             if name == "card.json":
                 continue
-            _validate_asset_name(name)
+            validate_archive_name(name)
             size = archive.getinfo(name).file_size
             if size > MAX_ASSET_BYTES:
                 raise CardParseError(
