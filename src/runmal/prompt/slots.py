@@ -10,7 +10,7 @@ equivalents map at the backend seam, never here).
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from runmal.tokens import estimate_tokens
 
@@ -46,6 +46,10 @@ class Slot:
     # when its full text exceeds it. None = no cap.
     slot_budget: int | None = None
     provenance: str = ""
+    # What caused this slot to be a candidate (S214 trace): for lore slots
+    # the matched key, "constant", or "reference:<Entry Name>"; empty for
+    # slots with no trigger concept. Metadata only -- never content.
+    trigger: str = ""
     # Splittable slots (conversation history): parts are packed newest-first
     # and oldest parts trim first on overflow.
     splittable: bool = False

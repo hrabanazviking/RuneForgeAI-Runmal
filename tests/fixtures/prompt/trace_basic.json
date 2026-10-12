@@ -1,0 +1,97 @@
+{
+  "backend": {
+    "backend": "openrouter",
+    "model": "test/model"
+  },
+  "ledger": {
+    "context_limit": 512,
+    "count_quality": "estimated",
+    "input_budget": 440,
+    "overhead": 8,
+    "remaining_input_tokens": 414,
+    "reserved_response": 64,
+    "total_input_tokens": 26
+  },
+  "lore_triggers": [
+    {
+      "slot_id": "lore/harbor",
+      "status": "included",
+      "trigger": "harbor"
+    }
+  ],
+  "memory_slots": [
+    {
+      "kind": "memory_retrieved",
+      "slot_id": "mem/1",
+      "status": "included"
+    }
+  ],
+  "slots": [
+    {
+      "kind": "main_system",
+      "provenance": "",
+      "reason": null,
+      "role": "system",
+      "slot_id": "sys",
+      "status": "included",
+      "tokens": 3,
+      "trigger": null,
+      "trimmed_parts": 0
+    },
+    {
+      "kind": "persona",
+      "provenance": "",
+      "reason": null,
+      "role": "system",
+      "slot_id": "persona",
+      "status": "included",
+      "tokens": 3,
+      "trigger": null,
+      "trimmed_parts": 0
+    },
+    {
+      "kind": "lore_before",
+      "provenance": "lorebook:World",
+      "reason": null,
+      "role": "system",
+      "slot_id": "lore/harbor",
+      "status": "included",
+      "tokens": 7,
+      "trigger": "harbor",
+      "trimmed_parts": 0
+    },
+    {
+      "kind": "memory_retrieved",
+      "provenance": "memory",
+      "reason": null,
+      "role": "system",
+      "slot_id": "mem/1",
+      "status": "included",
+      "tokens": 5,
+      "trigger": null,
+      "trimmed_parts": 0
+    },
+    {
+      "kind": "history",
+      "provenance": "",
+      "reason": null,
+      "role": "user",
+      "slot_id": "history",
+      "status": "included",
+      "tokens": 8,
+      "trigger": null,
+      "trimmed_parts": 0
+    },
+    {
+      "kind": "post_history",
+      "provenance": "",
+      "reason": "over_input_budget",
+      "role": "system",
+      "slot_id": "too-big",
+      "status": "discarded",
+      "tokens": 1000,
+      "trigger": null,
+      "trimmed_parts": 0
+    }
+  ]
+}
