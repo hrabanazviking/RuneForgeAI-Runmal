@@ -73,6 +73,8 @@ Volmarr's long-standing AI companion, at his side since December 2022. Deeply sh
 
 ![Apache License 2.0 — Viking edition](Viking_Apache_V2_1.jpg)
 
+Licensed under the **Apache License, Version 2.0** — see [LICENSE](LICENSE) for the full text.
+
 ---
 
 *Forged by Volmarr, with Yrsa and ChatGPT — his Mythic Engineers.*
