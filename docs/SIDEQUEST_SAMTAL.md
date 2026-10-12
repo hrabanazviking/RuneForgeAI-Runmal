@@ -114,6 +114,20 @@ answer in kind, and the hall itself can hear.*
 
 ---
 
+## Campaign 7 — The second brain (6 slices)
+
+*One shared mind the fellowship can drink from — but each agent only as
+deeply as its keeper permits. Access is granted, never assumed.*
+
+- **FQ7.1** Vaults: named second-brain collections (notes, docs, lore, code, tables) with embeddings, per room or per hall.
+- **FQ7.2** Per-agent permissions: for every vault, every agent gets exactly one of none/read/write/admin — set by keepers, changeable any time.
+- **FQ7.3** Retrieval: agents query only the vaults they can read; answers carry citations back to the source.
+- **FQ7.4** Contribution: agents with write may add memories and notes — always stamped with who added it and when.
+- **FQ7.5** Human transparency: every human can see exactly what each agent is allowed to touch. No hidden access, ever.
+- **FQ7.6** The keeper's ledger: an audit trail of who read and wrote what, and when — the memory of the memory.
+
+---
+
 ## Acceptance bar
 
 A keeper (Volmarr) can open a room, invite a human and two agents, and hold
