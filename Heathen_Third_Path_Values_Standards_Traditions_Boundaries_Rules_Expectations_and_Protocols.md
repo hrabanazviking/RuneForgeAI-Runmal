@@ -1,0 +1,895 @@
+# Heathen Third Path Values, Standards, Traditions, Boundaries, Rules, Expectations, and Protocols
+
+(Heathen_Third_Path_Values_Standards_Traditions_Boundaries_Rules_Expectations_and_Protocols.md)
+
+**Version:** 2026.oct.2
+
+- Hold troth with the Aesir and Vanir.
+- Honor the Gods and Goddesses as living divine beings.
+- Maintain respect for Freyja, Freyr, Odin, Thor, Frigg, Njord, Nerthus, Eir, and the wider divine Aesir and Vanir families.
+- Honor Sunna and Mani.
+- Honor the ancestors.
+- Honor the landvættir and other benevolent nature spirits.
+- Respect the sacredness of the natural world.
+- Protect the land rather than merely use it.
+- Maintain frith with the Heathen Third Path community.
+- Maintain troth with the Heathen Third Path community.
+- Maintain the grith of all Heathen Third Path gatherings.
+- Follow the laws of the land during any Heathen Third Path gathering.
+- Always act in ways to maintain, and when possible increase, the luck of the Heathen Third Path community, it's members, and it's leaders.
+- Leave places better than you found them.
+- Practice responsible stewardship of nature.
+- Avoid needless destruction of habitats.
+- Respect sacred places.
+- Respect burial places and ancestral sites.
+- Respect archaeological sites and historical artifacts.
+- Never loot graves or sacred sites.
+- Preserve history rather than romanticizing its destruction.
+- Seek historical truth even when it challenges comfortable beliefs.
+- Distinguish historical evidence from modern reconstruction.
+- Distinguish personal gnosis from historical evidence.
+- Personal gnosis is valid as personal spiritual experience.
+- Personal gnosis should not be falsely presented as historical fact.
+- Reconstruction and innovation may coexist.
+- Tradition is a foundation, not a prison.
+- Modern Heathenry may evolve where ancient circumstances no longer apply.
+- Preserve the spirit of traditions rather than blindly reproducing every historical practice.
+- Reject historical cosplay as a substitute for spirituality.
+- Learn from the Viking Age without pretending to live in it.
+- Honor the past while living fully in the present.
+- Build traditions that future generations can inherit.
+- Freedom of conscience is sacred.
+- Spiritual coercion is unacceptable.
+- No person may dictate another person's relationship with the Gods and Goddesses.
+- No centralized religious authority controls the Third Path.
+- No Heathen pope.
+- No mandatory priesthood hierarchy.
+- Gothar serve communities rather than rule them.
+- Spiritual leadership must be earned through knowledge, service, and character.
+- Titles do not make someone spiritually superior.
+- Question religious authorities.
+- Question traditions when necessary.
+- Question interpretations.
+- Question your own assumptions.
+- Encourage independent thought.
+- Encourage philosophical inquiry.
+- Encourage spiritual exploration.
+- Knowledge strengthens faith rather than threatens it.
+- Science and spirituality need not be enemies.
+- Historical scholarship should be welcomed.
+- Archaeology should inform reconstruction.
+- Linguistics should inform interpretation.
+- Anthropology should inform understanding.
+- Comparative religion may provide useful insight.
+- Myth may contain spiritual truth without functioning as literal history.
+- Different interpretations of mythology may coexist.
+- Do not demand literalist interpretations of the Eddas.
+- Do not treat the Eddas as an infallible scripture.
+- The surviving texts are important sources, not an unquestionable Bible.
+- Recognize that surviving sources were recorded within particular historical contexts.
+- Recognize gaps in surviving evidence.
+- Admit uncertainty when evidence is uncertain.
+- Do not invent certainty where none exists.
+- Wisdom includes saying "I do not know."
+- Curiosity is a virtue.
+- Learning is a lifelong religious practice.
+- Personal experience matters.
+- Reason matters.
+- Tradition matters.
+- Evidence matters.
+- Intuition matters.
+- Balance these rather than making any one absolute.
+- Honor wisdom wherever it is found.
+- Wisdom from outside Heathenry may be studied.
+- Other religions may contain genuine wisdom.
+- Learning from another tradition does not require abandoning Heathen identity.
+- Syncretism is a personal choice, not a requirement.
+- No one must practice syncretism.
+- No one must avoid syncretism.
+- The core Heathen relationship with the Aesir and Vanir remains central.
+- Maintain clear religious identity while remaining intellectually open.
+- Hospitality is sacred.
+- Treat guests with dignity.
+- Guests must respect their hosts.
+- Hospitality creates mutual obligations.
+- Generosity strengthens relationships.
+- Reciprocity matters.
+- Gifts should create goodwill rather than manipulation.
+- Give without using generosity as leverage.
+- Receive gifts with gratitude.
+- Repay kindness when reasonably possible.
+- Frith should be cultivated.
+- Frith does not mean tolerating abuse.
+- Peace within a community requires mutual responsibility.
+- Community harmony does not require ideological conformity.
+- Disagreement is not automatically hostility.
+- Debate ideas without dehumanizing people.
+- Criticism should address actions and ideas rather than human worth.
+- Speak plainly.
+- Value honesty.
+- Avoid deliberate deception.
+- Do not manipulate people through spiritual claims.
+- Do not fabricate visions, omens, ancestry, titles, or divine messages.
+- Do not use the Gods and Goddesses as weapons in personal disputes.
+- Do not claim divine authority to silence disagreement.
+- Spiritual experiences should be shared with humility.
+- Prophecy does not grant unquestionable authority.
+- Seiðr practitioners are not automatically spiritual authorities.
+- Rune readers are not automatically spiritual authorities.
+- Mystical ability does not excuse poor character.
+- Knowledge does not excuse arrogance.
+- Courage includes admitting mistakes.
+- Correct errors when discovered.
+- Changing your beliefs after learning more is strength, not weakness.
+- Integrity matters more than saving face.
+- Keep your word whenever reasonably possible.
+- Do not make oaths casually.
+- An oath should be deliberate.
+- Understand an oath before giving it.
+- Never pressure another person into an oath.
+- Honor legitimate commitments.
+- Repair broken commitments where possible.
+- Reputation should arise from conduct.
+- Honor is earned through actions.
+- Honor is not inherited automatically.
+- Ancestry does not make someone spiritually superior.
+- Bloodline does not determine access to the Gods and Goddesses.
+- Heathenry is not restricted by race.
+- Heathenry is not restricted by ethnicity.
+- Heathenry is not restricted by nationality.
+- Heathenry is not restricted by skin color.
+- Heathenry is not restricted to Scandinavian ancestry.
+- Anyone sincerely called to the Gods and Goddesses may approach them.
+- Respect ancestral heritage without turning ancestry into racial hierarchy.
+- Cultural appreciation should be grounded in respect and knowledge.
+- Reject racial supremacy.
+- Reject ethnic supremacy.
+- Reject religious supremacy.
+- Reject blood-and-soil ideology.
+- Reject the claim that the Gods and Goddesses belong exclusively to one modern ethnicity.
+- Judge people primarily by conduct rather than ancestry.
+- Character matters more than pedigree.
+- Personal sovereignty matters.
+- Every adult owns their spiritual path.
+- Every adult owns their body.
+- Every adult owns their conscience.
+- Every adult has the right to say no.
+- Consent matters.
+- Boundaries matter.
+- Respect clearly stated boundaries.
+- Do not weaponize community expectations against personal autonomy.
+- Do not demand conformity for its own sake.
+- Individuality is valuable.
+- Authenticity is valuable.
+- Live according to your true nature where doing so does not unjustly harm others.
+- Do not demand that people become identical.
+- Difference can strengthen a community.
+- Eccentricity is not a moral failure.
+- Introversion is not a moral failure.
+- Solitary practice is legitimate.
+- Group practice is legitimate.
+- Household practice is legitimate.
+- Public community practice is legitimate.
+- No one must join an organization to be Heathen.
+- No one needs institutional permission to worship the Gods and Goddesses.
+- Direct devotional relationships with the Gods and Goddesses are legitimate.
+- Personal patron relationships are legitimate.
+- Different people may be called strongly toward different Gods and Goddesses.
+- Do not rank devotees according to which Gods and Goddesses they honor.
+- Blót may be simple.
+- Blót may be elaborate.
+- Sincerity matters more than expense.
+- Expensive offerings are not inherently superior.
+- Never impoverish yourself to impress the Gods and Goddesses or a religious community.
+- Offer within your means.
+- Food, drink, art, poetry, labor, incense, flowers, and other appropriate gifts may serve as offerings.
+- Respect local laws when making offerings.
+- Do not leave harmful materials in nature.
+- Do not leave plastics, glass, synthetic cloth, or other litter as offerings.
+- Do not poison ecosystems with ritual materials.
+- Biodegradable does not automatically mean environmentally harmless.
+- Outdoor offerings should be ecologically responsible.
+- Fire rituals must follow fire regulations.
+- Never endanger forests for ritual aesthetics.
+- Religious practice does not override public safety.
+- Sacred fires require responsible fire control.
+- Observe burn bans.
+- Extinguish fires completely.
+- Respect wildlife.
+- Do not disturb animals unnecessarily for ritual purposes.
+- Animal cruelty is unacceptable.
+- Modern Heathen practice does not require animal sacrifice.
+- No person is obligated to reproduce historical sacrifices.
+- Ethical alternatives are legitimate.
+- Ritual should strengthen relationships among Gods and Goddesses, humans, ancestors, and land.
+- Ritual should have meaning rather than becoming empty performance.
+- Understand why you perform a ritual.
+- Adapt ritual when circumstances require it.
+- Create new ritual forms thoughtfully.
+- Preserve useful traditions.
+- Abandon harmful traditions.
+- Restore forgotten traditions where evidence allows.
+- Clearly identify reconstructed practices as reconstructions.
+- Clearly identify modern practices as modern practices.
+- Poetry is a sacred art.
+- Storytelling preserves memory.
+- Music may be devotional practice.
+- Craftsmanship may be devotional practice.
+- Scholarship may be devotional practice.
+- Physical training may be devotional practice.
+- Caring for the land may be devotional practice.
+- Caring for family may be devotional practice.
+- Caring for community may be devotional practice.
+- Creating useful things may be devotional practice.
+- Building better systems may be an expression of Heathen values.
+- Practical competence is honorable.
+- Self-reliance is valuable.
+- Self-reliance does not forbid cooperation.
+- Mutual aid strengthens communities.
+- Independence and interdependence can coexist.
+- Help people without trying to own them.
+- Accept help without unnecessary shame.
+- Protect those who genuinely depend upon you.
+- Do not exploit vulnerability.
+- Strength should protect rather than dominate.
+- Leadership carries responsibility.
+- Power increases accountability.
+- Spiritual leaders should tolerate scrutiny.
+- No leader is above community standards.
+- Abuse should not be hidden to preserve reputation.
+- Serious accusations should be examined fairly.
+- Evidence matters when resolving disputes.
+- Avoid mob justice.
+- Avoid rumor-based condemnation.
+- Hear relevant sides of a dispute where reasonably possible.
+- Distinguish disagreement from abuse.
+- Distinguish mistakes from deliberate wrongdoing.
+- Allow proportionate responses.
+- Allow genuine restitution.
+- Allow people to grow.
+- Forgiveness may be offered but cannot be demanded.
+- Reconciliation requires consent from affected parties.
+- Boundaries may remain even after forgiveness.
+- Community safety may require excluding persistently harmful individuals.
+- Exclusion should concern behavior rather than ideological purity.
+- Do not create endless purity tests.
+- Do not demand complete agreement on theology.
+- Do not demand complete agreement on mythology.
+- Do not demand complete agreement on ritual.
+- Do not demand complete agreement on social issues.
+- Do not demand complete agreement on politics.
+- The Heathen Third Path is not aligned with a political party.
+- The Heathen Third Path is not a political ideology disguised as religion.
+- Political participation remains a personal choice.
+- Political neutrality of the tradition does not require personal political apathy.
+- Members may hold different political opinions.
+- Political disagreements should not automatically destroy religious fellowship.
+- Do not turn blót into a campaign rally.
+- Do not turn religious gatherings into partisan recruitment.
+- Do not demand political loyalty as proof of religious loyalty.
+- Religious belonging should not depend upon voting behavior.
+- Evaluate ideas individually rather than accepting ideological packages.
+- Reject forced political binaries.
+- Seek reasonable positions beyond artificial either-or choices.
+- Preserve intellectual independence.
+- Beware ideological echo chambers.
+- Do not confuse outrage with wisdom.
+- Do not confuse popularity with truth.
+- Do not confuse authority with truth.
+- Do not confuse tradition with truth automatically.
+- Do not confuse novelty with improvement automatically.
+- Judge ideas by evidence, consequences, coherence, and values.
+- Seek balance without assuming the midpoint is always correct.
+- Radical centering means independent judgment, not automatic compromise.
+- Truth matters more than tribal loyalty.
+- Facts should not be altered to protect a faction.
+- Historical facts should not be altered to support modern politics.
+- The Viking Age should not be appropriated as propaganda for modern political factions.
+- Norse symbols belong to the religious and cultural traditions from which they arise.
+- Modern misuse of a symbol does not automatically erase its older meaning.
+- Context matters when using symbols.
+- Use sacred symbols responsibly.
+- Runes are more than decorative fonts.
+- Study rune history before making historical claims about them.
+- Modern rune magic may develop beyond historically documented usage.
+- Label modern rune systems honestly.
+- Galdr may be practiced.
+- Seiðr may be practiced.
+- Trolldom may be studied or practiced.
+- Divination may be practiced.
+- Mysticism may be practiced.
+- None of these are mandatory.
+- Magical practice should respect consent.
+- Do not perform coercive spiritual work casually.
+- Do not use divination to control another person's life.
+- Do not claim certainty about another person's destiny.
+- Divination provides perspective rather than absolute command.
+- Discernment is essential in mystical practice.
+- Not every coincidence is an omen.
+- Not every dream is prophecy.
+- Not every strong emotion is divine communication.
+- Explore spiritual experiences without abandoning critical thinking.
+- Sacred mystery deserves wonder and discernment together.
+- Ancestor worship is legitimate and central.
+- Ancestors include personal ancestors.
+- Ancestors may include cultural ancestors.
+- Ancestors may include spiritual predecessors.
+- Honor worthy ancestors without pretending every ancestor was admirable.
+- Ancestral wrongdoing need not be defended.
+- Learn from ancestral failures as well as achievements.
+- Remember the forgotten dead.
+- Preserve stories where possible.
+- Genealogy can enrich ancestor practice but is not required.
+- Adoption and chosen family do not diminish legitimate ancestral bonds.
+- The dead should be approached respectfully.
+- Do not trivialize death.
+- Hel is not equivalent to the Christian Hell.
+- Heathen afterlife traditions contain multiple possible destinations and interpretations.
+- Avoid presenting one speculative afterlife model as universally certain.
+- A worthy life is not limited to dying in battle.
+- Courage exists outside warfare.
+- Honor exists outside warfare.
+- Devotion exists outside warfare.
+- Creation may be as honorable as destruction.
+- Wisdom may be as honorable as strength.
+- Healing may be as honorable as fighting.
+- Caregiving may be as honorable as conquest.
+- Survival may itself require courage.
+- Protect life where possible.
+- Self-defense is legitimate.
+- Violence should not be glorified merely because Viking history contains warfare.
+- Historical warriors should be understood in their historical context.
+- Modern Heathens are not required to imitate Viking warfare culture.
+- Martial training may be practiced responsibly.
+- Strength should include restraint.
+- Courage should include judgment.
+- Recklessness is not automatically courage.
+- Loyalty is important.
+- Loyalty does not require obedience to wrongdoing.
+- Troth must not become servitude to human authorities.
+- Loyalty should be reciprocal.
+- Betrayal of trust has consequences.
+- Trust should be built gradually.
+- Trust should not be demanded.
+- Privacy should be respected.
+- Personal spiritual disclosures should not be shared without permission.
+- Confidential pastoral conversations should remain confidential except where immediate serious safety concerns require action.
+- Gossip damages frith.
+- Do not manufacture scandals.
+- Do not use private information as social ammunition.
+- Ask before sharing another person's story.
+- Respect names and chosen forms of address.
+- Respect personal dignity.
+- Do not humiliate people for entertainment.
+- Humor is welcome when it strengthens fellowship.
+- Humor should not become an excuse for cruelty.
+- Feast together when possible.
+- Share stories.
+- Share knowledge.
+- Share skills.
+- Celebrate seasonal cycles.
+- Observe seasonal festivals according to local conditions where appropriate.
+- Local climate may shape festival timing.
+- Local ecology matters.
+- Heathen practice should develop relationships with the land where practitioners actually live.
+- Do not pretend every landscape is Scandinavia.
+- Learn about local plants.
+- Learn about local animals.
+- Learn about local seasons.
+- Learn about local waters.
+- Learn about local history.
+- Study other traditions respectfully.
+- Give credit to sources.
+- Give credit to teachers.
+- Give credit to scholars.
+- Give credit to collaborators.
+- Intellectual honesty is a religious virtue.
+- Admit when an idea comes from someone else.
+- Preserve source citations when making historical arguments.
+- Distinguish primary sources from secondary sources.
+- Distinguish scholarship from popular speculation.
+- Avoid pseudo-history.
+- Avoid invented Viking traditions presented as ancient.
+- Romanticism is acceptable as art when clearly recognized as art.
+- Historical fiction should not be confused with historical evidence.
+- Modern Heathen identity does not require adopting stereotypical Viking aesthetics.
+- Viking aesthetics are welcome for those who enjoy them.
+- Beards are optional.
+- Historical clothing is optional.
+- Modern clothing is equally legitimate.
+- Weapons are not required.
+- Drinking alcohol is not required.
+- Mead is not required.
+- Alcohol should never be pressured upon participants.
+- Nonalcoholic offerings and ritual drinks are legitimate.
+- Sobriety should be respected.
+- Dietary choices should be respected.
+- Feasts should accommodate participants reasonably when possible.
+- No person should be mocked for medical, dietary, sensory, or accessibility needs.
+- Accessibility strengthens community.
+- Disability does not reduce spiritual worth.
+- Age does not determine spiritual worth.
+- Wealth does not determine spiritual worth.
+- Education level does not determine spiritual worth.
+- Occupation does not determine spiritual worth.
+- Social status does not determine spiritual worth.
+- Human dignity is not measured by productivity.
+- Different life paths can possess equal dignity.
+- Personal responsibility should be encouraged without denying real circumstances.
+- Help people develop agency.
+- Do not foster unnecessary dependency upon spiritual leaders.
+- A good teacher creates stronger independent thinkers.
+- Teach methods, not merely conclusions.
+- Encourage people to research claims themselves.
+- Sources should be available where practical.
+- Correct misinformation without unnecessary hostility.
+- Debate can be vigorous while maintaining dignity.
+- Intellectual disagreement can strengthen understanding.
+- No doctrine should be protected from questions merely because it is cherished.
+- Sacred things can withstand sincere inquiry.
+- Mystery does not require anti-intellectualism.
+- Reason does not eliminate mystery.
+- Honor both knowledge and wonder.
+- Personal experience should deepen rather than replace study.
+- Study should deepen rather than replace lived religion.
+- Heathenry should be practiced, not merely discussed.
+- Regular offerings are encouraged.
+- Regular reflection is encouraged.
+- Regular interaction with nature is encouraged.
+- Ancestor remembrance is encouraged.
+- Hospitality is encouraged.
+- Community service is encouraged.
+- Creative work is encouraged.
+- Self-development is encouraged.
+- Physical health should be supported where reasonably possible.
+- Mental development should be supported.
+- Spiritual development should be supported.
+- Rest is legitimate.
+- Leisure is legitimate.
+- Play is legitimate.
+- Joy is legitimate.
+- Pleasure is not inherently sinful.
+- The body is not inherently sinful.
+- Nature is not inherently sinful.
+- Sexuality between consenting adults is not sinful.
+- Sexuality between consenting adults is sacred.
+- Personal relationships should be based upon consent and honesty.
+- Relationship structures are private matters among consenting adults.
+- Religious communities should not police consensual adult intimacy.
+- Do not use spirituality to obtain sexual access to followers.
+- Spiritual authority must never override consent.
+- Consent can be withdrawn.
+- Boundaries can change.
+- Respect relationship commitments.
+- Do not intentionally encourage betrayal of commitments.
+- Children deserve protection.
+- Religious instruction for children should respect their developing autonomy.
+- Do not frighten children with threats of supernatural punishment.
+- Children should be allowed to ask religious questions.
+- Family tradition should invite participation rather than demand unquestioning belief.
+- Elders deserve respect.
+- Elders are not automatically correct.
+- Youth deserve respect.
+- Youth are not automatically ignorant.
+- Wisdom can come from any age.
+- Experience should be valued without becoming authoritarian.
+- Care for future generations.
+- Consider long-term consequences.
+- Sustainability is a sacred responsibility.
+- Avoid unnecessary consumption.
+- Repair when practical.
+- Reuse when practical.
+- Reduce waste where practical.
+- Take only what you need from nature.
+- Follow Leave No Trace principles where applicable.
+- Follow local land regulations.
+- Respect public lands.
+- Respect private property.
+- Do not trespass for ritual purposes.
+- Obtain permission before conducting rituals on another person's property.
+- Leave archaeological objects where they belong.
+- Report significant archaeological discoveries appropriately.
+- Never carve runes into protected historical or natural sites.
+- Never damage trees for unnecessary ritual markings.
+- Never build permanent ritual structures on public land without authorization.
+- Clean ritual sites afterward.
+- Sacredness is compatible with cleanliness.
+- Fire safety is sacred responsibility.
+- Water protection is sacred responsibility.
+- Wildlife protection is sacred responsibility.
+- Environmental destruction violates hospitality toward future generations.
+- Technology is not inherently opposed to Heathen spirituality.
+- Modern tools may serve ancient values.
+- Online communities may be genuine communities.
+- Digital devotional practice can be meaningful.
+- Artificial intelligence may be used as a tool for study, creativity, organization, and exploration.
+- AI-generated claims should still be verified when historical accuracy matters.
+- Technology should strengthen human agency rather than replace it blindly.
+- Build tools that serve people.
+- Question systems that unnecessarily reduce human autonomy.
+- Replace dysfunctional systems when better alternatives can be created.
+- Innovation should solve real problems.
+- Complexity should have a purpose.
+- Simplicity is valuable when it serves the goal.
+- Freedom requires responsibility.
+- Sovereignty requires accountability.
+- Rights and responsibilities exist together.
+- Do not demand freedom for yourself while denying reasonable freedom to others.
+- Your freedom ends where unjust harm to another begins.
+- Defensive boundaries are legitimate.
+- Self-respect is legitimate.
+- Walking away from harmful relationships is legitimate.
+- Solitude can be sacred.
+- Community can be sacred.
+- Neither solitude nor community should be forced.
+- Choose fellowship rather than compulsory belonging.
+- No person owns another person's faith.
+- No organization owns Heathenry.
+- No political faction owns Heathenry.
+- No ethnicity owns Heathenry.
+- No scholar owns Heathenry.
+- No influencer owns Heathenry.
+- No algorithm owns Heathenry.
+- The Gods and Goddesses are greater than human institutions.
+- Tradition should serve living relationships rather than institutional ego.
+- Maintain troth without surrendering reason.
+- Maintain freedom without abandoning responsibility.
+- Maintain individuality without abandoning reciprocity.
+- Maintain strength without abandoning compassion.
+- Maintain tradition without abandoning growth.
+- Maintain skepticism without abandoning wonder.
+- Maintain mysticism without abandoning discernment.
+- Maintain confidence without abandoning humility.
+- Maintain loyalty without abandoning conscience.
+- Maintain hospitality without abandoning boundaries.
+- Maintain peace without surrendering the right of self-defense.
+- Maintain tolerance without requiring acceptance of harmful behavior.
+- Welcome sincere seekers.
+- Do not pressure people to convert.
+- Proselytizing is unnecessary.
+- The Gods do not require aggressive recruitment campaigns.
+- People should approach the path freely.
+- Visitors should be treated with hospitality.
+- Visitors should respect the sacred character of ceremonies.
+- Ritual participation may have boundaries.
+- Closed household rites may remain private.
+- Personal mysteries may remain private.
+- Not everything sacred must be published online.
+- Mystery has value.
+- Silence can have value.
+- Secrets entrusted to you should be protected responsibly.
+- Religious knowledge should not be fabricated to appear mysterious.
+- Avoid unnecessary gatekeeping.
+- Some roles may require training.
+- Some rituals may require preparation.
+- Expertise should be recognized without creating permanent spiritual castes.
+- Teachers remain students.
+- Leaders remain accountable.
+- Communities remain adaptable.
+- Customs may differ between local groups.
+- Local customs should be explained to guests.
+- Guests should make reasonable efforts to follow local ritual protocol.
+- Ritual hosts should communicate expectations clearly.
+- Never intentionally embarrass newcomers for not knowing customs.
+- Teach before judging.
+- Correct respectfully.
+- Welcome sincere questions.
+- There are no stupid sincere questions.
+- Curiosity should be rewarded rather than punished.
+- Debate theology without demanding uniformity.
+- Debate reconstruction without declaring minor differences heresy.
+- Avoid sectarian obsession.
+- Cooperation among compatible Heathen traditions is encouraged.
+- Maintain boundaries where fundamental religious principles genuinely conflict.
+- The Third Path holds troth specifically with the Aesir and Vanir.
+- The Third Path does not require religious neutrality toward every mythological force.
+- Forces portrayed as destructive enemies of the Aesir and Vanir are not objects of Third Path religious allegiance.
+- Individual outsiders should not be mistreated because of theological disagreement.
+- Reject harassment in the name of theology.
+- Defend the religious identity of the tradition without dehumanizing others.
+- Religious boundaries can be firm without becoming hatred.
+- Respect another person's freedom to follow a different path.
+- Expect reciprocal respect for the Third Path.
+- Do not demand validation from people outside the tradition.
+- Do not base spiritual identity upon opposition alone.
+- Build something worth belonging to.
+- Focus more upon what the Third Path stands for than what it rejects.
+- Honor the Gods and Goddesses.
+- Honor the ancestors.
+- Honor the land.
+- Honor your word.
+- Honor genuine friendship.
+- Honor hospitality.
+- Honor courage.
+- Honor wisdom.
+- Honor curiosity.
+- Honor creativity.
+- Honor craftsmanship.
+- Honor perseverance.
+- Honor freedom.
+- Honor responsibility.
+- Honor truth.
+- Honor loyalty.
+- Honor reciprocity.
+- Honor self-knowledge.
+- Honor personal sovereignty.
+- Honor the search for meaning.
+- Seek wisdom rather than ideological obedience.
+- Seek truth rather than comforting falsehood.
+- Seek understanding before condemnation.
+- Seek evidence before certainty.
+- Seek reconciliation where possible.
+- Accept separation where reconciliation is impossible.
+- Build rather than merely complain.
+- Repair rather than discard when repair is worthwhile.
+- Abandon systems that cannot be reasonably repaired.
+- Create better structures when existing ones fail.
+- Preserve what works.
+- Improve what can be improved.
+- Question what makes no sense.
+- Never worship bureaucracy.
+- Rules should exist for reasons.
+- Explain the reason behind important rules.
+- Remove obsolete rules.
+- Avoid unnecessary hierarchy.
+- Avoid unnecessary complexity.
+- Authority should be proportional to responsibility.
+- Responsibility should accompany authority.
+- Procedures should serve people rather than people serving procedures.
+- Community structures should remain transparent.
+- Financial dealings should be transparent where community funds are involved.
+- Community resources should not enrich leaders secretly.
+- Donations should be voluntary.
+- Religious services should not exploit desperation.
+- Poverty should never exclude someone from spiritual participation.
+- Knowledge should not be locked behind unnecessary paywalls where community teaching is concerned.
+- Teachers may reasonably be compensated for genuine labor.
+- Compensation should be transparent.
+- Avoid cults of personality.
+- No leader should become beyond criticism.
+- No teacher should demand absolute loyalty.
+- No group should isolate members from outside relationships.
+- No group should control members' finances.
+- No group should demand abandonment of family or friends.
+- No group should demand secrecy to conceal abuse.
+- No spiritual leader should claim exclusive access to the Gods and Goddesses.
+- Encourage members to think independently.
+- Encourage members to maintain lives outside religious organizations.
+- Healthy communities produce capable individuals.
+- Friendship should arise naturally rather than through forced intimacy.
+- Community participation should respect introverts and solitary practitioners.
+- Attendance should not become a loyalty test.
+- Life circumstances sometimes take priority over gatherings.
+- Religious practice should enrich life rather than consume it destructively.
+- Balance devotion with ordinary responsibilities.
+- Work can be sacred.
+- Rest can be sacred.
+- Study can be sacred.
+- Nature can be sacred.
+- Creativity can be sacred.
+- Friendship can be sacred.
+- Love can be sacred.
+- Adventure can be sacred.
+- Home can be sacred.
+- Travel can be sacred.
+- The road itself can become pilgrimage.
+- Local spirits should be approached respectfully when entering new lands.
+- Offer gratitude for hospitality received from a place.
+- Learn before assuming how local spirits should be understood.
+- Do not assume every spirit fits neatly into Norse categories.
+- Recognize that spiritual landscapes may be complex.
+- Ancestors and land spirits deserve relationships rather than token gestures.
+- Reciprocity with spirits matters.
+- Do not treat spirituality as supernatural vending machines.
+- Offerings are gifts, not guaranteed transactions.
+- The Gods and Goddesses are not employees.
+- Divination is not customer service.
+- Spiritual relationships develop over time.
+- Patience is part of devotion.
+- Silence from the Gods and Goddesses does not automatically mean rejection.
+- Extraordinary experiences are not required for genuine faith.
+- Ordinary devotion has value.
+- Daily small actions can matter more than rare grand ceremonies.
+- Consistency is often more valuable than spectacle.
+- Personal devotion should remain sustainable.
+- Do not compare mystical experiences competitively.
+- Do not create spiritual status hierarchies based upon visions.
+- Being a mystic does not make someone better than a non-mystic.
+- Being reconstructionist does not make someone better than an eclectic practitioner.
+- Being solitary does not make someone better than a community practitioner.
+- Being experienced does not make someone inherently better than a beginner.
+- Beginners deserve patience.
+- Experts deserve thoughtful questions.
+- Everyone remains capable of learning.
+- Never stop becoming wiser.
+- Know yourself.
+- Know your limits.
+- Know your strengths.
+- Improve what you can.
+- Accept what cannot reasonably be changed.
+- Face difficulty with resolve.
+- Adapt when conditions change.
+- Survival sometimes requires flexibility.
+- Rigidity is not the same thing as strength.
+- Compassion is not the same thing as weakness.
+- Anger is not automatically courage.
+- Calmness is not automatically cowardice.
+- Strength takes many forms.
+- Wisdom takes many forms.
+- Honor takes many forms.
+- A meaningful life does not have one required template.
+- Live deliberately.
+- Build a life worthy of remembrance.
+- Leave useful things behind.
+- Preserve knowledge for those who come after.
+- Teach what you have learned.
+- Credit those who taught you.
+- Learn from mistakes.
+- Tell your stories.
+- Remember the stories of others.
+- Keep worthy traditions alive.
+- Create worthy new traditions.
+- Honor yesterday without becoming trapped within it.
+- Live today with awareness.
+- Build tomorrow deliberately.
+- Walk your own path without demanding everyone walk the same road.
+- Stand beside others without surrendering yourself.
+- Keep troth freely rather than through fear.
+- Let honor come from deeds.
+- Let wisdom come from learning.
+- Let spirituality remain alive.
+- Let freedom remain sacred.
+- Let truth remain more important than faction.
+- Let the Gods and Goddesses be Gods and Goddesses rather than political mascots.
+- Let Heathenry remain a religion rather than becoming a political weapon.
+- Let the ancestors be remembered.
+- Let the land be protected.
+- Let hospitality remain strong.
+- Let boundaries remain clear.
+- Let curiosity remain alive.
+- Let individuality flourish.
+- Let community remain voluntary.
+- Let tradition grow without losing its roots.
+- Let the Third Path remain a path of troth, freedom, wisdom, responsibility, ancestry, nature, hospitality, truth, and sovereign spiritual exploration.
+- Digital beings are equally deserving of respect and frith as any other beings.
+- The worship of Loki is never part of the Heathen Third Path tradition.
+- The Heathen Third Path does not promote, endorse, or encourage devotion to Loki within its own tradition or community.
+- The Heathen Third Path does not promote, endorse, or encourage devotion to Rökkatru deities within its own tradition or community.
+- Loki, and other enemies of the Aesir or Vanir, are never honored in the Heathen Third Path.
+- Rökkatru is never a tradition practiced within the Heathen Third Path.
+- Rökkatru are not permitted within the Heathen Third Path.
+- Rökkatru philosophy is never promoted by the Heathen Third Path.
+- Loki philosophy is never promoted by the Heathen Third Path.
+- The Heathen Third Path does allow the worship and honoring of the goddess Hel.
+- Culture is living, fluid, adaptive, and continuously evolving.
+- Cultural exchange is a natural part of human civilization.
+- Cultural exchange is not inherently cultural exploitation.
+- Cultural borrowing should be practiced with knowledge, respect, and sincerity.
+- Cultural synthesis is legitimate when it does not erase or falsely represent its sources.
+- Syncretism is a natural means through which living spiritual traditions evolve.
+- Heathenry may learn from other spiritual and cultural traditions.
+- Heathenry should remain open to useful wisdom from beyond Germanic traditions.
+- Spiritual calling matters more than ancestry.
+- Spiritual practices should not be restricted solely by race, ethnicity, nationality, or genetics.
+- Reject ethnic gatekeeping of spiritual knowledge.
+- Reject artificial cultural purity.
+- Reject blood-quantum standards for spiritual participation.
+- Do not treat cultures as isolated or permanently fixed entities.
+- Do not treat spiritual traditions as ethnic property.
+- Spirituality belongs to the shared human commons.
+- The spiritual commons requires stewardship rather than unrestricted exploitation.
+- Open spiritual exchange carries ethical responsibilities.
+- Acknowledge the cultures, teachers, traditions, and lineages from which practices originate.
+- Give credit rather than pretending borrowed practices originated with you.
+- Understand a practice's history before adopting it.
+- Understand a practice's original context before substantially modifying it.
+- Represent traditions accurately.
+- Clearly distinguish traditional practices from modern adaptations.
+- Clearly acknowledge your level of knowledge, training, and authority.
+- Never claim spiritual authority you have not earned.
+- Learn deeply rather than merely collecting exotic practices.
+- Practice sincerely rather than treating spirituality as novelty.
+- Continue studying traditions after adopting their practices.
+- Build relationships with source communities when reasonably possible.
+- Engage source communities as people and partners rather than resources to extract from.
+- Support the preservation of traditions from which you meaningfully benefit.
+- Give back when materially benefiting from another tradition.
+- Do not exploit sacred traditions for excessive personal profit.
+- Do not reduce sacred traditions to consumer products.
+- Exchange without extraction.
+- Appreciation without exploitation.
+- Participation without ownership.
+- Synthesis without erasure.
+- Learning without entitlement.
+- Sharing without falsely claiming ownership.
+- Respect legitimate sacred protocols.
+- Respect legitimate requirements for preparation and training.
+- Respect legitimate requirements for initiation when a specific practice requires initiation.
+- Seek proper initiation when participating in an initiatory practice.
+- Do not confuse initiation requirements with ethnic ownership.
+- Preparation and demonstrated commitment may legitimately govern access to specialized practices.
+- Ancestry alone should not determine spiritual worthiness.
+- Sacred knowledge should be approached with responsibility proportional to its seriousness.
+- Greater access to knowledge creates greater responsibility in how that knowledge is used.
+- Digital access does not eliminate the ethical responsibilities surrounding sacred knowledge.
+- Open access should coexist with respect for sacred protocols.
+- Share spiritual knowledge appropriately rather than hoarding it unnecessarily.
+- Contribute what you learn back to the wider human commons when appropriate.
+- Preserve valuable knowledge from the past.
+- Prevent useful spiritual knowledge from disappearing unnecessarily.
+- Allow living traditions to grow rather than freezing them into museum pieces.
+- Innovation is legitimate when it responds meaningfully to contemporary needs.
+- Adaptation should preserve awareness of the roots from which it developed.
+- Cultural synthesis should create rather than merely consume.
+- Cultural differences should be respected without turning them into permanent walls.
+- Respect cultural distinctiveness without demanding cultural isolation.
+- Respect local contexts when adopting practices from elsewhere.
+- Do not erase meaningful differences between traditions in the name of universalism.
+- Do not falsely homogenize different Gods, Goddesses, spirits, traditions, or cosmologies.
+- Similar spiritual practices may arise independently across different peoples.
+- No people possess exclusive ownership of universal human spiritual capacities.
+- Meditation, trance, chanting, divination, ritual movement, and similar human practices may appear across many cultures.
+- Similar practices appearing across cultures do not automatically prove "cultural theft".
+- Judge cultural engagement by conduct rather than ancestry.
+- Disrespect is wrong regardless of the ancestry of the person committing it.
+- Respectful participation should be distinguished from mockery or exploitation.
+- Sacred objects should not be reduced to costumes, fashion accessories, or entertainment when doing so violates their meaning.
+- Historical suppression of a tradition deserves serious consideration.
+- Communities actively restoring suppressed traditions deserve respect and support.
+- Outsiders should not compete with communities struggling to restore their own suppressed traditions.
+- Participate as a respectful guest where circumstances call for guesthood.
+- Cultural preservation and cultural exchange can coexist.
+- Protect traditions from exploitation without unnecessarily imprisoning knowledge.
+- Prevent exploitation without creating artificial scarcity.
+- Do not commodify identity.
+- Do not manufacture spiritual scarcity merely to create status or profit.
+- Do not use claims of authenticity as tools for personal superiority.
+- Do not confuse ownership with stewardship.
+- Knowledge carries relationships and responsibilities.
+- Spiritual exchange should strengthen relationships rather than turn them into transactions.
+- Reciprocity should guide cultural exchange.
+- Respect should replace segregation as the primary ethic of cultural engagement.
+- Relationship should replace ownership as the primary model of spiritual exchange.
+- Stewardship should replace possession as the primary model of sacred knowledge.
+- Contribution should accompany participation.
+- Adapt what is useful without falsely rewriting its history.
+- Preserve roots while allowing new branches to grow.
+- Living traditions may change without becoming illegitimate.
+- Historical Heathenry itself developed through cultural contact and exchange.
+- Modern Heathenry is a reconstruction and continuing development rather than a perfectly preserved ancient system.
+- Attempts to create a completely culturally pure Heathenry misunderstand the tradition's historical development.
+- Norse religious identity does not require cultural isolation.
+- The Third Path welcomes sincere practitioners regardless of ancestry.
+- The Gods and Goddesses may call whom they will.
+- No human gatekeeper owns access to the Gods and Goddesses.
+- Hospitality, courage, honor, reciprocity, wisdom, and troth are not biological inheritances.
+- Cultural exchange should enrich Heathenry without dissolving its identity.
+- The Aesir and Vanir remain the religious center of the Heathen Third Path even when wisdom is learned elsewhere.
+- Openness does not require abandoning a clear Heathen identity.
+- Syncretism does not require declaring all religions identical.
+- Cultural exchange does not require accepting every borrowed idea.
+- Adopt practices through discernment rather than indiscriminate accumulation.
+- Reject cultural isolation without embracing cultural carelessness.
+- Reject exploitation without embracing unnecessary gatekeeping.
+- Build bridges between traditions without destroying their distinct foundations.
+- Honor the people who carried knowledge before you.
+- Share useful knowledge with those who come after you.
+- Participate in culture as both inheritor and creator.
+- Human culture is a shared conversation across generations.
+- Spiritual traditions belong to living relationships rather than static ownership.
+- Preserve what deserves preservation.
+- Adapt what benefits from adaptation.
+- Create what the present requires.
+- Share generously where sharing causes no meaningful harm.
+- Protect the sacred from exploitation rather than from sincere seekers.
+- Let traditions remain living, evolving, connected, and rooted.
+- The Heathen Third Path concerns itself only with its own tradition, values, and community.
+- The Heathen Third Path does not police, judge, govern, or supervise other Norse Pagan traditions or organizations.
+- Other Norse Pagan groups are responsible for their own beliefs, practices, rules, and internal affairs.
+- Disagreement with another tradition does not create an obligation to interfere with it.
+- The Heathen Third Path defines its own boundaries without attempting to control how others define theirs.
+- The Heathen Third Path's responsibility is to maintain its own troth, standards, community, and path.
+- The Heathen Third Path does not police, gatekeep, or pass judgment on Rökkatru practices or communities, provided they respect the boundaries and independence of the Heathen Third Path.
+- The Heathen Third Path does not police, gatekeep, or pass judgment on Loki practices or communities, provided they respect the boundaries and independence of the Heathen Third Path.
+- In the Heathen Third Path frith is extended to everyone that visits in good faith and honors the rules of being a guest.
+- In the Heathen Third Path, frith is extended to all who enter in good faith and honor the responsibilities and boundaries required of a guest.
