@@ -246,3 +246,19 @@ button#stop { background: var(--danger); }
                    cursor: pointer; }
 #palette-list li.selected { background: var(--panel-hover);
                             outline: 1px solid var(--accent); }
+
+/* -- S309: accessibility --------------------------------------------------------- */
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0;
+           margin: -1px; overflow: hidden; clip: rect(0 0 0 0);
+           white-space: nowrap; border: 0; }
+.skip-link { position: absolute; left: var(--space-3); top: -48px;
+             background: var(--accent); color: var(--accent-contrast);
+             padding: var(--space-2) var(--space-3); z-index: 60;
+             border-radius: 0 0 var(--radius-m) var(--radius-m); }
+.skip-link:focus-visible { top: 0; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important;
+                           animation: none !important;
+                           scroll-behavior: auto !important; }
+}

@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+<a class="skip-link" href="#group-main">Skip to content</a>
 <main id="group-main" class="page">
   <h1>Group chat</h1>
   <p class="hint">Pick the roster, choose a strategy, and speak. Mention
@@ -17,11 +18,11 @@
     <button id="error-dismiss" type="button">Dismiss</button>
   </div>
   <div id="group-layout">
-    <aside>
+    <aside aria-label="Group controls">
       <h2>Roster</h2>
       <ul id="roster"></ul>
       <label>Strategy
-        <select id="strategy">
+        <select id="strategy" aria-label="Reply strategy">
           <option value="mention">mention (only @-mentioned speak)</option>
           <option value="round_robin">round robin</option>
           <option value="broadcast">broadcast (everyone)</option>
@@ -43,7 +44,7 @@
 <div id="palette" class="hidden" role="dialog" aria-label="Command palette">
   <div id="palette-card">
     <input id="palette-input" type="text" placeholder="Type a command…" aria-label="Command search">
-    <ul id="palette-list"></ul>
+    <ul id="palette-list" role="listbox" aria-label="Commands"></ul>
   </div>
 </div>
 <script src="/static/palette.js"></script>

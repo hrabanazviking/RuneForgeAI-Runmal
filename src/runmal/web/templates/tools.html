@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+<a class="skip-link" href="#tools-main">Skip to content</a>
 <main id="tools-main" class="page">
   <h1>Prompt tools</h1>
   <p class="hint">Depth injection (Author's Note) and generation-session
@@ -42,7 +43,7 @@
   <section id="session-panel">
     <h2>Generation session</h2>
     <label>Mode
-      <select id="s-mode">
+      <select id="s-mode" aria-label="Impersonation mode">
         <option value="normal">normal</option>
         <option value="swipe">swipe</option>
         <option value="regenerate">regenerate</option>
@@ -70,7 +71,7 @@
 <div id="palette" class="hidden" role="dialog" aria-label="Command palette">
   <div id="palette-card">
     <input id="palette-input" type="text" placeholder="Type a command…" aria-label="Command search">
-    <ul id="palette-list"></ul>
+    <ul id="palette-list" role="listbox" aria-label="Commands"></ul>
   </div>
 </div>
 <script src="/static/palette.js"></script>

@@ -170,6 +170,8 @@ if (typeof window !== "undefined" && typeof document !== "undefined") {
     var results = filterActions(ACTIONS, query);
     results.forEach(function (action, i) {
       var li = document.createElement("li");
+      li.setAttribute("role", "option");
+      li.setAttribute("aria-selected", i === 0 ? "true" : "false");
       li.textContent = action.title + (action.shortcut
         ? "  (" + action.shortcut + ")" : "");
       if (i === 0) li.classList.add("selected");

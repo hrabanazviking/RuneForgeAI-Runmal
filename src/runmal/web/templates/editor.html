@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+<a class="skip-link" href="#editor-main">Skip to content</a>
 <main id="editor-main" class="page">
   <h1>Persona / scenario / greetings</h1>
   <p class="hint">Edits save to the character card; greetings round-trip
@@ -17,7 +18,7 @@
   </div>
   <div id="save-notice" class="hidden" role="status">Saved.</div>
   <label>Character
-    <select id="character-select"></select>
+    <select id="character-select" aria-label="Character"></select>
   </label>
   <form id="editor-form">
     <label>Description
@@ -46,7 +47,7 @@
 <div id="palette" class="hidden" role="dialog" aria-label="Command palette">
   <div id="palette-card">
     <input id="palette-input" type="text" placeholder="Type a command…" aria-label="Command search">
-    <ul id="palette-list"></ul>
+    <ul id="palette-list" role="listbox" aria-label="Commands"></ul>
   </div>
 </div>
 <script src="/static/palette.js"></script>

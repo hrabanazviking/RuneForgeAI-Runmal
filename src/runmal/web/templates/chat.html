@@ -7,8 +7,9 @@
 <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to content</a>
 <div id="app">
-  <aside id="sidebar">
+  <aside id="sidebar" aria-label="Chats and app navigation">
     <h1>Rúnmál</h1>
     <button id="new-chat" type="button">+ New chat</button>
     <button id="theme-toggle" type="button">Toggle theme</button>
@@ -24,6 +25,7 @@
       <span id="error-text"></span>
       <button id="error-dismiss" type="button">Dismiss</button>
     </div>
+    <div id="sr-status" class="sr-only" aria-live="polite" role="status"></div>
     <div id="thread"></div>
     <div id="composer">
       <textarea id="input" rows="2" placeholder="Speak, wanderer…" aria-label="Message"></textarea>
@@ -63,7 +65,7 @@
 <div id="palette" class="hidden" role="dialog" aria-label="Command palette">
   <div id="palette-card">
     <input id="palette-input" type="text" placeholder="Type a command…" aria-label="Command search">
-    <ul id="palette-list"></ul>
+    <ul id="palette-list" role="listbox" aria-label="Commands"></ul>
   </div>
 </div>
 <script src="/static/palette.js"></script>

@@ -15,6 +15,13 @@ const $ = (id) => document.getElementById(id);
 function showTokenGate() { $("token-gate").classList.remove("hidden"); }
 function hideTokenGate() { $("token-gate").classList.add("hidden"); }
 function showError(text) { $("error-text").textContent = text; $("error-banner").classList.remove("hidden"); }
+
+/* Screen-reader announcements (S309): polite live region narrates stream
+ * lifecycle without reading every token. */
+function announce(text) {
+  const region = $("sr-status");
+  if (region) region.textContent = text;
+}
 function hideError() { $("error-banner").classList.add("hidden"); }
 
 async function api(path, opts = {}) {
@@ -170,6 +177,7 @@ async function streamGeneration(chatId) {
   const requestId = crypto.randomUUID();
   state.requestId = requestId;
   setGenerating(true);
+  announce("Generating reply\u2026");
   setRetryVisible(false);
   const bubble = appendMessage("assistant", "");
   let full = "";
@@ -212,6 +220,7 @@ async function streamGeneration(chatId) {
     }
     const finalText = stopped ? full + " \u2014 stopped" : full;
     renderInto(bubble, finalText || "(no output)");
+    announce(stopped ? "Generation stopped." : "Reply received.");
     await api("/api/v1/chats/" + chatId + "/messages", {
       method: "POST",
       body: JSON.stringify({ role: "assistant", content: full || "(no output)" }),
@@ -220,6 +229,7 @@ async function streamGeneration(chatId) {
     if (stopped) setRetryVisible(true);
   } catch (err) {
     showError("Generation failed: " + err.message);
+    announce("Generation failed.");
     setRetryVisible(true);
   } finally {
     state.requestId = null;

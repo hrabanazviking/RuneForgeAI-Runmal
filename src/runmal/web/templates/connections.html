@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+<a class="skip-link" href="#connections-main">Skip to content</a>
 <main id="connections-main" class="page">
   <h1>Connections</h1>
   <p class="hint">Backend connection profiles. Exactly one is active.
@@ -45,7 +46,7 @@
 <div id="palette" class="hidden" role="dialog" aria-label="Command palette">
   <div id="palette-card">
     <input id="palette-input" type="text" placeholder="Type a command…" aria-label="Command search">
-    <ul id="palette-list"></ul>
+    <ul id="palette-list" role="listbox" aria-label="Commands"></ul>
   </div>
 </div>
 <script src="/static/palette.js"></script>
