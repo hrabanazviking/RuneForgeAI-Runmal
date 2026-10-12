@@ -156,28 +156,103 @@ Samtal can act as:
 
 But Samtal's capability grants, hall identity and audit remain the source of authority. Connecting an MCP server does not grant every agent every tool.
 
-## 10. First-party ecosystem apps
+## 10. First-party RuneForgeAI ecosystem apps
 
-RuneForgeAI systems can register as plugins/adapters:
+First-party means **deeply supported**, not **privileged**.
+
+Any RuneForgeAI project can register as a Samtal plugin, workspace app, agent runtime, data/vault provider, event provider, bridge or artifact processor.
+
+Known integration targets include:
 
 - Rúnmál;
-- Aesir;
-- HugrGate;
-- Mythic Coder/forge coding systems;
-- Aurelia;
-- astrology engine;
-- tarot engine;
+- Project A.E.S.I.R.;
+- Verðandi AI Nervous System;
+- Runa/persistent digital-being systems;
+- Muninn memory infrastructure;
+- Mímir-Vörðr retrieval/verification;
+- WYRD world-state systems;
 - Norse Saga Engine;
+- Bifröst / HugrGate gateway systems;
+- Mythic Engineering / Mythic Engineering CLI / forge coding systems;
+- Aurelia/perception systems where actual interfaces exist;
+- astrology engine/workspace;
+- tarot/divination engine/workspace;
 - kiosk/display tools;
-- future projects.
+- future RuneForgeAI projects.
 
-Each gets a manifest and permission surface rather than privileged hidden access.
+Each receives the same explicit controls as outside software:
 
-## 11. External apps
+```text
+install / enable / disable
+allowed Principals or roles
+allowed actions
+allowed resources
+network scope
+filesystem scope
+device scope
+approval policy
+workspace visibility
+audit history
+```
+
+A first-party plugin may never use project ownership as an excuse to bypass permission resolution, secret isolation, audit, content filtering or artifact provenance.
+
+See:
+
+- `FIRST_PARTY_PLUGIN_ECOSYSTEM.md`
+- `FIRST_PARTY_PLUGIN_ROADMAP.md`
+- `WORKSPACE_APPS.md`
+
+## 11. Astrology and tarot as real plugins
+
+Astrology and tarot use the same capability model as coding or media tools.
+
+Example astrology grants:
+
+```text
+astrology.create_natal_chart       ALLOW
+astrology.create_transit_chart     ALLOW
+astrology.create_synastry          ALLOW
+astrology.render_chart             ALLOW
+astrology.export_report            ALLOW project scope
+astrology.manage_saved_people      DENY unless separately granted
+```
+
+Example tarot grants:
+
+```text
+tarot.draw_cards                   ALLOW
+tarot.create_spread                ALLOW
+tarot.annotate_card                ALLOW
+tarot.export_reading               ALLOW project scope
+tarot.manage_decks                 DENY unless separately granted
+```
+
+Humans may invoke them from rich visual workspaces while agents invoke typed actions over the same chart/spread state.
+
+## 12. Plugin-composition rule
+
+Plugins can feed one another through Samtal artifacts and events without silently inheriting each other's permissions.
+
+Example:
+
+```text
+Astrology creates ChartArtifact
+→ report agent reads ChartArtifact
+→ document workspace formats interpretation
+→ display plugin shows final report
+```
+
+The report agent's ability to read the chart does not grant it permission to recalculate charts, edit the astrology subject database, or control the display unless those actions are separately granted.
+
+This enables powerful chains without turning Samtal into an ambient-authority soup.
+
+## 13. External apps
 
 Any scriptable external application can potentially receive an adapter:
 
 - GIMP;
+- Krita;
 - Blender;
 - Git;
 - local CLIs;
@@ -185,11 +260,14 @@ Any scriptable external application can potentially receive an adapter:
 - browsers through bounded automation;
 - media tools;
 - game servers;
-- smart-home/local devices.
+- smart-home/local devices;
+- notebooks;
+- whiteboards;
+- self-hosted web apps.
 
 Adapters should run least-privilege with filesystem/network/resource scopes.
 
-## 12. Audit ledger
+## 14. Audit ledger
 
 Record at least:
 
@@ -197,17 +275,18 @@ Record at least:
 who requested
 who executed
 which plugin/action/resource
+plugin version
 when
 permission decision
 approver if any
 sanitized input summary/result summary
 success/failure
-linked room/task
+linked room/task/artifact
 ```
 
 Raw secrets never enter the ledger.
 
-## 13. Permission inspection UX
+## 15. Permission inspection UX
 
 Every Principal should be able to answer:
 
@@ -218,10 +297,12 @@ Every Principal should be able to answer:
 - What apps/tools can I use?
 - Which actions require approval?
 - What permissions did I grant to this agent?
+- Which first-party apps are installed in this hall?
+- Which of those apps can act on my behalf?
 
 For agents, the context envelope can include a machine-readable effective capability summary.
 
-## 14. Revocation
+## 16. Revocation
 
 Role changes and capability revocation take effect immediately for new actions.
 
