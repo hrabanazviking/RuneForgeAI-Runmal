@@ -150,6 +150,19 @@ async def delete_message(
     return {"deleted": True, "id": message_id}
 
 
+@router.get("/chats/{chat_id}/export")
+async def export_chat(
+    chat_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Download a portable JSON export of the chat (S111). Non-destructive."""
+    document = await service.export_chat(session, user_id, chat_id)
+    if document is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return document
+
+
 @router.get("/chats/{chat_id}/events")
 async def list_events(
     chat_id: str,

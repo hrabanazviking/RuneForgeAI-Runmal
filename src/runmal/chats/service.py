@@ -198,6 +198,30 @@ async def delete_message(
     return True
 
 
+EXPORT_FORMAT = "runmal-chat-export"
+EXPORT_VERSION = 1
+
+
+async def export_chat(session: AsyncSession, user_id: str, chat_id: str) -> dict | None:
+    """Build a self-contained portable export document for a chat (S111)."""
+    chat = await _get_owned_chat(session, user_id, chat_id)
+    if chat is None:
+        return None
+    history = await get_history(session, user_id, chat_id) or []
+    return {
+        "format": EXPORT_FORMAT,
+        "version": EXPORT_VERSION,
+        "exported_at": _now().isoformat(),
+        "chat": {
+            "id": chat.id,
+            "title": chat.title,
+            "character_id": chat.character_id,
+            "created_at": chat.created_at.isoformat(),
+        },
+        "messages": [message_to_dict(m) for m in history],
+    }
+
+
 async def list_events(session: AsyncSession, user_id: str, chat_id: str) -> list[ChatEvent] | None:
     if await _get_owned_chat(session, user_id, chat_id) is None:
         return None

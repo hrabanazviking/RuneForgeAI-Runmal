@@ -37,6 +37,18 @@
     <p class="note">Stored only in this browser's local storage, sent only to this server.</p>
   </div>
 </div>
+<div id="confirm-modal" class="hidden" role="alertdialog" aria-modal="true"
+     aria-labelledby="confirm-title">
+  <div id="confirm-card">
+    <h2 id="confirm-title">Delete this chat?</h2>
+    <p id="confirm-text">This cannot be undone. The chat and all its messages
+       will be permanently deleted.</p>
+    <div id="confirm-actions">
+      <button id="confirm-cancel" type="button">Cancel</button>
+      <button id="confirm-ok" type="button" class="danger">Delete</button>
+    </div>
+  </div>
+</div>
 <script src="/static/app.js"></script>
 </body>
 </html>

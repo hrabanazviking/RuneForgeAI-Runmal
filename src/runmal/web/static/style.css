@@ -37,3 +37,18 @@ button#stop { background: var(--danger); }
                     color: var(--text); border: 1px solid var(--line); border-radius: 8px; }
 .note { color: var(--dim); font-size: 13px; }
 code { background: #21262d; padding: 2px 6px; border-radius: 4px; }
+
+#chat-list li { display: flex; align-items: center; gap: 4px; }
+#chat-list li .title { flex: 1; overflow: hidden; text-overflow: ellipsis;
+                       white-space: nowrap; }
+#chat-list li button { padding: 2px 8px; font-size: 12px; background: #21262d; }
+#chat-list li button.danger { background: transparent; outline: 1px solid var(--danger); }
+#chat-list li input { flex: 1; background: var(--bg); color: var(--text);
+                      border: 1px solid var(--accent); border-radius: 4px; padding: 4px; }
+#confirm-modal { position: fixed; inset: 0; background: rgba(0,0,0,.7);
+                 display: flex; align-items: center; justify-content: center; }
+#confirm-card { background: var(--panel); border: 1px solid var(--danger);
+                border-radius: 12px; padding: 24px; max-width: 420px; }
+#confirm-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; }
+#confirm-cancel { background: #21262d; }
+button.danger, #confirm-ok { background: var(--danger); }

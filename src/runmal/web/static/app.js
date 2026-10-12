@@ -39,9 +39,29 @@ function renderChatList() {
   ul.textContent = "";
   for (const chat of state.chats) {
     const li = document.createElement("li");
-    li.textContent = chat.title || "(untitled)";
     if (chat.id === state.currentChatId) li.classList.add("active");
-    li.addEventListener("click", () => selectChat(chat.id));
+    const title = document.createElement("span");
+    title.className = "title";
+    title.textContent = chat.title || "(untitled)";
+    title.addEventListener("click", () => selectChat(chat.id));
+    li.appendChild(title);
+    const glyphs = ["\u270E", "\u2913", "\uD83D\uDDD1"];
+    const hints = ["Rename chat", "Export chat", "Delete chat"];
+    const fns = [
+      () => startRename(chat.id, li),
+      () => exportChat(chat.id),
+      () => askDeleteChat(chat.id),
+    ];
+    glyphs.forEach((glyph, i) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = glyph;
+      btn.title = hints[i];
+      btn.setAttribute("aria-label", hints[i]);
+      if (hints[i] === "Delete chat") btn.classList.add("danger");
+      btn.addEventListener("click", (e) => { e.stopPropagation(); fns[i](); });
+      li.appendChild(btn);
+    });
     ul.appendChild(li);
   }
 }
@@ -169,11 +189,112 @@ async function stopGeneration() {
   }
 }
 
+/* Destructive-action confirmation semantics (S111): deleting a chat is
+   two-step. The modal states the action is irreversible; only the explicit
+   Delete button performs it. Cancel, Escape, or clicking outside the card
+   aborts with zero side effects. */
+let pendingDeleteId = null;
+
+function askDeleteChat(chatId) {
+  if (state.generating) return;
+  pendingDeleteId = chatId;
+  $("confirm-modal").classList.remove("hidden");
+  $("confirm-ok").focus();
+}
+
+function closeConfirm() {
+  pendingDeleteId = null;
+  $("confirm-modal").classList.add("hidden");
+}
+
+async function doDeleteChat() {
+  const chatId = pendingDeleteId;
+  closeConfirm();
+  if (!chatId) return;
+  try {
+    await api("/api/v1/chats/" + chatId, { method: "DELETE" });
+    state.chats = state.chats.filter((c) => c.id !== chatId);
+    if (state.currentChatId === chatId) {
+      state.currentChatId = null;
+      $("thread").textContent = "";
+      if (state.chats.length > 0) await selectChat(state.chats[0].id);
+    }
+    renderChatList();
+  } catch (err) {
+    showError("Delete failed: " + err.message);
+  }
+}
+
+function startRename(chatId, li) {
+  if (state.generating) return;
+  const chat = state.chats.find((c) => c.id === chatId);
+  if (!chat) return;
+  const input = document.createElement("input");
+  input.value = chat.title || "";
+  input.setAttribute("aria-label", "Chat title");
+  li.textContent = "";
+  li.appendChild(input);
+  input.focus();
+  input.select();
+  let done = false;
+  const finish = async (save) => {
+    if (done) return;
+    done = true;
+    const title = input.value.trim();
+    if (save && title && title !== chat.title) {
+      try {
+        const updated = await (
+          await api("/api/v1/chats/" + chatId, {
+            method: "PATCH",
+            body: JSON.stringify({ title }),
+          })
+        ).json();
+        chat.title = updated.title;
+      } catch (err) {
+        showError("Rename failed: " + err.message);
+      }
+    }
+    renderChatList();
+  };
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") finish(true);
+    else if (e.key === "Escape") finish(false);
+  });
+  input.addEventListener("blur", () => finish(false));
+}
+
+async function exportChat(chatId) {
+  try {
+    const doc = await (await api("/api/v1/chats/" + chatId + "/export")).json();
+    const blob = new Blob([JSON.stringify(doc, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    const safe = (doc.chat.title || "chat").replace(/[^a-z0-9-_]+/gi, "_");
+    a.href = URL.createObjectURL(blob);
+    a.download = "runmal-" + safe + ".json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  } catch (err) {
+    showError("Export failed: " + err.message);
+  }
+}
+
 function init() {
   $("send").addEventListener("click", sendMessage);
   $("stop").addEventListener("click", stopGeneration);
   $("new-chat").addEventListener("click", newChat);
   $("error-dismiss").addEventListener("click", hideError);
+  $("confirm-ok").addEventListener("click", doDeleteChat);
+  $("confirm-cancel").addEventListener("click", closeConfirm);
+  $("confirm-modal").addEventListener("click", (e) => {
+    if (e.target === $("confirm-modal")) closeConfirm();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !$("confirm-modal").classList.contains("hidden")) {
+      closeConfirm();
+    }
+  });
   $("input").addEventListener("keydown", (e) => {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
   });
