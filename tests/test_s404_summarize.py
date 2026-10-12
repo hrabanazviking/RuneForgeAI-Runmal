@@ -6,13 +6,14 @@ source range recorded.
 
 from __future__ import annotations
 
+from sqlalchemy import select
+
 from runmal.chats.service import append_message, create_chat
 from runmal.db.base import create_db_engine, create_session_factory
 from runmal.db.migrate import migrate_to_head
 from runmal.db.models import ChatSummary, User
 from runmal.memory.summarize import latest_summary, roll_summaries
 from runmal.tokens import estimate_tokens
-from sqlalchemy import select
 
 
 def make_factory(tmp_path):
