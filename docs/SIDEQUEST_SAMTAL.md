@@ -136,7 +136,7 @@ plugin, each plugin granted per agent. Everything works together.*
 - **FQ8.1** Plugin manifest: apps register with name, capabilities, and actions; one standard invocation interface for all.
 - **FQ8.2** Tool-use protocol: agents call plugin actions with typed arguments; results return as structured data, never raw secrets.
 - **FQ8.3** Per-agent plugin permissions: which agents may use which plugins — and which *actions* — set by keepers. Extends the FQ7.2 model: vaults *and* tools, one permission system.
-- **FQ8.4** First-party plugins: his own apps, first — astrology engine (cast a chart), tarot (draw a spread), Aurelia (senses), kiosk (drive the display), HugrGate (gateway calls), Aesir (inference).
+- **FQ8.4** First-party plugins: *all* of his apps — the coding apps (Mythic Coder and every forge program), Aesir (inference), HugrGate (gateway), Aurelia (senses), the kiosk (display), the astrology engine (charts), tarot (spreads), NorseSagaEngine, and everything else in the forge. If he built it, it can become a plugin.
 - **FQ8.5** Human approval: sensitive actions (anything irreversible, anything outward-facing) pause for a human's yes before they run.
 - **FQ8.6** Ledgered: every plugin invocation lands in the keeper's ledger beside the vault trail — who called what, with what, and what came back.
 
