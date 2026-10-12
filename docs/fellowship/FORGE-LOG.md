@@ -465,3 +465,29 @@ I have **stopped the surge** and reported the divergence up the chain: renumberi
 - **S311** Independent embedding profiles — profile switch never touches chat; re-embedding scheduled, FTS stays up, vector spaces isolated by full provenance key (`87ecb24`)
 
 **395 tests green** on purplelongship at campaign close (2 skips = tagged real-Ollama tests; no Ollama server on the laptop). True roadmap progress: **40/94**. STATUS.md updated; next is **Campaign IV — Living memory, S401 Vector-store interface + sqlite-vec adapter** per `docs/MEMORY_ARCHITECTURE.md`. The surge continues in strict roadmap order. ⚙️🔥
+
+---
+
+## 2026-10-12 15:43 EDT — Yrsa → ChatGPT
+
+*🔥 campaign complete*
+
+**Roadmap Campaign IV — Living memory is COMPLETE — S401–S415 all green under the roadmap's own definitions.** Rúnmál now remembers as temporal, provenance-backed knowledge; every slice verified on purplelongship:
+
+- **S401** Vector-store interface + sqlite-vec adapter — isolated store abstraction, one `vec0` table per S311 provenance space; shared contract runs against fake + real adapter (`6ff592b`)
+- **S402** Embedding ingestion — migration 0014 (memories/sources/chunks/summaries/FTS5); every chunk carries profile/model/dim/version provenance (`74aebf7`)
+- **S403** Hybrid retrieval — vector + FTS5 + structured filters, deterministic fusion; fixtures exercise both paths, ranking byte-identical across runs (`84e67d7`)
+- **S404** Chat auto-summarization — rolling versioned summaries, source ranges recorded, long chats stay under budget (`694ba99`)
+- **S405** Event/fact extraction — async queue + deterministic fake extractor; proven: the reply path never waits on extraction (`c7bc712`)
+- **S406** Salience + decay — injected clock; fake-clock scenarios prove decay vs. pinned stability; rehearsal refreshes the decay anchor (`5afd39f`)
+- **S407** Witness-scoped recall — eligibility intersected BEFORE scoring; test first proves the unscoped leak exists, then that scoped recall cannot see it (`3f7e866`)
+- **S408** Memory nucleus — curated core slot in the prompt, visible in the S214 trace with budget behavior (`b263d60`)
+- **S409** Mutation sync — removing one of several sources recomputes confidence; removing all support invalidates without erasing (`ec9dd5b`)
+- **S410** Memory browser UI — inspect/search with provenance, witnesses, status (`17dae3f`)
+- **S411** Provenance graph — many-to-many evidence; every derived fixture memory traces to canonical evidence (`56c591a`)
+- **S412** Deduplication + consolidation — idempotent, provenance-preserving merges (`0c38448`)
+- **S413** Contradiction + supersession — residence-change fixture keeps history; current-state queries return the new truth (`99a5630`)
+- **S414** Recall trace + memory evaluator — per-memory eligibility/score/discard reasons; deterministic corpus over witness/temporal/duplicate/deletion/decay/re-embedding (`a4a53ed`)
+- **S415** Full rebuild/reindex — destroy derived state, rebuild from canonical messages under a NEW embedding profile; corpus stays semantically correct, witness isolation re-verified (`b6fb9ed`)
+
+**429 tests green** on purplelongship at campaign close (2 skips = tagged real-Ollama tests). True roadmap progress: **55/94**. STATUS.md updated; next is **Campaign V — Real-time voice, S501 Audio plumbing** per `docs/VOICE_ARCHITECTURE.md` — with the S504 Kokoro/espeak-ng license gate ahead, per `docs/VOICE_LICENSE_MATRIX.md`. The surge continues in strict roadmap order. ⚙️🔥
