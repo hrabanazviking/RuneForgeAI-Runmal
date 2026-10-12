@@ -83,3 +83,46 @@ class ChatEvent(Base):
     kind: Mapped[str] = mapped_column(String(40), nullable=False)
     data: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
+
+
+class Lorebook(Base):
+    """Lorebook (S201): owns book-level scanning/budget/default settings."""
+
+    __tablename__ = "lorebooks"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_new_id)
+    user_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    scan_depth: Mapped[int] = mapped_column(nullable=False, default=4)
+    token_budget: Mapped[int | None] = mapped_column(nullable=True, default=None)
+    created_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
+
+
+class LoreEntry(Base):
+    """Lore entry (S201): activation metadata, content, position/priority,
+    enabled state. Keys are stored as JSON text."""
+
+    __tablename__ = "lore_entries"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_new_id)
+    lorebook_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("lorebooks.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    user_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    name: Mapped[str] = mapped_column(String(200), nullable=False, default="")
+    content: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    keys_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
+    secondary_keys_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
+    priority: Mapped[int] = mapped_column(nullable=False, default=100)
+    position: Mapped[str] = mapped_column(String(40), nullable=False, default="before_char")
+    enabled: Mapped[bool] = mapped_column(nullable=False, default=True)
+    constant: Mapped[bool] = mapped_column(nullable=False, default=False)
+    case_sensitive: Mapped[bool] = mapped_column(nullable=False, default=False)
+    whole_word: Mapped[bool] = mapped_column(nullable=False, default=True)
+    created_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
+    updated_at: Mapped[datetime | None] = mapped_column(nullable=True, default=None)

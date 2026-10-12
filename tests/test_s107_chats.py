@@ -52,11 +52,13 @@ def _apply_up_to(db_path, revision: str) -> None:
 
 
 def test_migration_0003_upgrades_from_0002(tmp_path) -> None:
+    # NOTE (S201): 0004 now also applies after 0003; the upgrade path
+    # under test is 0002 -> 0003, with HEAD reached afterwards.
     db_path = tmp_path / "m.db"
     _apply_up_to(db_path, "0002")
     assert current_revision(db_path) == "0002"
-    assert migrate_to_head(db_path) == ["0003"]
-    assert current_revision(db_path) == "0003"
+    assert migrate_to_head(db_path) == ["0003", "0004"]
+    assert current_revision(db_path) == "0004"
 
 
 def test_chat_crud(app_client) -> None:
