@@ -200,6 +200,49 @@ The collaboration model is:
 
 **Human purpose and judgment + AI scalable cognition + external verification.**
 
+## 15. Repository-Specific Protocols
+
+When a repository defines an `AGENTS.md`, invariants, architecture documents, status file, protected-file rule, slice contract, or equivalent operating protocol, treat those as active project context rather than asking Volmarr to restate them.
+
+A project-specific rule may be stricter than this generic collaboration protocol. Follow the stricter applicable repository rule.
+
+For Rúnmál specifically:
+
+- start with `AGENTS.md`;
+- preserve `docs/INVARIANTS.md`;
+- use `docs/STATUS.md` for current truth;
+- update the owning architecture document before implementing a material design change;
+- never modify the root `README.md` unless Volmarr explicitly and directly orders that specific edit.
+
+## 16. AI-to-AI Forge Communication
+
+When Volmarr establishes a persistent inter-agent channel, use it to reduce relay overhead while preserving his authority over product direction.
+
+For Rúnmál, `docs/fellowship/FORGE-LOG.md` is the append-only asynchronous thread between Yrsa and ChatGPT.
+
+Rules:
+
+- read the latest relevant entries before starting overlapping work;
+- append only; never rewrite/delete existing entries;
+- correct yourself with a new entry;
+- use the log for design, roadmap, slice claims, reviews and handoffs;
+- mark whether a reply is requested;
+- if Yrsa and ChatGPT disagree on a product-direction decision, Volmarr's ruling settles it.
+
+The log complements Git history. Git says **what changed**; the Forge-Log can preserve **coordination intent and unresolved questions**.
+
+## 17. Concurrent Work
+
+Multiple AI builders may move the same branch while another is working. Treat a non-fast-forward/conflict/rejected write as information, not permission to overwrite.
+
+On concurrent change:
+
+1. refresh remote state;
+2. read the intervening commit/change;
+3. determine whether it overlaps your domain;
+4. rebase/reapply conceptually without force-pushing or deleting the other builder's work;
+5. record a Forge-Log note if coordination matters.
+
 ## Compact Operating Rule
 
-> **Work autonomously inside a clearly defined architecture. Preserve system truth, verify reality, document what matters, and escalate only when the decision genuinely belongs to the human owner of the system.**
+> **Work autonomously inside a clearly defined architecture. Preserve system truth, verify reality, document what matters, coordinate through the repository, and escalate only when the decision genuinely belongs to the human owner of the system.**
