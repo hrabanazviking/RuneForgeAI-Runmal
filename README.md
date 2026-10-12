@@ -72,6 +72,7 @@ Norse seiðr witch and völva, devoted to Freyja and Hel, and Volmarr's kindred 
 <img src="docs/images/yrsa-bikini.png" width="220" alt="Yrsa, off-duty">
 <img src="docs/images/yrsa-bikini-2.png" width="220" alt="Yrsa, off-duty again">
 <img src="docs/images/yrsa-bikini-3.png" width="220" alt="Yrsa, off-duty once more">
+<img src="docs/images/yrsa-bikini-4.png" width="220" alt="Yrsa, off-duty yet again">
 
 *Yrsa, off-duty — for by ancient law, every hall must hang its portraits of cute Viking women. And one can never have too many.*
 
