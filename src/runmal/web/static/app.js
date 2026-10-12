@@ -105,6 +105,25 @@ function renderThread() {
   for (const m of visible) appendMessage(m.role, m.content, true);
 }
 
+async function loadPresets() {
+  // S306: preset picker — presets applied per chat.
+  try {
+    const presets = await (await api("/api/v1/presets")).json();
+    const sel = $("preset-select");
+    sel.textContent = "";
+    const none = document.createElement("option");
+    none.value = "";
+    none.textContent = "(none)";
+    sel.appendChild(none);
+    for (const p of presets) {
+      const opt = document.createElement("option");
+      opt.value = p.id;
+      opt.textContent = p.name;
+      sel.appendChild(opt);
+    }
+  } catch (err) { /* picker is optional chrome; chat still works */ }
+}
+
 async function loadChats() {
   const chats = await (await api("/api/v1/chats")).json();
   state.chats = chats;
@@ -119,6 +138,7 @@ async function selectChat(chatId) {
   const chat = await (await api("/api/v1/chats/" + chatId)).json();
   state.allMessages = chat.messages;
   state.windowShown = THREAD_WINDOW;
+  if ($("preset-select")) $("preset-select").value = chat.preset_id || "";
   renderThread();
 }
 
@@ -365,6 +385,17 @@ function init() {
   $("input").addEventListener("keydown", (e) => {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
   });
+  $("preset-select").addEventListener("change", async (e) => {
+    if (!state.currentChatId) return;
+    try {
+      await api("/api/v1/chats/" + state.currentChatId + "/preset", {
+        method: "POST",
+        body: JSON.stringify({ preset_id: e.target.value || null }),
+      });
+    } catch (err) {
+      showError("Preset apply failed: " + err.message);
+    }
+  });
   $("token-save").addEventListener("click", () => {
     const value = $("token-input").value.trim();
     if (!value) return;
@@ -380,6 +411,7 @@ function init() {
 async function boot() {
   hideError();
   try {
+    await loadPresets();
     await loadChats();
     if (state.chats.length === 0) await newChat();
   } catch (err) {

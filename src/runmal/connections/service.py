@@ -38,6 +38,7 @@ class ProbeOutcome:
     ok: bool
     capabilities: list[str] = field(default_factory=list)
     detail: str = ""
+    models: list[str] = field(default_factory=list)
 
 
 # A prober maps a profile to an outcome; latency is measured around it.
@@ -51,6 +52,7 @@ class HealthResult:
     latency_ms: float
     capabilities: list[str]
     detail: str
+    models: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict:
         return {
@@ -59,12 +61,16 @@ class HealthResult:
             "latency_ms": round(self.latency_ms, 2),
             "capabilities": self.capabilities,
             "detail": self.detail,
+            "models": self.models,
         }
 
 
 def default_prober(profile: ConnectionProfile) -> ProbeOutcome:
     if profile.backend == "fake":
-        return ProbeOutcome(True, list(BACKEND_CAPABILITIES["fake"]), "fake backend")
+        return ProbeOutcome(
+            True, list(BACKEND_CAPABILITIES["fake"]), "fake backend",
+            models=["fake-echo"],
+        )
     if not profile.base_url:
         return ProbeOutcome(False, [], "no base_url configured")
     try:
@@ -72,9 +78,28 @@ def default_prober(profile: ConnectionProfile) -> ProbeOutcome:
         with urllib.request.urlopen(req, timeout=3) as resp:  # noqa: S310
             ok = 200 <= resp.status < 500
         caps = list(BACKEND_CAPABILITIES.get(profile.backend, [])) if ok else []
-        return ProbeOutcome(ok, caps, f"HTTP probe of {profile.backend}")
+        models = _probe_models(profile) if ok else []
+        return ProbeOutcome(ok, caps, f"HTTP probe of {profile.backend}",
+                            models=models)
     except Exception as exc:  # probe failures are data, not exceptions
         return ProbeOutcome(False, [], f"unreachable: {exc.__class__.__name__}")
+
+
+def _probe_models(profile: ConnectionProfile) -> list[str]:
+    """Best-effort model list for the model picker (S306)."""
+    if profile.backend == "ollama":
+        try:
+            url = profile.base_url.rstrip("/") + "/api/tags"
+            with urllib.request.urlopen(url, timeout=3) as resp:  # noqa: S310
+                import json as _json
+
+                data = _json.loads(resp.read().decode("utf-8"))
+            return sorted(
+                m["name"] for m in data.get("models", []) if "name" in m
+            )
+        except Exception:
+            return []
+    return []
 
 
 def probe_profile(
@@ -90,6 +115,7 @@ def probe_profile(
         latency_ms=latency_ms,
         capabilities=outcome.capabilities,
         detail=outcome.detail,
+        models=outcome.models,
     )
 
 
@@ -167,6 +193,34 @@ async def get_profile(
     session: AsyncSession, user_id: str, profile_id: str
 ) -> ConnectionProfile | None:
     return await _get_owned(session, user_id, profile_id)
+
+
+async def update_profile(
+    session: AsyncSession,
+    user_id: str,
+    profile_id: str,
+    name: str | None = None,
+    base_url: str | None = None,
+    model: str | None = None,
+) -> ConnectionProfile | None:
+    profile = await _get_owned(session, user_id, profile_id)
+    if profile is None:
+        return None
+    if name is not None:
+        if not name:
+            raise ValueError("profile name must not be empty")
+        profile.name = name
+    if base_url is not None:
+        profile.base_url = base_url
+    if model is not None:
+        profile.model = model
+    profile.updated_at = _now()
+    try:
+        await session.commit()
+    except IntegrityError as exc:
+        await session.rollback()
+        raise ValueError(f"profile name already exists: {name!r}") from exc
+    return profile
 
 
 async def set_active(

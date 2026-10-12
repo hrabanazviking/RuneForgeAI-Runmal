@@ -19,6 +19,12 @@ class ProfileIn(BaseModel):
     model: str = ""
 
 
+class ProfilePatch(BaseModel):
+    name: str | None = None
+    base_url: str | None = None
+    model: str | None = None
+
+
 @router.post("/connections", status_code=status.HTTP_201_CREATED)
 async def create_profile(
     body: ProfileIn,
@@ -61,6 +67,35 @@ async def get_profile(
     session: AsyncSession = Depends(get_session),
 ):
     profile = await service.get_profile(session, user_id=user_id, profile_id=profile_id)
+    if profile is None:
+        raise HTTPException(status_code=404, detail="connection profile not found")
+    return service.profile_to_dict(profile)
+
+
+@router.patch("/connections/{profile_id}")
+async def update_profile(
+    profile_id: str,
+    body: ProfilePatch,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    try:
+        profile = await service.update_profile(
+            session,
+            user_id=user_id,
+            profile_id=profile_id,
+            name=body.name,
+            base_url=body.base_url,
+            model=body.model,
+        )
+    except ValueError as exc:
+        msg = str(exc)
+        code = (
+            status.HTTP_409_CONFLICT
+            if "already exists" in msg
+            else status.HTTP_422_UNPROCESSABLE_ENTITY
+        )
+        raise HTTPException(status_code=code, detail=msg) from exc
     if profile is None:
         raise HTTPException(status_code=404, detail="connection profile not found")
     return service.profile_to_dict(profile)

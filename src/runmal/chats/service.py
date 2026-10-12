@@ -30,6 +30,7 @@ def chat_to_dict(chat: Chat, message_count: int = 0) -> dict:
         "id": chat.id,
         "title": chat.title,
         "character_id": chat.character_id,
+        "preset_id": chat.preset_id,
         "created_at": chat.created_at.isoformat(),
         "message_count": message_count,
     }
@@ -111,6 +112,30 @@ async def list_chats(session: AsyncSession, user_id: str) -> list[tuple[Chat, in
 
 async def get_chat(session: AsyncSession, user_id: str, chat_id: str) -> Chat | None:
     return await _get_owned_chat(session, user_id, chat_id)
+
+
+async def set_chat_preset(
+    session: AsyncSession,
+    user_id: str,
+    chat_id: str,
+    preset_id: str | None,
+) -> Chat | None:
+    """Apply (or clear, with None) a sampling preset on a chat (S306).
+
+    Both the chat and the preset must belong to the user; a foreign or
+    missing preset raises KeyError, a missing chat returns None.
+    """
+    chat = await _get_owned_chat(session, user_id, chat_id)
+    if chat is None:
+        return None
+    if preset_id is not None:
+        from runmal.presets import service as presets
+
+        if await presets.get_preset(session, user_id, preset_id) is None:
+            raise KeyError(preset_id)
+    chat.preset_id = preset_id
+    await session.commit()
+    return chat
 
 
 async def rename_chat(session: AsyncSession, user_id: str, chat_id: str, title: str) -> Chat | None:

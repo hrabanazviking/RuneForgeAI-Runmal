@@ -33,6 +33,10 @@ class MessageUpdate(BaseModel):
     content: str = Field(min_length=1)
 
 
+class ChatPresetIn(BaseModel):
+    preset_id: str | None = None
+
+
 @router.post("/chats", status_code=status.HTTP_201_CREATED)
 async def create_chat(
     body: ChatCreate,
@@ -148,6 +152,66 @@ async def delete_message(
     if not await service.delete_message(session, user_id, chat_id, message_id):
         raise HTTPException(status_code=404, detail="message not found")
     return {"deleted": True, "id": message_id}
+
+
+@router.post("/chats/{chat_id}/preset")
+async def set_chat_preset(
+    chat_id: str,
+    body: ChatPresetIn,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Apply (or clear) a sampling preset on a chat (S306)."""
+    try:
+        chat = await service.set_chat_preset(
+            session, user_id, chat_id, body.preset_id
+        )
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="preset not found") from exc
+    if chat is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return chat_to_dict(chat)
+
+
+@router.get("/chats/{chat_id}/generation-manifest")
+async def generation_manifest(
+    chat_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """The generation request manifest for a chat (S306): the applied
+    preset's canonical params, compat-filtered (S208) for the active
+    connection's backend, with mapped/dropped lists explicit."""
+    from runmal.connections import service as connections
+    from runmal.generation.compat import filter_for_backend
+    from runmal.presets import service as presets
+
+    chat = await service.get_chat(session, user_id, chat_id)
+    if chat is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    active = await connections.get_active(session, user_id)
+    backend = active.backend if active else "fake"
+    empty = {"chat_id": chat.id, "preset": None, "backend": backend,
+             "params": {}, "mapped": [], "dropped": []}
+    if not chat.preset_id:
+        return empty
+    preset = await presets.get_preset(session, user_id, chat.preset_id)
+    if preset is None:  # preset deleted after being applied
+        return {**empty, "note": "applied preset no longer exists"}
+    preset_dict = presets.preset_to_dict(preset)
+    if backend in ("openai", "ollama"):
+        filtered = filter_for_backend(preset_dict["params"], backend)
+        return {
+            "chat_id": chat.id,
+            "preset": preset_dict,
+            "backend": backend,
+            "params": filtered.params,
+            "mapped": [vars(m) for m in filtered.mapped],
+            "dropped": [vars(d) for d in filtered.dropped],
+        }
+    # the fake backend takes the canonical bag as-is
+    return {"chat_id": chat.id, "preset": preset_dict, "backend": backend,
+            "params": preset_dict["params"], "mapped": [], "dropped": []}
 
 
 @router.get("/chats/{chat_id}/export")

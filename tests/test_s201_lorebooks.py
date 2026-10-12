@@ -23,11 +23,11 @@ def make_client(tmp_path, monkeypatch):
 
 
 def test_migration_0004_reaches_head(tmp_path) -> None:
-    # NOTE (S207/S211/S303): 0006-0008 now follow 0005; HEAD is 0008.
+    # NOTE (S207/S211/S303/S306): 0006-0009 now follow 0005; HEAD is 0009.
     db_path = tmp_path / "m.db"
     applied = migrate_to_head(db_path)
-    assert applied[-1] == "0008"
-    assert current_revision(db_path) == "0008"
+    assert applied[-1] == "0009"
+    assert current_revision(db_path) == "0009"
 
 
 def test_lorebook_crud(tmp_path, monkeypatch) -> None:

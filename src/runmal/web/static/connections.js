@@ -50,6 +50,23 @@ async function refresh() {
       const result = await api("/api/v1/connections/" + p.id + "/health");
       $("health-panel").classList.remove("hidden");
       $("health-result").textContent = JSON.stringify(result, null, 2);
+      // Model picker (S306): models come from the probe result.
+      const picker = $("health-models");
+      picker.textContent = "";
+      for (const name of result.models || []) {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name;
+        picker.appendChild(opt);
+      }
+      $("apply-model").onclick = async () => {
+        if (!picker.value) return;
+        await api("/api/v1/connections/" + p.id, {
+          method: "PATCH",
+          body: JSON.stringify({ model: picker.value }),
+        });
+        refresh();
+      };
     });
     li.appendChild(health);
     ul.appendChild(li);

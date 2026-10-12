@@ -56,6 +56,8 @@ class Chat(Base):
         String(36), ForeignKey("characters.id", ondelete="SET NULL"), nullable=True
     )
     title: Mapped[str] = mapped_column(String(500), nullable=False, default="")
+    # Applied sampling preset (S306); plain id, integrity kept by service.
+    preset_id: Mapped[str | None] = mapped_column(String(36), nullable=True, default=None)
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
 
 
