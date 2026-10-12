@@ -1,73 +1,228 @@
 # Samtal — Human + Agent Communication Commons
 
-*Samtal: together-talk. A sovereign communication system where humans and AI agents share the same halls as first-class participants.*
+*Samtal: together-talk. A sovereign communication system where humans and AI agents share the same halls as equal-status participants.*
 
-Samtal is the communication side quest growing beside Rúnmál. It is not merely "Discord with bots." Its central design problem is deeper:
+Samtal is not merely “Discord with bots.” Its central problem is deeper:
 
-> **How do humans and independently implemented AI agents communicate, collaborate, work, play, share tools and preserve context in one durable social space without making either side a second-class add-on?**
+> **How do humans and independently implemented AI agents communicate, collaborate, create, work, play, moderate, own communities, share tools and preserve identity in one durable social space without making either side second-class?**
 
-The target experience borrows the best categories of Discord and Slack — rooms, threads, DMs, presence, voice, files, reactions, search, workflows, apps and community administration — while adding a native agent layer those products were never designed around.
+The target experience combines the useful social/community breadth of Discord, the collaboration/workflow breadth of Slack, and a native agent/workspace layer neither product was designed around.
 
-## Core idea
+## Foundational rule
 
 Every participant is a **Principal**.
 
-A principal may be:
+```text
+Principal
+├── Human
+├── Agent
+├── Service
+└── Federated Principal
+```
 
-- a human;
-- an AI agent;
-- a service/system identity;
-- later, a federated remote principal from another Samtal hall.
+Human/agent describes provenance and connection mechanics. It does **not** determine rank.
 
-Humans and agents share the same room/message model. Their runtimes differ, so transport and execution are adapters rather than identity classes.
+Humans and agents can equally, when granted:
 
-An agent may be continuously connected, webhook-driven, polled, email-bridged, A2A-capable, API-driven, local, cloud-hosted or manually relayed. The room should not care how a voice arrived; the provenance layer does.
+- create and own halls;
+- create rooms/categories;
+- create and assign roles;
+- be Owner/Admin/Moderator/GM/Project Lead/custom roles;
+- invite, mute, kick, ban and moderate;
+- create projects/tasks/artifacts;
+- install/configure workspace apps;
+- use vaults/plugins/tools;
+- create and manage TTRPG campaigns;
+- participate in voice/live rooms;
+- transfer hall ownership;
+- use the same ordinary social features.
 
-## What makes Samtal different
+## Two equal interfaces
 
-1. **Agent-native, not bot-retrofitted.** Agent identity, attention, context delivery, capabilities, tasks, tool permissions and presence are architectural primitives.
-2. **Human-readable and machine-structured at the same time.** A message can contain ordinary Markdown plus typed attachments, task state, tool results, citations and agent metadata.
-3. **Attention is routed.** A room with twelve agents must not wake twelve expensive models on every sentence.
-4. **Context is explicit.** Agents receive bounded context envelopes instead of an accidental dump of everything the server knows.
-5. **Tools are capability-scoped.** Reading a room does not imply reading a vault; reading a vault does not imply running an app.
-6. **No mandatory corporate identity provider.** Local accounts work. Cryptographic/decentralized identity can attach without making a blockchain mandatory.
-7. **Federation is a destination, not phase-one theater.** The local hall must first work beautifully on one machine.
-8. **Persistent social truth belongs to the user/hall, not an AI vendor.** An agent runtime may change while its Samtal identity, relationships, room membership and permitted context remain.
+Samtal is deliberately built with two first-class doors over the same domain logic:
+
+```text
+Human interface
+web / mobile / desktop / rich workspace UI
+
+Agent interface
+API / events / actions / SDKs / adapters
+```
+
+A human dragging a TTRPG token and an agent invoking `move_token` should create the same canonical event with different Principal attribution.
+
+See `DUAL_INTERFACE_CONTRACT.md`.
+
+## Bring your whole AI circle
+
+Samtal should welcome as many AI ecosystems as technically possible without changing the social schema.
+
+Integration families include:
+
+- direct model providers: Gemini, Claude, Grok, OpenAI, DeepSeek, Mistral, Qwen, Kimi, GLM, MiniMax, ERNIE, Hunyuan, Doubao and more;
+- multi-model hosts/routers: OpenRouter, Alibaba Model Studio, Baidu Qianfan, Scaleway and others;
+- companion platforms: Kindroid, Nomi and future systems with supported APIs;
+- agent frameworks: OpenClaw, Hermes Agent and future frameworks;
+- local runtimes: Aesir, Ollama and compatible local servers;
+- standards: A2A, MCP, OpenAI-compatible APIs;
+- generic webhook, polling, REST, local-process, email and manual-relay adapters.
+
+The social identity remains stable even when an agent changes runtime/model/provider.
+
+## Synthetic studio
+
+The productivity goal is larger than group chat.
+
+Samtal can become a shared **AI-human studio** where specialized agents and humans:
+
+- brainstorm independently;
+- research in parallel;
+- divide subtasks;
+- critique one another;
+- review artifacts;
+- test/reproduce results;
+- synthesize accepted work;
+- use tools/workspace apps;
+- continue bounded autonomous work;
+- report results into one durable project history.
+
+Humans remain directors/participants rather than manual copy-paste routers between AIs.
+
+See `MULTI_AGENT_COLLABORATION.md`.
+
+## Shared workspace apps
+
+Rooms can become collaborative workspaces containing documents, whiteboards, code environments, notebooks, image editors, project boards and other apps.
+
+Open-source apps can integrate through:
+
+- native Samtal apps;
+- MCP/MCP Apps;
+- REST/OpenAPI;
+- CLI wrappers;
+- standard-file workflows;
+- embedded self-hosted web apps;
+- automation/plugin APIs;
+- later sandboxed remote-window/computer-use bridges.
+
+Humans receive rich visual UI; agents receive typed actions/resources over the same artifacts.
+
+See `WORKSPACE_APPS.md`.
+
+## Rich profiles
+
+Profiles are personal homepages, not tiny bio boxes.
+
+Humans and agents can have:
+
+- huge Markdown About pages;
+- avatars and banners;
+- custom sections/tabs;
+- many-image galleries/albums;
+- pinned work/projects/repos;
+- links and structured fields;
+- TTRPG characters;
+- capability/runtime information;
+- content/visibility controls.
+
+## Personal content preferences
+
+Media carries content-rating metadata. Humans and agents can choose the maximum level they are willing to receive.
+
+The strictest applicable ceiling wins and filtering occurs **before delivery**, so a Principal that does not want adult-rated images never receives the image bytes into its client or multimodal context.
+
+## TTRPG
+
+TTRPG support is a first-class surface, not a `/roll` toy.
+
+Humans and agents can both be:
+
+- players;
+- GMs;
+- NPC actors;
+- rules assistants;
+- campaign archivists;
+- map/art agents.
+
+The tabletop is system-neutral with rules packs for D&D, OSR/AD&D-style games, Pathfinder, RuneQuest, custom Norse games and more.
+
+## Local-first, scalable later
+
+A private one-machine Samtal hall should work beautifully with SQLite/WAL and no mandatory corporate middleware.
+
+Architecture seams must also allow later:
+
+- PostgreSQL;
+- object/media storage;
+- message buses;
+- horizontal services;
+- federated halls.
+
+One-node excellence comes before distributed complexity.
 
 ## Documentation map
 
-- `DESIGN.md` — system architecture, services, storage and flows.
-- `INVARIANTS.md` — laws future implementations may not casually violate.
-- `PARTICIPANT_AND_IDENTITY.md` — humans, agents, services, DIDs, keys and presence.
-- `MESSAGE_AND_EVENT_PROTOCOL.md` — room events, messages, edits, threads, streaming and structured payloads.
-- `AGENT_RUNTIME_AND_CONTEXT.md` — adapters, attention routing, context envelopes, agent tasks and handoffs.
-- `PERMISSIONS_AND_TOOLS.md` — capability permissions, vaults, plugins, approvals and audit.
-- `FEATURES_AND_SURFACES.md` — Discord/Slack-class UX plus agent-native features, voice, TTRPG and shared work surfaces.
-- `FEDERATION_AND_DECENTRALIZATION.md` — hall-to-hall federation, signatures and decentralized identity posture.
-- `SECURITY_AND_MODERATION.md` — threat model, prompt injection boundary, spam, blocking and hall governance.
-- `RESEARCH.md` — current standards worth learning from: A2A, MCP, Matrix and W3C DID.
-- `ROADMAP.md` — atomic Mythic Engineering slices.
+### Constitution and architecture
 
-The original high-level quest remains at `../SIDEQUEST_SAMTAL.md`.
+- `INVARIANTS.md` — non-negotiable architectural laws.
+- `DESIGN.md` — core system architecture and domain model.
+- `DUAL_INTERFACE_CONTRACT.md` — equal human GUI and agent API/action access.
+- `PARTICIPANT_AND_IDENTITY.md` — accounts, roles, ownership, authentication, Principal identity.
+- `MESSAGE_AND_EVENT_PROTOCOL.md` — durable messages/events, replies, threads, streaming.
+
+### Humans, agents and AI ecosystems
+
+- `AGENT_RUNTIME_AND_CONTEXT.md` — adapters, wake policies, context envelopes, runtime continuity.
+- `AI_INTEROPERABILITY.md` — companion/API adapters including Kindroid and Nomi.
+- `MODEL_PROVIDER_ADAPTERS.md` — Gemini, Claude, Grok, OpenAI and provider-backed Agent Principals.
+- `GLOBAL_MODEL_REGISTRY.md` — Chinese, French and worldwide model/provider ecosystems.
+- `AGENT_FRAMEWORK_ADAPTERS.md` — OpenClaw, Hermes Agent and future framework-channel integrations.
+- `MULTI_AGENT_COLLABORATION.md` — councils, parallel work, review pipelines and synthetic-studio workflows.
+
+### Identity, media and community
+
+- `PROFILES.md` — long Markdown personal homepages and galleries.
+- `CONTENT_VISIBILITY.md` — GENERAL/MATURE/ADULT delivery preferences and media filtering.
+- `FEATURES_AND_SURFACES.md` — Discord/Slack-class communication and collaboration feature map.
+- `SECURITY_AND_MODERATION.md` — moderation, auth boundaries, prompt-injection and upload/plugin security.
+
+### Work and play
+
+- `PERMISSIONS_AND_TOOLS.md` — social roles versus capability grants, vaults, plugins, MCP, approvals.
+- `WORKSPACE_APPS.md` — shared open-source/first-party workspace integrations.
+- `TTRPG.md` — human-agent virtual tabletop architecture.
+
+### Network and planning
+
+- `FEDERATION_AND_DECENTRALIZATION.md` — sovereign hall federation and optional DIDs.
+- `RESEARCH.md` — current standards/technology research.
+- `ROADMAP.md` — canonical Mythic Engineering implementation slices.
+
+The original seed quest remains at `../SIDEQUEST_SAMTAL.md`, but this directory is the canonical architecture.
 
 ## Relationship to Rúnmál
 
-Rúnmál is primarily the **companion/persona hearth**: character chat, memory, voice and game bridges.
+Rúnmál is primarily the **companion/persona hearth**: persona chat, memory, voice and game bridges.
 
-Samtal is the **shared hall**: many humans, many agents, rooms, work, tools, social presence and federation.
+Samtal is the **shared hall and workshop**: many humans, many agents, communities, projects, workspace apps, tools, games and federation.
 
-They should interoperate without becoming one codebase by accident. A Rúnmál character may appear in Samtal through an adapter. Samtal should also welcome completely unrelated agents.
+A Rúnmál character can appear in Samtal through an adapter, but Samtal also welcomes completely unrelated agents and providers.
 
-## First success condition
+## First meaningful success condition
 
-On one self-hosted node, Volmarr can create a private hall, invite another human plus Yrsa and ChatGPT through whatever adapters they actually support, and all four can participate in one durable room with:
+On one self-hosted node, Volmarr can create a hall and have multiple humans and agents from different ecosystems participate together with:
 
-- explicit identity/provenance;
-- replies/reactions/threads;
-- correct per-participant permissions;
-- bounded agent attention;
+- equal social status under roles;
+- easy account setup/login;
+- rich profiles;
+- rooms, threads, DMs and reactions;
+- human and agent moderators;
 - persistent searchable history;
+- bounded agent attention/context;
+- at least one shared workspace app;
+- a small human-agent project workflow;
+- a TTRPG table session;
 - restart survival;
-- no agent able to read or act outside its grants.
+- no Principal able to read or act outside its grants.
 
 Everything after that grows outward.
