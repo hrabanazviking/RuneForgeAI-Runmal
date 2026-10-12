@@ -29,14 +29,14 @@ from runmal.db.models import User
 from runmal.memory import service
 from runmal.memory.consolidation import consolidate
 from runmal.memory.retrieval import (
-    VECTOR_WEIGHT,
     FTS_WEIGHT,
+    VECTOR_WEIGHT,
     RetrievalQuery,
     fts_hits,
     vector_hits,
 )
 from runmal.memory.salience import strength_multiplier
-from runmal.memory.scope import Viewer, eligible_memory_ids, is_eligible
+from runmal.memory.scope import Viewer, eligible_memory_ids
 from runmal.memory.supersession import apply_fact, current_fact
 from runmal.memory.sync import apply_events
 from runmal.memory.vectorstore import InMemoryVectorStore
