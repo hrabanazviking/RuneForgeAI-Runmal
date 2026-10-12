@@ -29,7 +29,7 @@ def test_complete_turn_chain_is_coherent():
     timing = full_timing(1)
     assert timing.validate() == []
     assert timing.duration("stt") == pytest.approx(0.1)
-    assert timing.duration("end_to_end_first_audio") == pytest.approx(0.6)
+    assert timing.duration("end_to_end_first_audio") == pytest.approx(0.5)
 
 
 def test_impossible_ordering_is_flagged_not_hidden():
@@ -79,7 +79,7 @@ def test_collector_report_p50_p95_and_no_violations():
     assert report.violations == []
     assert report.series["stt"]["n"] == 3
     assert report.series["stt"]["p50"] == pytest.approx(0.05)
-    assert report.series["end_to_end_first_audio"]["p95"] == pytest.approx(0.30)
+    assert report.series["end_to_end_first_audio"]["p95"] == pytest.approx(0.25)
     as_dict = report.to_dict()
     assert as_dict["turns"] == 3 and "series" in as_dict
 
