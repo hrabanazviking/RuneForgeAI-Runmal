@@ -242,6 +242,36 @@ class BackendProfile(Base):
     updated_at: Mapped[datetime | None] = mapped_column(nullable=True, default=None)
 
 
+class EmbeddingActivation(Base):
+    """The owner's ACTIVE embedding profile (S311) — an axis independent
+    of chat: switching it never touches chat backends or models."""
+
+    __tablename__ = "embedding_activation"
+
+    user_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    )
+    profile_id: Mapped[str] = mapped_column(String(36), nullable=False, default="")
+    provenance_key: Mapped[str] = mapped_column(String(300), nullable=False, default="")
+    updated_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
+
+
+class ReembeddingJob(Base):
+    """A scheduled re-embedding job (S311 migration hook ledger)."""
+
+    __tablename__ = "reembedding_jobs"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_new_id)
+    user_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    from_key: Mapped[str] = mapped_column(String(300), nullable=False, default="")
+    to_key: Mapped[str] = mapped_column(String(300), nullable=False, default="")
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="scheduled")
+    detail: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    created_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
+
+
 class SecretEntry(Base):
     """Server-side secret value (S306). Referenced by profiles via ``ref``;
     values are never serialized into API responses, logs, or exports."""
