@@ -130,7 +130,7 @@ async def rebuild_memory(
 
     restored_ids: dict[str, str] = {}  # old id -> new id
     remaining = list(derived)
-    for chat_id, cand in candidates:
+    for _chat_id, cand in candidates:
         match = next(
             (s for s in remaining
              if s["content"] == cand.content
