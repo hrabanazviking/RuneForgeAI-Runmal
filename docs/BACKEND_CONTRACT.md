@@ -159,3 +159,39 @@ Each adapter must pass the same fake/recorded contract suite for:
 - secret redaction.
 
 Live-provider tests are separate and optional in ordinary CI.
+
+## 14. Implementation status (Campaign III, S301–S308)
+
+Implemented in `src/runmal/backends/` unless noted:
+
+| Contract area | Module | Notes |
+|---|---|---|
+| Messages, events, errors, params, models (§2–§6) | `messages.py`, `events.py`, `errors.py`, `params.py`, `models.py`, `base.py` | `ChatBackend` ABC; `SamplingParams.to_bag()` uses S207 canonical names |
+| Fake backend + contract checks (§13) | `fake.py`, `contract.py` | `contract.run_all(backend)` is the shared gate every adapter test runs |
+| Ollama chat (§12) | `ollama.py` | Native `/api/chat` NDJSON; `num_predict`/`num_ctx` mappings; errors via `map_status_error`/`map_text_error` |
+| OpenRouter chat (§12) | `openrouter.py` | OpenAI-compatible SSE; namespaced IDs live only in `ModelInfo` metadata; wire names per the S208 OpenAI profile |
+| Embeddings (§9) | `embeddings.py` | `EmbeddingBackend` ABC + provenance; Ollama via native `POST /api/embed` (verified against official Ollama docs 2026-10-12); `embed_or_fallback()` returns the documented `FtsFallbackResult` — never a crash |
+| Model listing / health / token counting (§5) | `registry.py` | `BackendRegistry` aggregates backends; every count carries `TokenQuality` (exact/provider/estimated) |
+| Profiles + secrets (§10–§11) | `profiles.py`, DB migration `0012` | Profiles store ONLY secret references; values live in the server-side `secrets` table and resolve only inside the server (INV-023, canary-tested) |
+| Chat wiring (§2, §8) | `generation/service.py`, `generation/router.py` (S307) | `/api/v1/generate` resolves the chat's persisted profile and streams through the seam |
+
+Decisions recorded (see also `docs/adr/0004-normalized-backend-events.md`):
+
+- **Failures raise.** Inside `chat_stream`, failures RAISE `BackendError`
+  subclasses; `ErrorEvent` is the serializable form the service/API layer
+  produces from them. Cancellation raises `GenerationCancelled`.
+- **Cancellation (§8).** One `asyncio.Event` per request is shared from the
+  generation service into the backend; adapters check it per chunk/line and
+  close their HTTP stream promptly. No background generation tasks exist,
+  so disconnects cannot orphan work.
+- **Seam bridge (S307).** Normalized events bridge to the UI's SSE dicts:
+  `TextDelta` → `{"type": "token"}`, `Done` → `{"type": "done",
+  "finish_reason"}`, `UsageUpdate` → `{"type": "usage"}`, errors →
+  `{"type": "error", "code", "message", "retryable"}` then a terminal
+  `done`/`error`. Raw provider bytes never cross (§3).
+- **Capability truth (§4–§5).** `ChatBackend.filter_params` clears
+  unsupported samplers with structured warnings, driven by the model's
+  declared `supported_samplers` — never by provider-name conditionals.
+- **Token counting (§5).** Default `count_tokens` is the conservative
+  estimator (`TokenQuality.ESTIMATED`); provider-reported usage surfaces
+  as `PROVIDER`. The registry never upgrades a quality silently.
