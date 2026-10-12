@@ -55,6 +55,10 @@ class Chat(Base):
     character_id: Mapped[str | None] = mapped_column(
         String(36), ForeignKey("characters.id", ondelete="SET NULL"), nullable=True
     )
+    # Group-room transcript link (S210): set when this chat is a group's room.
+    group_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("groups.id", ondelete="CASCADE"), nullable=True
+    )
     title: Mapped[str] = mapped_column(String(500), nullable=False, default="")
     # Applied sampling preset (S306); plain id, integrity kept by service.
     preset_id: Mapped[str | None] = mapped_column(String(36), nullable=True, default=None)
@@ -70,6 +74,11 @@ class Message(Base):
     )
     role: Mapped[str] = mapped_column(String(20), nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    # Per-message speaker identity (S210): the speaking character's id and a
+    # snapshot of its display name. The snapshot survives membership changes
+    # and character renames -- history is never rewritten.
+    speaker_id: Mapped[str | None] = mapped_column(String(36), nullable=True, default=None)
+    speaker_name: Mapped[str | None] = mapped_column(String(200), nullable=True, default=None)
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
     updated_at: Mapped[datetime | None] = mapped_column(nullable=True, default=None)
 
@@ -167,3 +176,31 @@ class ConnectionProfile(Base):
     is_active: Mapped[bool] = mapped_column(nullable=False, default=False)
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
     updated_at: Mapped[datetime | None] = mapped_column(nullable=True, default=None)
+
+
+class Group(Base):
+    """A group-chat room (roadmap S210): references member characters; its
+    transcript is a Chat whose group_id points here."""
+
+    __tablename__ = "groups"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_new_id)
+    user_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    name: Mapped[str] = mapped_column(String(200), nullable=False, default="")
+    created_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
+
+
+class GroupMember(Base):
+    """One roster row: a character's membership in a group, in order."""
+
+    __tablename__ = "group_members"
+
+    group_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("groups.id", ondelete="CASCADE"), primary_key=True
+    )
+    character_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("characters.id", ondelete="CASCADE"), primary_key=True
+    )
+    position: Mapped[int] = mapped_column(nullable=False, default=0)

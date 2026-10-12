@@ -14,13 +14,14 @@ import json
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.cards import import_card
 from runmal.characters import service as characters
 from runmal.db.deps import get_owner_id, get_session
 from runmal.generation import service as generation
+from runmal.groupchat import store
 from runmal.groupchat.core import GroupChat, GroupMessage, Participant, Strategy
 
 router = APIRouter(tags=["group"])
@@ -106,3 +107,147 @@ async def group_turn(
 
 def _event(payload: dict) -> str:
     return f"data: {json.dumps(payload)}\n\n"
+
+
+# -- Persistent rooms (roadmap S210): room / members / transcript --------
+
+
+class GroupCreate(BaseModel):
+    name: str = ""
+    member_character_ids: list[str] = []
+
+
+class GroupRename(BaseModel):
+    name: str = Field(min_length=1)
+
+
+class MemberAdd(BaseModel):
+    character_id: str
+
+
+class GroupMessageIn(BaseModel):
+    speaker: str  # "user" or a member character's id
+    content: str
+
+
+def _unprocessable(exc: ValueError) -> HTTPException:
+    return HTTPException(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)
+    )
+
+
+@router.post("/groups", status_code=status.HTTP_201_CREATED)
+async def create_group(
+    body: GroupCreate,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    try:
+        group = await store.create_group(
+            session, user_id, body.name, body.member_character_ids
+        )
+    except ValueError as exc:
+        raise _unprocessable(exc) from exc
+    return await store.describe_group(session, user_id, group.id)
+
+
+@router.get("/groups")
+async def list_groups(
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    return await store.list_groups(session, user_id)
+
+
+@router.get("/groups/{group_id}")
+async def get_group(
+    group_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    payload = await store.describe_group(session, user_id, group_id)
+    if payload is None:
+        raise HTTPException(status_code=404, detail="group not found")
+    return payload
+
+
+@router.patch("/groups/{group_id}")
+async def rename_group(
+    group_id: str,
+    body: GroupRename,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    payload = await store.rename_group(session, user_id, group_id, body.name)
+    if payload is None:
+        raise HTTPException(status_code=404, detail="group not found")
+    return payload
+
+
+@router.delete("/groups/{group_id}")
+async def delete_group(
+    group_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    if not await store.delete_group(session, user_id, group_id):
+        raise HTTPException(status_code=404, detail="group not found")
+    return {"deleted": True, "id": group_id}
+
+
+@router.post("/groups/{group_id}/members", status_code=status.HTTP_201_CREATED)
+async def add_member(
+    group_id: str,
+    body: MemberAdd,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    try:
+        member = await store.add_member(session, user_id, group_id, body.character_id)
+    except ValueError as exc:
+        raise _unprocessable(exc) from exc
+    if member is None:
+        raise HTTPException(status_code=404, detail="group not found")
+    return member
+
+
+@router.delete("/groups/{group_id}/members/{character_id}")
+async def remove_member(
+    group_id: str,
+    character_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    if not await store.remove_member(session, user_id, group_id, character_id):
+        raise HTTPException(status_code=404, detail="member not found")
+    return {"deleted": True, "id": character_id}
+
+
+@router.post("/groups/{group_id}/messages", status_code=status.HTTP_201_CREATED)
+async def post_group_message(
+    group_id: str,
+    body: GroupMessageIn,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    try:
+        message = await store.append_message(
+            session, user_id, group_id, body.speaker, body.content
+        )
+    except ValueError as exc:
+        raise _unprocessable(exc) from exc
+    if message is None:
+        raise HTTPException(status_code=404, detail="group not found")
+    return store.message_to_dict(message)
+
+
+@router.get("/groups/{group_id}/messages")
+async def get_group_messages(
+    group_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    messages = await store.list_messages(session, user_id, group_id)
+    if messages is None:
+        raise HTTPException(status_code=404, detail="group not found")
+    return [store.message_to_dict(m) for m in messages]

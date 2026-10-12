@@ -57,8 +57,8 @@ def test_migration_0003_upgrades_from_0002(tmp_path) -> None:
     db_path = tmp_path / "m.db"
     _apply_up_to(db_path, "0002")
     assert current_revision(db_path) == "0002"
-    assert migrate_to_head(db_path) == ["0003", "0004", "0005", "0006", "0007", "0008", "0009"]
-    assert current_revision(db_path) == "0009"
+    assert migrate_to_head(db_path) == ["0003", "0004", "0005", "0006", "0007", "0008", "0009", "0010"]
+    assert current_revision(db_path) == "0010"
 
 
 def test_chat_crud(app_client) -> None:
