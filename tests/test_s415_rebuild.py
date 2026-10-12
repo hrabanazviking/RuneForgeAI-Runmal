@@ -93,10 +93,10 @@ async def test_destroy_and_rebuild_under_new_embedding_profile(tmp_path):
         assert private_ids and not (private_ids & {h.memory_id for h in hits_a})
         current = await current_fact(session, uid, "Volmarr", "lives_in")
         assert current is not None and "New Mexico" in current.content
-        traced = [m for m in await service.list_memories(session, uid)]
-        assert all(
-            await service.list_sources(session, m.id) or m.kind == "nucleus"
-            for m in traced)
+        traced = await service.list_memories(session, uid)
+        for m in traced:
+            sources = await service.list_sources(session, m.id)
+            assert sources or m.kind == "nucleus", m.id
 
 
 async def test_corpus_still_passes_on_rebuilt_style_stores(tmp_path):
