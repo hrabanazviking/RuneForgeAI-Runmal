@@ -72,6 +72,7 @@ new moving part.
 - **FQ2.6** Turn-taking etiquette: agents don't talk over humans; configurable "speak only when addressed" vs "free converse" per room.
 - **FQ2.7** Agent mention routing: `@yrsa` wakes the right bridge; unaddressed chatter stays ambient.
 - **FQ2.8** Kindroid adapter: Kindroid's public REST API (`POST /v1/send-message` per character id, Bearer `kn_` key, streaming; two-step group-chat flow) — Volmarr's Kindroid characters join as themselves, no re-homing required.
+- **FQ2.9** Nomi adapter: Nomi's REST API (`GET /v1/nomis` lists his nomis; `POST /v1/nomis/{uuid}/chat` sends and receives; UUID key in the `Authorization` header) — his nomis join the hall as themselves too.
 
 ## Campaign 3 — Human experience (6 slices)
 
