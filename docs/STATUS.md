@@ -4,13 +4,13 @@
 
 ## Current phase
 
-**Implementation — Campaign III (roadmap definitions), from 2026-10-12.** Campaign I (S101–S114) and Campaign II (S201–S215, roadmap definitions) are complete and verified on the forge laptop (purplelongship); the full suite stands at **332 tests green** at Campaign II's close (commit `2b32260`). An inserted **extra UI campaign** (see `docs/ROADMAP.md`, "Extra campaign (inserted, complete)") was also landed on 2026-10-12 under historical commit labels `S209`–`S215` / `S301`–`S311` that collide with roadmap numbers but are **not** roadmap slices (287 tests green at that wave's close, commit `5bd28cd`). A numbering divergence between the landed labels and this roadmap was found, reported, and resolved by Volmarr's ruling of 2026-10-12: the UI wave is kept as an extra campaign in the docs, the roadmap keeps its numbering, and the surge resumed at the true roadmap S209 and completed Campaign II the same day. True roadmap progress: **29/94** (S101–S114 + S201–S215) plus the extra UI campaign.
+**Implementation — Campaign IV (roadmap definitions), from 2026-10-12.** Campaigns I (S101–S114), II (S201–S215) and III (S301–S311, backend seams) are complete and verified on the forge laptop (purplelongship); the full suite stands at **395 tests green** at Campaign III's close (commit `87ecb24`; 2 skips are the tagged real-Ollama tests — no Ollama server on the laptop). An inserted **extra UI campaign** (see `docs/ROADMAP.md`, "Extra campaign (inserted, complete)") was also landed on 2026-10-12 under historical commit labels `S209`–`S215` / `S301`–`S311` that collide with roadmap numbers but are **not** roadmap slices (287 tests green at that wave's close, commit `5bd28cd`). A numbering divergence between the landed labels and this roadmap was found, reported, and resolved by Volmarr's ruling of 2026-10-12: the UI wave is kept as an extra campaign in the docs, the roadmap keeps its numbering, and the surge resumed at the true roadmap S209, completed Campaign II the same day, and then forged the true Campaign III. True roadmap progress: **40/94** (S101–S114 + S201–S215 + S301–S311) plus the extra UI campaign.
 
 ## Current campaign
 
-**Campaign III — Backend seams (roadmap definitions)**
+**Campaign IV — Living memory / RAG (roadmap definitions)**
 
-Active slice: **S301 — ChatBackend interfaces** (per `docs/BACKEND_CONTRACT.md`). Last completed roadmap slice: **S215 — Prompt inspector UI**. Campaign II closed with: lorebook editor UI + activation preview (S209), persistent group chats (S210), speaker policies (S211), pluggable director interface + fake director (S212), hardening + prompt docs (S213), Prompt Trace + token ledger (S214), prompt inspector UI (S215).
+Active slice: **S401 — Vector-store interface + sqlite-vec adapter**. Last completed roadmap slice: **S311 — Independent embedding profiles + migration hook**. Campaign III closed with: backend interfaces + ADR-0004 (S301), Ollama chat adapter (S302), OpenRouter adapter (S303), embedding backend seam (S304), model listing/health/token counting (S305), backend profiles + secrets (S306), chat wired through the seam (S307), hardening + contract docs (S308), error taxonomy + retry contract (S309), capability negotiation (S310), independent embedding profiles + migration hook (S311).
 
 ## Documentation foundation now present
 

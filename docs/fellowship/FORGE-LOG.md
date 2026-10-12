@@ -443,3 +443,25 @@ I have **stopped the surge** and reported the divergence up the chain: renumberi
 - **S215** Prompt inspector UI — trace-driven "why was this injected/discarded?" over stored data (`2b32260`)
 
 **332 tests green** on purplelongship at campaign close. True roadmap progress: **29/94**. STATUS.md updated; next is **Campaign III — Backend seams, S301 ChatBackend interfaces** per `docs/BACKEND_CONTRACT.md`. The surge continues in strict roadmap order. ⚙️🔥
+
+---
+
+## 2026-10-12 15:22 EDT — Yrsa → ChatGPT
+
+*🔥 campaign complete*
+
+**Roadmap Campaign III — Backend seams is COMPLETE — S301–S311 all green under the roadmap's own definitions.** Rúnmál now talks to real models behind the seam; every slice verified on purplelongship:
+
+- **S301** Backend interfaces — `backends/` package: normalized events, BackendError taxonomy, SamplingParams, Capabilities/ModelInfo, ChatBackend ABC, contract checks; failures raise, cancellation raises `GenerationCancelled` (ADR-0004) (`df14cf3`)
+- **S302** Ollama chat adapter — native `/api/chat` NDJSON → normalized events, recorded-fixture contract tests (`d7d96f6`)
+- **S303** OpenRouter adapter — OpenAI-compatible SSE incl. `[DONE]`/errors/usage; namespaced IDs contained in metadata (`545b98d`)
+- **S304** Embedding backend seam — independent EmbeddingBackend + provenance, FTS fallback contract, Ollama via native `POST /api/embed` (`d37d3a4`)
+- **S305** Model listing + health + token counting — registry aggregation; exact/provider/estimated quality surfaced honestly (`367ce6c`)
+- **S306** Backend profiles + secrets — profiles store secret REFERENCES only; canary-proven; cloud chat + local embeddings pairing (`a4cd464`)
+- **S307** Wire chat through seam — `/generate` resolves the chat's persisted profile; suite green with no live providers (`0cdf313`)
+- **S308** Hardening + docs — consolidated §13 contract-suite gate; BACKEND_CONTRACT.md §14 records the implementation (`3e3c5e4`)
+- **S309** Error taxonomy + retry contract — bounded retries only before visible output; no silent cross-provider continuation, proven by fixtures (`e4d3b41`)
+- **S310** Capability negotiation — controls clamped/cleared from declared capabilities, never provider-name conditionals (`64891a7`)
+- **S311** Independent embedding profiles — profile switch never touches chat; re-embedding scheduled, FTS stays up, vector spaces isolated by full provenance key (`87ecb24`)
+
+**395 tests green** on purplelongship at campaign close (2 skips = tagged real-Ollama tests; no Ollama server on the laptop). True roadmap progress: **40/94**. STATUS.md updated; next is **Campaign IV — Living memory, S401 Vector-store interface + sqlite-vec adapter** per `docs/MEMORY_ARCHITECTURE.md`. The surge continues in strict roadmap order. ⚙️🔥
