@@ -78,3 +78,12 @@ async def lorebooks_page(request: Request):
         "lorebooks.html",
         {"credential_hint": str(data_dir() / CREDENTIAL_FILENAME)},
     )
+
+
+@router.get("/group", response_class=HTMLResponse)
+async def group_page(request: Request):
+    return templates.TemplateResponse(
+        request,
+        "group.html",
+        {"credential_hint": str(data_dir() / CREDENTIAL_FILENAME)},
+    )

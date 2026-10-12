@@ -54,6 +54,24 @@ class GroupChat:
     history: list[GroupMessage] = field(default_factory=list)
     _rr_cursor: int = 0  # next round-robin speaker index
 
+    @property
+    def cursor(self) -> int:
+        """Round-robin cursor (persisted by callers across turns, S305)."""
+        return self._rr_cursor
+
+    @cursor.setter
+    def cursor(self, value: int) -> None:
+        if self.participants:
+            self._rr_cursor = value % len(self.participants)
+        else:
+            self._rr_cursor = 0
+
+    def note_spoke(self, strategy: Strategy, speaker: Participant) -> None:
+        """Advance turn state after ``speaker`` spoke (round-robin only)."""
+        if strategy is Strategy.ROUND_ROBIN and self.participants:
+            idx = self.participants.index(speaker)
+            self._rr_cursor = (idx + 1) % len(self.participants)
+
     def post_user(self, text: str) -> GroupMessage:
         msg = GroupMessage(USER_AUTHOR, text)
         self.history.append(msg)
@@ -111,9 +129,7 @@ class GroupChat:
             msg = GroupMessage(speaker.name, text)
             self.history.append(msg)
             replies.append(msg)
-            if strategy is Strategy.ROUND_ROBIN:
-                idx = self.participants.index(speaker)
-                self._rr_cursor = (idx + 1) % len(self.participants)
+            self.note_spoke(strategy, speaker)
         return replies
 
 

@@ -23,6 +23,12 @@
   --danger-bg: #3d1113;
   --code-bg: #21262d;
   --overlay: rgba(0, 0, 0, 0.7);
+  --author-1: #f778ba;
+  --author-2: #79c0ff;
+  --author-3: #7ee787;
+  --author-4: #ffa657;
+  --author-5: #d2a8ff;
+  --author-6: #ff7b72;
 }
 
 /* -- Tokens: light ------------------------------------------------------ */
@@ -41,6 +47,12 @@
   --danger-bg: #fdecec;
   --code-bg: #efe9dc;
   --overlay: rgba(31, 35, 40, 0.45);
+  --author-1: #be185d;
+  --author-2: #1d4ed8;
+  --author-3: #15803d;
+  --author-4: #b45309;
+  --author-5: #7c3aed;
+  --author-6: #b91c1c;
 }
 
 @media (prefers-color-scheme: light) {
@@ -59,6 +71,12 @@
     --danger-bg: #fdecec;
     --code-bg: #efe9dc;
     --overlay: rgba(31, 35, 40, 0.45);
+    --author-1: #be185d;
+    --author-2: #1d4ed8;
+    --author-3: #15803d;
+    --author-4: #b45309;
+    --author-5: #7c3aed;
+    --author-6: #b91c1c;
   }
 }
 
@@ -182,3 +200,26 @@ button#stop { background: var(--danger); }
                padding: var(--space-2); text-align: left; }
 #entry-form { display: flex; flex-direction: column; gap: var(--space-2);
               margin-top: var(--space-5); max-width: 640px; }
+
+/* -- S305: group chat --------------------------------------------------------- */
+#group-layout { display: grid; grid-template-columns: 220px 1fr; gap: var(--space-4); }
+#roster { list-style: none; margin: 0; padding: 0; display: flex;
+          flex-direction: column; gap: var(--space-2); }
+#group-thread { display: flex; flex-direction: column; gap: var(--space-2);
+                min-height: 240px; }
+.gmsg { border-left: 4px solid var(--line); padding: var(--space-2) var(--space-3);
+        background: var(--panel); border-radius: var(--radius-m); }
+.gmsg .author { font-weight: 700; font-size: var(--font-s); }
+.gmsg.author-c0 { border-left-color: var(--author-1); }
+.gmsg.author-c1 { border-left-color: var(--author-2); }
+.gmsg.author-c2 { border-left-color: var(--author-3); }
+.gmsg.author-c3 { border-left-color: var(--author-4); }
+.gmsg.author-c4 { border-left-color: var(--author-5); }
+.gmsg.author-c5 { border-left-color: var(--author-6); }
+.gmsg.author-c0 .author { color: var(--author-1); }
+.gmsg.author-c1 .author { color: var(--author-2); }
+.gmsg.author-c2 .author { color: var(--author-3); }
+.gmsg.author-c3 .author { color: var(--author-4); }
+.gmsg.author-c4 .author { color: var(--author-5); }
+.gmsg.author-c5 .author { color: var(--author-6); }
+.typing { color: var(--dim); font-style: italic; }

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rúnmál — group chat</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<main id="group-main" class="page">
+  <h1>Group chat</h1>
+  <p class="hint">Pick the roster, choose a strategy, and speak. Mention
+     gating answers only @-mentions. Token file:
+     <code>{{ credential_hint }}</code></p>
+  <div id="error-banner" class="hidden" role="alert">
+    <span id="error-text"></span>
+    <button id="error-dismiss" type="button">Dismiss</button>
+  </div>
+  <div id="group-layout">
+    <aside>
+      <h2>Roster</h2>
+      <ul id="roster"></ul>
+      <label>Strategy
+        <select id="strategy">
+          <option value="mention">mention (only @-mentioned speak)</option>
+          <option value="round_robin">round robin</option>
+          <option value="broadcast">broadcast (everyone)</option>
+        </select>
+      </label>
+    </aside>
+    <section>
+      <div id="group-thread"></div>
+      <form id="group-form">
+        <textarea id="group-input" rows="2" aria-label="Message"></textarea>
+        <button type="submit">Send</button>
+      </form>
+    </section>
+  </div>
+</main>
+<script src="/static/theme.js"></script>
+<script src="/static/group.js"></script>
+</body>
+</html>

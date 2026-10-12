@@ -21,6 +21,7 @@ from runmal.db.migrate import migrate_to_head
 from runmal.generation.router import router as generation_router
 from runmal.lorebooks.router import router as lorebooks_router
 from runmal.connections.router import router as connections_router
+from runmal.groupchat.router import router as group_router
 from runmal.presets.router import router as presets_router
 from runmal.tools.router import router as tools_router
 from runmal.web.router import _HERE as _WEB_DIR
@@ -87,6 +88,11 @@ def create_app(
     )
     app.include_router(
         tools_router,
+        prefix="/api/v1",
+        dependencies=[Depends(require_local_auth)],
+    )
+    app.include_router(
+        group_router,
         prefix="/api/v1",
         dependencies=[Depends(require_local_auth)],
     )
