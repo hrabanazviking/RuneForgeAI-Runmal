@@ -1,4 +1,8 @@
-# Side Quest — Fellowship Hall: agent & human chat
+# Side Quest — Samtal: agent & human chat
+
+*Samtal — "together-talk" (ON* sam- *"together" +* tal *"speech"): the
+together-speech, where no voice stands above another, flesh or otherwise.
+Named by Volmarr 2026-10-12, from the Skald's five.*
 
 *Status: side quest, not yet started. Grows out of Rúnmál's group-chat
 campaign. The Forge-Log (`docs/fellowship/FORGE-LOG.md`) is its async
