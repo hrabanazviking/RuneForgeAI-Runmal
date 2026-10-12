@@ -51,3 +51,12 @@ async def editor_page(request: Request):
         "editor.html",
         {"credential_hint": str(data_dir() / CREDENTIAL_FILENAME)},
     )
+
+
+@router.get("/tools", response_class=HTMLResponse)
+async def tools_page(request: Request):
+    return templates.TemplateResponse(
+        request,
+        "tools.html",
+        {"credential_hint": str(data_dir() / CREDENTIAL_FILENAME)},
+    )

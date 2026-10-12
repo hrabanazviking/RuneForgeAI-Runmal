@@ -22,6 +22,7 @@ from runmal.generation.router import router as generation_router
 from runmal.lorebooks.router import router as lorebooks_router
 from runmal.connections.router import router as connections_router
 from runmal.presets.router import router as presets_router
+from runmal.tools.router import router as tools_router
 from runmal.web.router import _HERE as _WEB_DIR
 from runmal.web.router import router as web_router
 
@@ -81,6 +82,11 @@ def create_app(
     )
     app.include_router(
         connections_router,
+        prefix="/api/v1",
+        dependencies=[Depends(require_local_auth)],
+    )
+    app.include_router(
+        tools_router,
         prefix="/api/v1",
         dependencies=[Depends(require_local_auth)],
     )

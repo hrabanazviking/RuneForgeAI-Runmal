@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rúnmál — prompt tools</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<main id="tools-main">
+  <h1>Prompt tools</h1>
+  <p class="hint">Depth injection (Author's Note) and generation-session
+     controls. Impossible prompt states show their error here, never a
+     silent truncation. Token file: <code>{{ credential_hint }}</code></p>
+  <div id="error-banner" class="hidden" role="alert">
+    <span id="error-text"></span>
+    <button id="error-dismiss" type="button">Dismiss</button>
+  </div>
+
+  <section id="compose-panel">
+    <h2>Compose preview</h2>
+    <label>System <textarea id="c-system" rows="2"></textarea></label>
+    <label>Persona <textarea id="c-persona" rows="2"></textarea></label>
+    <label>History (one message per line)
+      <textarea id="c-history" rows="4"></textarea></label>
+    <label>Author's Note <textarea id="c-note" rows="2"></textarea></label>
+    <label>Note depth (messages from end)
+      <input id="c-depth" type="number" min="0" value="1"></label>
+    <label>Context limit <input id="c-context" type="number" value="4096"></label>
+    <label>Reserve response
+      <input id="c-reserve" type="number" value="512"></label>
+    <button id="compose-btn" type="button">Compose</button>
+    <pre id="compose-result"></pre>
+  </section>
+
+  <section id="session-panel">
+    <h2>Generation session</h2>
+    <label>Mode
+      <select id="s-mode">
+        <option value="normal">normal</option>
+        <option value="swipe">swipe</option>
+        <option value="regenerate">regenerate</option>
+        <option value="impersonate">impersonate</option>
+      </select>
+    </label>
+    <div id="session-buttons">
+      <button data-action="create" type="button">Create</button>
+      <button data-action="compose" type="button">Compose prompt</button>
+      <button data-action="begin" type="button">Begin</button>
+      <button data-action="complete" type="button">Complete</button>
+      <button data-action="swipe-back" type="button">Swipe ◀</button>
+      <button data-action="swipe-fwd" type="button">Swipe ▶</button>
+      <button data-action="regenerate" type="button">Regenerate</button>
+      <button data-action="commit" type="button">Commit</button>
+      <button data-action="abort" type="button">Abort</button>
+    </div>
+    <label>Candidate text <textarea id="s-content" rows="2"></textarea></label>
+    <pre id="session-result"></pre>
+  </section>
+</main>
+<script src="/static/tools.js"></script>
+</body>
+</html>
