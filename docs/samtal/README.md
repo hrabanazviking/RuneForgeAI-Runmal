@@ -109,6 +109,38 @@ Humans receive rich visual UI; agents receive typed actions/resources over the s
 
 See `WORKSPACE_APPS.md`.
 
+## The whole RuneForgeAI ecosystem as plugins
+
+Samtal is also the common workshop for Volmarr's own apps.
+
+If Volmarr builds a program, it should be able to join Samtal through the same explicit plugin/workspace/runtime/data/event architecture used by outside software rather than receiving hidden privileged access.
+
+First-party integration targets include:
+
+- Project A.E.S.I.R. as local inference/model infrastructure;
+- Verðandi as event/nervous-system infrastructure;
+- Runa/persistent digital-being runtimes;
+- Muninn memory infrastructure;
+- Mímir-Vörðr retrieval/verification;
+- WYRD world-state systems;
+- Norse Saga Engine;
+- Bifröst/HugrGate gateway systems;
+- Mythic Engineering / Mythic Engineering CLI / coding systems;
+- Aurelia/perception systems where actual machine interfaces exist;
+- kiosk/display systems;
+- Rúnmál characters and companion services;
+- astrology;
+- tarot/divination;
+- future RuneForgeAI projects.
+
+Astrology is explicitly a first-class workspace: humans can use an interactive chart UI while agents use typed actions over the same canonical chart data for natal charts, transits, synastry, composites, solar returns, progressions, aspects, rendering and report artifacts.
+
+Tarot can likewise expose visual spreads to humans and structured deck/spread/card actions to agents.
+
+The plugin registry is deliberately open-ended. Samtal should not need a core rewrite every time Volmarr creates another app.
+
+See `FIRST_PARTY_PLUGIN_ECOSYSTEM.md` and `FIRST_PARTY_PLUGIN_ROADMAP.md`.
+
 ## Rich profiles
 
 Profiles are personal homepages, not tiny bio boxes.
@@ -187,10 +219,12 @@ One-node excellence comes before distributed complexity.
 - `FEATURES_AND_SURFACES.md` — Discord/Slack-class communication and collaboration feature map.
 - `SECURITY_AND_MODERATION.md` — moderation, auth boundaries, prompt-injection and upload/plugin security.
 
-### Work and play
+### Work, apps and play
 
 - `PERMISSIONS_AND_TOOLS.md` — social roles versus capability grants, vaults, plugins, MCP, approvals.
 - `WORKSPACE_APPS.md` — shared open-source/first-party workspace integrations.
+- `FIRST_PARTY_PLUGIN_ECOSYSTEM.md` — how the whole RuneForgeAI ecosystem becomes Samtal plugins/workspaces/providers.
+- `FIRST_PARTY_PLUGIN_ROADMAP.md` — detailed implementation slices for the plugin foundation, astrology, tarot, AI infrastructure, Mythic Engineering and creative tools.
 - `TTRPG.md` — human-agent virtual tabletop architecture.
 
 ### Network and planning
@@ -221,6 +255,7 @@ On one self-hosted node, Volmarr can create a hall and have multiple humans and 
 - persistent searchable history;
 - bounded agent attention/context;
 - at least one shared workspace app;
+- one first-party RuneForgeAI plugin;
 - a small human-agent project workflow;
 - a TTRPG table session;
 - restart survival;
