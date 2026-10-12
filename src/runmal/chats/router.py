@@ -37,6 +37,10 @@ class ChatPresetIn(BaseModel):
     preset_id: str | None = None
 
 
+class ChatBackendProfileIn(BaseModel):
+    profile_id: str | None = None
+
+
 @router.post("/chats", status_code=status.HTTP_201_CREATED)
 async def create_chat(
     body: ChatCreate,
@@ -168,6 +172,25 @@ async def set_chat_preset(
         )
     except KeyError as exc:
         raise HTTPException(status_code=404, detail="preset not found") from exc
+    if chat is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return chat_to_dict(chat)
+
+
+@router.post("/chats/{chat_id}/backend-profile")
+async def set_chat_backend_profile(
+    chat_id: str,
+    body: ChatBackendProfileIn,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Pin (or clear) a chat's backend profile (S307)."""
+    try:
+        chat = await service.set_chat_backend_profile(
+            session, user_id, chat_id, body.profile_id
+        )
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="profile not found") from exc
     if chat is None:
         raise HTTPException(status_code=404, detail="chat not found")
     return chat_to_dict(chat)

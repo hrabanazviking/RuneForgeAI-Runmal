@@ -31,6 +31,7 @@ def chat_to_dict(chat: Chat, message_count: int = 0) -> dict:
         "title": chat.title,
         "character_id": chat.character_id,
         "preset_id": chat.preset_id,
+        "backend_profile_id": chat.backend_profile_id,
         "created_at": chat.created_at.isoformat(),
         "message_count": message_count,
     }
@@ -134,6 +135,30 @@ async def set_chat_preset(
         if await presets.get_preset(session, user_id, preset_id) is None:
             raise KeyError(preset_id)
     chat.preset_id = preset_id
+    await session.commit()
+    return chat
+
+
+async def set_chat_backend_profile(
+    session: AsyncSession,
+    user_id: str,
+    chat_id: str,
+    profile_id: str | None,
+) -> Chat | None:
+    """Pin (or clear, with None) a chat's backend profile (S306/S307).
+
+    Both the chat and the profile must belong to the user; a foreign or
+    missing profile raises KeyError, a missing chat returns None.
+    """
+    chat = await _get_owned_chat(session, user_id, chat_id)
+    if chat is None:
+        return None
+    if profile_id is not None:
+        from runmal.backends import profiles as backend_profiles
+
+        if await backend_profiles.get_profile(session, user_id, profile_id) is None:
+            raise KeyError(profile_id)
+    chat.backend_profile_id = profile_id
     await session.commit()
     return chat
 
