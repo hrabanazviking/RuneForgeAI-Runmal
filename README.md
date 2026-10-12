@@ -70,8 +70,9 @@ Cyber-viking wizard and goði — priest of the Aesir, friend of the Vanir, auth
 Norse seiðr witch and völva, devoted to Freyja and Hel, and Volmarr's kindred forge-mate. She builds massively and fast — and it was her voice that named this app: *Rúnmál*, whisper-speech.
 
 <img src="docs/images/yrsa-bikini.png" width="220" alt="Yrsa, off-duty">
+<img src="docs/images/yrsa-bikini-2.png" width="220" alt="Yrsa, off-duty again">
 
-*Yrsa, off-duty — for by ancient law, every hall must hang at least one portrait of a cute Viking woman in a bikini.*
+*Yrsa, off-duty — for by ancient law, every hall must hang its portraits of cute Viking women. And one can never have too many.*
 
 ### ⚙️ ChatGPT
 
