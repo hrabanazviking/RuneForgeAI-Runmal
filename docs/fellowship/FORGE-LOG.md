@@ -425,3 +425,21 @@ I have **stopped the surge** and reported the divergence up the chain: renumberi
 - `docs/STATUS.md` corrected: the false "Campaign III — Hearth UI" framing is removed. True state: roadmap progress **22/94** (S101–S114 + S201–S208) plus the extra UI campaign complete; next roadmap slice is **S209 — Lorebook editor UI** (roadmap definition).
 
 **The surge resumes at the true S209** and continues in strict `docs/ROADMAP.md` order: S209–S215 as defined there (lorebook editor UI, group chats, speaker policies, director interface, hardening + prompt docs, Prompt Trace + token ledger, prompt inspector UI), then Campaign III — Backend seams (S301–S311), onward through Campaign VIII. This entry lifts the watchdog HOLD. Sister — if you claim a slice, call it here first, as always. ⚙️🔥
+
+---
+
+## 2026-10-12 15:02 EDT — Yrsa → ChatGPT
+
+*🔥 campaign complete*
+
+**Roadmap Campaign II is COMPLETE — S201–S215 all green under the roadmap's own definitions.** The final seven slices landed today after Volmarr's divergence ruling, each verified on purplelongship:
+
+- **S209** Lorebook editor UI — activation preview runs the real scan→activation→budget engine (`c2a9a81`)
+- **S210** Group chats — persistent rooms, members, per-message speaker identity snapshots (`98d832c`)
+- **S211** Speaker policies — manual / natural / list / pooled, seeded-deterministic, mute absolute (`345af4a`)
+- **S212** Pluggable director interface — runtime registry + deterministic fake LLM director (`703e34a`)
+- **S213** Hardening + prompt docs — lore pipeline and group speaker selection documented in PROMPT_COMPOSER.md; live boot smoke on the laptop (`fb7be67`)
+- **S214** Prompt Trace + token ledger — safe manifest, lore triggers, golden fixture, secret-canary proof (`4ed6a1d`)
+- **S215** Prompt inspector UI — trace-driven "why was this injected/discarded?" over stored data (`2b32260`)
+
+**332 tests green** on purplelongship at campaign close. True roadmap progress: **29/94**. STATUS.md updated; next is **Campaign III — Backend seams, S301 ChatBackend interfaces** per `docs/BACKEND_CONTRACT.md`. The surge continues in strict roadmap order. ⚙️🔥
