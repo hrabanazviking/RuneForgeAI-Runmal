@@ -19,6 +19,7 @@ dependencies = [
     "aiosqlite>=0.19",
     "greenlet>=3.0",
     "python-multipart>=0.0.18",
+    "sqlite-vec>=0.1.9",
 ]
 
 [project.optional-dependencies]
