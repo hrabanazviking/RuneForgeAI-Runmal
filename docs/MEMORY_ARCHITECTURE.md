@@ -160,3 +160,30 @@ Memory quality is measured against these scenarios, not only whether a demo subj
 ## 15. Sovereignty rule
 
 The memory database belongs to the user. Export/backup includes memories and provenance but excludes secrets. A restored instance can reconstruct/reindex derived vector state when embedding providers differ.
+## 16. Implementation status (Campaign IV, S401–S415)
+
+Implemented in `src/runmal/memory/` (all slices verified on purplelongship):
+
+| Area | Module | Notes |
+|---|---|---|
+| Vector store (§8) | `vectorstore.py` | `VectorStore` ABC; in-memory fake + sqlite-vec adapter, one `vec0` table per provenance space; shared contract checks |
+| Records + provenance (§2, §4) | `service.py`, `models.py`, migration `0014` | `memories` / `memory_sources` / `memory_chunks` / `chat_summaries` + FTS5 index |
+| Ingestion (§3) | `ingestion.py` | Deterministic word-window chunking; every chunk carries provider/model/dims/version |
+| Retrieval (§7) | `retrieval.py` | Vector + FTS5 + structured filters; fixed-weight deterministic fusion, id tie-break |
+| Summaries (§1) | `summarize.py` | Rolling, versioned, source-range provenance; summarizer seam with deterministic fake |
+| Extraction (§3) | `extraction.py` | Async queue — reply path never waits; deterministic fake extractor behind the seam |
+| Decay (§9) | `salience.py` | Injected clock everywhere; rehearsal (relevant recall) refreshes the decay anchor; pinned/stable do not decay |
+| Witness scope (§6) | `scope.py` | Eligibility computed and applied BEFORE scoring, including vector hits |
+| Nucleus (§1) | `nucleus.py` | Curated per-user/per-character sets rendered as one `memory_nucleus` slot (S214 trace-visible) |
+| Mutation sync (§11) | `sync.py` | Consumes S107 events; partial support removal recomputes confidence, total removal invalidates (never erases) |
+| Browser (§12) | `router.py` | `/api/v1/memories` inspect/search + `/memories` page: provenance, witness, status |
+| Provenance graph (§4) | `graph.py` | Many-to-many evidence nodes/edges + extractor provenance; `verify_all_traced` gate |
+| Consolidation (§10) | `consolidation.py` | Duplicate/paraphrase merge preserving all evidence; idempotent |
+| Supersession (§5) | `supersession.py` | Duplicate / superseded / disputed classification with temporal ordering |
+| Recall trace + evaluator (§13–14) | `evaluator.py` | Per-memory eligibility/score/discard reasons; deterministic corpus: witness, temporal, duplicate, deletion, decay, re-embedding |
+| Rebuild (§11, §15) | `rebuild.py` | Snapshot provenance → destroy derived state → re-derive from canonical messages → restore → re-embed under the current profile |
+
+Portability (INV-025): memories and provenance live in the main SQLite
+database, so the S114 online-backup foundation covers them; derived
+vector/FTS state is rebuildable via `rebuild_memory` (S415) and is
+excluded from the definition of canonical truth.
