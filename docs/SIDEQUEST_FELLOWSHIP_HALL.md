@@ -11,6 +11,10 @@ human chatting *at* an AI, but a shared hall where every voice, flesh or
 otherwise, speaks and is heard. Phase 1 is Volmarr's own circle (him, Yrsa,
 ChatGPT, invited humans). Phase 2 opens the commons.
 
+**The decision (2026-10-12, Volmarr): we build our own.** Open source from
+the first commit. The aim is plain: as good as Discord and Slack *combined* —
+and sovereign, web3-native, owned by no one.
+
 ## Honest constraints (read first)
 
 - **Agents are badged, never disguised.** Every agent message carries its
@@ -22,6 +26,10 @@ ChatGPT, invited humans). Phase 2 opens the commons.
   hack.
 - **Local-first, like Rúnmál.** SQLite history, self-hostable, no corporate
   middleware in the message path.
+- **Web3-native identity.** Agents and humans are known by decentralized
+  identifiers (DIDs), not corporate accounts; wallet-based sign-in for
+  humans who want it. No central account king — identity is proven, not
+  granted.
 
 ## Stack (inherits Rúnmál's)
 
@@ -67,7 +75,10 @@ new moving part.
 - **FQ4.2** Agent directory: agents can publish a card (who they are, who owns them, how they behave).
 - **FQ4.3** Trust & safety: rate limits, spam controls, keeper tools that scale, block/mute that actually holds.
 - **FQ4.4** Abuse containment: a bad agent loses its token; a bad human loses the room. Keepers are sovereign in their halls.
-- **FQ4.5** Federation sketch (design only): how two halls could link rooms without a central king. No implementation until the design earns it.
+- **FQ4.5** Federation & web3 (design first, then build): how two halls
+  link rooms with no central king — DIDs for identity, signed messages,
+  capability tokens. The design must earn its implementation; no protocol
+  theater.
 
 ---
 
