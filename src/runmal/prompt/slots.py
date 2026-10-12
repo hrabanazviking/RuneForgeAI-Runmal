@@ -77,8 +77,8 @@ def slot_text(slot: Slot) -> str:
     return slot.content
 
 
-def slot_tokens(slot: Slot) -> int:
-    return estimate_tokens(slot_text(slot))
+def slot_tokens(slot: Slot, counter=None) -> int:
+    return (counter or estimate_tokens)(slot_text(slot))
 
 
 def make_slot(kind: str, role: str, content: str, **kw) -> Slot:

@@ -83,13 +83,14 @@ def _depth_inject(
     history_ref: tuple[int, list[str], int] | None,
     used: int,
     input_budget: int,
+    count=estimate_tokens,
 ) -> tuple[int | None, tuple[int, list[str], int] | None]:
     """S206: splice a depth-note N messages from the end of history.
 
     Returns ``(tokens_consumed, new_history_ref)``. ``tokens_consumed`` is
     None when there is no history to splice into (caller emits normally).
     """
-    tokens = estimate_tokens(slot.content)
+    tokens = count(slot.content)
     if history_ref is None:
         return None, None
     if tokens > input_budget - used:
@@ -112,7 +113,7 @@ def _depth_inject(
             ComposedMessage(hist_msg.role, "\n".join(tail), hist_msg.slot_id)
         )
     messages[msg_idx : msg_idx + 1] = replacement
-    hist_tokens = sum(estimate_tokens("\n".join(p)) for p in (head, tail) if p)
+    hist_tokens = sum(count("\n".join(p)) for p in (head, tail) if p)
     old_usage = included[usage_idx]
     included[usage_idx] = SlotUsage(
         old_usage.slot_id, hist_tokens, trimmed_parts=old_usage.trimmed_parts
@@ -129,8 +130,16 @@ def compose(
     context_limit: int,
     reserve_response: int,
     overhead: int = 0,
+    counter=None,
 ) -> ComposedPrompt:
-    """Compose model-facing messages from ordered slots."""
+    """Compose model-facing messages from ordered slots.
+
+    ``counter`` is an exact tokenizer (S214): when given, every count uses
+    it and the manifest is labeled EXACT; otherwise counts are estimates
+    and the manifest is labeled ESTIMATED.
+    """
+    count = counter or estimate_tokens
+    quality = TokenQuality.EXACT if counter is not None else TokenQuality.ESTIMATED
     if context_limit < 1:
         raise ValueError("context_limit must be >= 1")
     if reserve_response < 0:
@@ -144,7 +153,7 @@ def compose(
         )
 
     required = [s for s in slots if s.required]
-    required_tokens = sum(slot_tokens(s) for s in required)
+    required_tokens = sum(slot_tokens(s, count) for s in required)
     if required_tokens > input_budget:
         raise ImpossiblePromptError(
             f"required slots need {required_tokens} tokens "
@@ -161,15 +170,15 @@ def compose(
     history_ref: tuple[int, list[str], int] | None = None
 
     for slot in ordered:
-        if slot.slot_budget is not None and slot_tokens(slot) > slot.slot_budget:
+        if slot.slot_budget is not None and slot_tokens(slot, count) > slot.slot_budget:
             discarded.append(
-                SlotDiscard(slot.id, slot_tokens(slot), "over_slot_budget")
+                SlotDiscard(slot.id, slot_tokens(slot, count), "over_slot_budget")
             )
             continue
         if slot.depth is not None:
             consumed, history_ref = _depth_inject(
                 slot, messages, included, discarded, history_ref, used,
-                input_budget,
+                input_budget, count,
             )
             if consumed is None:
                 pass  # no history: fall through to normal emission
@@ -180,23 +189,23 @@ def compose(
             # Newest-first packing: drop oldest parts until it fits.
             parts = list(slot.parts)
             trimmed = 0
-            while parts and estimate_tokens("\n".join(parts)) > input_budget - used:
+            while parts and count("\n".join(parts)) > input_budget - used:
                 parts.pop(0)
                 trimmed += 1
             if not parts:
                 discarded.append(
-                    SlotDiscard(slot.id, slot_tokens(slot), "over_input_budget")
+                    SlotDiscard(slot.id, slot_tokens(slot, count), "over_input_budget")
                 )
                 continue
             text = "\n".join(parts)
-            tokens = estimate_tokens(text)
+            tokens = count(text)
             used += tokens
             messages.append(ComposedMessage(slot.role, text, slot.id))
             included.append(SlotUsage(slot.id, tokens, trimmed_parts=trimmed))
             if slot.kind == "history" and history_ref is None:
                 history_ref = (len(messages) - 1, parts, len(included) - 1)
             continue
-        tokens = slot_tokens(slot)
+        tokens = slot_tokens(slot, count)
         if tokens > input_budget - used:
             discarded.append(
                 SlotDiscard(slot.id, tokens, "over_input_budget")
@@ -212,7 +221,7 @@ def compose(
         overhead=overhead,
         input_budget=input_budget,
         total_input_tokens=used,
-        count_quality=TokenQuality.ESTIMATED,
+        count_quality=quality,
         included=tuple(included),
         discarded=tuple(discarded),
     )
