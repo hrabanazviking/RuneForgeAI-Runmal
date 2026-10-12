@@ -161,6 +161,18 @@ Voice tests should include:
 - missing/disconnected audio device;
 - long synthesis cancelled during generation.
 
+## 13. Implementation status (Campaign V)
+
+- **S501 Audio plumbing** — `src/runmal/voice/audio.py`: `DeviceProvider`
+  seam (fixture provider for headless tests; `SoundDeviceProvider` via the
+  optional `sounddevice`/PortAudio package, imported lazily), `AudioDevice`
+  enumeration, `RoleMap` explicit role selection persisted as descriptive
+  JSON (`SavedDeviceRef`), and a 16 kHz mono PCM16 `RingBuffer` with
+  pre-roll. Resolution follows INV-022: a missing saved device yields
+  `REMAP_REQUIRED` with no device bound — the OS default is *offered* by
+  enumeration but never silently substituted. Audio format contract for
+  the whole campaign: PCM16 LE mono @ 16 kHz, 512-sample (32 ms) frames.
+
 ## 12. VRChat implication
 
 OSC controls/events are not the same thing as hearing room voice. Whole-room listening on PCVR requires an explicit audio-ingress route from the host machine. Treat that as its own bridge/audio slice, not as an assumed property of OSC.
