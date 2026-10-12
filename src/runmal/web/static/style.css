@@ -1,54 +1,150 @@
-:root { color-scheme: dark; --bg: #0d1117; --panel: #161b22; --line: #30363d;
-        --text: #e6edf3; --dim: #8b949e; --accent: #a371f7; --danger: #f85149; }
+/* Rúnmál Hearth design system (S301).
+ *
+ * Every visual value flows from design tokens (CSS custom properties).
+ * Component rules reference tokens only -- no raw colors/sizes outside the
+ * token blocks. Themes: dark is the default; light via [data-theme="light"]
+ * or the OS preference when no explicit theme is chosen.
+ */
+
+/* -- Tokens: dark (default) ------------------------------------------- */
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0d1117;
+  --panel: #161b22;
+  --panel-hover: #21262d;
+  --line: #30363d;
+  --text: #e6edf3;
+  --dim: #8b949e;
+  --accent: #a371f7;
+  --accent-contrast: #ffffff;
+  --user-bubble: #1f6feb;
+  --danger: #f85149;
+  --danger-bg: #3d1113;
+  --code-bg: #21262d;
+  --overlay: rgba(0, 0, 0, 0.7);
+}
+
+/* -- Tokens: light ------------------------------------------------------ */
+[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f6f4ef;
+  --panel: #ffffff;
+  --panel-hover: #efe9dc;
+  --line: #d8d2c4;
+  --text: #1f2328;
+  --dim: #5c6650;
+  --accent: #7c3aed;
+  --accent-contrast: #ffffff;
+  --user-bubble: #2563eb;
+  --danger: #b91c1c;
+  --danger-bg: #fdecec;
+  --code-bg: #efe9dc;
+  --overlay: rgba(31, 35, 40, 0.45);
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    color-scheme: light;
+    --bg: #f6f4ef;
+    --panel: #ffffff;
+    --panel-hover: #efe9dc;
+    --line: #d8d2c4;
+    --text: #1f2328;
+    --dim: #5c6650;
+    --accent: #7c3aed;
+    --accent-contrast: #ffffff;
+    --user-bubble: #2563eb;
+    --danger: #b91c1c;
+    --danger-bg: #fdecec;
+    --code-bg: #efe9dc;
+    --overlay: rgba(31, 35, 40, 0.45);
+  }
+}
+
+/* -- Tokens: scale (theme-independent) ---------------------------------- */
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --radius-s: 4px;
+  --radius-m: 8px;
+  --radius-l: 12px;
+  --font-s: 13px;
+  --font-m: 15px;
+  --font-l: 20px;
+  --sidebar-width: 240px;
+  --content-max: 960px;
+}
+
+/* -- Base ---------------------------------------------------------------- */
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--text);
-       font: 15px/1.5 system-ui, sans-serif; }
+       font: var(--font-m)/1.5 system-ui, sans-serif; }
 .hidden { display: none !important; }
-#app { display: flex; height: 100vh; }
-#sidebar { width: 240px; background: var(--panel); border-right: 1px solid var(--line);
-            padding: 12px; display: flex; flex-direction: column; gap: 10px; }
-#sidebar h1 { margin: 0; font-size: 20px; }
-#chat-list { list-style: none; margin: 0; padding: 0; overflow-y: auto; }
-#chat-list li { padding: 8px; border-radius: 6px; cursor: pointer; }
-#chat-list li:hover { background: #21262d; }
-#chat-list li.active { background: #21262d; outline: 1px solid var(--accent); }
-#main { flex: 1; display: flex; flex-direction: column; }
-#thread { flex: 1; overflow-y: auto; padding: 16px; display: flex;
-          flex-direction: column; gap: 10px; }
-.msg { max-width: 70%; padding: 10px 12px; border-radius: 10px; white-space: pre-wrap;
-       word-break: break-word; }
-.msg.user { align-self: flex-end; background: #1f6feb; }
-.msg.assistant { align-self: flex-start; background: var(--panel);
-                 border: 1px solid var(--line); }
-#composer { display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--line); }
-#input { flex: 1; resize: vertical; background: var(--panel); color: var(--text);
-         border: 1px solid var(--line); border-radius: 8px; padding: 8px; }
-button { background: var(--accent); color: #fff; border: 0; border-radius: 8px;
-         padding: 8px 14px; cursor: pointer; }
-button#stop { background: var(--danger); }
-#error-banner { background: #3d1113; border-bottom: 1px solid var(--danger);
-                padding: 10px 16px; display: flex; gap: 12px; align-items: center; }
-#error-banner button { background: transparent; outline: 1px solid var(--danger); }
-#token-gate { position: fixed; inset: 0; background: rgba(0,0,0,.7);
-              display: flex; align-items: center; justify-content: center; }
-#token-card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
-              padding: 24px; max-width: 420px; }
-#token-card input { width: 100%; margin: 10px 0; padding: 8px; background: var(--bg);
-                    color: var(--text); border: 1px solid var(--line); border-radius: 8px; }
-.note { color: var(--dim); font-size: 13px; }
-code { background: #21262d; padding: 2px 6px; border-radius: 4px; }
+.note, .hint { color: var(--dim); font-size: var(--font-s); }
+code { background: var(--code-bg); padding: 2px 6px; border-radius: var(--radius-s); }
+button { background: var(--accent); color: var(--accent-contrast); border: 0;
+         border-radius: var(--radius-m); padding: var(--space-2) 14px; cursor: pointer; }
+button.danger, #confirm-ok { background: var(--danger); }
+input, select, textarea { background: var(--panel); color: var(--text);
+  border: 1px solid var(--line); border-radius: var(--radius-m);
+  padding: var(--space-2); }
 
-#chat-list li { display: flex; align-items: center; gap: 4px; }
+/* -- Layout shell --------------------------------------------------------- */
+/* App shell: sidebar + main grid (chat). */
+.shell { display: grid; grid-template-columns: var(--sidebar-width) 1fr;
+         grid-template-areas: "sidebar main"; height: 100dvh; }
+.shell > .shell-sidebar { grid-area: sidebar; }
+.shell > .shell-main { grid-area: main; min-width: 0; }
+/* Page shell: single centered column (connections / editor / tools). */
+.page { max-width: var(--content-max); margin: 0 auto; padding: var(--space-5); }
+
+/* -- Chat layout ------------------------------------------------------------ */
+#app { display: flex; height: 100vh; }
+#sidebar { width: var(--sidebar-width); background: var(--panel);
+           border-right: 1px solid var(--line); padding: var(--space-3);
+           display: flex; flex-direction: column; gap: 10px; }
+#sidebar h1 { margin: 0; font-size: var(--font-l); }
+#chat-list { list-style: none; margin: 0; padding: 0; overflow-y: auto; }
+#chat-list li { padding: var(--space-2); border-radius: 6px; cursor: pointer;
+                display: flex; align-items: center; gap: var(--space-1); }
+#chat-list li:hover { background: var(--panel-hover); }
+#chat-list li.active { background: var(--panel-hover); outline: 1px solid var(--accent); }
 #chat-list li .title { flex: 1; overflow: hidden; text-overflow: ellipsis;
                        white-space: nowrap; }
-#chat-list li button { padding: 2px 8px; font-size: 12px; background: #21262d; }
+#chat-list li button { padding: 2px var(--space-2); font-size: 12px;
+                       background: var(--panel-hover); }
 #chat-list li button.danger { background: transparent; outline: 1px solid var(--danger); }
-#chat-list li input { flex: 1; background: var(--bg); color: var(--text);
-                      border: 1px solid var(--accent); border-radius: 4px; padding: 4px; }
-#confirm-modal { position: fixed; inset: 0; background: rgba(0,0,0,.7);
-                 display: flex; align-items: center; justify-content: center; }
+#chat-list li input { flex: 1; background: var(--bg); border-color: var(--accent);
+                      border-radius: var(--radius-s); padding: var(--space-1); }
+#main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+#thread { flex: 1; overflow-y: auto; padding: var(--space-4); display: flex;
+          flex-direction: column; gap: 10px; }
+.msg { max-width: 70%; padding: 10px var(--space-3); border-radius: 10px;
+       white-space: pre-wrap; word-break: break-word; }
+.msg.user { align-self: flex-end; background: var(--user-bubble); }
+.msg.assistant { align-self: flex-start; background: var(--panel);
+                 border: 1px solid var(--line); }
+#composer { display: flex; gap: var(--space-2); padding: var(--space-3);
+            border-top: 1px solid var(--line); }
+#input { flex: 1; resize: vertical; }
+button#stop { background: var(--danger); }
+
+/* -- Shared surfaces --------------------------------------------------------- */
+#error-banner { background: var(--danger-bg); border-bottom: 1px solid var(--danger);
+                padding: 10px var(--space-4); display: flex; gap: var(--space-3);
+                align-items: center; }
+#error-banner button { background: transparent; outline: 1px solid var(--danger); }
+#token-gate, #confirm-modal { position: fixed; inset: 0; background: var(--overlay);
+              display: flex; align-items: center; justify-content: center; }
+#token-card { background: var(--panel); border: 1px solid var(--line);
+              border-radius: var(--radius-l); padding: var(--space-5); max-width: 420px; }
+#token-card input { width: 100%; margin: 10px 0; background: var(--bg); }
 #confirm-card { background: var(--panel); border: 1px solid var(--danger);
-                border-radius: 12px; padding: 24px; max-width: 420px; }
-#confirm-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; }
-#confirm-cancel { background: #21262d; }
-button.danger, #confirm-ok { background: var(--danger); }
+                border-radius: var(--radius-l); padding: var(--space-5); max-width: 420px; }
+#confirm-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: var(--space-4); }
+#confirm-cancel { background: var(--panel-hover); }
+#theme-toggle { background: var(--panel-hover); color: var(--text); }

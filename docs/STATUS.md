@@ -4,13 +4,13 @@
 
 ## Current phase
 
-**Architecture / pre-implementation.** The repository contains the public project definition, corrected clean-room research, architecture, builder protocol and an expanded **94-slice / 8-campaign** roadmap. Campaign I implementation has not yet been claimed complete by this status document.
+**Implementation — Campaign III.** Campaign I (S101–S114) and Campaign II (S201–S215) are complete and verified on the forge laptop (purplelongship); the full suite stands at 235 tests green at the Campaign II close (commit `789fd86`).
 
 ## Current campaign
 
-**Campaign I — Foundation, text chat, personas**
+**Campaign III — Hearth UI**
 
-Expected first implementation slice: **S101 — Repo scaffold**.
+Active slice: **S301 — Hearth design tokens + layout shell**. Last completed slice: **S215 — Lorebook/group/prompt integration test + hardening**.
 
 ## Documentation foundation now present
 

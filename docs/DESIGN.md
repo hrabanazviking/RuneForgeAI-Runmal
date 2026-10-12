@@ -340,3 +340,20 @@ The architecture remains API-first so future clients/features can attach without
 | Research/source evidence | `RESEARCH.md` |
 
 When two documents disagree, resolve the contradiction rather than choosing whichever wording is convenient.
+
+## 18. Hearth UI design system (S301, Campaign III)
+
+The web UI ("Hearth") is styled by a single token layer in
+`src/runmal/web/static/style.css`:
+
+- **Design tokens** are CSS custom properties. Color tokens are defined
+  per theme; scale tokens (spacing, radii, font sizes, layout widths) are
+  theme-independent. Component rules take colors from tokens only — raw
+  color literals outside the token blocks are a test failure
+  (`tests/test_s301_tokens.py`).
+- **Themes:** dark is the default. Light applies via an explicit
+  `[data-theme="light"]` (persisted by `theme.js` in local storage) or,
+  with no explicit choice, via `prefers-color-scheme`.
+- **Layout shells:** `.shell` is the sidebar+main grid used by the chat
+  surface; `.page` is the centered single-column shell used by the
+  connections, editor, and tools pages.
