@@ -26,7 +26,7 @@ def make_client(tmp_path, monkeypatch):
     monkeypatch.setenv("RUNMAL_DATA_DIR", str(tmp_path))
     db_path = tmp_path / "test.db"
     applied = migrate_to_head(db_path)
-    assert applied[-1] == "0010"  # groups migration is the head
+    assert applied[-1] == "0011"  # speaker-policy migration is the head
     engine = create_db_engine(db_path)
     client = TestClient(create_app(create_session_factory(engine)))
     token = get_or_create_credential()
@@ -97,7 +97,8 @@ def test_member_add_remove(tmp_path, monkeypatch) -> None:
 
     added = client.post(f"/api/v1/groups/{group['id']}/members", json={"character_id": una})
     assert added.status_code == 201, added.text
-    assert added.json() == {"character_id": una, "name": "Una", "position": 1}
+    assert added.json() == {"character_id": una, "name": "Una", "position": 1,
+                            "talkativeness": 0.5, "muted": False}
 
     dup = client.post(f"/api/v1/groups/{group['id']}/members", json={"character_id": una})
     assert dup.status_code == 422

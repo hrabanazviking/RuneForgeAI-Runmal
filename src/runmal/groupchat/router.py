@@ -54,8 +54,7 @@ async def _load_participants(
         card = import_card(character.card_json.encode(), "card.json")
         persona = card.personality or card.description
         participants.append(
-            Participant(character_id=character.id, name=character.name,
-                        persona=persona)
+            Participant(character_id=character.id, name=character.name, persona=persona)
         )
     return participants
 
@@ -91,15 +90,10 @@ async def group_turn(
             async for event in generation.generate_events(request_id, prompt_text):
                 if event.get("type") == "token":
                     text += event["text"]
-                    yield _event(
-                        {"type": "token", "author": speaker.name,
-                         "text": event["text"]}
-                    )
+                    yield _event({"type": "token", "author": speaker.name, "text": event["text"]})
             chat.history.append(GroupMessage(speaker.name, text))
             chat.note_spoke(strategy, speaker)
-            yield _event(
-                {"type": "message", "author": speaker.name, "content": text}
-            )
+            yield _event({"type": "message", "author": speaker.name, "content": text})
         yield _event({"type": "turn_end", "rr_cursor": chat.cursor})
 
     return StreamingResponse(sse(), media_type="text/event-stream")
@@ -117,12 +111,19 @@ class GroupCreate(BaseModel):
     member_character_ids: list[str] = []
 
 
-class GroupRename(BaseModel):
-    name: str = Field(min_length=1)
+class GroupUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=1)
+    speaker_policy: str | None = None
+    speaker_config: dict | None = None
 
 
 class MemberAdd(BaseModel):
     character_id: str
+
+
+class MemberSettings(BaseModel):
+    talkativeness: float | None = None
+    muted: bool | None = None
 
 
 class GroupMessageIn(BaseModel):
@@ -131,9 +132,7 @@ class GroupMessageIn(BaseModel):
 
 
 def _unprocessable(exc: ValueError) -> HTTPException:
-    return HTTPException(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)
-    )
+    return HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc))
 
 
 @router.post("/groups", status_code=status.HTTP_201_CREATED)
@@ -143,9 +142,7 @@ async def create_group(
     session: AsyncSession = Depends(get_session),
 ):
     try:
-        group = await store.create_group(
-            session, user_id, body.name, body.member_character_ids
-        )
+        group = await store.create_group(session, user_id, body.name, body.member_character_ids)
     except ValueError as exc:
         raise _unprocessable(exc) from exc
     return await store.describe_group(session, user_id, group.id)
@@ -172,13 +169,23 @@ async def get_group(
 
 
 @router.patch("/groups/{group_id}")
-async def rename_group(
+async def update_group(
     group_id: str,
-    body: GroupRename,
+    body: GroupUpdate,
     user_id: str = Depends(get_owner_id),
     session: AsyncSession = Depends(get_session),
 ):
-    payload = await store.rename_group(session, user_id, group_id, body.name)
+    try:
+        payload = await store.update_group(
+            session,
+            user_id,
+            group_id,
+            name=body.name,
+            speaker_policy=body.speaker_policy,
+            speaker_config=body.speaker_config,
+        )
+    except ValueError as exc:
+        raise _unprocessable(exc) from exc
     if payload is None:
         raise HTTPException(status_code=404, detail="group not found")
     return payload
@@ -223,6 +230,30 @@ async def remove_member(
     return {"deleted": True, "id": character_id}
 
 
+@router.patch("/groups/{group_id}/members/{character_id}")
+async def update_member_settings(
+    group_id: str,
+    character_id: str,
+    body: MemberSettings,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    try:
+        member = await store.update_member_settings(
+            session,
+            user_id,
+            group_id,
+            character_id,
+            talkativeness=body.talkativeness,
+            muted=body.muted,
+        )
+    except ValueError as exc:
+        raise _unprocessable(exc) from exc
+    if member is None:
+        raise HTTPException(status_code=404, detail="member not found")
+    return member
+
+
 @router.post("/groups/{group_id}/messages", status_code=status.HTTP_201_CREATED)
 async def post_group_message(
     group_id: str,
@@ -231,9 +262,7 @@ async def post_group_message(
     session: AsyncSession = Depends(get_session),
 ):
     try:
-        message = await store.append_message(
-            session, user_id, group_id, body.speaker, body.content
-        )
+        message = await store.append_message(session, user_id, group_id, body.speaker, body.content)
     except ValueError as exc:
         raise _unprocessable(exc) from exc
     if message is None:

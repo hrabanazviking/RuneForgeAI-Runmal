@@ -18,6 +18,7 @@ from runmal.db.migrations import (
     m0008_character_soft_delete,
     m0009_chat_preset,
     m0010_groups,
+    m0011_speaker_policies,
 )
 
 MIGRATIONS: list[tuple[str, str, object]] = [
@@ -66,5 +67,10 @@ MIGRATIONS: list[tuple[str, str, object]] = [
         m0010_groups.REVISION,
         m0010_groups.DESCRIPTION,
         m0010_groups,
+    ),
+    (
+        m0011_speaker_policies.REVISION,
+        m0011_speaker_policies.DESCRIPTION,
+        m0011_speaker_policies,
     ),
 ]

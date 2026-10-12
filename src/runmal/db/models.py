@@ -189,6 +189,9 @@ class Group(Base):
         String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
     name: Mapped[str] = mapped_column(String(200), nullable=False, default="")
+    # Speaker-policy configuration (S211): policy name + JSON parameters.
+    speaker_policy: Mapped[str] = mapped_column(String(40), nullable=False, default="natural")
+    speaker_config: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
 
 
@@ -204,3 +207,6 @@ class GroupMember(Base):
         String(36), ForeignKey("characters.id", ondelete="CASCADE"), primary_key=True
     )
     position: Mapped[int] = mapped_column(nullable=False, default=0)
+    # Speaker-policy knobs (S211): selection weight + absolute mute.
+    talkativeness: Mapped[float] = mapped_column(nullable=False, default=0.5)
+    muted: Mapped[bool] = mapped_column(nullable=False, default=False)

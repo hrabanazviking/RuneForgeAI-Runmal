@@ -20,12 +20,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.characters.service import get_character
 from runmal.db.models import Character, Chat, ChatEvent, Group, GroupMember, Message
+from runmal.groupchat.policies import get_policy
 
 USER_SPEAKER = "user"
 
 
-def member_to_dict(character_id: str, name: str, position: int) -> dict:
-    return {"character_id": character_id, "name": name, "position": position}
+def member_to_dict(member: GroupMember, name: str) -> dict:
+    return {
+        "character_id": member.character_id,
+        "name": name,
+        "position": member.position,
+        "talkativeness": member.talkativeness,
+        "muted": bool(member.muted),
+    }
 
 
 def group_to_dict(
@@ -41,6 +48,8 @@ def group_to_dict(
         "members": members,
         "member_count": len(members),
         "message_count": message_count,
+        "speaker_policy": group.speaker_policy,
+        "speaker_config": json.loads(group.speaker_config or "{}"),
         "created_at": group.created_at.isoformat(),
     }
 
@@ -82,10 +91,7 @@ async def _member_rows(session: AsyncSession, group_id: str) -> list[tuple[Group
 
 
 async def _describe(session: AsyncSession, group: Group, with_count: bool = False) -> dict:
-    members = [
-        member_to_dict(m.character_id, name, m.position)
-        for m, name in await _member_rows(session, group.id)
-    ]
+    members = [member_to_dict(m, name) for m, name in await _member_rows(session, group.id)]
     chat = await _room_chat(session, group.id)
     count = 0
     if with_count and chat is not None:
@@ -141,16 +147,29 @@ async def list_groups(session: AsyncSession, user_id: str) -> list[dict]:
     return [await _describe(session, g, with_count=True) for g in result.scalars()]
 
 
-async def rename_group(
-    session: AsyncSession, user_id: str, group_id: str, name: str
+async def update_group(
+    session: AsyncSession,
+    user_id: str,
+    group_id: str,
+    name: str | None = None,
+    speaker_policy: str | None = None,
+    speaker_config: dict | None = None,
 ) -> dict | None:
+    """Update room name and/or speaker-policy configuration (S211).
+    ValueError -> unknown speaker policy name."""
     group = await _get_owned_group(session, user_id, group_id)
     if group is None:
         return None
-    group.name = name
-    chat = await _room_chat(session, group.id)
-    if chat is not None:
-        chat.title = name
+    if speaker_policy is not None:
+        get_policy(speaker_policy)  # raises ValueError for unknown names
+        group.speaker_policy = speaker_policy
+    if speaker_config is not None:
+        group.speaker_config = json.dumps(speaker_config)
+    if name is not None:
+        group.name = name
+        chat = await _room_chat(session, group.id)
+        if chat is not None:
+            chat.title = name
     await session.commit()
     return await _describe(session, group, with_count=True)
 
@@ -181,7 +200,8 @@ async def add_member(
     member = GroupMember(group_id=group.id, character_id=character_id, position=len(rows))
     session.add(member)
     await session.commit()
-    return member_to_dict(character_id, character.name, len(rows))
+    await session.refresh(member)
+    return member_to_dict(member, character.name)
 
 
 async def remove_member(
@@ -200,6 +220,42 @@ async def remove_member(
     )
     await session.commit()
     return (result.rowcount or 0) > 0
+
+
+async def update_member_settings(
+    session: AsyncSession,
+    user_id: str,
+    group_id: str,
+    character_id: str,
+    talkativeness: float | None = None,
+    muted: bool | None = None,
+) -> dict | None:
+    """Update a member's speaker-policy knobs (S211). None -> group or
+    member not found; ValueError -> talkativeness outside [0.0, 1.0]."""
+    if talkativeness is not None and not 0.0 <= talkativeness <= 1.0:
+        raise ValueError("talkativeness must be in [0.0, 1.0]")
+    group = await _get_owned_group(session, user_id, group_id)
+    if group is None:
+        return None
+    result = await session.execute(
+        select(GroupMember, Character.name)
+        .join(Character, Character.id == GroupMember.character_id)
+        .where(
+            GroupMember.group_id == group.id,
+            GroupMember.character_id == character_id,
+        )
+    )
+    row = result.first()
+    if row is None:
+        return None
+    member, name = row[0], row[1]
+    if talkativeness is not None:
+        member.talkativeness = talkativeness
+    if muted is not None:
+        member.muted = muted
+    await session.commit()
+    await session.refresh(member)
+    return member_to_dict(member, name)
 
 
 async def append_message(
