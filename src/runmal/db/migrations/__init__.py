@@ -1,0 +1,14 @@
+"""Versioned migrations, oldest first. Each module exposes:
+
+REVISION: str — zero-padded ordering key, e.g. "0001"
+DESCRIPTION: str — human summary
+upgrade(conn) — apply DDL on a raw sqlite3 connection (committed by runner)
+"""
+
+from __future__ import annotations
+
+from runmal.db.migrations import m0001_initial
+
+MIGRATIONS: list[tuple[str, str, object]] = [
+    (m0001_initial.REVISION, m0001_initial.DESCRIPTION, m0001_initial),
+]
