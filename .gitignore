@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/
+.venv/
+venv/
+# pytest / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+# ruff
+.ruff_cache/
+# local state
+.runmal/
+*.db
+*.sqlite3
+# OS / editors
+.DS_Store
+.idea/
+.vscode/
