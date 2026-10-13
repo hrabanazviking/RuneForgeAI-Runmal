@@ -1,0 +1,34 @@
+{
+  "generated_at": "2026-10-13T09:58:04Z",
+  "hosted_ci": "not used \u2014 GitHub Actions deliberately not used (owner's ruling, 2026-10-13)",
+  "hosting": "self-hosted",
+  "legs": [
+    {
+      "command": [
+        "/home/volmarr/runmal-evidence-venv/bin/python",
+        "-m",
+        "pytest",
+        "-q"
+      ],
+      "environment": {
+        "hostname": "purplelongship",
+        "machine": "x86_64",
+        "os": "Linux",
+        "os_release": "7.0.0-34-generic",
+        "os_version": "#34-Ubuntu SMP PREEMPT_DYNAMIC Wed Sep  2 14:29:37 UTC 2026",
+        "platform": "Linux-7.0.0-34-generic-x86_64-with-glibc2.43",
+        "processor": "unknown",
+        "python": "3.12.13",
+        "python_executable": "/home/volmarr/runmal-evidence-venv/bin/python",
+        "python_implementation": "CPython"
+      },
+      "suite": {
+        "duration_s": 47.038,
+        "exit_code": 0,
+        "status": "passed",
+        "summary": "686 passed, 3 skipped, 31 warnings in 45.88s"
+      }
+    }
+  ],
+  "schema": "runmal.platform-matrix/v1"
+}
