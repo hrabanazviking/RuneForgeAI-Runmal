@@ -125,6 +125,9 @@ COSYVOICE_PACKAGES: tuple[str, ...] = (
     "protobuf",
     "pydantic",
     "rich",
+    # Lazy-loaded by transformers when AutoModel reads the weights —
+    # invisible to an import smoke test; the real build proved it.
+    "safetensors",
     "soundfile",
     "tensorboard",
     # Pinned to the version the closure was proven against: newer 5.x
