@@ -110,7 +110,6 @@ def _torch_cpu_refs() -> tuple[str, str]:
 COSYVOICE_PACKAGES: tuple[str, ...] = (
     "conformer",
     "diffusers",
-    "hydra-core",
     "HyperPyYAML",
     "inflect",
     "lightning",
@@ -128,7 +127,10 @@ COSYVOICE_PACKAGES: tuple[str, ...] = (
     "rich",
     "soundfile",
     "tensorboard",
-    "transformers",
+    # Pinned to the version the closure was proven against: newer 5.x
+    # raises its tokenizers floor past 0.22.1 (the newest tokenizers
+    # transformers 5.2 accepts and faster-whisper's tree also allows).
+    "transformers==5.2.0",
     "WeTextProcessing",
     "wget",
     "x-transformers",

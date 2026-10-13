@@ -44,8 +44,7 @@ voice = [
 voice-cosyvoice = [
     "conformer",
     "diffusers",
-    "hydra-core",
-    "HyperPyYAML",
+      "HyperPyYAML",
     "inflect",
     "lightning",
     "matplotlib",
@@ -59,7 +58,7 @@ voice-cosyvoice = [
     "rich",
     "soundfile",
     "tensorboard",
-    "transformers",
+    "transformers==5.2.0",
     "WeTextProcessing",
     "wget",
     "x-transformers",
