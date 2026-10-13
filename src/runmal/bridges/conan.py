@@ -37,28 +37,19 @@ class BridgeSink(Protocol):
 
 
 class HTTPBridgeSink:
-    """Appends turns to a Rúnmál chat via the bridge API (S602)."""
+    """Appends turns to a Rúnmál chat via the bridge API (S602).
+
+    Kept as this module's public name; the implementation is the
+    shared one in runmal.bridges.bridge_http.
+    """
 
     def __init__(self, base_url: str, token: str, chat_id: str, timeout: float = 10.0):
-        self._url = f"{base_url.rstrip('/')}/api/v1/bridge/chats/{chat_id}/turns"
-        self._token = token
-        self._timeout = timeout
+        from runmal.bridges.bridge_http import HTTPBridgeSink as _SharedSink
+
+        self._impl = _SharedSink(base_url, token, chat_id, timeout=timeout, via="conan-rcon-bridge")
 
     def append_turn(self, speaker_kind: str, content: str, speaker_name: str | None = None) -> None:
-        import httpx
-
-        response = httpx.post(
-            self._url,
-            headers={"Authorization": f"Bearer {self._token}"},
-            json={
-                "speaker_kind": speaker_kind,
-                "content": content,
-                "speaker_name": speaker_name,
-                "metadata": {"via": "conan-rcon-bridge"},
-            },
-            timeout=self._timeout,
-        )
-        response.raise_for_status()
+        self._impl.append_turn(speaker_kind, content, speaker_name=speaker_name)
 
 
 @dataclass(frozen=True)

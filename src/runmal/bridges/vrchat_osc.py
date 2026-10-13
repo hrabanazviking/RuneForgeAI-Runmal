@@ -99,23 +99,19 @@ class StateSource(Protocol):
 
 
 class HTTPBridgeStateSource:
-    """Fetches state from a running Rúnmál via the bridge API."""
+    """Fetches state from a running Rúnmál via the bridge API.
+
+    Kept as the VRChat module's public name; the implementation is
+    the shared one in runmal.bridges.bridge_http.
+    """
 
     def __init__(self, base_url: str, token: str, chat_id: str, timeout: float = 10.0):
-        self._url = f"{base_url.rstrip('/')}/api/v1/bridge/chats/{chat_id}"
-        self._token = token
-        self._timeout = timeout
+        from runmal.bridges.bridge_http import HTTPBridgeSource
+
+        self._impl = HTTPBridgeSource(base_url, token, chat_id, timeout)
 
     def fetch_state(self) -> dict:
-        import httpx
-
-        response = httpx.get(
-            self._url,
-            headers={"Authorization": f"Bearer {self._token}"},
-            timeout=self._timeout,
-        )
-        response.raise_for_status()
-        return response.json()
+        return self._impl.fetch_state()
 
 
 class CompanionFollower:
