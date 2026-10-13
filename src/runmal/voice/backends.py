@@ -128,6 +128,9 @@ COSYVOICE_PACKAGES: tuple[str, ...] = (
     # Lazy-loaded by transformers when AutoModel reads the weights —
     # invisible to an import smoke test; the real build proved it.
     "safetensors",
+    # cosyvoice/hifigan imports scipy.signal at module level on the
+    # model-load path (proven by the real build on purplelongship).
+    "scipy",
     "soundfile",
     "tensorboard",
     # Pinned to the version the closure was proven against: newer 5.x
@@ -151,6 +154,8 @@ COSYVOICE_PACKAGES: tuple[str, ...] = (
     "numba",  # openai-whisper
     "llvmlite",  # numba
     "pynini",  # WeTextProcessing runtime
+    # HyperPyYAML's substrate (it composes PyYAML + ruamel at import).
+    "pyyaml",
     "importlib_resources",  # WeTextProcessing runtime
     "regex",  # transformers
     "requests",  # modelscope / huggingface-hub
