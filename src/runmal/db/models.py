@@ -418,6 +418,25 @@ class BridgeCheckpoint(Base):
     updated_at: Mapped[str] = mapped_column(String(40), nullable=False, default="")
 
 
+class BridgeIdempotencyKey(Base):
+    """Stored result of one idempotent bridge write (S610).
+
+    Primary key (credential, operation, key): replaying the same
+    logical request returns `response_json`; a different request
+    under the same key is a 409 conflict (INV-030).
+    """
+
+    __tablename__ = "bridge_idempotency_keys"
+
+    credential_id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    operation: Mapped[str] = mapped_column(String(40), primary_key=True)
+    key: Mapped[str] = mapped_column(String(200), primary_key=True)
+    request_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    status_code: Mapped[int] = mapped_column(Integer, nullable=False, default=200)
+    response_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    created_at: Mapped[str] = mapped_column(String(40), nullable=False, default="")
+
+
 class CharacterVoiceProfile(Base):
     """Per-character TTS reference (S512): backend + voice + params.
 

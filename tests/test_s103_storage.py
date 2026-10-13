@@ -24,13 +24,13 @@ def test_fresh_db_migrates_to_head(db_path) -> None:
     assert applied == [
         "0001", "0002", "0003", "0004", "0005", "0006",
         "0007", "0008", "0009", "0010", "0011", "0012",
-        "0013", "0014", "0015", "0016", "0017",
+        "0013", "0014", "0015", "0016", "0017", "0018",
     ]
-    assert current_revision(db_path) == "0017"
+    assert current_revision(db_path) == "0018"
     assert applied_revisions(db_path) == [
         "0001", "0002", "0003", "0004", "0005", "0006",
         "0007", "0008", "0009", "0010", "0011", "0012",
-        "0013", "0014", "0015", "0016", "0017",
+        "0013", "0014", "0015", "0016", "0017", "0018",
     ]
     inspector = inspect(sqlalchemy.create_engine(f"sqlite:///{db_path}"))
     tables = set(inspector.get_table_names())
@@ -42,7 +42,7 @@ def test_migrate_is_idempotent(db_path) -> None:
     assert migrate_to_head(db_path) == [
         "0001", "0002", "0003", "0004", "0005", "0006",
         "0007", "0008", "0009", "0010", "0011", "0012",
-        "0013", "0014", "0015", "0016", "0017",
+        "0013", "0014", "0015", "0016", "0017", "0018",
     ]
     assert migrate_to_head(db_path) == []
 

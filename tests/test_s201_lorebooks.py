@@ -26,8 +26,8 @@ def test_migration_0004_reaches_head(tmp_path) -> None:
     # NOTE (S207/S211/S303/S306): 0006-0009 now follow 0005; HEAD is 0009.
     db_path = tmp_path / "m.db"
     applied = migrate_to_head(db_path)
-    assert applied[-1] == "0017"
-    assert current_revision(db_path) == "0017"
+    assert applied[-1] == "0018"
+    assert current_revision(db_path) == "0018"
 
 
 def test_lorebook_crud(tmp_path, monkeypatch) -> None:

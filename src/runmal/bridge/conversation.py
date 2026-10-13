@@ -182,13 +182,33 @@ async def stream_generation(
     bridge_id: str,
     chat_id: str,
     request_id: str,
+    *,
+    idempotency_key: str | None = None,
 ) -> AsyncIterator[dict]:
     """Stream one bridge generation turn (protocol §7).
 
     Yields `turn_started`, the generation service's normalized events,
     and — only after a clean finish with text — `turn_stored` once the
     assistant message is persisted as the active persona.
+
+    With an idempotency key (S610), a retry replays the stored
+    terminal summary (turn_started + done + turn_stored) instead of
+    generating — and persisting — a second turn. Token events are not
+    part of the stored summary: a replay reports the outcome, it does
+    not re-perform the stream.
     """
+    from runmal.bridge import idempotency
+
+    if idempotency_key is not None:
+        async with session_factory() as session:
+            row = await idempotency.lookup(
+                session, bridge_id, idempotency.OP_GENERATE, idempotency_key
+            )
+        if row is not None:
+            for event in json.loads(row.response_json).get("events", []):
+                yield event
+            return
+
     async with session_factory() as session:
         chat = await chats.get_chat(session, user_id, chat_id)
         if chat is None:
@@ -207,12 +227,14 @@ async def stream_generation(
             character = await get_character(session, user_id, persona_id)
             persona_name = character.name if character is not None else None
 
-    yield {
+    started = {
         "type": "turn_started",
         "request_id": request_id,
         "chat_id": chat_id,
         "backend": backend.backend_key,
     }
+    yield started
+    summary: list[dict] = [started]
     parts: list[str] = []
     finish: str | None = None
     saw_error = False
@@ -225,6 +247,7 @@ async def stream_generation(
             saw_error = True
         elif event["type"] == "done":
             finish = event.get("finish_reason")
+            summary.append(event)
         yield event
     text = "".join(parts)
     if saw_error or finish in (None, "cancelled", "error") or not text:
@@ -238,6 +261,7 @@ async def stream_generation(
                     outbox.KIND_GENERATION_CANCELLED,
                     {"request_id": request_id, "bridge_id": bridge_id},
                 )
+                await _store_summary(session, bridge_id, chat_id, idempotency_key, summary)
         return
     async with session_factory() as session:
         message = await chats.append_message(
@@ -262,7 +286,45 @@ async def stream_generation(
             outbox.KIND_COMPANION_TURN_READY,
             {"message_id": message.id, "request_id": request_id, "bridge_id": bridge_id},
         )
-    yield {"type": "turn_stored", "request_id": request_id, "message_id": message.id}
+        stored_event = {
+            "type": "turn_stored",
+            "request_id": request_id,
+            "message_id": message.id,
+        }
+        summary.append(stored_event)
+        await _store_summary(session, bridge_id, chat_id, idempotency_key, summary)
+    yield stored_event
+
+
+async def _store_summary(
+    session: AsyncSession,
+    bridge_id: str,
+    chat_id: str,
+    idempotency_key: str | None,
+    summary: list[dict],
+) -> None:
+    """Persist a generation's terminal summary under its idempotency
+    key (S610). No key -> nothing to store; a racing duplicate store
+    loses silently to the first writer (the UNIQUE constraint is the
+    arbiter, and both writers computed the same outcome)."""
+    if idempotency_key is None:
+        return
+    from sqlalchemy.exc import IntegrityError
+
+    from runmal.bridge import idempotency
+
+    try:
+        await idempotency.store(
+            session,
+            bridge_id,
+            idempotency.OP_GENERATE,
+            idempotency_key,
+            idempotency.fingerprint(idempotency.OP_GENERATE, {"chat_id": chat_id}),
+            200,
+            {"events": summary},
+        )
+    except IntegrityError:
+        await session.rollback()
 
 
 def encode_sse(event: dict) -> str:

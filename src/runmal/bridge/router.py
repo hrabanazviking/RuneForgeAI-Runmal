@@ -11,6 +11,7 @@ Two surfaces, deliberately separate:
 
 from __future__ import annotations
 
+import json
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -86,6 +87,54 @@ async def whoami(identity: BridgeIdentity = Depends(get_bridge_identity)):
     }
 
 
+@router.get("/capabilities")
+async def capabilities(identity: BridgeIdentity = Depends(get_bridge_identity)):
+    """Protocol capability discovery (S610, protocol §1): a bridge
+    learns what this server speaks before it depends on any of it —
+    version, its own granted scopes, feature availability, the event
+    vocabulary, and the operational limits."""
+    from runmal import __version__
+    from runmal.bridge import idempotency, outbox
+
+    return {
+        "protocol_version": conversation.PROTOCOL_VERSION,
+        "api": "v1",
+        "app_version": __version__,
+        "bridge_id": identity.credential_id,
+        "scopes": list(identity.scopes),
+        "features": {
+            "conversation_state": True,
+            "turn_writes": True,
+            "generation": "sse",
+            "generation_cancel": True,
+            "persona_switching": True,
+            "tts_hook": True,
+            "event_outbox": True,
+            "idempotency": True,
+            "room_audio_ingress": False,  # lands with S611
+        },
+        "latency_classes": [
+            "realtime_voice",
+            "interactive_text",
+            "game_turn",
+            "background",
+        ],
+        "event_kinds": [
+            outbox.KIND_TURN_APPENDED,
+            outbox.KIND_COMPANION_TURN_READY,
+            outbox.KIND_GENERATION_CANCELLED,
+            outbox.KIND_PERSONA_CHANGED,
+            outbox.KIND_TTS_READY,
+            outbox.KIND_PLAYBACK_COMPLETE,
+        ],
+        "limits": {
+            "events_page_max": outbox.MAX_PAGE,
+            "outbox_retention_per_chat": outbox.DEFAULT_KEEP_LAST,
+            "idempotency_key_max_length": idempotency.MAX_KEY_LENGTH,
+        },
+    }
+
+
 # --- conversation-state API (S602) ------------------------------------------
 
 _read_guard = require_bridge_scope("chat:read", resource_param="chat_id")
@@ -100,12 +149,15 @@ class TurnIn(BaseModel):
     bridge_timestamp: str | None = None
     metadata: dict | None = None
     # Accepted from the first contract (protocol §6); duplicate
-    # suppression is enforced from S610.
+    # suppression is enforced since S610 (see bridge_append_turn).
     idempotency_key: str | None = None
 
 
 class GenerateIn(BaseModel):
     request_id: str | None = None
+    # S610: a retried generation with the same key replays the stored
+    # terminal summary instead of generating (and storing) twice.
+    idempotency_key: str | None = None
 
 
 class CancelIn(BaseModel):
@@ -128,9 +180,47 @@ async def bridge_chat_state(
 async def bridge_append_turn(
     chat_id: str,
     body: TurnIn,
+    request: Request,
     identity: BridgeIdentity = Depends(_write_guard),
     session: AsyncSession = Depends(get_session),
 ):
+    from fastapi.responses import JSONResponse
+
+    from runmal.bridge import idempotency
+
+    try:
+        key = idempotency.normalize_key(
+            request.headers.get("Idempotency-Key") or body.idempotency_key
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    fingerprint = idempotency.fingerprint(
+        idempotency.OP_TURN_APPEND,
+        {
+            "chat_id": chat_id,
+            "speaker_kind": body.speaker_kind,
+            "content": body.content,
+            "speaker_id": body.speaker_id,
+            "speaker_name": body.speaker_name,
+            "bridge_timestamp": body.bridge_timestamp,
+            "metadata": body.metadata,
+        },
+    )
+    if key is not None:
+        row = await idempotency.lookup(
+            session, identity.credential_id, idempotency.OP_TURN_APPEND, key
+        )
+        if row is not None:
+            if row.request_hash != fingerprint:
+                raise HTTPException(
+                    status_code=409,
+                    detail="idempotency key reused with a different request",
+                )
+            return JSONResponse(
+                content=json.loads(row.response_json),
+                status_code=row.status_code,
+                headers={"Idempotency-Replayed": "true"},
+            )
     try:
         message = await conversation.append_turn(
             session,
@@ -149,7 +239,17 @@ async def bridge_append_turn(
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     payload = message_to_dict(message)
-    payload["idempotency_key"] = body.idempotency_key
+    payload["idempotency_key"] = key
+    if key is not None:
+        await idempotency.store(
+            session,
+            identity.credential_id,
+            idempotency.OP_TURN_APPEND,
+            key,
+            fingerprint,
+            status.HTTP_201_CREATED,
+            payload,
+        )
     return payload
 
 
@@ -164,20 +264,48 @@ async def bridge_generate(
     state = await conversation.get_state(session, identity.user_id, chat_id)
     if state is None:
         raise HTTPException(status_code=404, detail="chat not found")
+    from runmal.bridge import idempotency
+
+    try:
+        key = idempotency.normalize_key(
+            request.headers.get("Idempotency-Key") or body.idempotency_key
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    replayed = False
+    if key is not None:
+        fingerprint = idempotency.fingerprint(idempotency.OP_GENERATE, {"chat_id": chat_id})
+        row = await idempotency.lookup(
+            session, identity.credential_id, idempotency.OP_GENERATE, key
+        )
+        if row is not None:
+            if row.request_hash != fingerprint:
+                raise HTTPException(
+                    status_code=409,
+                    detail="idempotency key reused with a different request",
+                )
+            replayed = True
     request_id = body.request_id or generation_service.new_request_id()
     factory = request.app.state.session_factory
 
     async def sse():
         async for event in conversation.stream_generation(
-            factory, identity.user_id, identity.credential_id, chat_id, request_id
+            factory,
+            identity.user_id,
+            identity.credential_id,
+            chat_id,
+            request_id,
+            idempotency_key=key,
         ):
             yield conversation.encode_sse(event)
 
-    return StreamingResponse(
-        sse(),
-        media_type="text/event-stream",
-        headers={"X-Request-ID": request_id, "X-Bridge-Protocol": conversation.PROTOCOL_VERSION},
-    )
+    headers = {
+        "X-Request-ID": request_id,
+        "X-Bridge-Protocol": conversation.PROTOCOL_VERSION,
+    }
+    if replayed:
+        headers["Idempotency-Replayed"] = "true"
+    return StreamingResponse(sse(), media_type="text/event-stream", headers=headers)
 
 
 @router.post("/chats/{chat_id}/generate/cancel")
