@@ -169,3 +169,23 @@ Interruption: pass (stop latency 0 ms vs 100 ms budget, fake TTS)
 3. Each adapter sustains ≥ **20,000** normalized tokens/sec median on the benchmark host — the seam must never be the bottleneck beside real engines, which generate at tens of tokens/sec.
 
 **Configuration recording:** host CPU/OS/Python and the commit SHA are read from the benchmark host at run time by the benchmark command and appended with the results below.
+
+**Results — run 2026-10-13 on purplelongship** (the forge laptop; config read from the host by the benchmark command):
+
+```text
+CPU: AMD Ryzen 9 4900HS with Radeon Graphics
+OS: Linux-7.0.0-34-generic-x86_64-with-glibc2.43
+Python: 3.14.4
+Commit: e763c3269903ad85d2189bd008b5692873b4a67b
+Workload: 256-token recorded stream, 15 runs per adapter, medians
+
+Ollama adapter: TTFT p50 0.221 ms; total p50 0.768 ms; 333,391 tok/s
+Aesir  adapter: TTFT p50 0.222 ms; total p50 0.928 ms; 275,848 tok/s
+Token texts byte-identical through both seams (sha256 equal).
+
+Bar 1 (total ratio <= 1.5):      1.209 — PASS
+Bar 2 (TTFT delta <= +5 ms):     +0.001 ms — PASS
+Bar 3 (>= 20,000 tok/s each):    333,391 / 275,848 — PASS
+```
+
+**Reading:** at the seam this repo owns, the Aesir surface costs ~21% more per-stream adapter time than Ollama's NDJSON path — inside the predeclared 1.5× bar, and in absolute terms under a millisecond for a 256-token stream (both adapters run two orders of magnitude faster than any real engine generates). The cutover is performance-neutral for Rúnmál's own layer. Live engine throughput remains, as declared, unmeasured here.
