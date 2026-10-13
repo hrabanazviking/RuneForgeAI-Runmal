@@ -110,6 +110,13 @@ def _torch_cpu_refs() -> tuple[str, str]:
 COSYVOICE_PACKAGES: tuple[str, ...] = (
     "conformer",
     "diffusers",
+    # Matcha-TTS's instantiators call hydra.utils.instantiate on the
+    # flow path (proven by the real build) — hydra-core belongs in
+    # the set after all, WITH its own runtime dependency antlr4
+    # (omegaconf's grammar parser; its absence is also what broke
+    # pytest via hydra's entry-point plugin).
+    "hydra-core",
+    "antlr4-python3-runtime==4.9.3",
     "HyperPyYAML",
     "inflect",
     "lightning",

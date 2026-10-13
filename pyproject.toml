@@ -44,6 +44,8 @@ voice = [
 voice-cosyvoice = [
     "conformer",
     "diffusers",
+    "hydra-core",
+    "antlr4-python3-runtime==4.9.3",
       "HyperPyYAML",
     "inflect",
     "lightning",
