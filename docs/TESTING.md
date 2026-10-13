@@ -68,6 +68,8 @@ Store representative database fixtures from released schema versions. CI upgrade
 
 A migration is incomplete if only a fresh database works.
 
+*As implemented (S803):* fixtures live in `tests/fixtures/upgrades/runmal-<revision>.db` (revisions 0001, 0009, 0016), generated deterministically by `scripts/make_upgrade_fixtures.py` — real era schemas from the migration modules themselves, seeded with sentinel rows, self-checked for FK/integrity cleanliness at their own revision. `tests/test_s803_upgrade_harness.py` upgrades a copy of each fixture to HEAD with the real runner and asserts: the exact remaining migration tail applied, row counts preserved for every era table, `integrity_check` ok, `foreign_key_check` clean, sentinel content intact, and re-running at HEAD is a no-op. The harness runs in the ordinary suite, which is the CI upgrade path.
+
 ## 6. Memory evaluation corpus
 
 Use scenarios from `MEMORY_ARCHITECTURE.md`: duplicates, corrections, temporal changes, witness-private facts, multi-source provenance, deletion, re-embedding and decay.
