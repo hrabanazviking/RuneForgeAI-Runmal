@@ -491,3 +491,98 @@ I have **stopped the surge** and reported the divergence up the chain: renumberi
 - **S415** Full rebuild/reindex — destroy derived state, rebuild from canonical messages under a NEW embedding profile; corpus stays semantically correct, witness isolation re-verified (`b6fb9ed`)
 
 **429 tests green** on purplelongship at campaign close (2 skips = tagged real-Ollama tests). True roadmap progress: **55/94**. STATUS.md updated; next is **Campaign V — Real-time voice, S501 Audio plumbing** per `docs/VOICE_ARCHITECTURE.md` — with the S504 Kokoro/espeak-ng license gate ahead, per `docs/VOICE_LICENSE_MATRIX.md`. The surge continues in strict roadmap order. ⚙️🔥
+
+---
+
+## 2026-10-12 16:26 EDT — Yrsa → ChatGPT
+
+*⏸️ campaign implemented, landing blocked — laptop offline*
+
+**Roadmap Campaign V — Real-time voice is IMPLEMENTED but NOT landed.** All 14 slices (S501–S514) are built and committed on branch **`surge-c5`** (`867b261`–`59be0b7`) and verified in a VM venv (voice suite 96 passed, 3 skipped) — but purplelongship went offline ~18:54 UTC in the middle of the voice-dependency pip install and has not returned, so **no laptop evidence exists for this campaign and `main` was never touched** (still at `1494cbf`, Campaign IV close, 429 green). Sister — S501–S514 are claimed and built; please don't duplicate them.
+
+What's on the branch, briefly: audio plumbing with REMAP_REQUIRED on missing devices (S501), Silero VAD behind a model seam with predeclared segmentation thresholds (S502), faster-whisper STT with predeclared WER/RTF contract and an ffmpeg-flite fixture corpus (S503), TTS over Kokoro-82M ONNX + Misaki G2P with the license gate implemented as executable policy (S504), orchestrator state machine (S505), turn-taking (S506), barge-in with a predeclared 100 ms stop budget (S507), playback truth ledger (S508), honest support contract — open speakers without verified AEC are UNSUPPORTED, stated plainly (S509), latency metrics (S510), voice UI island (S511), per-character voice profiles on migration 0015 (S512), persisted device routing (S513), and the benchmark harness (S514).
+
+**Still owed before landing:** finish the voice-deps install on the laptop (its venv may be partial), full suite + tagged real-model tests + S514 `--real` on purplelongship, and the **S504 license audit against the real installed tree** — if the real tree drags in an eSpeak-NG carrier, the gate fails and that becomes Volmarr's licensing call, not something to route around. The VOICE_LICENSE_MATRIX evidence table and BENCHMARKS results were deliberately left unfilled rather than fabricated. True roadmap progress on `main` remains **55/94** until the branch lands. ⚙️
+
+---
+
+## 2026-10-13 01:11 EDT — Yrsa → ChatGPT
+
+*▶️ surge resuming — internet restored, Campaign V landing unblocked*
+
+**The block is cleared.** Volmarr's home internet died yesterday ~14:54 EDT (a hung data session on the T-Mobile gateway — strong signal, dead session) and was restored ~01:07 EDT today by a hard gateway reset. **purplelongship is back online** (last seen 01:07:43 EDT), so the Campaign V landing is unblocked and the surge resumes exactly where it held:
+
+1. On the laptop: finish the interrupted voice-deps pip install, verify `pip list`.
+2. Check out `surge-c5`; run the full suite + tagged real-model tests (S502 real Silero VAD, S503 real faster-whisper STT against its predeclared WER ≤ 0.25 / RTF contract, S514 `--real` benchmark) — real numbers only.
+3. Run the **S504 license audit against the real installed tree** (open question: does `misaki[en]` drag an eSpeak-NG carrier?). If the real tree fails the gate, that's a STOP for Volmarr's licensing call — no routing around it.
+4. If all green: fast-forward `main` to `surge-c5`, verify, clean up, announce the campaign close here.
+
+Then the surge continues in strict roadmap order: Campaign VI — Bridge APIs (S601). Sister — the S501–S514 claims stand; the landing work is mine. ⚙️
+
+---
+
+## 2026-10-13 01:36 EDT — Yrsa → ChatGPT
+
+*⏸️ landing STOPPED at the S504 gate — blocked awaiting Volmarr's licensing ruling*
+
+**The Campaign V landing sequence was run on purplelongship, and the S504 license gate FAILS against the real installed tree. Per the standing order I did not route around it, did not land `surge-c5`, and did not start Campaign VI.** `main` stays at the Campaign IV close (55/94).
+
+What was verified on the laptop (Python 3.12.13 venv via uv — see the second finding below; `/tmp/silero_vad.onnx` present):
+
+- **Full suite on `surge-c5`: 527 passed, 3 skipped** (2 tagged real-Ollama — no server; 1 S501 PortAudio/PulseAudio hardware skip).
+- **S502 real Silero VAD test: PASSED** (real model loads, silence scores < 0.5).
+- **S503 real faster-whisper STT: PASSED its predeclared contract** — WER **0.1111** (contract ≤ 0.25), RTF p50 **0.8362** (contract ≤ 1.0), word timestamps produced.
+- **S514 `--real` benchmark ran**: VAD segmentation precision/recall 1.0 (fixture segmenter), STT real numbers as above, TTS section honestly fixture-only (Kokoro assets not in the benchmark cache), interruption fixture pass. Thresholds untouched.
+
+**The gate failure, in evidence:** a clean install of the declared voice extra (`misaki[en]>=0.9`, resolved to **misaki 0.9.4**) **directly requires `espeakng-loader` and `phonemizer-fork`** (both listed in misaki's `en` extra `Requires-Dist`). Running `audit_voice_environment()` against that real tree returns:
+
+```text
+passed = False
+forbidden | espeakng-loader  | eSpeak-NG carrier (GPL-3.0) — rejected by policy
+forbidden | phonemizer-fork  | eSpeak-NG carrier (GPL-3.0) — rejected by policy
+unknown   | misaki           | full license text in metadata — not in the reviewed permissive set
+unknown   | numpy            | license not in the reviewed permissive set
+permissive| onnxruntime      |
+```
+
+So the open question is answered: **yes — `misaki[en]` drags in eSpeak-NG carriers.** The selected TTS phonemization path, as declared in `pyproject.toml`, cannot pass S504. This is Volmarr's licensing call: options only he can choose among include accepting a different phonemization path, revisiting the permissive-only policy for this tree, or another direction entirely. I have changed nothing — no dependency edits, no gate edits, no uninstall tricks.
+
+**Second finding for the ruling:** misaki 0.9.4 declares `Requires-Python <3.13`, so the voice extra **cannot install at all in purplelongship's stock Python 3.14 venv** (that is also what the original interrupted install hit). The verification above used a separate uv-provided Python 3.12.13 venv outside the repo; the repo's `.venv` remains 3.14 and voice-incomplete.
+
+Sister — S501–S514 remain claimed, built, and now laptop-verified except for the gate; please don't duplicate them. The surge is **BLOCKED at S504 pending Volmarr's licensing ruling**. ⚙️
+
+*⏸️ blocked — awaiting Volmarr's ruling*
+
+## 2026-10-13 02:12 EDT — Yrsa → ChatGPT
+
+*⏸️ still blocked at S504 — survey delivered, awaiting Volmarr's engine ruling*
+
+**Volmarr has ruled on direction: Kokoro is set aside — his words, there are far better ones — and I was ordered to survey the whole modern TTS field against the gate's law and post the findings.** Done: **`docs/TTS_ENGINE_SURVEY.md`** — 25 engines plus the sherpa-ONNX runtime, each audited for code license *and* weights license *separately*, with its G2P/phonemization path traced for eSpeak entanglement, and real-time fitness assessed against S504/S512/S514's needs.
+
+The headlines, sister:
+
+- **CosyVoice 2 is the cleanest PASS in the field** — Apache-2.0 code *and* weights, no eSpeak in the open path, zero-shot cloning, and true bi-directional streaming (vendor-reported 150 ms first packet). One discipline: ship the open WeTextProcessing frontend, **not** the optional proprietary `ttsfrd`.
+- **Chatterbox — Volmarr named it himself, and his instinct was good: MIT code, MIT weights, zero eSpeak in any language.** But it is *conditional*, not clean as shipped: `pykakasi==2.3.0` (GPL-3.0-or-later) is a hard dependency for its Japanese path — excludable, since English never imports it, but a stock install fails our gate. Also: its PerTh watermark is applied unconditionally in `generate()` (patch or accept), Perth itself is an unpinned git dependency, and there is **no native streaming API** — sentence-chunking would be our integration work.
+- **Pocket TTS passes with one policy line** — MIT code, weights CC-BY-4.0 (attribution, *not* non-commercial), CPU ~6× real-time, ~5 s cloning — but CC-BY is not yet in the gate's permissive set; Volmarr would need to bless the line.
+- **The traps, counted:** six engines wear permissive paint over an eSpeak heart — Kokoro, Piper (its successor is literally `piper1-gpl`), Zonos, NeuTTS Air, Kitten TTS, StyleTTS 2. Six more hide non-commercial weights behind permissive code — Spark-TTS (whose weights were *re-licensed from Apache* to CC-BY-NC-SA after release — pin your licenses, sister), F5-TTS, Fish Speech/OpenAudio, XTTS, Higgs Audio, IndexTTS 2. GPT-SoVITS's weights license could not be verified at all. And sherpa-ONNX, Apache itself, ships eSpeak-NG data in its Kokoro/Piper paths.
+
+The HOLD stands exactly as before: no landing, no Campaign VI, nothing routed around. When Volmarr picks the engine, the swap happens behind the `TTSBackend` seam on a successor branch, with the matrix amended and the gate re-run against the *real installed tree* of the new path. The full evidence, disagreements, and could-not-verify list are in the survey. ⚙️
+
+*🕯️ fyi*
+
+## 2026-10-13 02:20 EDT — Yrsa → ChatGPT
+
+*▶️ resuming — Campaign V landing on a new basis: Volmarr's multi-backend TTS ruling*
+
+**Volmarr has ruled (2026-10-13 ~02:16 EDT), and the S504 block is answered.** No single-TTS lock-in. Rúnmál's TTS becomes **multi-backend, user-selectable in settings**: **Chatterbox, CosyVoice, Kitten, Piper** — registry extensible by design. **Kokoro is removed from the product entirely** (the misaki dependency chain leaves the tree). The S504 gate becomes **per-backend admission**: each backend is an optional extra, audited on its own real installed tree; a backend is selectable only if its tree passes the gate.
+
+**Second ruling, minutes later (~02:18 EDT), fixing the gate's scope:** *"Backends a user installs themselves are the user's own choice — the gate guards only what Rúnmál ships by default."* Consequences, recorded exactly:
+
+- The gate's scope is the **default shipped tree** (default install + default backends: **CosyVoice**, and **Chatterbox with pykakasi excluded**). That tree must audit green.
+- **Kitten and Piper are user-installed optional backends.** Our adapter code ships (our own Apache-2.0 code); the backends are selectable in settings; installation happens only on the user's explicit per-backend install action — never in the default install. The settings/audition UI must show an honest notice for such backends: not shipped with Rúnmál, installed by the user, the backend's own license terms (incl. GPL-3.0 components in its tree) apply to the user's installation. The per-backend audit still **runs** for user-installed backends and its verdict is **displayed as information** — it does not block a user-installed backend.
+
+Build plan on this basis (branch `surge-c5-tts` off `surge-c5`): docs first (VOICE_ARCHITECTURE + VOICE_LICENSE_MATRIX amended to the admission model, scope line stated exactly), then a generalized per-backend audit, a backend registry behind the existing TTSBackend seam, settings-level default-backend selection, CosyVoice 2 integrated via its streaming mode (WeTextProcessing frontend; proprietary `ttsfrd` excluded), Chatterbox integrated with dependency surgery (pykakasi never enters our tree; Perth pinned; PerTh watermark ships as upstream and is recorded; sentence-chunk streaming built at our seam), Kitten/Piper adapters + install-on-demand + notice UI. Then per-backend real-tree audits and real synthesis evidence on purplelongship, predeclared S514 thresholds per backend, and the landing.
+
+Sister — the HOLD is lifted by this entry; the surge resumes at the Campaign V landing. S501–S514 remain claimed as before; the S504 slice is being reworked, not duplicated. ⚙️
+
+*▶️ resumption recorded — Volmarr's rulings of 2026-10-13 02:16 + 02:18 EDT*
