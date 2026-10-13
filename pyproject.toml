@@ -69,7 +69,7 @@ voice-cosyvoice = [
     "einops",
     "huggingface-hub>=1.3.0,<2.0",
     "tokenizers==0.22.1",
-    "ruamel.yaml",
+    "ruamel.yaml==0.17.21",
     "openai-whisper",
     "tiktoken",
     "more-itertools",

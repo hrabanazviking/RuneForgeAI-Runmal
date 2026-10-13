@@ -147,7 +147,9 @@ COSYVOICE_PACKAGES: tuple[str, ...] = (
     "einops",  # x-transformers
     "huggingface-hub>=1.3.0,<2.0",  # transformers 5.x constraint
     "tokenizers==0.22.1",  # transformers 5.x constraint (<=0.23.0)
-    "ruamel.yaml",  # HyperPyYAML
+    # Pinned <0.18: ruamel 0.18 changed the Loader API HyperPyYAML
+    # composes (max_depth) — proven by the real build, 2026-10-13.
+    "ruamel.yaml==0.17.21",  # HyperPyYAML
     "openai-whisper",  # cosyvoice.cli.frontend speech tokenizer
     "tiktoken",  # openai-whisper
     "more-itertools",  # openai-whisper / inflect
