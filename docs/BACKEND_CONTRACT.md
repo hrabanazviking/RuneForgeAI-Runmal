@@ -194,6 +194,11 @@ Implemented in `src/runmal/backends/` unless noted:
 | Model listing / health / token counting (§5) | `registry.py` | `BackendRegistry` aggregates backends; every count carries `TokenQuality` (exact/provider/estimated) |
 | Profiles + secrets (§10–§11) | `profiles.py`, DB migration `0012` | Profiles store ONLY secret references; values live in the server-side `secrets` table and resolve only inside the server (INV-023, canary-tested) |
 | Chat wiring (§2, §8) | `generation/service.py`, `generation/router.py` (S307) | `/api/v1/generate` resolves the chat's persisted profile and streams through the seam |
+| Aesir chat (§12) | `backends/aesir.py` (S701/S702) | OpenAI-compatible surface; public `WIRE_NAMES` mapping + declared unsupported set; passes the shared contract suite on recorded fixtures |
+| Aesir embeddings (§9, §12) | `backends/embeddings.py` (S703) | `POST /embeddings`; provenance provider `aesir`; FTS fallback via `embed_or_fallback` |
+| Profile migration (§10) | `backends/profile_migration.py` (S704) | `runmal profiles migrate-to-aesir`; copy-never-modify, explicit model choices, secrets never carried |
+| Adapter benchmark | `backends/benchmark.py` (S705) | Identical recorded streams through Ollama/Aesir adapters; bars predeclared in `docs/BENCHMARKS.md` |
+| Cutover hardening | `tests/test_s706_cutover.py` (S706) | End-to-end chat+memory on an Aesir profile; provider-identity isolation scan over the domain packages |
 
 Decisions recorded (see also `docs/adr/0004-normalized-backend-events.md`):
 
@@ -215,3 +220,11 @@ Decisions recorded (see also `docs/adr/0004-normalized-backend-events.md`):
 - **Token counting (§5).** Default `count_tokens` is the conservative
   estimator (`TokenQuality.ESTIMATED`); provider-reported usage surfaces
   as `PROVIDER`. The registry never upgrades a quality silently.
+- **Aesir cutover (Campaign VII).** The Aesir adapter speaks the
+  OpenAI-compatible surface at a profile-configurable `base_url` (profile
+  `config.base_url`); Rúnmál never reaches the Aesir host outside that
+  HTTP surface. Provider identity stays out of domain code, enforced by
+  the S706 isolation scan: the domain packages contain no provider-key
+  literals — provider names live only in seam-owned registries (the S208
+  compat profiles in `generation/compat.py`, the S211 connection list in
+  `connections/`) and in the adapters themselves.

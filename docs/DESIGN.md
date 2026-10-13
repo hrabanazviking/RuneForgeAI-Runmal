@@ -203,7 +203,8 @@ Initial adapters:
 
 - Ollama native `/api/*` chat surface;
 - OpenRouter OpenAI-compatible chat surface;
-- Aesir adapter in Campaign VII.
+- Aesir OpenAI-compatible chat surface (Campaign VII, S701 — implemented;
+  see `docs/BACKEND_CONTRACT.md` §12/§14).
 
 ### EmbeddingBackend
 
