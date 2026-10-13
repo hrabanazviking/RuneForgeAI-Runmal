@@ -152,3 +152,20 @@ Interruption: pass (stop latency 0 ms vs 100 ms budget, fake TTS)
 ```
 
 **Reading of the CosyVoice result, recorded plainly:** the thresholds were predeclared for the GPU reference configuration. The license gate (NVIDIA's wheels declare no license metadata) forces the shipped tree onto CPU torch builds, on which CosyVoice2-0.5B is roughly 6–7× slower than real time on this host. The backend is **admitted** (license gate green, real synthesis, streaming seam works) and its performance contract is **not met on the shipped build** — the thresholds were not adjusted after measurement, per this ledger's rule. A user who installs CUDA torch themselves (their own choice under the interoperability principle) would close most of this gap; re-measurement on a GPU build is future evidence, not a promise.
+## S705 — Aesir cutover: adapter performance validation
+
+*Declared 2026-10-13, BEFORE the benchmark exists or has run (ledger rule 1/6).*
+
+**Question this benchmark answers.** Campaign VII moves profiles from Ollama/OpenRouter to Aesir behind the same seam. The part of that cutover *this repo owns* is the adapter layer: does speaking the Aesir surface cost more — in latency or throughput — than speaking Ollama's, for identical work? Live engine throughput (the Ollama server's or the Aesir server's tokens/sec) is **not** measured here: those are different programs in different repos, and Aesir's own benchmarking belongs to that project. What is measured is Rúnmál-side cost only, by replaying identical recorded token streams through both adapters over in-process fixture transports (`runmal.backends.benchmark`).
+
+**Workload.** One stream of 256 text tokens (fixed texts `tok0 `…`tok255 `), wire-shaped per adapter: Ollama NDJSON lines for the Ollama adapter, OpenAI-style SSE `data:` lines for the Aesir adapter; identical token texts, identical usage totals. 15 runs per adapter; medians reported.
+
+**Metrics per adapter:** time-to-first-normalized-token (ms, median), total stream time (ms, median), normalized tokens/sec (median).
+
+**The bar (predeclared):**
+
+1. Aesir median total stream time ≤ **1.5 ×** Ollama median total stream time (same host, same session).
+2. Aesir median time-to-first-token ≤ Ollama median **+ 5 ms**.
+3. Each adapter sustains ≥ **20,000** normalized tokens/sec median on the benchmark host — the seam must never be the bottleneck beside real engines, which generate at tens of tokens/sec.
+
+**Configuration recording:** host CPU/OS/Python and the commit SHA are read from the benchmark host at run time by the benchmark command and appended with the results below.
