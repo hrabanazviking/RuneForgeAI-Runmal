@@ -30,7 +30,7 @@ from dataclasses import dataclass, field
 #: admitted here; the forbidden-marker check runs before this set.
 PERMISSIVE_LICENSES = {
     "apache-2.0", "apache 2.0", "apache license 2.0", "apache software license",
-    "apache 2.0 license",
+    "apache 2.0 license", "apache",
     "mit", "mit license", "mit-cmu", "bsd", "bsd-2-clause", "bsd-3-clause",
     "bsd license", "bsd 3-clause license", "3-clause bsd license",
     "isc", "python software foundation license", "psf",
@@ -176,25 +176,34 @@ def _declared_license(metadata) -> str:
     if expr:
         return expr
     raw = (metadata.get("License") or "").strip()
+    candidate = ""
     if raw and raw != "UNKNOWN":
         if "\n" not in raw and len(raw) <= 80:
-            return raw
-        # Multi-line field: some wheels head the license body with the
-        # short expression ("MIT License\n\nCopyright ..."). Trust a
-        # first line only when it is shaped like an expression (short,
-        # few words, license-shaped) — a prose heading ("License
-        # agreement for ...") or a copyright line is not one and falls
-        # through to the classifiers.
-        first = raw.splitlines()[0].strip()
-        words = first.split()
-        if (len(first) <= 40 and len(words) <= 4
-                and ("license" in first.lower() or len(words) == 1)):
-            return first
+            candidate = raw
+        else:
+            # Multi-line field: some wheels head the license body
+            # with the short expression ("MIT License\n\nCopyright
+            # ..."). Trust a first line only when it is shaped like
+            # an expression (short, few words, license-shaped, with
+            # at least one letter — a "=====" banner rule is not
+            # one) — a prose heading or a copyright line is not one
+            # and falls through to the classifiers.
+            first = raw.splitlines()[0].strip()
+            words = first.split()
+            if (len(first) <= 40 and len(words) <= 4
+                    and any(ch.isalpha() for ch in first)
+                    and ("license" in first.lower() or len(words) == 1)):
+                candidate = first
     classifiers = [c for c in (metadata.get_all("Classifier") or [])
                    if c.startswith("License :: OSI Approved ::")]
-    if classifiers:
-        return classifiers[0].split("::")[-1].strip()
-    return ""
+    classifier = classifiers[0].split("::")[-1].strip() if classifiers else ""
+    # A License-field candidate that names no recognizable license
+    # ("Dual License") must not shadow a clear OSI classifier; a
+    # candidate carrying a real verdict (permissive or forbidden)
+    # always wins over the classifier.
+    if candidate and classify_license(candidate) == "unknown" and classifier:
+        return classifier
+    return candidate or classifier
 
 
 #: Human-reviewed declarations for wheels whose metadata declares NO
@@ -209,6 +218,12 @@ REVIEWED_DECLARATIONS: dict[str, str] = {
     # upstream project (wenet-e2e/WeTextProcessing) is Apache-2.0.
     # Evidence read on purplelongship, 2026-10-13.
     "wetextprocessing": "Apache-2.0",
+    # Same shape: metadata silent, wheel bundles the license text
+    # (dist-info/licenses/LICENSE, PEP 639 License-File) — MIT for
+    # pyworld, Apache License 2.0 for wetext. Texts read on
+    # purplelongship, 2026-10-13.
+    "pyworld": "MIT",
+    "wetext": "Apache-2.0",
 }
 
 

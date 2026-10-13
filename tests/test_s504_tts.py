@@ -160,6 +160,32 @@ def test_declared_license_reads_expression_not_full_text():
     assert _declared_license(prose_headed) == \
         "Python Software Foundation License"
 
+    # A banner rule ("=====") heading a license body is not an
+    # expression either (kiwisolver's wheel): the BSD classifier wins.
+    banner_headed = Message()
+    banner_headed["License"] = (
+        "=========================\n  The Kiwi licensing terms\n"
+        "=========================\nKiwi is licensed under the terms "
+        "of the Modified BSD License ...")
+    banner_headed["Classifier"] = \
+        "License :: OSI Approved :: BSD License"
+    assert _declared_license(banner_headed) == "BSD License"
+
+    # A field naming no license at all ("Dual License") must not
+    # shadow a clear classifier (python-dateutil's wheel).
+    dual = Message()
+    dual["License"] = "Dual License"
+    dual["Classifier"] = \
+        "License :: OSI Approved :: BSD License"
+    assert _declared_license(dual) == "BSD License"
+
+    # ...but a field with a real verdict always wins over classifiers.
+    gpl_field = Message()
+    gpl_field["License"] = "GPL-3.0"
+    gpl_field["Classifier"] = \
+        "License :: OSI Approved :: MIT License"
+    assert _declared_license(gpl_field) == "GPL-3.0"
+
 
 def test_registry_tree_packages_scope_each_backend():
     from runmal.voice.backends import TTS_REGISTRY
