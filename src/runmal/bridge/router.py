@@ -243,3 +243,131 @@ async def bridge_select_persona(
         "persona": persona,
         "previous_character_id": previous,
     }
+
+
+# --- TTS hook (S604) ----------------------------------------------------------
+
+_tts_guard = require_bridge_scope("tts:request")
+
+
+class TTSIn(BaseModel):
+    text: str = Field(min_length=1)
+    backend: str | None = None
+    voice_id: str | None = None
+    language: str | None = None
+    chat_id: str | None = None
+    speaking_rate: float = 1.0
+
+
+class PlaybackIn(BaseModel):
+    event: str
+    detail: dict | None = None
+
+
+async def _resolve_tts_voice(session, identity: BridgeIdentity, body: TTSIn):
+    """Voice for a TTS request, most specific first:
+
+    explicit `voice_id` wins; else the attached chat's persona voice
+    profile (S512) — but only when the bridge also holds `chat:read`
+    for that chat, since the profile is chat state; else the owner's
+    configured default backend with its default voice.
+    """
+    from runmal.bridge.scopes import scope_allows
+    from runmal.chats import service as chats_service
+    from runmal.voice.profiles import resolve_character_voice
+    from runmal.voice.settings import VoiceSettings
+    from runmal.voice.tts import VoiceInfo
+
+    default_key = VoiceSettings.load().tts_backend
+    if body.voice_id:
+        key = body.backend or default_key
+        return key, VoiceInfo(
+            voice_id=body.voice_id, language=body.language or "en-us", backend_key=key
+        )
+    if body.chat_id and scope_allows(identity.scopes, "chat:read", body.chat_id):
+        chat = await chats_service.get_chat(session, identity.user_id, body.chat_id)
+        if chat is not None and chat.character_id:
+            character_voice = await resolve_character_voice(
+                session, identity.user_id, chat.character_id
+            )
+            return character_voice.tts_backend, character_voice.to_voice_info()
+    key = body.backend or default_key
+    return key, VoiceInfo(voice_id="", language=body.language or "en-us", backend_key=key)
+
+
+@router.post("/tts", status_code=status.HTTP_202_ACCEPTED)
+async def bridge_tts_request(
+    body: TTSIn,
+    identity: BridgeIdentity = Depends(_tts_guard),
+    session: AsyncSession = Depends(get_session),
+):
+    from runmal.bridge import tts_hook
+
+    backend_key, voice = await _resolve_tts_voice(session, identity, body)
+    job = tts_hook.start_job(
+        bridge_id=identity.credential_id,
+        user_id=identity.user_id,
+        text=body.text,
+        backend_key=backend_key,
+        voice=voice,
+        chat_id=body.chat_id,
+        speaking_rate=body.speaking_rate,
+    )
+    return job.to_dict()
+
+
+def _owned_job(identity: BridgeIdentity, job_id: str):
+    from runmal.bridge import tts_hook
+
+    job = tts_hook.get_job(identity.credential_id, job_id)
+    if job is None:
+        raise HTTPException(status_code=404, detail="tts job not found")
+    return job
+
+
+@router.get("/tts/{job_id}")
+async def bridge_tts_status(
+    job_id: str,
+    identity: BridgeIdentity = Depends(_tts_guard),
+):
+    return _owned_job(identity, job_id).to_dict()
+
+
+@router.get("/tts/{job_id}/audio")
+async def bridge_tts_audio(
+    job_id: str,
+    identity: BridgeIdentity = Depends(_tts_guard),
+):
+    from fastapi.responses import Response
+
+    job = _owned_job(identity, job_id)
+    if job.audio is None:
+        raise HTTPException(status_code=409, detail=f"audio not ready (job is {job.status})")
+    return Response(content=job.audio, media_type="audio/wav")
+
+
+@router.post("/tts/{job_id}/cancel")
+async def bridge_tts_cancel(
+    job_id: str,
+    identity: BridgeIdentity = Depends(_tts_guard),
+):
+    from runmal.bridge import tts_hook
+
+    job = _owned_job(identity, job_id)
+    return {"cancelled": tts_hook.cancel_job(job), "status": job.status}
+
+
+@router.post("/tts/{job_id}/playback")
+async def bridge_tts_playback(
+    job_id: str,
+    body: PlaybackIn,
+    identity: BridgeIdentity = Depends(_tts_guard),
+):
+    from runmal.bridge import tts_hook
+
+    job = _owned_job(identity, job_id)
+    try:
+        tts_hook.report_playback(job, body.event, body.detail)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return job.to_dict()
