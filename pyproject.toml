@@ -54,6 +54,7 @@ voice-cosyvoice = [
     "omegaconf",
     "onnxruntime",
     "protobuf",
+    "pillow",
     "pydantic",
     "rich",
     "safetensors",

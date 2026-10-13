@@ -31,7 +31,7 @@ from dataclasses import dataclass, field
 PERMISSIVE_LICENSES = {
     "apache-2.0", "apache 2.0", "apache license 2.0", "apache software license",
     "apache 2.0 license",
-    "mit", "mit license", "bsd", "bsd-2-clause", "bsd-3-clause",
+    "mit", "mit license", "mit-cmu", "bsd", "bsd-2-clause", "bsd-3-clause",
     "bsd license", "bsd 3-clause license", "3-clause bsd license",
     "isc", "python software foundation license", "psf",
     "zlib", "unlicense", "cc0-1.0", "public domain", "cnri-python",

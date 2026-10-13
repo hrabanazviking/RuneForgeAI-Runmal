@@ -123,6 +123,8 @@ COSYVOICE_PACKAGES: tuple[str, ...] = (
     "omegaconf",
     "onnxruntime",
     "protobuf",
+    # Matcha-TTS (the vendored submodule) imports PIL on the flow path.
+    "pillow",
     "pydantic",
     "rich",
     # Lazy-loaded by transformers when AutoModel reads the weights —

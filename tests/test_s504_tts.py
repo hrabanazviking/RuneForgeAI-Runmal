@@ -48,6 +48,8 @@ def test_license_classifier():
     # every component permissive/public-domain, incl. BSD-0-Clause.
     assert classify_license(
         "BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0") == "permissive"
+    # Pillow's declared expression: the CMU variant of the MIT license.
+    assert classify_license("MIT-CMU") == "permissive"
     assert classify_license("0BSD") == "permissive"
     assert classify_license("BSD-0-Clause") == "permissive"
     # …but one copyleft component still poisons an AND compound.
