@@ -100,11 +100,17 @@ def _torch_cpu_refs() -> tuple[str, str]:
 
 
 #: Curated pip set for CosyVoice — upstream's requirements MINUS the
-#: proprietary ``ttsfrd`` (the open ``wetext`` frontend ships
-#: instead), MINUS the GPU/serving/training-only entries (deepspeed,
-#: gradio, the fastapi/grpc serving stack, tensorrt,
-#: onnxruntime-gpu), with the transformers line held at upstream's
-#: own pin. transformers 5.x hard-imports ``soxr`` whenever librosa
+#: proprietary ``ttsfrd``, MINUS the GPU/serving/training-only
+#: entries (deepspeed, gradio, the fastapi/grpc serving stack,
+#: tensorrt, onnxruntime-gpu), with the transformers line held at
+#: upstream's own pin. On the frontend: the pinned v2 runtime
+#: imports neither WeTextProcessing nor pynini (grep evidence); its
+#: open frontend is ``wetext``, whose FST assets are served through
+#: a modelscope endpoint the pinned client cannot use anonymously
+#: (it demands a token for that repo) — so wetext is NOT in the set
+#: and the frontend slot stays empty, an upstream-supported
+#: configuration (synthesis of prose is unaffected; a user with a
+#: modelscope token can install wetext+kaldifst themselves). transformers 5.x hard-imports ``soxr`` whenever librosa
 #: is present (its audio_utils), librosa IS required (Matcha-TTS's
 #: audio utils import it on the flow path), and python-soxr
 #: declares LGPL-2.1-or-later — forbidden in the shipped tree.
@@ -153,9 +159,6 @@ COSYVOICE_PACKAGES: tuple[str, ...] = (
     # Upstream's own pin (requirements.txt). The 5.x line is
     # unshippable for this tree — see the block comment above.
     "transformers==4.51.3",
-    "WeTextProcessing",
-    # Upstream pin; the frontend the runtime actually selects first.
-    "wetext==0.0.4",
     "wget",
     "x-transformers",
     *_torch_cpu_refs(),
@@ -173,10 +176,8 @@ COSYVOICE_PACKAGES: tuple[str, ...] = (
     "more-itertools",  # openai-whisper / inflect
     "numba",  # openai-whisper / librosa
     "llvmlite",  # numba
-    "pynini",  # WeTextProcessing runtime
     # HyperPyYAML's substrate (it composes PyYAML + ruamel at import).
     "pyyaml",
-    "importlib_resources",  # WeTextProcessing runtime
     "regex",  # transformers
     "requests",  # modelscope / huggingface-hub
     "urllib3",  # requests / modelscope
@@ -268,7 +269,7 @@ TTS_REGISTRY: dict[str, TTSBackendSpec] = {
             git_checkout=(COSYVOICE_GIT, COSYVOICE_COMMIT, "CosyVoice"),
             probe_import="cosyvoice",
             warmup="runmal.voice.backends:warm_cosyvoice",
-            note="Apache-2.0 code + weights; WeTextProcessing frontend (never ttsfrd).",
+            note="Apache-2.0 code + weights; no ttsfrd (frontend slot empty — upstream-supported).",
         ),
         tree_packages=_dist_names(COSYVOICE_PACKAGES),
         first_audio_p50_s=1.5,
@@ -349,8 +350,9 @@ class CosyVoiceTTS(TTSBackend):
 
     The runtime is imported from the pinned git checkout in the
     vendor dir (the PyPI name ``cosyvoice`` is an unrelated package —
-    never install it). Text normalization is the open
-    WeTextProcessing frontend; ``ttsfrd`` is never installed.
+    never install it). ``ttsfrd`` is never installed; the runtime's
+    text-normalization frontend slot stays empty (an upstream-
+    supported configuration — see the set comment in this module).
     """
 
     name = "cosyvoice"
