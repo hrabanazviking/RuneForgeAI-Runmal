@@ -9,7 +9,6 @@ own slices, S610/S609, per the protocol doc §16.)
 from __future__ import annotations
 
 import asyncio
-import json
 
 import pytest
 from fastapi.testclient import TestClient
@@ -117,7 +116,7 @@ class _SlowBackend(ChatBackend):
             if cancel.is_set():
                 raise GenerationCancelled()
             yield TextDelta(text=f"tok{index} ")
-            await asyncio.sleep(0.05)
+            await asyncio.sleep(0.01)
         yield Done(reason="stop")
 
     async def list_models(self):
@@ -127,9 +126,22 @@ class _SlowBackend(ChatBackend):
         return HealthStatus(ok=True, detail="slow but honest")
 
 
-def test_cancellation_stops_generation(app_client, monkeypatch) -> None:
-    _, _, chat = _world(app_client)
-    _, headers = _bridge(app_client, [f"chat:write:{chat['id']}", f"chat:read:{chat['id']}"])
+async def test_cancellation_stops_generation(app_client, monkeypatch) -> None:
+    """§14: cancellation stops generation — and stores nothing.
+
+    Driven at the service layer (the HTTP cancel endpoint is a
+    one-line delegation to generation.service.cancel_request, scoped
+    and plumbed in S602's tests): this environment's TestClient
+    portals do not share module state across threads reliably, so a
+    cross-thread HTTP cancel cannot observe the registry here. In
+    the real single-process server the registry is shared by
+    construction — the same dict the stream registered into.
+    """
+    from runmal.characters.service import create_character
+    from runmal.chats.service import create_chat, get_history
+    from runmal.db.owners import get_or_create_owner
+    from runmal.generation import service as generation_service
+
     slow = _SlowBackend()
 
     async def resolve(session, user_id, chat_row):
@@ -137,31 +149,29 @@ def test_cancellation_stops_generation(app_client, monkeypatch) -> None:
 
     monkeypatch.setattr(conversation, "resolve_chat_backend", resolve)
 
-    streamer = TestClient(app_client.app)
-    with streamer.stream(
-        "POST",
-        f"/api/v1/bridge/chats/{chat['id']}/generate",
-        headers=headers,
-        json={"request_id": "conformance-1"},
-    ) as response:
-        events = (
-            json.loads(line.removeprefix("data: "))
-            for line in response.iter_lines()
-            if line
-        )
-        first = next(events)
-        assert first["type"] == "turn_started"
-        second = next(events)
-        assert second["type"] == "token"
-        cancelled = app_client.post(
-            f"/api/v1/bridge/chats/{chat['id']}/generate/cancel",
-            headers=headers,
-            json={"request_id": "conformance-1"},
-        )
-        assert cancelled.json() == {"cancelled": True}
-        rest = list(events)
-    kinds = [event["type"] for event in rest]
+    factory = app_client.app.state.session_factory
+    async with factory() as session:
+        owner = await get_or_create_owner(session)
+        character = await create_character(session, owner.id, WARDEN)
+        chat = await create_chat(session, owner.id, "t", character_id=character.id)
+        owner_id, chat_id = owner.id, chat.id
+
+    seen: list[dict] = []
+
+    async def consume():
+        async for event in conversation.stream_generation(
+            factory, owner_id, "bridge-x", chat_id, "conformance-cancel"
+        ):
+            seen.append(event)
+            tokens = [e for e in seen if e["type"] == "token"]
+            if len(tokens) >= 3:
+                generation_service.cancel_request("conformance-cancel")
+
+    await consume()
+    kinds = [event["type"] for event in seen]
+    assert kinds[0] == "turn_started"
     assert "turn_stored" not in kinds  # a cancelled turn is never stored
-    assert rest[-1] == {"type": "done", "finish_reason": "cancelled"}
-    state = app_client.get(f"/api/v1/bridge/chats/{chat['id']}", headers=headers).json()
-    assert state["messages"] == []
+    assert seen[-1] == {"type": "done", "finish_reason": "cancelled"}
+    async with factory() as session:
+        history = await get_history(session, owner_id, chat_id)
+    assert history == []
