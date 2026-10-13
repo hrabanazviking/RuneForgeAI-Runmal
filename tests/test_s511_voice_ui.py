@@ -14,6 +14,7 @@ from runmal.auth import get_or_create_credential
 from runmal.db.base import create_db_engine, create_session_factory
 from runmal.db.migrate import migrate_to_head
 from runmal.voice.audio import AudioDevice, FixtureDeviceProvider, RingBuffer
+from runmal.voice.install import InstallPlan, is_installed
 from runmal.voice.license_audit import FORBIDDEN_DISTRIBUTIONS, audit_distributions
 from runmal.voice.router import waveform_levels
 
@@ -175,6 +176,23 @@ def test_install_endpoint_refuses_unverified_and_unknown(tmp_path, monkeypatch):
     assert refused.json()["status"] == "refused"  # explains; nothing runs
     missing = client.post("/api/v1/voice/backends/tts/nope/install")
     assert missing.status_code == 404
+
+
+def test_is_installed_probes_vendor_checkout_for_git_backends(
+        tmp_path, monkeypatch):
+    # Git-checkout backends (CosyVoice) are not on sys.path in a fresh
+    # process; the probe must look in the vendor dir, or a completed
+    # install reads as missing (purplelongship evidence, 2026-10-13).
+    monkeypatch.setenv("RUNMAL_DATA_DIR", str(tmp_path))
+    plan = InstallPlan(
+        key="cosyvoice", kind="tts", probe_import="cosyvoice",
+        git_checkout=("https://example.invalid/CosyVoice.git", "abc",
+                      "CosyVoice"))
+    assert not is_installed(plan)
+    pkg = tmp_path / "vendor" / "CosyVoice" / "cosyvoice"
+    pkg.mkdir(parents=True)
+    (pkg / "__init__.py").write_text("")
+    assert is_installed(plan)
 
 
 def test_settings_defaults_round_trip_and_validation(tmp_path, monkeypatch):

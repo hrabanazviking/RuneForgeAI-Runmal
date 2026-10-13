@@ -142,7 +142,16 @@ def is_installed(plan: InstallPlan) -> bool:
     plans, when its downloads are all present)."""
     if plan.probe_import:
         import importlib.util
-        return importlib.util.find_spec(plan.probe_import) is not None
+        if importlib.util.find_spec(plan.probe_import) is not None:
+            return True
+        if plan.git_checkout is not None:
+            # Git-checkout backends live in the vendor dir and are not
+            # on sys.path until the adapter loads them — probe there,
+            # or a completed install reads as missing in a fresh
+            # process (the settings UI showed exactly that).
+            dest = vendor_dir() / plan.git_checkout[2]
+            return (dest / plan.probe_import).is_dir()
+        return False
     if plan.downloads:
         models = vendor_dir() / "models"
         return all((models / name).exists() for _, name in plan.downloads)

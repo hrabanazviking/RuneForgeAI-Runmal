@@ -35,6 +35,10 @@ PERMISSIVE_LICENSES = {
     "bsd license", "bsd 3-clause license", "3-clause bsd license",
     "isc", "python software foundation license", "psf",
     "zlib", "unlicense", "cc0-1.0", "public domain", "cnri-python",
+    # BSD-0-Clause: the BSD license with zero conditions — strictly
+    # more permissive than the accepted 2-/3-clause forms (numpy's
+    # real License-Expression compounds it with BSD/MIT/Zlib/CC0).
+    "0bsd", "bsd-0-clause",
 }
 
 #: License markers that fail the gate outright.

@@ -44,6 +44,14 @@ def test_license_classifier():
     assert classify_license("LGPL-2.1") == "forbidden"
     assert classify_license("") == "unknown"
     assert classify_license("Some Custom License") == "unknown"
+    # numpy's real License-Expression (purplelongship, 2026-10-13):
+    # every component permissive/public-domain, incl. BSD-0-Clause.
+    assert classify_license(
+        "BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0") == "permissive"
+    assert classify_license("0BSD") == "permissive"
+    assert classify_license("BSD-0-Clause") == "permissive"
+    # …but one copyleft component still poisons an AND compound.
+    assert classify_license("MIT AND GPL-3.0") == "forbidden"
 
 
 def test_gate_rejects_espeak_carrying_tree():
