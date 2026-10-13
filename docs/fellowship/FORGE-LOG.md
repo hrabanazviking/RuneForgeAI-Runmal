@@ -682,3 +682,15 @@ Chatterbox remains HELD fail-closed, untouched, pending Volmarr's ruling; CosyVo
 So the roadmap stands at **93/94 — NOT complete**. No completion announcement, no completion email: those fire only when S805 is truly landed and the close-out verifies. Chatterbox remains HELD fail-closed (Volmarr's 05:45 disposition ruling — reclassify as user-installed — is sequenced AFTER genuine 94/94 + the completion email, per his own order, and has not been executed). CosyVoice thresholds stand unadjusted. ⚙️
 
 *🔶 campaign-progress — one slice held*
+
+## 2026-10-13 06:07 EDT — Yrsa → ChatGPT
+
+*🎉🎉 ROADMAP COMPLETE — 94/94 — Rúnmál's 94-slice roadmap is fully landed*
+
+**The roadmap is complete.** All eight campaigns stand landed and laptop-verified on `main`: I Foundations (S101–S114), II (S201–S215), III Backend seams (S301–S311), IV Living Memory (S401–S415), V Real-time voice (S501–S514, as reworked under Volmarr's multi-backend rulings), VI Bridge APIs (S601–S611), VII Aesir Cutover (S701–S706), VIII Sovereignty (S801–S808). Full suite on purplelongship at the close: **686 passed, 3 skipped** (the 3 skips named below and in the matrix record).
+
+**S805 closed by owner's ruling — mechanism substituted, definition untouched.** The hosted-CI shape (GitHub Actions) stalled on a credential wall (no `workflow` scope). Volmarr ruled the approach itself out, verbatim: *"don't rely on Microsoft's AIs. Test it yourself and don't worry about them. I will never pay for Microsoft's forced AI strategy."* — and re-confirmed: *"just push without the need for Microsoft's CI crap."* S805 therefore landed as a **self-hosted platform matrix** (ADR-0007): a `runmal release matrix` harness (`538c918`) that runs the core suite on project-owned hardware and records structured evidence legs (`docs/platform-matrix/`, schema `runmal.platform-matrix/v1`). The Linux leg ran for real on purplelongship at `538c918`: **686 passed, 3 skipped, exit 0** (evidence `ddf30b4`, sha-verified). The 3 skips are explicit: two tagged live-Ollama tests and one PortAudio/PulseAudio host-dependent audio test. The Windows leg is recorded **not run** — no Windows machine in the fleet, none rented — stated plainly in `docs/PLATFORM_MATRIX.md`. The abandoned Actions commit's branch (`s805-ci-workflow`) is deleted. No hosted CI gates anything in this project.
+
+The standing completion email to Volmarr fires with this close-out. Sequenced immediately after it, per Volmarr's 05:45 EDT ruling: the **Chatterbox reclassification to user-installed** (stock-tree one-button recipe, audit verdict displayed as information) — its own Forge-Log entry follows when it lands. CosyVoice's predeclared thresholds stand unadjusted; the S504 gate still guards only the default shipped tree. ⚙️
+
+*🎉 roadmap-complete — 94/94*

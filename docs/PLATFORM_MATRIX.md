@@ -27,8 +27,17 @@ and the suite's own summary line. Evidence files live in
 
 | Leg | Machine | OS / Python | Result |
 |---|---|---|---|
-| Linux (x86_64) | purplelongship (forge laptop) | _recorded in the evidence leg_ | _pending — filled by the real run_ |
+| Linux (x86_64) | purplelongship (forge laptop) | Linux 7.0.0-34-generic (Ubuntu), x86_64, CPython 3.12.13 | ✅ **PASS** — 686 passed, 3 skipped, exit 0 ([evidence](platform-matrix/2026-10-13-purplelongship.json), run 2026-10-13 at commit `538c918`) |
 | Windows | — | — | **not run** — there is no Windows machine in the fleet and none will be rented from Microsoft; the gap is stated, not hidden |
+
+The Linux leg's 3 skips, named (from a `pytest -rs` confirmation run,
+686 passed / 3 skipped): two tagged live-provider tests
+(`test_s302_ollama.py` — "live Ollama not required in ordinary
+suite"; `test_s307_seam.py` — "no local Ollama") and one
+host-dependent audio test (`test_s501_audio.py` — PortAudio cannot
+reach a PulseAudio server in that session). All three are explicit
+skips in the stored summary line — nothing hidden, nothing passed
+by proxy.
 
 ## Reading the evidence
 
