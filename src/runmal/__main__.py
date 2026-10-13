@@ -54,6 +54,41 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Staging destination (default: data-dir staging/restore-<ts>.db)",
     )
+    profiles = sub.add_parser("profiles", help="Backend profile operations")
+    psub = profiles.add_subparsers(dest="profiles_command")
+    pmig = psub.add_parser(
+        "migrate-to-aesir",
+        help="Migrate an Ollama/OpenRouter profile to Aesir (S704)",
+    )
+    pmig.add_argument("--profile-id", required=True, help="Source profile id")
+    pmig.add_argument(
+        "--user-id",
+        default=None,
+        help="Owner user id (default: the sole local user, if exactly one)",
+    )
+    pmig.add_argument("--name", default=None, help="Target profile name")
+    pmig.add_argument(
+        "--chat-model",
+        default=None,
+        help="Aesir chat model (required for OpenRouter sources)",
+    )
+    pmig.add_argument(
+        "--embeddings",
+        action="store_true",
+        help="Also migrate embeddings to Aesir (requires --embedding-model)",
+    )
+    pmig.add_argument("--embedding-model", default=None, help="Aesir embedding model")
+    pmig.add_argument("--base-url", default=None, help="Aesir server base URL for the new profile")
+    pmig.add_argument(
+        "--repoint-chats",
+        action="store_true",
+        help="Repoint chats from the source profile to the migrated one",
+    )
+    pmig.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Print the migration plan without creating anything",
+    )
     return parser
 
 
@@ -68,6 +103,8 @@ def main(argv: list[str] | None = None) -> int:
         uvicorn.run(create_app(default_session_factory()), host=args.host, port=args.port)
     elif args.command == "backup":
         return _run_backup(args)
+    elif args.command == "profiles":
+        return _run_profiles(args)
     return 0
 
 
@@ -90,6 +127,69 @@ def _run_backup(args: argparse.Namespace) -> int:
         print(f"backup failed: {exc}", file=sys.stderr)
         return 1
     print(json.dumps(info.to_dict(), indent=2))
+    return 0
+
+
+def _run_profiles(args: argparse.Namespace) -> int:
+    import asyncio
+    import json
+
+    if args.profiles_command != "migrate-to-aesir":
+        print("usage: runmal profiles migrate-to-aesir ...", file=sys.stderr)
+        return 2
+
+    async def _go() -> dict:
+        from sqlalchemy import select
+
+        from runmal.app import default_session_factory
+        from runmal.backends import profile_migration
+        from runmal.backends.profiles import get_profile, profile_to_dict
+        from runmal.db.models import User
+
+        factory = default_session_factory()
+        async with factory() as session:
+            user_id = args.user_id
+            if user_id is None:
+                users = list(await session.scalars(select(User)))
+                if len(users) != 1:
+                    raise ValueError(
+                        "--user-id is required unless exactly one local "
+                        f"user exists (found {len(users)})"
+                    )
+                user_id = users[0].id
+            source = await get_profile(session, user_id, args.profile_id)
+            if source is None:
+                raise ValueError(f"profile not found: {args.profile_id}")
+            plan_kwargs = {
+                "target_name": args.name,
+                "aesir_chat_model": args.chat_model,
+                "migrate_embeddings": args.embeddings,
+                "aesir_embedding_model": args.embedding_model,
+                "base_url": args.base_url,
+            }
+            if args.dry_run:
+                plan = profile_migration.plan_profile_migration(source, **plan_kwargs)
+                return {"dry_run": True, "plan": plan.to_dict()}
+            result = await profile_migration.apply_profile_migration(
+                session,
+                user_id,
+                args.profile_id,
+                repoint_chats=args.repoint_chats,
+                **plan_kwargs,
+            )
+            return {
+                "dry_run": False,
+                "profile": profile_to_dict(result.profile),
+                "plan": result.plan.to_dict(),
+                "repointed_chats": result.repointed_chats,
+            }
+
+    try:
+        out = asyncio.run(_go())
+    except ValueError as exc:
+        print(f"profile migration failed: {exc}", file=sys.stderr)
+        return 1
+    print(json.dumps(out, indent=2))
     return 0
 
 
