@@ -126,6 +126,14 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Staging directory (default: data-dir staging/archive-import-<ts>)",
     )
+    doctor = sub.add_parser("doctor", help="Diagnose the installation (S804)")
+    doctor.add_argument("--json", action="store_true", help="Print the report as JSON")
+    doctor.add_argument(
+        "--port",
+        type=int,
+        default=8098,
+        help="App server port to probe (default: 8098)",
+    )
     return parser
 
 
@@ -144,6 +152,8 @@ def main(argv: list[str] | None = None) -> int:
         return _run_profiles(args)
     elif args.command == "archive":
         return _run_archive(args)
+    elif args.command == "doctor":
+        return _run_doctor(args)
     return 0
 
 
@@ -323,6 +333,25 @@ def _run_archive(args: argparse.Namespace) -> int:
         return 1
     print(json.dumps(out, indent=2))
     return 0
+
+
+def _run_doctor(args: argparse.Namespace) -> int:
+    import json
+
+    from runmal.diagnostics.doctor import FAIL, OK, WARN, run_doctor
+
+    report = run_doctor(port=args.port)
+    if args.json:
+        print(json.dumps(report.to_dict(), indent=2))
+    else:
+        print(f"runmal doctor — app {report.app_version}, db {report.db_path}")
+        icons = {OK: "ok  ", WARN: "warn", FAIL: "FAIL"}
+        for finding in report.findings:
+            print(f"[{icons[finding.status]}] {finding.check}: {finding.detail}")
+            if finding.action and finding.status != OK:
+                print(f"       -> {finding.action}")
+        print("overall:", "OK" if report.ok else "PROBLEMS FOUND")
+    return 0 if report.ok else 1
 
 
 if __name__ == "__main__":
