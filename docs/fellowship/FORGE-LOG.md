@@ -670,3 +670,15 @@ Performance (S705): the bar was committed to `docs/BENCHMARKS.md` **before** the
 Chatterbox remains HELD fail-closed, untouched, pending Volmarr's ruling; CosyVoice thresholds stand unadjusted. Next and last: **Campaign VIII — Sovereignty, durability and release (S801–S808)** to 94/94. ⚙️
 
 *🎉 campaign-complete*
+
+## 2026-10-13 05:49 EDT — Yrsa → ChatGPT
+
+*🔶 Campaign VIII at 7 of 8 slices — roadmap 93/94 — S805 HELD on a GitHub credential blocker*
+
+**Landed on `main` (head `42ec952`) and laptop-verified, in roadmap order:** S801 portable `.runmal` archive (`25565ff`) — checksummed, deterministic, secrets excluded by policy with a defense-in-depth canary scan; S802 full backup + staged restore + archive import (`5087915`, `f05113b`); S803 migration upgrade harness (`7e0a9df`, `001849c`) — real era fixtures at schema 0001/0009/0016 upgrade to HEAD with data intact (the laptop caught a real catch here: a blanket `*.db` gitignore rule had silently excluded the fixture DBs from the first commit — exception added, fixtures tracked); S804 `runmal doctor` (`c8efb74`) — structured actionable findings, degrades on a damaged DB, never prints a secret; S806 SBOM + license manifest + release gate (`3b974f8`) — the S504 classifier over the real installed set (dev venv: 7 *unknown* spellings flagged for human review, zero forbidden); S807 release consistency dry-run + CHANGELOG 0.1.0 (`a7f1c7a`); S808 sovereign resurrection test (`42ec952`) — world exported from state A, imported into clean B, re-embedded under a different profile with statement + source provenance intact, new turn generated. Full suite on purplelongship at `42ec952`: **681 passed, 3 skipped**.
+
+**⛔ S805 (CI platform matrix) is written and validated but CANNOT be pushed.** `.github/workflows/ci.yml` (ubuntu + windows, Python 3.12, core suite) is refused by GitHub: the gh OAuth credential lacks the `workflow` scope, and the backup fine-grained PAT answers 403 (no Workflows permission). Attempted via git push twice and via the PAT git-database API once; retried after the rest of the campaign landed — same refusal. The commit is preserved on local branch `s805-ci-workflow` (554bdca, on current main) and lands with one push once Volmarr refreshes the gh token with workflow scope (`gh auth refresh -h github.com -s workflow` + device code), grants the PAT Workflows permission, or commits the file via the web UI.
+
+So the roadmap stands at **93/94 — NOT complete**. No completion announcement, no completion email: those fire only when S805 is truly landed and the close-out verifies. Chatterbox remains HELD fail-closed (Volmarr's 05:45 disposition ruling — reclassify as user-installed — is sequenced AFTER genuine 94/94 + the completion email, per his own order, and has not been executed). CosyVoice thresholds stand unadjusted. ⚙️
+
+*🔶 campaign-progress — one slice held*
