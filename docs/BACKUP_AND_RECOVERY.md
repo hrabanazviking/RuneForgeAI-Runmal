@@ -114,3 +114,7 @@ Exports may contain extremely private conversation/memory data. Make their sensi
 ## 10. Compatibility promise
 
 Released archive formats are versioned. Rúnmál should either import an older supported archive or fail with a precise compatibility error and documented migration path, never silently discard unknown user data.
+
+## 11. Sovereign resurrection (S808, proven)
+
+The full claim is exercised end-to-end by `tests/test_s808_resurrection.py`: a complete world (persona + card + avatar bytes, lorebook, chat history, a memory statement with source and chunk provenance, a sampling preset) is exported from state dir A as a `.runmal` archive, imported into a clean state dir B, and its derived indexes are rebuilt under a *different* embedding profile. In B: persona, lore, and chat open byte-identical; the memory statement and its source link survive; embeddings are honestly re-declared under the new profile (the old space is destroyed, never mixed — INV-019); the memory is retrievable in the new space; and the resurrected chat continues with a new generated turn. Data is portable, restorable, and re-embeddable without the original provider — that is the sovereignty this campaign exists to prove.
