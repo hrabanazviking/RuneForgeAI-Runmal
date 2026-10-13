@@ -54,6 +54,23 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Staging destination (default: data-dir staging/restore-<ts>.db)",
     )
+    bfull = bsub.add_parser(
+        "full-create", help="Create a full backup bundle (database + assets, S802)"
+    )
+    bfull.add_argument(
+        "--output",
+        default=None,
+        help="Destination bundle path (default: data-dir backups/runmal-full-backup-<ts>.zip)",
+    )
+    bstagefull = bsub.add_parser(
+        "full-stage", help="Validate + stage a full backup bundle with a report"
+    )
+    bstagefull.add_argument("bundle", help="Full backup bundle (.zip)")
+    bstagefull.add_argument(
+        "--staging",
+        default=None,
+        help="Staging directory (default: data-dir staging/full-restore-<ts>)",
+    )
     profiles = sub.add_parser("profiles", help="Backend profile operations")
     psub = profiles.add_subparsers(dest="profiles_command")
     pmig = psub.add_parser(
@@ -100,6 +117,15 @@ def build_parser() -> argparse.ArgumentParser:
     )
     aval = asub.add_parser("validate", help="Validate a .runmal archive")
     aval.add_argument("path", help="Archive file to validate")
+    aimp = asub.add_parser(
+        "import", help="Import a .runmal archive into a fresh staging directory (S802)"
+    )
+    aimp.add_argument("path", help="Archive file to import")
+    aimp.add_argument(
+        "--staging-dir",
+        default=None,
+        help="Staging directory (default: data-dir staging/archive-import-<ts>)",
+    )
     return parser
 
 
@@ -133,8 +159,23 @@ def _run_backup(args: argparse.Namespace) -> int:
             info = service.verify_backup(args.path)
         elif args.backup_command == "stage":
             info = service.stage_restore(args.backup, staging_path=args.staging)
+        elif args.backup_command == "full-create":
+            from runmal.backups import full
+
+            full_info = full.create_full_backup(dest=args.output)
+            print(json.dumps(full_info.to_dict(), indent=2))
+            return 0
+        elif args.backup_command == "full-stage":
+            from runmal.backups import full
+
+            report = full.stage_full_restore(args.bundle, staging_root=args.staging)
+            print(json.dumps(report.to_dict(), indent=2))
+            return 0
         else:
-            print("usage: runmal backup {create|verify|stage} ...", file=sys.stderr)
+            print(
+                "usage: runmal backup {create|verify|stage|full-create|full-stage} ...",
+                file=sys.stderr,
+            )
             return 2
     except service.BackupError as exc:
         print(f"backup failed: {exc}", file=sys.stderr)
@@ -221,6 +262,34 @@ def _run_archive(args: argparse.Namespace) -> int:
             print(f"archive invalid: {exc}", file=sys.stderr)
             return 1
         print(json.dumps({"valid": True, "manifest": manifest}, indent=2))
+        return 0
+    if args.archive_command == "import":
+        import asyncio as _asyncio
+
+        from runmal.portable.restore import import_archive
+
+        async def _import() -> dict:
+            if args.staging_dir:
+                root = args.staging_dir
+            else:
+                from datetime import UTC, datetime
+
+                from runmal.auth import data_dir
+
+                root = str(
+                    data_dir()
+                    / "staging"
+                    / f"archive-import-{datetime.now(UTC).strftime('%Y%m%dT%H%M%S')}"
+                )
+            report = await import_archive(args.path, root)
+            return report.to_dict()
+
+        try:
+            out = _asyncio.run(_import())
+        except ArchiveError as exc:
+            print(f"archive import failed: {exc}", file=sys.stderr)
+            return 1
+        print(json.dumps(out, indent=2))
         return 0
     if args.archive_command != "export":
         print("usage: runmal archive {export|validate} ...", file=sys.stderr)

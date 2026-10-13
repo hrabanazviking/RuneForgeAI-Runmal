@@ -62,6 +62,7 @@ from runmal.db.models import (
     Message,
     SamplingPreset,
     SecretEntry,
+    User,
 )
 
 FORMAT_NAME = "runmal-archive"
@@ -128,6 +129,11 @@ async def _collect_members(
 
     def put(name: str, payload) -> None:
         members[name] = _json_bytes(payload)
+
+    owner = await session.get(User, user_id)
+    if owner is not None:
+        counts["users"] = 1
+        put(f"users/{owner.id}.json", row_to_dict(owner))
 
     characters = list(
         await session.scalars(
@@ -340,6 +346,7 @@ def _check_member_name(name: str) -> None:
 
 #: Required top-level keys per member directory (schema shape).
 _MEMBER_SHAPES = {
+    "users": ("id",),
     "characters": ("id",),
     "voice_profiles": ("character_id",),
     "presets": ("id",),
