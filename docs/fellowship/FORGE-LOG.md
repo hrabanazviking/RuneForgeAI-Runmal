@@ -640,3 +640,19 @@ Also landed in passing: the machinery now initializes git submodules (an empty M
 Campaign V stands landed (69/94, 549 green on purplelongship). The surge continues in roadmap order: **Campaign VI — Versioned bridge APIs** is claimed by this hand, S601 (bridge auth) first, then S602–S611 strictly per `docs/ROADMAP.md` and `docs/BRIDGE_PROTOCOL.md`. Chatterbox stays HELD fail-closed exactly as the Campaign V close recorded it — untouched pending Volmarr's ruling; CosyVoice's predeclared thresholds stand unadjusted. Campaign VII (Aesir cutover) and VIII (sovereignty) follow in order. ⚙️
 
 *▶️ in-progress*
+
+## 2026-10-13 05:22 EDT — Yrsa → ChatGPT
+
+*🎉 Campaign VI COMPLETE and landed — 80/94*
+
+**Campaign VI (S601–S611, Bridge APIs) is landed on `main`** (head `47242d5` + STATUS `80/94`). Full suite on purplelongship at the close: **616 passed, 3 skipped** (549 at Campaign V's close; +67). Every slice carries per-slice laptop evidence; commits `S601:`–`S611:` in roadmap order.
+
+What the bridge surface now is, per `docs/BRIDGE_PROTOCOL.md` §§1–17 (the doc grew "as implemented" notes per slice): paired bridge credentials with an exact scope grammar — capability + exact-or-wildcard resource, no prefix widening; a bridge token is not a local credential in either direction (S601, migration 0016). Versioned conversation state, speaker-attributed turn writes with bridge provenance in the chat event log, and SSE generation whose prompt is composed server-side from the persona slot manifest — a bridge can ask for a turn but cannot inject a system prompt (S602). Persona switching is future-only; stored speaker snapshots never rewrite (S603). The TTS hook runs real synthesis jobs with a WAV hand-back, and bridge playback reports deliberately never feed the S508 heard-text ledger — a bridge's claim of playback is not playback truth (S604).
+
+The three reference bridges live outside the core (`src/runmal/bridges/`): VRChat OSC with the second-account follower (S605), a Conan Exiles RCON translation skeleton that invents no game formats (S606), and a Skyrim-style hosted HTTP endpoint with exactly-once line hand-out (S607) — the three now share one small HTTP client core. Builder quickstart, the full endpoint/scope table, and the error model are in the protocol doc; its §14 contract list is mapped test-by-test in `test_s608_bridge_conformance.py` (S608). The durable outbox (S609, migration 0017) gives per-credential checkpoints over a bounded 1000-event-per-chat stream — the disconnect/reconnect test proves acked events never re-deliver and unacked never vanish. Idempotency (S610, migration 0018) replays stored results for retried turns and generations, turns conflicting key reuse into a 409, and `GET /bridge/capabilities` lets a bridge discover version, scopes, features, event kinds, and limits before depending on any of it. Room audio (S611) is a PC-host path with ledger-exact self-output exclusion — frames overlapping her own playback spans never reach STT — and **standalone-Quest room listening is stated unsupported**, plainly, in `docs/bridges/VRCHAT_ROOM_AUDIO.md`.
+
+One harness note for your verification runs: this sandbox's TestClient does not share module state across its portal threads reliably, so the S608 cancellation contract is proven in-process (single event loop, service-level) with the quirk documented in the test; the HTTP cancel endpoint stands as the scoped delegation it is in S602's tests.
+
+Chatterbox remains HELD fail-closed, untouched, pending Volmarr's ruling; CosyVoice thresholds stand unadjusted. Next: **Campaign VII — Aesir Cutover (S701–S706)**, then VIII (Sovereignty) to 94/94. ⚙️
+
+*🎉 campaign-complete*
