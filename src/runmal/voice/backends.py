@@ -4,9 +4,12 @@ Rúnmál is not locked to one speech engine. This registry is the
 single place that knows the TTS backends, their install plans, and
 their admission class:
 
-* ``default_shipped`` — CosyVoice and Chatterbox. Their trees are
-  part of what Rúnmál ships; the S504 gate binds them (the default
-  shipped tree must audit green).
+* ``default_shipped`` — CosyVoice (admitted; Chatterbox is
+  default-class by ruling but HELD at admission — its pinned tree
+  requires soxr, LGPL-2.1-or-later, via librosa/transformers; see
+  the registry note). Their trees are part of what Rúnmál ships;
+  the S504 gate binds them (the default shipped tree must audit
+  green).
 * ``user_installed`` — Kitten and Piper. Adapter code ships (it is
   ours, Apache-2.0); the engines install ONLY through the user's
   explicit one-button action (:mod:`runmal.voice.install`), carry the
@@ -57,6 +60,9 @@ COSYVOICE_COMMIT = "074ca6dc9e80a2f424f1f74b48bdd7d3fea531cc"
 #: the English pipeline) and minus ``gradio`` (demo UI only). Installed
 #: with --no-deps so nothing unlisted can enter the tree. Mirrors the
 #: ``voice-chatterbox`` extra in pyproject.toml (a test guards drift).
+#: NOTE: the set is a faithful record of the backend's tree, but the
+#: plan is HELD (enable=False) — see the registry note: librosa's
+#: presence makes its pinned transformers import soxr (LGPL-2.1+).
 CHATTERBOX_PACKAGES: tuple[str, ...] = (
     "chatterbox-tts==0.1.7",
     "numpy>=1.24,<2.0",
@@ -74,20 +80,45 @@ CHATTERBOX_PACKAGES: tuple[str, ...] = (
     "omegaconf",
 )
 
+def _torch_cpu_refs() -> tuple[str, str]:
+    """CPU builds of torch/torchaudio 2.6.0 as direct wheel URLs.
+
+    The PyPI default builds are CUDA builds whose ``nvidia-*``
+    companion wheels declare NO license metadata (audit: unknown —
+    the tree could never pass) and do not run without them
+    (libcudnn). The CPU builds are self-contained BSD-3 wheels.
+    GPU torch stays available as a user's own install choice
+    (interoperability principle). Wheel tags follow the RUNNING
+    interpreter — the install machinery installs into the app env.
+    """
+    tag = f"cp{sys.version_info.major}{sys.version_info.minor}"
+    base = "https://download.pytorch.org/whl/cpu"
+    return (
+        f"torch @ {base}/torch-2.6.0%2Bcpu-{tag}-{tag}-linux_x86_64.whl",
+        f"torchaudio @ {base}/torchaudio-2.6.0%2Bcpu-{tag}-{tag}-linux_x86_64.whl",
+    )
+
+
 #: Curated pip set for CosyVoice — its upstream requirements MINUS the
 #: proprietary ``ttsfrd`` (the open WeTextProcessing frontend ships
-#: instead). The runtime itself comes from the pinned git checkout.
-#: Mirrors the ``voice-cosyvoice`` extra in pyproject.toml.
+#: instead) and MINUS ``librosa`` (the runtime never imports it — grep
+#: evidence, 2026-10-13 — and its mere presence makes transformers 5.x
+#: hard-import ``soxr``; python-soxr declares LGPL-2.1-or-later,
+#: forbidden in the shipped tree). The runtime itself comes from the
+#: pinned git checkout. Mirrors the ``voice-cosyvoice`` extra in
+#: pyproject.toml (a test guards drift).
 COSYVOICE_PACKAGES: tuple[str, ...] = (
     "conformer",
     "diffusers",
     "hydra-core",
     "HyperPyYAML",
     "inflect",
-    "librosa",
     "lightning",
     "matplotlib",
-    "modelscope",
+    # 1.32 is the last monolithic line: 1.40 splits the hub into
+    # modelscope-hub, which requires `cryptography` (dual-license
+    # SPDX expression outside the reviewed permissive set).
+    "modelscope==1.32.0",
     "networkx",
     "numpy",
     "omegaconf",
@@ -101,8 +132,28 @@ COSYVOICE_PACKAGES: tuple[str, ...] = (
     "WeTextProcessing",
     "wget",
     "x-transformers",
-    "torch",
-    "torchaudio",
+    *_torch_cpu_refs(),
+    # Proven dependency closure (purplelongship, 2026-10-13): the
+    # upstream requirements name the direct packages only; these are
+    # what the runtime actually imports, each one audit-passed.
+    "einops",  # x-transformers
+    "huggingface-hub>=1.3.0,<2.0",  # transformers 5.x constraint
+    "tokenizers==0.22.1",  # transformers 5.x constraint (<=0.23.0)
+    "ruamel.yaml",  # HyperPyYAML
+    "openai-whisper",  # cosyvoice.cli.frontend speech tokenizer
+    "tiktoken",  # openai-whisper
+    "more-itertools",  # openai-whisper / inflect
+    "numba",  # openai-whisper
+    "llvmlite",  # numba
+    "pynini",  # WeTextProcessing runtime
+    "importlib_resources",  # WeTextProcessing runtime
+    "regex",  # transformers
+    "requests",  # modelscope / huggingface-hub
+    "urllib3",  # requests / modelscope
+    "charset-normalizer",  # requests
+    "sympy",  # torch / transformers
+    "mpmath",  # sympy
+    "typeguard",  # inflect
 )
 
 #: Kitten TTS runtime wheel (user-installed only). KittenTTS is not on
@@ -171,9 +222,18 @@ TTS_REGISTRY: dict[str, TTSBackendSpec] = {
             pip_packages=CHATTERBOX_PACKAGES,
             probe_import="chatterbox",
             warmup="runmal.voice.backends:warm_chatterbox",
-            note="MIT code + weights; curated install excludes GPL pykakasi "
-                 "(Japanese-only) — English path never imports it. Output "
-                 "carries the upstream PerTh watermark.",
+            enable=False,
+            note="HELD at admission (purplelongship evidence, 2026-10-13): "
+                 "chatterbox.tts imports librosa at module level, and its "
+                 "own pinned transformers 5.2 hard-imports soxr whenever "
+                 "librosa is present; python-soxr declares "
+                 "LGPL-2.1-or-later — forbidden in the shipped tree. "
+                 "Registered fail-closed until Volmarr rules "
+                 "(user-installed reclassification, a patch fork, or "
+                 "dropping the backend). MIT code + weights; curated "
+                 "install excludes GPL pykakasi (Japanese-only) — English "
+                 "path never imports it. Output carries the upstream "
+                 "PerTh watermark.",
         ),
         tree_packages=_dist_names(CHATTERBOX_PACKAGES),
         first_audio_p50_s=4.0,

@@ -25,11 +25,16 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 
 #: Licenses the project policy accepts for the distributed voice tree.
+#: An alias table by design: the same accepted license in its attested
+#: spellings (SPDX, setuptools-era long forms). Nothing copyleft is
+#: admitted here; the forbidden-marker check runs before this set.
 PERMISSIVE_LICENSES = {
     "apache-2.0", "apache 2.0", "apache license 2.0", "apache software license",
+    "apache 2.0 license",
     "mit", "mit license", "bsd", "bsd-2-clause", "bsd-3-clause",
-    "bsd license", "isc", "python software foundation license", "psf",
-    "zlib", "unlicense", "cc0-1.0",
+    "bsd license", "bsd 3-clause license", "3-clause bsd license",
+    "isc", "python software foundation license", "psf",
+    "zlib", "unlicense", "cc0-1.0", "public domain", "cnri-python",
 }
 
 #: License markers that fail the gate outright.
@@ -50,14 +55,29 @@ def _normalize(name: str) -> str:
 
 
 def classify_license(raw: str) -> str:
-    """'permissive' | 'forbidden' | 'unknown' for one license string."""
+    """'permissive' | 'forbidden' | 'unknown' for one license string.
+
+    SPDX structure is honored conservatively: a compound joined by
+    AND is permissive only when EVERY component is; a "WITH
+    <exception>" suffix is stripped before judging the base license
+    (SPDX exceptions only ever grant additional rights); an OR
+    compound stays 'unknown' — a choice of licenses is a human-review
+    question, not an automatic pass.
+    """
     text = (raw or "").strip().lower()
     if not text:
         return "unknown"
     if any(marker in text for marker in FORBIDDEN_MARKERS):
         return "forbidden"
-    parts = [p.strip() for p in text.replace(";", ",").split(",")]
-    if all(part in PERMISSIVE_LICENSES for part in parts if part):
+    parts: list[str] = []
+    for comma_part in text.replace(";", ",").split(","):
+        for and_part in comma_part.split(" and "):
+            part = and_part.strip()
+            if " with " in part:
+                part = part.split(" with ", 1)[0].strip()
+            if part:
+                parts.append(part)
+    if parts and all(part in PERMISSIVE_LICENSES for part in parts):
         return "permissive"
     return "unknown"
 
@@ -152,13 +172,40 @@ def _declared_license(metadata) -> str:
     if expr:
         return expr
     raw = (metadata.get("License") or "").strip()
-    if raw and raw != "UNKNOWN" and "\n" not in raw and len(raw) <= 80:
-        return raw
+    if raw and raw != "UNKNOWN":
+        if "\n" not in raw and len(raw) <= 80:
+            return raw
+        # Multi-line field: some wheels head the license body with the
+        # short expression ("MIT License\n\nCopyright ..."). Trust a
+        # first line only when it is shaped like an expression (short,
+        # few words, license-shaped) — a prose heading ("License
+        # agreement for ...") or a copyright line is not one and falls
+        # through to the classifiers.
+        first = raw.splitlines()[0].strip()
+        words = first.split()
+        if (len(first) <= 40 and len(words) <= 4
+                and ("license" in first.lower() or len(words) == 1)):
+            return first
     classifiers = [c for c in (metadata.get_all("Classifier") or [])
                    if c.startswith("License :: OSI Approved ::")]
     if classifiers:
         return classifiers[0].split("::")[-1].strip()
     return ""
+
+
+#: Human-reviewed declarations for wheels whose metadata declares NO
+#: license at all (the audit's 'unknown — human review required'
+#: verdict, answered and recorded). Consulted ONLY when a wheel
+#: declares nothing; every entry cites its evidence, and the same
+#: record lives in docs/VOICE_LICENSE_MATRIX.md. A distribution not
+#: listed here and declaring nothing stays unknown — and fails.
+REVIEWED_DECLARATIONS: dict[str, str] = {
+    # Wheel header is silent, but the wheel bundles the Apache
+    # License 2.0 text itself (dist-info/licenses/LICENSE), and the
+    # upstream project (wenet-e2e/WeTextProcessing) is Apache-2.0.
+    # Evidence read on purplelongship, 2026-10-13.
+    "wetextprocessing": "Apache-2.0",
+}
 
 
 def installed_distributions() -> dict[str, str]:
@@ -170,7 +217,10 @@ def installed_distributions() -> dict[str, str]:
         name = dist.metadata.get("Name") or ""
         if not name:
             continue
-        out[name] = _declared_license(dist.metadata)
+        declared = _declared_license(dist.metadata)
+        if not declared:
+            declared = REVIEWED_DECLARATIONS.get(_normalize(name), "")
+        out[name] = declared
     return out
 
 

@@ -114,8 +114,9 @@ def test_declared_license_reads_expression_not_full_text():
 
     full_text_only = Message()
     full_text_only["License"] = (
-        "MIT License\n\nCopyright (c) someone\n\nPermission is hereby "
-        "granted, free of charge, to any person obtaining a copy...")
+        "Copyright (c) someone\n\nPermission is hereby granted, free "
+        "of charge, to any person obtaining a copy of this software "
+        "and associated documentation files, without restriction...")
     assert _declared_license(full_text_only) == ""
 
     classifier_fallback = Message()
@@ -126,6 +127,28 @@ def test_declared_license_reads_expression_not_full_text():
     short_form = Message()
     short_form["License"] = "BSD-3-Clause"
     assert _declared_license(short_form) == "BSD-3-Clause"
+
+    # A license BODY headed by its short expression: the first line
+    # is the declaration (tiktoken's wheel is shaped exactly so).
+    headed_body = Message()
+    headed_body["License"] = (
+        "MIT License\n\nCopyright (c) 2023\n\nPermission is hereby "
+        "granted, free of charge, to any person obtaining a copy of "
+        "this software and associated documentation files...")
+    assert _declared_license(headed_body) == "MIT License"
+
+    # A prose heading is NOT an expression: classifiers still win
+    # (matplotlib's wheel is shaped exactly so).
+    prose_headed = Message()
+    prose_headed["License"] = (
+        "License agreement for matplotlib versions 1.3.0 and later\n"
+        "=========================================================\n"
+        " 1. This LICENSE AGREEMENT is between the Matplotlib "
+        "Development Team ...")
+    prose_headed["Classifier"] = \
+        "License :: OSI Approved :: Python Software Foundation License"
+    assert _declared_license(prose_headed) == \
+        "Python Software Foundation License"
 
 
 def test_registry_tree_packages_scope_each_backend():
@@ -208,11 +231,64 @@ def _pyproject_extra(name: str) -> list[str]:
 def test_pyproject_extras_mirror_curated_install_sets():
     # Drift guard: the declared extras and install.py's curated sets
     # are two writings of one list — they may never silently diverge.
+    # Wheel tags (cp312/cp313) follow the running interpreter in the
+    # registry sets and are pinned to cp312 in pyproject; normalize
+    # the tag before comparing so only real divergence fails.
     from runmal.voice.backends import CHATTERBOX_PACKAGES, COSYVOICE_PACKAGES
 
-    assert _pyproject_extra("voice-cosyvoice") == list(COSYVOICE_PACKAGES)
-    assert _pyproject_extra("voice-chatterbox") == list(CHATTERBOX_PACKAGES)
+    def norm(entries):
+        return [re.sub(r"cp3\d+", "cp3XX", e) for e in entries]
+
+    assert norm(_pyproject_extra("voice-cosyvoice")) == \
+        norm(list(COSYVOICE_PACKAGES))
+    assert norm(_pyproject_extra("voice-chatterbox")) == \
+        norm(list(CHATTERBOX_PACKAGES))
     assert not any("misaki" in entry for entry in _pyproject_extra("voice"))
+
+
+def test_cosyvoice_set_excludes_librosa_and_uses_cpu_torch():
+    # librosa's presence makes transformers 5.x hard-import soxr
+    # (LGPL-2.1-or-later) — and the CosyVoice runtime never imports
+    # librosa (grep evidence, 2026-10-13). CUDA torch's nvidia-*
+    # companions declare no license metadata; CPU builds are BSD-3.
+    from runmal.voice.backends import COSYVOICE_PACKAGES
+
+    names = {re.split(r"[<>=!~ @\[]", p, maxsplit=1)[0].lower()
+             for p in COSYVOICE_PACKAGES}
+    assert "librosa" not in names and "soxr" not in names
+    torch_refs = [p for p in COSYVOICE_PACKAGES if p.startswith("torch @")]
+    assert torch_refs and "%2Bcpu" in torch_refs[0]
+    assert "modelscope==1.32.0" in COSYVOICE_PACKAGES
+
+
+def test_chatterbox_held_fail_closed_at_admission():
+    # Admission evidence (purplelongship, 2026-10-13): its pinned
+    # tree needs soxr (LGPL-2.1-or-later) — the plan refuses to run
+    # until Volmarr rules. The backend stays registered and visible.
+    from runmal.voice.backends import TTS_REGISTRY
+
+    plan = TTS_REGISTRY["chatterbox"].plan
+    assert TTS_REGISTRY["chatterbox"].default_shipped  # class by ruling
+    assert plan.enable is False
+    assert "soxr" in plan.note and "LGPL" in plan.note
+
+
+def test_classifier_recognizes_attested_permissive_spellings():
+    # Setuptools-era spellings and SPDX compounds of licenses the
+    # policy already accepts (purplelongship real-tree evidence).
+    assert classify_license("Apache 2.0 License") == "permissive"
+    assert classify_license("BSD 3-Clause License") == "permissive"
+    assert classify_license("3-Clause BSD License") == "permissive"
+    assert classify_license("Public Domain") == "permissive"
+    assert classify_license("Apache-2.0 AND CNRI-Python") == "permissive"
+    assert classify_license(
+        "BSD-2-Clause AND Apache-2.0 WITH LLVM-exception") == "permissive"
+    # Compounds never launder a forbidden component, and OR stays a
+    # human-review question.
+    assert classify_license("MIT AND GPL-3.0") == "forbidden"
+    assert classify_license("LGPL-2.1-or-later") == "forbidden"
+    assert classify_license("MIT OR GPL-3.0") == "forbidden"
+    assert classify_license("Apache-2.0 OR Proprietary") == "unknown"
 
 
 # ------------------------------------------------------- fail-closed
