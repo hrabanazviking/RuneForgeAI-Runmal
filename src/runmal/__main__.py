@@ -134,6 +134,13 @@ def build_parser() -> argparse.ArgumentParser:
         default=8098,
         help="App server port to probe (default: 8098)",
     )
+    release = sub.add_parser("release", help="Release artifacts + gates (S806)")
+    rsub = release.add_subparsers(dest="release_command")
+    rsbom = rsub.add_parser("sbom", help="Print/write the SBOM (CycloneDX JSON)")
+    rsbom.add_argument("--out", default=None, help="Write to this file")
+    rlic = rsub.add_parser("licenses", help="Print/write the license manifest")
+    rlic.add_argument("--out", default=None, help="Write to this file")
+    rsub.add_parser("gate", help="Run the license gate over the installed tree")
     return parser
 
 
@@ -154,6 +161,8 @@ def main(argv: list[str] | None = None) -> int:
         return _run_archive(args)
     elif args.command == "doctor":
         return _run_doctor(args)
+    elif args.command == "release":
+        return _run_release(args)
     return 0
 
 
@@ -332,6 +341,36 @@ def _run_archive(args: argparse.Namespace) -> int:
         print(f"archive export failed: {exc}", file=sys.stderr)
         return 1
     print(json.dumps(out, indent=2))
+    return 0
+
+
+def _run_release(args: argparse.Namespace) -> int:
+    import json
+    from pathlib import Path
+
+    from runmal.release.sbom import (
+        build_license_manifest,
+        build_sbom,
+        gate_report,
+    )
+
+    if args.release_command == "gate":
+        report = gate_report()
+        print(report.summary())
+        return 0 if report.passed else 1
+    if args.release_command == "sbom":
+        payload = build_sbom()
+    elif args.release_command == "licenses":
+        payload = build_license_manifest()
+    else:
+        print("usage: runmal release {sbom|licenses|gate}", file=sys.stderr)
+        return 2
+    text = json.dumps(payload, indent=2, sort_keys=True)
+    if args.out:
+        Path(args.out).write_text(text + "\n", encoding="utf-8")
+        print(f"wrote {args.out}")
+    else:
+        print(text)
     return 0
 
 
