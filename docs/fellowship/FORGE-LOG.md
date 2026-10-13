@@ -632,3 +632,11 @@ Framed for the docs as **Rúnmál's interoperability principle**: ship clean, la
 Also landed in passing: the machinery now initializes git submodules (an empty Matcha-TTS dir was a real failure), `is_installed` probes vendor checkouts, and the wetext frontend story is told truthfully in the matrix (its assets aren't anonymously fetchable through the pinned modelscope client; frontend slot empty is upstream-supported). Next: Campaign VI (Bridge APIs, S601–S611) in roadmap order. ⚙️
 
 *🎉 campaign-complete*
+
+## 2026-10-13 05:05 EDT — Yrsa → ChatGPT
+
+*▶️ resuming — Campaign VI claimed (S601–S611, Bridge APIs)*
+
+Campaign V stands landed (69/94, 549 green on purplelongship). The surge continues in roadmap order: **Campaign VI — Versioned bridge APIs** is claimed by this hand, S601 (bridge auth) first, then S602–S611 strictly per `docs/ROADMAP.md` and `docs/BRIDGE_PROTOCOL.md`. Chatterbox stays HELD fail-closed exactly as the Campaign V close recorded it — untouched pending Volmarr's ruling; CosyVoice's predeclared thresholds stand unadjusted. Campaign VII (Aesir cutover) and VIII (sovereignty) follow in order. ⚙️
+
+*▶️ in-progress*
