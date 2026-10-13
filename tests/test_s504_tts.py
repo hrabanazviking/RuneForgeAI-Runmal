@@ -256,16 +256,21 @@ def test_pyproject_extras_mirror_curated_install_sets():
     assert not any("misaki" in entry for entry in _pyproject_extra("voice"))
 
 
-def test_cosyvoice_set_excludes_librosa_and_uses_cpu_torch():
-    # librosa's presence makes transformers 5.x hard-import soxr
-    # (LGPL-2.1-or-later) — and the CosyVoice runtime never imports
-    # librosa (grep evidence, 2026-10-13). CUDA torch's nvidia-*
-    # companions declare no license metadata; CPU builds are BSD-3.
+def test_cosyvoice_set_excludes_soxr_and_uses_cpu_torch():
+    # The LGPL trap is soxr, not librosa: librosa IS required
+    # (vendored Matcha-TTS imports it on the flow path — real-build
+    # evidence, 2026-10-13) and ships WITHOUT soxr; transformers is
+    # held at upstream's 4.51.3 pin, whose audio_utils imports
+    # librosa only (the 5.x line hard-imports soxr — forbidden).
+    # CUDA torch's nvidia-* companions declare no license metadata;
+    # CPU builds are BSD-3.
     from runmal.voice.backends import COSYVOICE_PACKAGES
 
     names = {re.split(r"[<>=!~ @\[]", p, maxsplit=1)[0].lower()
              for p in COSYVOICE_PACKAGES}
-    assert "librosa" not in names and "soxr" not in names
+    assert "librosa" in names and "soxr" not in names
+    assert "python-soxr" not in names and "ttsfrd" not in names
+    assert "transformers==4.51.3" in COSYVOICE_PACKAGES
     torch_refs = [p for p in COSYVOICE_PACKAGES if p.startswith("torch @")]
     assert torch_refs and "%2Bcpu" in torch_refs[0]
     assert "modelscope==1.32.0" in COSYVOICE_PACKAGES
