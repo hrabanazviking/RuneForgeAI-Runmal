@@ -42,9 +42,10 @@ voice = [
 # developers and the default-tree audit; the app itself installs
 # backends only through the one-button machinery. voice-cosyvoice is
 # the default-shipped curated --no-deps set; voice-chatterbox names
-# only the stock root package of a USER-INSTALLED backend (Volmarr's
-# ruling, 2026-10-13) — pip resolves upstream's full tree for it,
-# and it is never part of the default shipped tree.
+# the stock package of a USER-INSTALLED backend (Volmarr's ruling,
+# 2026-10-13) plus the setuptools environment prerequisite its
+# Perth dependency fails to declare — pip resolves upstream's full
+# tree for it, and it is never part of the default shipped tree.
 voice-cosyvoice = [
     "conformer",
     "diffusers==0.29.0",
@@ -119,6 +120,7 @@ voice-cosyvoice = [
 ]
 voice-chatterbox = [
     "chatterbox-tts==0.1.7",
+    "setuptools==80.9.0",
 ]
 
 [project.scripts]

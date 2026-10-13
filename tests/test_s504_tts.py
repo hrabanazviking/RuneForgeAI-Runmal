@@ -194,11 +194,13 @@ def test_registry_tree_packages_scope_each_backend():
     cosy = set(TTS_REGISTRY["cosyvoice"].tree_packages)
     chat = set(TTS_REGISTRY["chatterbox"].tree_packages)
     assert "torch" in cosy and "transformers" in cosy
-    # Chatterbox's scope names the stock recipe ROOT only; the audit
-    # expands it to the resolved dependency closure at verdict time
-    # (install._dependency_closure) — the tree judged is the tree
-    # the user's stock install actually made.
-    assert chat == {"chatterbox-tts"}
+    # Chatterbox's scope names the stock recipe roots; the audit
+    # expands them to the resolved dependency closure at verdict
+    # time (install._dependency_closure) — the tree judged is the
+    # tree the user's stock install actually made. setuptools is
+    # the recipe's declared environment prerequisite (Perth's
+    # undeclared pkg_resources import — see backends.py).
+    assert chat == {"chatterbox-tts", "setuptools"}
     assert "pykakasi" not in chat and "misaki" not in cosy | chat
     assert set(TTS_REGISTRY["kitten"].tree_packages) == {"kittentts", "soundfile"}
     assert set(TTS_REGISTRY["piper"].tree_packages) == {"piper-tts"}
@@ -240,13 +242,16 @@ def test_predeclared_thresholds_are_the_benchmarks_md_values():
 
 def test_chatterbox_stock_recipe_is_the_unpruned_upstream_package():
     # Volmarr's ruling (2026-10-13): as a user-installed backend,
-    # Chatterbox installs STOCK — the single upstream package with
+    # Chatterbox installs STOCK — the upstream package with
     # dependency resolution on. The retired default-class surgery
     # (pruning pykakasi/gradio out of a curated --no-deps set) is
     # gone: what upstream declares is what the user's install gets.
+    # The only addition is setuptools, the environment prerequisite
+    # upstream's Perth dependency forgot to declare (it imports
+    # pkg_resources) — completion, not pruning.
     from runmal.voice.backends import CHATTERBOX_PACKAGES, TTS_REGISTRY
 
-    assert CHATTERBOX_PACKAGES == ("chatterbox-tts==0.1.7",)
+    assert CHATTERBOX_PACKAGES == ("chatterbox-tts==0.1.7", "setuptools==80.9.0")
     plan = TTS_REGISTRY["chatterbox"].plan
     assert plan.resolve_dependencies is True
     assert plan.enable is True

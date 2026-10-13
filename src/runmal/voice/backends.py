@@ -59,7 +59,7 @@ COSYVOICE_GIT = "https://github.com/FunAudioLLM/CosyVoice"
 COSYVOICE_COMMIT = "074ca6dc9e80a2f424f1f74b48bdd7d3fea531cc"
 
 #: Stock recipe for Chatterbox (user-installed class, Volmarr's
-#: ruling 2026-10-13): the single upstream package, installed WITH
+#: ruling 2026-10-13): the upstream package, installed WITH
 #: dependency resolution — pip builds upstream's full Requires-Dist
 #: tree exactly as declared, INCLUDING ``pykakasi==2.3.0`` (GPL-3.0)
 #: and ``gradio`` (demo stack), which the retired default-class
@@ -67,9 +67,20 @@ COSYVOICE_COMMIT = "074ca6dc9e80a2f424f1f74b48bdd7d3fea531cc"
 #: user's own choice. The audit verdict scopes to the resolved
 #: dependency closure (see install._dependency_closure) and is
 #: displayed as information. The ``voice-chatterbox`` extra in
-#: pyproject.toml mirrors this root (a test guards drift).
+#: pyproject.toml mirrors this recipe (a test guards drift).
+#:
+#: One environment prerequisite rides along, recorded honestly:
+#: ``setuptools==80.9.0``. Upstream's own Perth dependency imports
+#: ``pkg_resources`` without declaring setuptools, so the pure
+#: stock tree cannot even import in a clean environment
+#: (purplelongship evidence, 2026-10-13: PerthImplicitWatermarker
+#: resolves to None and model construction dies). setuptools <81
+#: is the pkg_resources provider — the same pin the CosyVoice set
+#: carries for pyworld. Nothing upstream is removed or re-pinned;
+#: this completes the environment upstream forgot to declare.
 CHATTERBOX_PACKAGES: tuple[str, ...] = (
     "chatterbox-tts==0.1.7",
+    "setuptools==80.9.0",
 )
 
 
