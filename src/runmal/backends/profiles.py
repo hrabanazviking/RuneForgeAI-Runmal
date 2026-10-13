@@ -21,6 +21,7 @@ from dataclasses import dataclass
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from runmal.backends.aesir import AesirChatBackend
 from runmal.backends.base import ChatBackend
 from runmal.backends.embeddings import (
     EmbeddingBackend,
@@ -33,7 +34,7 @@ from runmal.backends.ollama import OllamaChatBackend
 from runmal.backends.openrouter import OpenRouterChatBackend
 from runmal.db.models import BackendProfile, SecretEntry
 
-CHAT_BACKENDS = ("fake", "ollama", "openrouter")
+CHAT_BACKENDS = ("fake", "ollama", "openrouter", "aesir")
 EMBEDDING_BACKENDS = ("", "fake", "ollama")
 
 
@@ -175,6 +176,16 @@ async def build_chat_backend(session: AsyncSession,
         return OpenRouterChatBackend(
             model=profile.chat_model or "openai/gpt-4o-mini",
             api_key=secret or "")
+    if profile.chat_backend == "aesir":
+        try:
+            config = json.loads(profile.config_json or "{}")
+        except json.JSONDecodeError:
+            config = {}
+        base_url = config.get("base_url") if isinstance(config, dict) else None
+        return AesirChatBackend(
+            model=profile.chat_model or "local-model",
+            base_url=base_url or "http://127.0.0.1:8000/v1",
+            api_key=secret)
     return FakeChatBackend()
 
 

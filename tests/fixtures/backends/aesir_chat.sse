@@ -1,0 +1,7 @@
+data: {"id": "chatcmpl-aesir-1", "model": "llama-3.1-8b-instruct", "choices": [{"index": 0, "delta": {"role": "assistant", "content": "Hello"}, "finish_reason": null}]}
+
+data: {"id": "chatcmpl-aesir-1", "model": "llama-3.1-8b-instruct", "choices": [{"index": 0, "delta": {"content": " from Aesir"}, "finish_reason": null}]}
+
+data: {"id": "chatcmpl-aesir-1", "model": "llama-3.1-8b-instruct", "choices": [{"index": 0, "delta": {}, "finish_reason": "stop"}], "usage": {"prompt_tokens": 9, "completion_tokens": 5, "total_tokens": 14}}
+
+data: [DONE]
