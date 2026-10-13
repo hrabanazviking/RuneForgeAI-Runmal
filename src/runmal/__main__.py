@@ -142,6 +142,10 @@ def build_parser() -> argparse.ArgumentParser:
     rlic.add_argument("--out", default=None, help="Write to this file")
     rsub.add_parser("gate", help="Run the license gate over the installed tree")
     rsub.add_parser("check", help="Dry-run release consistency check (S807)")
+    rmatrix = rsub.add_parser(
+        "matrix", help="Run the self-hosted platform matrix leg here (S805)"
+    )
+    rmatrix.add_argument("--out", default=None, help="Write the JSON evidence report here")
     return parser
 
 
@@ -365,12 +369,22 @@ def _run_release(args: argparse.Namespace) -> int:
         result = check_release_consistency()
         print(result.summary())
         return 0 if result.ok else 1
+    if args.release_command == "matrix":
+        from runmal.release.matrix import run_platform_matrix
+
+        report = run_platform_matrix()
+        text = json.dumps(report.to_dict(), indent=2, sort_keys=True)
+        if args.out:
+            Path(args.out).write_text(text + "\n", encoding="utf-8")
+            print(f"wrote {args.out}")
+        print(report.summary())
+        return 0 if report.passed else 1
     if args.release_command == "sbom":
         payload = build_sbom()
     elif args.release_command == "licenses":
         payload = build_license_manifest()
     else:
-        print("usage: runmal release {sbom|licenses|gate}", file=sys.stderr)
+        print("usage: runmal release {sbom|licenses|gate|check|matrix}", file=sys.stderr)
         return 2
     text = json.dumps(payload, indent=2, sort_keys=True)
     if args.out:

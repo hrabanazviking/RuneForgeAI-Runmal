@@ -68,7 +68,7 @@ Store representative database fixtures from released schema versions. CI upgrade
 
 A migration is incomplete if only a fresh database works.
 
-*As implemented (S803):* fixtures live in `tests/fixtures/upgrades/runmal-<revision>.db` (revisions 0001, 0009, 0016), generated deterministically by `scripts/make_upgrade_fixtures.py` — real era schemas from the migration modules themselves, seeded with sentinel rows, self-checked for FK/integrity cleanliness at their own revision. `tests/test_s803_upgrade_harness.py` upgrades a copy of each fixture to HEAD with the real runner and asserts: the exact remaining migration tail applied, row counts preserved for every era table, `integrity_check` ok, `foreign_key_check` clean, sentinel content intact, and re-running at HEAD is a no-op. The harness runs in the ordinary suite, which is the CI upgrade path.
+*As implemented (S803):* fixtures live in `tests/fixtures/upgrades/runmal-<revision>.db` (revisions 0001, 0009, 0016), generated deterministically by `scripts/make_upgrade_fixtures.py` — real era schemas from the migration modules themselves, seeded with sentinel rows, self-checked for FK/integrity cleanliness at their own revision. `tests/test_s803_upgrade_harness.py` upgrades a copy of each fixture to HEAD with the real runner and asserts: the exact remaining migration tail applied, row counts preserved for every era table, `integrity_check` ok, `foreign_key_check` clean, sentinel content intact, and re-running at HEAD is a no-op. The harness runs in the ordinary suite, which is the self-hosted matrix upgrade path (S805, §13).
 
 ## 6. Memory evaluation corpus
 
@@ -129,3 +129,24 @@ A roadmap slice is complete only when:
 ## 12. S101 correction
 
 Pytest returns exit code 5 when no tests are collected. The repository scaffold therefore includes at least one smoke test and requires `pytest` exit code 0; "green on empty suite" is not a valid acceptance contract.
+## 13. Platform matrix (S805 — self-hosted)
+
+There is no hosted CI for this project. By Volmarr's ruling of
+2026-10-13 (ADR-0007), the platform matrix is **self-run**: the
+`runmal release matrix` harness executes the core suite — the
+ordinary `pytest -q` run — on project-owned machines and records a
+structured evidence leg per machine (host, OS, architecture,
+Python, command, exit code, duration, suite summary) in
+`docs/platform-matrix/`, summarised in `docs/PLATFORM_MATRIX.md`.
+
+Rules that keep the record honest:
+
+- a leg counts only for the machine/environment that actually ran
+  it — results are never inferred across platforms;
+- a platform with no machine in the fleet (Windows, today) is
+  recorded as **not run**, in plain words;
+- hardware/provider-dependent tests outside the core contract skip
+  explicitly in the suite output; the summary line is stored
+  verbatim so the skips are part of the evidence;
+- the suite's exit code is the gate: a failing leg records `failed`
+  with its summary — the harness reports, it never launders.

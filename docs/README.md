@@ -26,6 +26,7 @@ This directory is the technical memory of Rúnmál. The root `README.md` is publ
 ## Engineering and release documents
 
 - `TESTING.md` — unit/contract/integration/E2E strategy and deterministic evidence rules.
+- `PLATFORM_MATRIX.md` — the self-hosted S805 platform matrix and its recorded evidence legs (no hosted CI, by owner's ruling).
 - `BENCHMARKS.md` — local benchmark ledger/templates; measured facts live here, not internet guesses.
 - `BACKUP_AND_RECOVERY.md` — sovereign export, SQLite backup, restore and disaster recovery.
 - `README_SUGGESTIONS.md` — public README improvement proposals that do **not** authorize editing it.
