@@ -165,3 +165,83 @@ Every reference bridge must prove:
 - persona switch affects future prompt only;
 - cancellation stops generation;
 - a bridge cannot read unrelated private chat state.
+
+**Where these live:** `tests/test_s608_bridge_conformance.py` walks
+this list end-to-end for everything the core API implements;
+slice-level suites (`test_s601`–`test_s607`, `test_s609`,
+`test_s610`) prove the same properties at their own layer.
+
+## 15. Builder quickstart
+
+You are building a bridge if your program — a game mod, a VR client
+companion, a robot, another app — should hold conversations through
+Rúnmál. Five steps:
+
+1. **Get a credential.** The owner creates one for you (owner UI or
+   `POST /api/v1/bridge/credentials` under the local credential)
+   with exactly the scopes you need (§2). You receive the token
+   **once**; store it like a password (environment variable or your
+   platform's secret store — never in source, never in logs).
+2. **Probe.** `GET /api/v1/bridge/whoami` with
+   `Authorization: Bearer <token>` returns your bridge id and scopes.
+3. **Read state.** `GET /api/v1/bridge/chats/{chat_id}` gives the
+   conversation: metadata, active persona, ordered messages with
+   speaker snapshots. Poll it, or (from S609) consume the event
+   outbox for push-style updates.
+4. **Write turns.** `POST /api/v1/bridge/chats/{chat_id}/turns`
+   with a speaker kind (`user` / `companion` / `environment`), and
+   ask Rúnmál to speak with
+   `POST /api/v1/bridge/chats/{chat_id}/generate` (SSE; cancel via
+   `.../generate/cancel`).
+5. **Speak aloud (optional).** `POST /api/v1/bridge/tts` starts a
+   synthesis job; poll it, fetch the WAV, play it in your world,
+   and report playback back (§9).
+
+Two reference implementations ship in the repo and are meant to be
+copied: the VRChat OSC follower (`runmal/bridges/vrchat_osc.py`,
+docs/bridges/VRCHAT_OSC.md) and the Skyrim-style HTTP adapter
+(`runmal/bridges/skyrim_http.py`, docs/bridges/SKYRIM_HTTP.md); the
+Conan RCON skeleton is `runmal/bridges/conan.py`
+(docs/bridges/CONAN_RCON.md).
+
+## 16. Endpoint reference (v1, as implemented)
+
+All under `/api/v1/bridge`, bridge-token authenticated (§2):
+
+| Method & path | Scope | Purpose |
+| --- | --- | --- |
+| `GET /whoami` | any valid token | bridge id, name, scopes |
+| `GET /chats/{id}` | `chat:read:{id}` | conversation state (§3) |
+| `POST /chats/{id}/turns` | `chat:write:{id}` | append one turn (§6) |
+| `POST /chats/{id}/generate` | `chat:write:{id}` | SSE generation turn (§7) |
+| `POST /chats/{id}/generate/cancel` | `chat:write:{id}` | cancel a generation |
+| `POST /chats/{id}/persona` | `persona:select:{target}` | switch future-turn persona (§8) |
+| `POST /tts` | `tts:request` | start a TTS job (§9) |
+| `GET /tts/{job}` | `tts:request` | job status + lifecycle events |
+| `GET /tts/{job}/audio` | `tts:request` | the WAV, when ready |
+| `POST /tts/{job}/cancel` | `tts:request` | cancel synthesis |
+| `POST /tts/{job}/playback` | `tts:request` | report playback lifecycle |
+
+Owner-side administration (local application credential, NOT a
+bridge token): `POST /bridge/credentials`, `GET /bridge/credentials`,
+`POST /bridge/credentials/{id}/revoke`.
+
+Remaining contract pieces land in this campaign, in roadmap order:
+the durable event outbox (§5) in S609, idempotency enforcement (§4)
+and capability discovery in S610, and the VRChat room-audio ingress
+contract (§10.4) in S611. Until a piece lands, this document's
+normative sections describe the contract it will implement.
+
+## 17. Error model
+
+Errors are JSON: `{"detail": "..."}` with a stable HTTP status —
+bridges branch on status, never on message text.
+
+| Status | Meaning |
+| --- | --- |
+| 400 | malformed request at an adapter boundary (reference bridges) |
+| 401 | missing, invalid, or **revoked** bridge token; or a local credential presented to a bridge route (and vice versa) |
+| 403 | valid token, insufficient scope for this operation/resource |
+| 404 | the chat/job/credential does not exist — or is not yours (existence is not leaked across owners) |
+| 409 | state conflict (e.g. audio requested before a TTS job is ready; conflicting idempotency-key reuse, from S610) |
+| 422 | well-formed request, semantically invalid (unknown scope at creation, unknown speaker, unknown persona) |
