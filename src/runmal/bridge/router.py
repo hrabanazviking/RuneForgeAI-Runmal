@@ -233,6 +233,15 @@ async def bridge_select_persona(
         )
     except KeyError:
         raise HTTPException(status_code=422, detail="character not found") from None
+    if previous != chat.character_id:
+        from runmal.bridge import outbox
+
+        await outbox.record_event(
+            session,
+            chat_id,
+            outbox.KIND_PERSONA_CHANGED,
+            {"from": previous, "to": chat.character_id, "bridge_id": identity.credential_id},
+        )
     persona = None
     if chat.character_id:
         character = await get_character(session, identity.user_id, chat.character_id)
@@ -329,8 +338,23 @@ def _owned_job(identity: BridgeIdentity, job_id: str):
 async def bridge_tts_status(
     job_id: str,
     identity: BridgeIdentity = Depends(_tts_guard),
+    session: AsyncSession = Depends(get_session),
 ):
-    return _owned_job(identity, job_id).to_dict()
+    from runmal.bridge import outbox, tts_hook
+
+    job = _owned_job(identity, job_id)
+    # First observation of a ready, chat-attached job publishes its
+    # tts_ready outbox event (the job itself finished in a worker
+    # thread with no DB session; the poll is the durable hand-off).
+    if job.status == tts_hook.STATUS_READY and job.chat_id and not job.ready_recorded:
+        job.ready_recorded = True
+        await outbox.record_event(
+            session,
+            job.chat_id,
+            outbox.KIND_TTS_READY,
+            {"job_id": job.id, "bridge_id": identity.credential_id},
+        )
+    return job.to_dict()
 
 
 @router.get("/tts/{job_id}/audio")
@@ -362,12 +386,71 @@ async def bridge_tts_playback(
     job_id: str,
     body: PlaybackIn,
     identity: BridgeIdentity = Depends(_tts_guard),
+    session: AsyncSession = Depends(get_session),
 ):
-    from runmal.bridge import tts_hook
+    from runmal.bridge import outbox, tts_hook
 
     job = _owned_job(identity, job_id)
     try:
         tts_hook.report_playback(job, body.event, body.detail)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if body.event == "playback.completed" and job.chat_id:
+        await outbox.record_event(
+            session,
+            job.chat_id,
+            outbox.KIND_PLAYBACK_COMPLETE,
+            {"job_id": job.id, "bridge_id": identity.credential_id},
+        )
     return job.to_dict()
+
+
+# --- durable event outbox (S609) ----------------------------------------------
+
+_events_guard = require_bridge_scope("events:read", resource_param="chat_id")
+
+
+class AckIn(BaseModel):
+    event_id: int
+
+
+@router.get("/chats/{chat_id}/events")
+async def bridge_poll_events(
+    chat_id: str,
+    after: int | None = None,
+    limit: int = 100,
+    identity: BridgeIdentity = Depends(_events_guard),
+    session: AsyncSession = Depends(get_session),
+):
+    """Poll the chat's outbox stream. Without `after`, resumes from
+    this credential's checkpoint — the reconnect path (§5)."""
+    from runmal.bridge import outbox
+
+    chat = await conversation.get_state(session, identity.user_id, chat_id)
+    if chat is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    checkpoint = await outbox.get_checkpoint(session, identity.credential_id, chat_id)
+    start = checkpoint if after is None else after
+    events = await outbox.list_events(session, chat_id, after_id=start, limit=limit)
+    return {
+        "chat_id": chat_id,
+        "checkpoint": checkpoint,
+        "latest": await outbox.latest_event_id(session, chat_id),
+        "events": [outbox.event_to_dict(event) for event in events],
+    }
+
+
+@router.post("/chats/{chat_id}/events/ack")
+async def bridge_ack_events(
+    chat_id: str,
+    body: AckIn,
+    identity: BridgeIdentity = Depends(_events_guard),
+    session: AsyncSession = Depends(get_session),
+):
+    from runmal.bridge import outbox
+
+    chat = await conversation.get_state(session, identity.user_id, chat_id)
+    if chat is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    checkpoint = await outbox.acknowledge(session, identity.credential_id, chat_id, body.event_id)
+    return {"chat_id": chat_id, "checkpoint": checkpoint}

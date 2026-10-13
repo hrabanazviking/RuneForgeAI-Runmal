@@ -56,6 +56,7 @@ class TTSJob:
     audio: bytes | None = None
     sample_rate: int = SAMPLE_RATE
     error: str | None = None
+    ready_recorded: bool = False  # S609: tts_ready outbox event emitted once
     cancel: threading.Event = field(default_factory=threading.Event)
     done: threading.Event = field(default_factory=threading.Event)
 

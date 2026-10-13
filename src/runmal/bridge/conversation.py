@@ -93,7 +93,7 @@ async def append_turn(
         event_data["bridge_timestamp"] = bridge_timestamp
     if metadata:
         event_data["metadata"] = metadata
-    return await chats.append_message(
+    message = await chats.append_message(
         session,
         user_id,
         chat_id,
@@ -103,6 +103,20 @@ async def append_turn(
         speaker_name=resolved_name,
         event_data=event_data,
     )
+    from runmal.bridge import outbox
+
+    await outbox.record_event(
+        session,
+        chat_id,
+        outbox.KIND_TURN_APPENDED,
+        {
+            "message_id": message.id,
+            "role": message.role,
+            "speaker_kind": speaker_kind,
+            "bridge_id": bridge_id,
+        },
+    )
+    return message
 
 
 async def _resolve_speaker(
@@ -214,6 +228,16 @@ async def stream_generation(
         yield event
     text = "".join(parts)
     if saw_error or finish in (None, "cancelled", "error") or not text:
+        if finish == "cancelled":
+            from runmal.bridge import outbox
+
+            async with session_factory() as session:
+                await outbox.record_event(
+                    session,
+                    chat_id,
+                    outbox.KIND_GENERATION_CANCELLED,
+                    {"request_id": request_id, "bridge_id": bridge_id},
+                )
         return
     async with session_factory() as session:
         message = await chats.append_message(
@@ -229,6 +253,14 @@ async def stream_generation(
                 "bridge_id": bridge_id,
                 "request_id": request_id,
             },
+        )
+        from runmal.bridge import outbox
+
+        await outbox.record_event(
+            session,
+            chat_id,
+            outbox.KIND_COMPANION_TURN_READY,
+            {"message_id": message.id, "request_id": request_id, "bridge_id": bridge_id},
         )
     yield {"type": "turn_stored", "request_id": request_id, "message_id": message.id}
 

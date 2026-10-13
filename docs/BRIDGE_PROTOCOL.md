@@ -88,6 +88,21 @@ Use a durable/pollable event outbox or equivalent with:
 
 Webhook delivery may be added, but the durable outbox is the recovery source of truth.
 
+**As implemented (S609).** `bridge_events` (migration 0017) is the
+outbox: integer AUTOINCREMENT ids, one stream per chat. Producers:
+turn writes (`turn_appended`), finished generations
+(`companion_turn_ready`), cancelled generations
+(`generation_cancelled`), persona switches (`persona_changed`), TTS
+jobs first observed ready with a chat attached (`tts_ready`), and
+bridge-reported playback completion (`playback_complete`).
+Consumers: `GET /api/v1/bridge/chats/{id}/events` (scope
+`events:read:{id}`) with `after`/`limit`; omitting `after` resumes
+from the caller's checkpoint; `POST .../events/ack {event_id}` moves
+the per-credential checkpoint forward (monotonic, clamped to the
+newest existing event). Retention keeps the newest 1000 events per
+chat; a consumer that falls behind the window resyncs from the
+conversation-state read (§3).
+
 ## 6. Conversation writes
 
 A bridge-submitted turn declares:

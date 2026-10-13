@@ -6,7 +6,7 @@ from __future__ import annotations
 import uuid
 from datetime import UTC, datetime
 
-from sqlalchemy import ForeignKey, String, Text
+from sqlalchemy import ForeignKey, Integer, String, Text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -63,8 +63,7 @@ class Chat(Base):
     # Applied sampling preset (S306); plain id, integrity kept by service.
     preset_id: Mapped[str | None] = mapped_column(String(36), nullable=True, default=None)
     # Selected backend profile (S306/S307); plain id, integrity by service.
-    backend_profile_id: Mapped[str | None] = mapped_column(
-        String(36), nullable=True, default=None)
+    backend_profile_id: Mapped[str | None] = mapped_column(String(36), nullable=True, default=None)
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
 
 
@@ -388,6 +387,35 @@ class BridgeCredential(Base):
     created_at: Mapped[str] = mapped_column(String(40), nullable=False, default="")
     revoked_at: Mapped[str | None] = mapped_column(String(40), nullable=True, default=None)
     last_used_at: Mapped[str | None] = mapped_column(String(40), nullable=True, default=None)
+
+
+class BridgeEvent(Base):
+    """One durable outbox event in a chat's bridge stream (S609).
+
+    Ids are database AUTOINCREMENT integers: strictly monotonic, so
+    a consumer's position is a single integer (its checkpoint).
+    """
+
+    __tablename__ = "bridge_events"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    chat_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
+    kind: Mapped[str] = mapped_column(String(40), nullable=False)
+    data_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    created_at: Mapped[str] = mapped_column(String(40), nullable=False, default="")
+
+
+class BridgeCheckpoint(Base):
+    """A bridge credential's acknowledged position in one chat's
+    outbox stream (S609). Acknowledged events are never re-delivered
+    to that credential; the checkpoint only moves forward."""
+
+    __tablename__ = "bridge_checkpoints"
+
+    credential_id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    chat_id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    last_event_id: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    updated_at: Mapped[str] = mapped_column(String(40), nullable=False, default="")
 
 
 class CharacterVoiceProfile(Base):

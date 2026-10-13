@@ -24,6 +24,7 @@ from runmal.db.migrations import (
     m0014_memory_core,
     m0015_voice_profiles,
     m0016_bridge_credentials,
+    m0017_bridge_outbox,
 )
 
 MIGRATIONS: list[tuple[str, str, object]] = [
@@ -102,5 +103,10 @@ MIGRATIONS: list[tuple[str, str, object]] = [
         m0016_bridge_credentials.REVISION,
         m0016_bridge_credentials.DESCRIPTION,
         m0016_bridge_credentials,
+    ),
+    (
+        m0017_bridge_outbox.REVISION,
+        m0017_bridge_outbox.DESCRIPTION,
+        m0017_bridge_outbox,
     ),
 ]
