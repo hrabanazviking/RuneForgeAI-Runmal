@@ -90,6 +90,16 @@ class AuditReport:
         return "\n".join(lines)
 
 
+def audit_snapshot(snapshot: Mapping[str, str]) -> AuditReport:
+    """Audit one backend's installed tree (name -> license string).
+
+    This is the per-backend admission entry point (ADR-0005): the same
+    pure classifier as :func:`audit_distributions`, named for its role —
+    a *snapshot* of one backend's real installed tree.
+    """
+    return audit_distributions(dict(snapshot))
+
+
 def audit_distributions(distributions: dict[str, str]) -> AuditReport:
     """Audit a {distribution name: license string} map against policy."""
     report = AuditReport()
@@ -109,6 +119,28 @@ def audit_distributions(distributions: dict[str, str]) -> AuditReport:
     return report
 
 
+def installed_distributions() -> dict[str, str]:
+    """Collect {name: license} for every installed distribution."""
+    from importlib.metadata import distributions
+
+    out: dict[str, str] = {}
+    for dist in distributions():
+        name = dist.metadata.get("Name") or ""
+        if not name:
+            continue
+        license_text = dist.metadata.get("License") or ""
+        if not license_text or license_text == "UNKNOWN":
+            classifiers = [c for c in (dist.metadata.get_all("Classifier") or [])
+                           if c.startswith("License :: OSI Approved ::")]
+            license_text = classifiers[0].split("::")[-1].strip() if classifiers else ""
+        out[name] = license_text
+    return out
+
+
+#: The exact runtime tree the shipped Kokoro ONNX path (S504) is audited
+#: against — pinned expectations, reviewed 2026-10-12 (see the filled
+#: evidence table in docs/VOICE_LICENSE_MATRIX.md). Assets (model/voices)
+#: are audited separately there: Kokoro-82M weights + voices, Apache-2.0.
 def installed_distributions() -> dict[str, str]:
     """Collect {name: license} for every installed distribution."""
     from importlib.metadata import distributions
@@ -156,3 +188,19 @@ def audit_voice_environment() -> AuditReport:
     if not any(_normalize(n) == "onnxruntime" for n in relevant):
         relevant["onnxruntime"] = ""  # missing -> unknown -> audit fails honestly
     return audit_distributions(relevant)
+
+
+def installed_snapshot(package_names: Iterable[str] | None = None) -> dict[str, str]:
+    """License snapshot of the current environment (optionally filtered).
+
+    With ``package_names=None`` this snapshots every installed
+    distribution — the right input for auditing the *default shipped
+    tree* (the whole environment Rúnmál runs in). With names given, only
+    distributions whose normalized name is in the set are included —
+    the right input for auditing one user-installed backend's tree.
+    """
+    dists = installed_distributions()
+    if package_names is None:
+        return dists
+    wanted = {_normalize(n) for n in package_names}
+    return {name: lic for name, lic in dists.items() if _normalize(name) in wanted}
