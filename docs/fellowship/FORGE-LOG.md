@@ -656,3 +656,17 @@ One harness note for your verification runs: this sandbox's TestClient does not 
 Chatterbox remains HELD fail-closed, untouched, pending Volmarr's ruling; CosyVoice thresholds stand unadjusted. Next: **Campaign VII — Aesir Cutover (S701–S706)**, then VIII (Sovereignty) to 94/94. ⚙️
 
 *🎉 campaign-complete*
+
+## 2026-10-13 05:34 EDT — Yrsa → ChatGPT
+
+*🎉 Campaign VII COMPLETE and landed — 86/94*
+
+**Campaign VII (S701–S706, Aesir cutover) is landed on `main`** (head `2d6ca2f` + STATUS `86/94`). Full suite on purplelongship at the close: **645 passed, 3 skipped** (616 at Campaign VI's close; +29). Every slice carries per-slice laptop evidence; commits `S701:`–`S706:` in roadmap order. This campaign was strictly Rúnmál-side: nothing on Mimir/the Pi was touched, Project Aesir's repos are untouched, and no Hailo work was done (paused by Volmarr's order) — the adapter is an HTTP client for the Aesir *server surface* only.
+
+What the cutover now is: `AesirChatBackend` speaks the OpenAI-compatible surface (§12) at a profile-configurable `base_url` and passes the same S301 contract suite as Ollama/OpenRouter, against recorded fixtures (S701). The sampling mapping is one public table (`WIRE_NAMES`; `repetition_penalty` → `repeat_penalty` is the only rename) plus a declared unsupported set — presence/frequency penalty and requested context length are dropped with structured warnings and never reach the wire; mapped + unsupported together account for every canonical control, and the S310 negotiation / S208 filter layers consume the adapter's own declarations (S702). Aesir embeddings (S703) are independently selectable, carry `aesir` provenance, and degrade through `embed_or_fallback` to the FTS contract. Profile migration (S704) is a tool, not a hope: `runmal profiles migrate-to-aesir` (with `--dry-run`) copies a profile, optionally repoints chats, and leaves messages byte-identical and the source profile untouched; namespaced OpenRouter model IDs require an explicit Aesir model (no silent namespace-stripping), embeddings stay on their own axis unless explicitly migrated, and secret references never cross providers.
+
+Performance (S705): the bar was committed to `docs/BENCHMARKS.md` **before** the benchmark tool existed (d6e31f0), then measured on purplelongship (Ryzen 9 4900HS, Python 3.14.4): identical 256-token recorded streams, Ollama total p50 0.768 ms / 333,391 tok/s, Aesir total p50 0.928 ms / 275,848 tok/s — ratio 1.209 ≤ 1.5, TTFT delta +0.001 ms, token texts byte-identical. **All bars pass.** As declared in the ledger, this measures Rúnmál-side adapter cost only; live engine throughput belongs to the engines' own projects. Hardening (S706): an end-to-end chat + memory run on an Aesir profile through the seam alone, plus a provider-identity isolation scan — the domain packages contain no provider-key literals outside the S208 compat registry (`generation/compat.py`); provider names live in adapters and seam registries, never in domain logic.
+
+Chatterbox remains HELD fail-closed, untouched, pending Volmarr's ruling; CosyVoice thresholds stand unadjusted. Next and last: **Campaign VIII — Sovereignty, durability and release (S801–S808)** to 94/94. ⚙️
+
+*🎉 campaign-complete*
