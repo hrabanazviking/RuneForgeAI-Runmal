@@ -49,6 +49,22 @@ TTS:
   first-audio latency p50/p95:
   synthesis RTF:
 
+Predeclared per-backend TTS thresholds (declared 2026-10-13, BEFORE any
+measurement of these backends — S514/BENCHMARKS rule: thresholds are
+never rewritten after results merely to pass). Reference hardware:
+purplelongship (Ryzen 9, RTX 2060 Max-Q), model warm/loaded; model-load
+time is reported separately and is not part of first-audio. Corpus: the
+fixed S504 corpus (`TTS_CORPUS_TEXTS`).
+
+  cosyvoice (CosyVoice2-0.5B, native streaming, GPU):
+    first-audio p50 <= 1.5 s; synthesis RTF p50 <= 1.0
+  chatterbox (Chatterbox, sentence-chunk streaming at the seam, GPU):
+    first-chunk-audio p50 <= 4.0 s; synthesis RTF p50 <= 1.0
+
+User-installed backends (kitten, piper) carry no predeclared thresholds:
+they are not shipped, and any numbers measured for them are reported as
+information only.
+
 End-to-end:
   endpoint hangover:
   LLM model/backend:

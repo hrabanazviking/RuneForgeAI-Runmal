@@ -242,6 +242,8 @@ Audio roles are explicit. VRChat room listening requires host audio ingress in a
 
 A permissive model/wrapper is insufficient if runtime dependencies introduce incompatible licenses. Voice dependency-tree review occurs before adoption, not only at Campaign V hardening.
 
+TTS is **multi-backend** (ADR-0005): a registry of backends behind the `TTSBackend` seam, user-selectable in settings, with **per-backend license admission** — the gate guards the default shipped tree (default backends: CosyVoice, Chatterbox); backends a user installs themselves (Kitten, Piper adapters) are the user's own choice, carry an explicit not-shipped notice in the UI, and show their audit verdict as information.
+
 ## 10. API surface
 
 Internal/application REST domains use `/api/v1/...` once public/bridge compatibility matters. Representative domains:

@@ -126,11 +126,25 @@ Voice providers are replaceable services:
 
 Per-character voice profiles reference TTS backend + voice + parameters rather than hard-coding a specific engine.
 
+**Multi-backend registry (ADR-0005).** There is no single TTS engine. Concrete backends register a spec in `runmal.voice.backends` (key, admission class, factory) behind the `TTSBackend` seam, and the user selects the **default TTS backend in settings**; a persona's voice profile (S512) may name a different registered backend per character. Two admission classes exist:
+
+- **default (shipped)** — installed with Rúnmál's voice feature; the backend's real installed tree must pass the S504 license audit before it is selectable. Shipped at Campaign V rework: `cosyvoice` (native streaming), `chatterbox` (sentence-chunk streaming built at the seam).
+- **user-installed** — Rúnmál ships only its own adapter code; the backend installs solely on the user's explicit per-backend install action. Shipped as adapters: `kitten`, `piper`. Their audit verdict is computed and displayed as information; it never blocks the user's own installation (see §9).
+
+The registry is extensible by design: a future backend — including a first-party engine — registers a spec and an admission class; nothing else in the voice pipeline changes.
+
 ## 9. Licensing gate
 
 Voice dependencies require a dependency-tree audit before adoption. A permissively licensed model or wrapper is not sufficient if runtime dependencies pull incompatible packages.
 
-The current Kokoro direction remains a candidate, but phonemization/runtime dependencies must be verified before S504 is accepted. Do not postpone this to final voice hardening.
+Since Volmarr's 2026-10-13 rulings (ADR-0005), the gate is **per-backend admission** with an explicit scope:
+
+> "Backends a user installs themselves are the user's own choice — the gate guards only what Rúnmál ships by default."
+
+- The **default shipped tree** (default install + default backends: CosyVoice, and Chatterbox with `pykakasi` excluded by curated install) must audit green against the real installed environment; a default backend whose tree fails is not selectable, in code, before synthesis is possible.
+- **User-installed backends** (Kitten, Piper) are the user's own choice: adapters ship, installation is an explicit user action, the settings/audition UI carries the honest not-shipped-by-Rúnmál notice, and the audit verdict for such a backend is displayed as information only.
+
+History, so the reasoning is not lost: the originally selected single path (Kokoro-82M via independent ONNX + Misaki G2P) **failed this gate at the Campaign V landing** — `misaki[en]` directly requires the forbidden eSpeak-NG carriers `espeakng-loader` + `phonemizer-fork` — and Kokoro was **removed from the product** by Volmarr's ruling. The full field survey behind the replacement registry is `docs/TTS_ENGINE_SURVEY.md`; per-backend evidence lives in `docs/VOICE_LICENSE_MATRIX.md`. Do not postpone per-backend re-audit to final voice hardening: any backend's version change returns it to reverify.
 
 ## 10. Metrics
 
@@ -181,12 +195,19 @@ Voice tests should include:
   faster-whisper `small` int8 baseline with word timestamps (tagged
   optional), fixed Flite-synthesized fixture corpus, WER/RTF contract
   predeclared in `STT_CONTRACT`.
-- **S504 TTS + license gate** — `voice/tts.py` + `voice/license_audit.py`:
-  independent ONNX inference over Kokoro-82M (Apache-2.0) with Misaki
-  G2P and NO eSpeak fallback; the gate is executable and refuses
-  eSpeak-carrying trees (see the filled matrix in
-  `VOICE_LICENSE_MATRIX.md`). Output is resampled to the 16 kHz pipeline
-  format; sentence streaming honors cancellation.
+- **S504 TTS + license gate** — `voice/tts.py` (seam), `voice/backends.py`
+  (registry), `voice/license_audit.py` (per-backend admission),
+  `voice/install.py` (curated per-backend installs): multi-backend TTS
+  per ADR-0005. Default shipped backends: **CosyVoice 2** (native
+  streaming) and **Chatterbox** (sentence-chunk streaming at the seam;
+  `pykakasi` excluded by dependency surgery; PerTh watermark ships as
+  upstream, recorded in the matrix). User-installed optional backends:
+  **Kitten** and **Piper** adapters (install on explicit user action;
+  audit verdict informational). The originally selected Kokoro/Misaki
+  path failed the gate at the first landing attempt and was **removed**
+  (see §9). The default backend is user-selectable in settings; output
+  is resampled to the 16 kHz pipeline format; streaming honors
+  cancellation.
 - **S505–S507 Loop** — `voice/orchestrator.py` (explicit state machine,
   deterministic simulated transitions), `voice/turntaking.py` (endpoint
   hangover, preemptive finalize, resume cancellation), `voice/bargein.py`
