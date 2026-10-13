@@ -287,6 +287,11 @@ TTS_REGISTRY: dict[str, TTSBackendSpec] = {
         key="chatterbox",
         display_name="Chatterbox",
         default_shipped=False,
+        # Forge-verified as a user-installed recipe (purplelongship,
+        # 2026-10-13): real one-button stock install + real synthesis
+        # + audit verdict captured — see docs/VOICE_LICENSE_MATRIX.md.
+        # Verification is not admission: it stays user-installed.
+        verified=True,
         plan=_plan(
             "chatterbox",
             pip_packages=CHATTERBOX_PACKAGES,

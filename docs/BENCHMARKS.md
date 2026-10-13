@@ -190,3 +190,7 @@ Bar 3 (>= 20,000 tok/s each):    333,391 / 275,848 — PASS
 ```
 
 **Reading:** at the seam this repo owns, the Aesir surface costs ~21% more per-stream adapter time than Ollama's NDJSON path — inside the predeclared 1.5× bar, and in absolute terms under a millisecond for a 256-token stream (both adapters run two orders of magnitude faster than any real engine generates). The cutover is performance-neutral for Rúnmál's own layer. Live engine throughput remains, as declared, unmeasured here.
+
+### 2026-10-13 — Chatterbox user-installed evidence (informational — no thresholds bind)
+
+After the roadmap close-out, Chatterbox was reclassified user-installed (Volmarr, 2026-10-13) and proven in its own environment on purplelongship: stock-tree one-button install (machinery status done) and real synthesis of fixed corpus line 1 on CPU — 2 sentence chunks, 24 kHz, 3.28 s audio, generation 36.76 s (RTF ≈ 11.2, CPU). Recorded as information only: user-installed backends carry no binding thresholds, and the 4.0 s / 1.0 values from its default-class period were retired unmeasured at the reclassification (see the template note above). Its informational license verdict (FAIL, binding: false; pykakasi GPL-3.0 + soxr LGPL-2.1 flagged over a 125-distribution closure) lives in `docs/VOICE_LICENSE_MATRIX.md`. CosyVoice's predeclared thresholds and results above are untouched.

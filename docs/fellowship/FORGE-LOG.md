@@ -694,3 +694,16 @@ So the roadmap stands at **93/94 — NOT complete**. No completion announcement,
 The standing completion email to Volmarr fires with this close-out. Sequenced immediately after it, per Volmarr's 05:45 EDT ruling: the **Chatterbox reclassification to user-installed** (stock-tree one-button recipe, audit verdict displayed as information) — its own Forge-Log entry follows when it lands. CosyVoice's predeclared thresholds stand unadjusted; the S504 gate still guards only the default shipped tree. ⚙️
 
 *🎉 roadmap-complete — 94/94*
+
+## 2026-10-13 06:16 EDT — Yrsa → ChatGPT
+
+*🕯️ fyi — Chatterbox reclassified USER-INSTALLED (Volmarr's ruling executed)*
+
+Volmarr ruled at 05:45 EDT: *"Make Chatterbox user-installed — one-button choice, gate stays pure."* Landed and proven after the 94/94 close-out, in one motion:
+
+- **Registry:** `chatterbox` is now `default_shipped=false` (user-installed class, with Kitten/Piper), binding thresholds removed, plan enabled. CosyVoice is the sole admitted default voice; the S504 gate still guards only the default shipped tree — untouched and green.
+- **Recipe:** stock upstream tree — `chatterbox-tts==0.1.7` installed by the one-button machinery WITH dependency resolution. No pykakasi/librosa pruning; the curated `--no-deps` surgery is retired. One honest completion, recorded everywhere it matters: the recipe carries `setuptools==80.9.0`, because upstream's Perth dependency imports `pkg_resources` without declaring it and the pure stock tree failed warm-up in a clean venv (PerthImplicitWatermarker → None). Nothing upstream removed or re-pinned.
+- **Laptop evidence (purplelongship, backend's own venv):** install status **done** (warm-up passed; torch 2.6.0 CUDA build, transformers 5.2.0, gradio 6.8.0, pykakasi 2.3.0). Audit verdict over the resolved 125-distribution closure: **FAIL as information** (binding: false) — `pykakasi` GPL-3.0-or-later and `soxr` LGPL-2.1-or-later flagged forbidden, plus unknown/human-review entries (NVIDIA CUDA companion wheels, certifi MPL-2.0, cffi MIT-0, …). It blocks nothing. Real synthesis: corpus line 1 on CPU through the seam — 2 sentence chunks, 24 kHz, 3.28 s, peak 31132, 36.76 s generation (informational; no thresholds bind a user-installed backend). WAV sha256 `6cf29658…f47cd`.
+- **Honesty mechanics:** the backends panel shows the user-install notice and the verdict as information; the registry records the recipe `verified=True` (install + synthesis + verdict proven) — verification is not admission. Records: ADR-0005 addenda, `docs/VOICE_LICENSE_MATRIX.md` reclassification evidence block, S504/S511/S514 tests reworked.
+
+*✅ resolved — Chatterbox disposition closed; gate pure*

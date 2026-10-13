@@ -144,6 +144,58 @@ Verdict: NOT ADMITTED — held pending Volmarr's ruling (options:
 Reviewed date: 2026-10-13
 ```
 
+### User-installed reclassification evidence — recorded 2026-10-13 (purplelongship)
+
+Volmarr's ruling (2026-10-13 05:45 EDT) — *"Make Chatterbox user-installed — one-button choice, gate stays pure"* — executed the same morning, after the 94/94 roadmap close-out:
+
+```text
+Backend key: chatterbox
+  class: user-installed (reclassified from default-class HELD)
+  upstream package/version: chatterbox-tts 0.1.7 (PyPI), stock tree
+  recipe: runmal.voice.install.run_install — pip WITH dependency
+    resolution (no --no-deps, no pruning), into the backend's own
+    dedicated venv (uv Python 3.12.13) on purplelongship
+  environment prerequisite added (recorded, not silent):
+    setuptools==80.9.0 — upstream's Perth dependency imports
+    pkg_resources without declaring setuptools; the pure stock
+    tree failed warm-up in a clean venv (PerthImplicitWatermarker
+    resolved to None). First attempt failed on exactly this; the
+    recipe now completes the environment upstream forgot to
+    declare. Nothing upstream was removed or re-pinned.
+  install verdict: DONE — machinery status "done / installed",
+    warm-up (model download + import) passed; tree: torch 2.6.0
+    (CUDA build, upstream's choice), transformers 5.2.0,
+    librosa 0.11.0, gradio 6.8.0, resemble-perth 1.0.1,
+    pykakasi 2.3.0, soxr present
+  audit verdict (dependency closure of the recipe roots, real
+    installed tree): FAIL — AS INFORMATION (binding: false).
+    125 distributions checked. Forbidden, exactly as predicted:
+      pykakasi (GPL-3.0-or-later) — copyleft
+      soxr (LGPL-2.1-or-later) — copyleft
+    Unknown / human-review (also displayed): the nvidia-* CUDA
+    companion wheels (NVIDIA Proprietary Software), certifi
+    (MPL-2.0), cffi (MIT-0), orjson (MPL-2.0 compound), tqdm
+    (MPL-2.0 AND MIT), s3tokenizer ("Apache2.0" spelling),
+    shellingham (ISC spelling). The verdict never blocks a
+    user-installed backend; the gate still guards only the
+    default shipped tree (base + CosyVoice), which is untouched.
+  corpus synthesis: PASS — fixed corpus line 1 ("Hello, wanderer.
+    The wind carried whispers of your arrival.") synthesized for
+    real on CPU through the Rúnmál seam: 2 sentence chunks,
+    24 kHz, 3.28 s of audio, peak amplitude 31132 (non-silent),
+    generation 36.76 s (RTF ≈ 11.2 on CPU — information only;
+    user-installed backends carry no binding thresholds).
+    WAV sha256 (artifact on purplelongship):
+    6cf2965878a3518855d44f5f59a668ce6a1d4cb1db5117e24b161b808d8f47cd
+  registry state: default_shipped=false, verified=true
+    (forge-verified recipe — real install + synthesis + verdict;
+    verification is not admission), thresholds: none binding
+
+Verdict: USER-INSTALLED — available by the user's one-button
+  choice, audit verdict displayed as information
+Reviewed date: 2026-10-13
+```
+
 ### Audit fidelity amendments (2026-10-13 — flagged for fellowship review)
 
 The gate's classifier policy (forbidden lists, permissive *set of licenses*) never changed in substance. What changed is the reader's fidelity to how real wheels declare licenses — every amendment below is an attested spelling or a bundled-text fact, each regression-tested:

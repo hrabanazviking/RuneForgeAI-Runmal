@@ -155,6 +155,10 @@ def test_backends_endpoint_lists_registry_with_honest_labels(tmp_path, monkeypat
     assert tts["chatterbox"]["default_shipped"] is False  # user-installed (2026-10-13 ruling)
     assert "Not shipped with Rúnmál" in tts["chatterbox"]["notice"]
     assert tts["chatterbox"]["thresholds"]["max_first_audio_p50_s"] is None
+    # Forge-verified recipe (real stock install + synthesis evidence)
+    # — verified is not admitted: class stays user-installed.
+    assert tts["chatterbox"]["verified"] is True
+    assert tts["chatterbox"]["unverified_label"] == ""
     assert tts["kitten"]["default_shipped"] is False
     assert "Not shipped with Rúnmál" in tts["kitten"]["notice"]
     assert tts["kitten"]["unverified_label"] == \

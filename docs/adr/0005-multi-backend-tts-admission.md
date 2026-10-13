@@ -143,3 +143,30 @@ addendum:
    as recorded. Under the stock recipe, `resemble-perth` is resolved
    from upstream's declared package requirement rather than the
    retired curated recipe's forge pin.
+
+## Addendum evidence — Chatterbox reclassification landed (2026-10-13)
+
+The reclassification above was executed and proven the same morning
+on purplelongship (full record: the matrix's "User-installed
+reclassification evidence" block):
+
+- The one-button machinery installed the stock tree into the
+  backend's own environment (status: done, warm-up passed) and a
+  real corpus synthesis followed (24 kHz, non-silent, through the
+  Rúnmál seam).
+- The informational audit over the resolved dependency closure
+  (125 distributions) fails exactly as predicted — `pykakasi`
+  GPL-3.0-or-later and `soxr` LGPL-2.1-or-later flagged forbidden,
+  binding: false — alongside unknown/human-review entries (the
+  NVIDIA CUDA companion wheels among them). It blocks nothing.
+- One recipe completion was forced by evidence and is recorded
+  rather than hidden: upstream's Perth dependency imports
+  `pkg_resources` without declaring setuptools, so the pure stock
+  tree cannot import in a clean environment. The recipe carries
+  `setuptools==80.9.0` as a declared environment prerequisite —
+  the same pin CosyVoice's set carries for pyworld. No upstream
+  package is pruned, removed, or re-pinned.
+- The registry now records `verified=True` for Chatterbox: the
+  *recipe* is forge-verified (install + synthesis + verdict).
+  Verification is not admission — its class remains user-installed
+  and the gate still guards only the default shipped tree.
