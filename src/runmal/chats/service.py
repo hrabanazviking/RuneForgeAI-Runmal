@@ -16,6 +16,7 @@ VALID_ROLES = frozenset({"user", "assistant", "system"})
 
 EVENT_CHAT_CREATED = "chat.created"
 EVENT_CHAT_RENAMED = "chat.renamed"
+EVENT_PERSONA_CHANGED = "persona.changed"
 EVENT_MESSAGE_APPENDED = "message.appended"
 EVENT_MESSAGE_EDITED = "message.edited"
 EVENT_MESSAGE_DELETED = "message.deleted"
@@ -137,6 +138,40 @@ async def set_chat_preset(
         if await presets.get_preset(session, user_id, preset_id) is None:
             raise KeyError(preset_id)
     chat.preset_id = preset_id
+    await session.commit()
+    return chat
+
+
+async def set_chat_persona(
+    session: AsyncSession,
+    user_id: str,
+    chat_id: str,
+    character_id: str | None,
+    *,
+    event_data: dict | None = None,
+) -> Chat | None:
+    """Switch a chat's active persona (S603, BRIDGE_PROTOCOL §8).
+
+    An explicit state change affecting FUTURE turns only: stored
+    messages keep their original speaker snapshots, and a
+    `persona.changed` mutation event records the switch. Both the chat
+    and the character must belong to the user; a foreign or missing
+    character raises KeyError, a missing chat returns None. Passing the
+    already-active persona is a no-op (no duplicate event).
+    """
+    chat = await _get_owned_chat(session, user_id, chat_id)
+    if chat is None:
+        return None
+    if character_id is not None and await get_char(session, user_id, character_id) is None:
+        raise KeyError(character_id)
+    if chat.character_id == character_id:
+        return chat
+    previous = chat.character_id
+    chat.character_id = character_id
+    data = {"from": previous, "to": character_id}
+    if event_data:
+        data.update(event_data)
+    await _record_event(session, chat.id, EVENT_PERSONA_CHANGED, data=data)
     await session.commit()
     return chat
 

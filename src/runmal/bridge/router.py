@@ -187,3 +187,59 @@ async def bridge_generate_cancel(
     identity: BridgeIdentity = Depends(_write_guard),
 ):
     return {"cancelled": generation_service.cancel_request(body.request_id)}
+
+
+# --- persona switching (S603) -------------------------------------------------
+
+
+class PersonaIn(BaseModel):
+    character_id: str | None = None
+
+
+@router.post("/chats/{chat_id}/persona")
+async def bridge_select_persona(
+    chat_id: str,
+    body: PersonaIn,
+    identity: BridgeIdentity = Depends(get_bridge_identity),
+    session: AsyncSession = Depends(get_session),
+):
+    """Switch the chat's active persona for FUTURE turns (protocol §8).
+
+    Gated by `persona:select:<character-id>` (or `persona:select:*`):
+    the scope names the persona being selected, so this check runs in
+    the handler where the target is known. Stored messages are never
+    rewritten — their speaker snapshots stand.
+    """
+    from runmal.bridge.scopes import scope_allows
+    from runmal.characters.service import get_character
+    from runmal.chats import service as chats_service
+
+    if not scope_allows(identity.scopes, "persona:select", body.character_id or "*"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="bridge credential lacks required scope: persona:select",
+        )
+    chat = await chats_service.get_chat(session, identity.user_id, chat_id)
+    if chat is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    previous = chat.character_id
+    try:
+        chat = await chats_service.set_chat_persona(
+            session,
+            identity.user_id,
+            chat_id,
+            body.character_id,
+            event_data={"source": "bridge", "bridge_id": identity.credential_id},
+        )
+    except KeyError:
+        raise HTTPException(status_code=422, detail="character not found") from None
+    persona = None
+    if chat.character_id:
+        character = await get_character(session, identity.user_id, chat.character_id)
+        if character is not None:
+            persona = {"character_id": character.id, "name": character.name}
+    return {
+        "chat_id": chat_id,
+        "persona": persona,
+        "previous_character_id": previous,
+    }
