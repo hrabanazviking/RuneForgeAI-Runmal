@@ -141,6 +141,7 @@ def build_parser() -> argparse.ArgumentParser:
     rlic = rsub.add_parser("licenses", help="Print/write the license manifest")
     rlic.add_argument("--out", default=None, help="Write to this file")
     rsub.add_parser("gate", help="Run the license gate over the installed tree")
+    rsub.add_parser("check", help="Dry-run release consistency check (S807)")
     return parser
 
 
@@ -358,6 +359,12 @@ def _run_release(args: argparse.Namespace) -> int:
         report = gate_report()
         print(report.summary())
         return 0 if report.passed else 1
+    if args.release_command == "check":
+        from runmal.release.versioning import check_release_consistency
+
+        result = check_release_consistency()
+        print(result.summary())
+        return 0 if result.ok else 1
     if args.release_command == "sbom":
         payload = build_sbom()
     elif args.release_command == "licenses":
