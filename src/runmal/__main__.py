@@ -89,6 +89,17 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Print the migration plan without creating anything",
     )
+    archive = sub.add_parser("archive", help="Portable .runmal archive operations (S801)")
+    asub = archive.add_subparsers(dest="archive_command")
+    aexp = asub.add_parser("export", help="Export a portable .runmal archive")
+    aexp.add_argument("--output", required=True, help="Destination .runmal path")
+    aexp.add_argument(
+        "--user-id",
+        default=None,
+        help="Owner user id (default: the sole local user, if exactly one)",
+    )
+    aval = asub.add_parser("validate", help="Validate a .runmal archive")
+    aval.add_argument("path", help="Archive file to validate")
     return parser
 
 
@@ -105,6 +116,8 @@ def main(argv: list[str] | None = None) -> int:
         return _run_backup(args)
     elif args.command == "profiles":
         return _run_profiles(args)
+    elif args.command == "archive":
+        return _run_archive(args)
     return 0
 
 
@@ -188,6 +201,56 @@ def _run_profiles(args: argparse.Namespace) -> int:
         out = asyncio.run(_go())
     except ValueError as exc:
         print(f"profile migration failed: {exc}", file=sys.stderr)
+        return 1
+    print(json.dumps(out, indent=2))
+    return 0
+
+
+def _run_archive(args: argparse.Namespace) -> int:
+    import asyncio
+    import json
+
+    from runmal.portable.archive import ArchiveError
+
+    if args.archive_command == "validate":
+        from runmal.portable.archive import validate_archive
+
+        try:
+            manifest = validate_archive(args.path)
+        except ArchiveError as exc:
+            print(f"archive invalid: {exc}", file=sys.stderr)
+            return 1
+        print(json.dumps({"valid": True, "manifest": manifest}, indent=2))
+        return 0
+    if args.archive_command != "export":
+        print("usage: runmal archive {export|validate} ...", file=sys.stderr)
+        return 2
+
+    async def _go() -> dict:
+        from sqlalchemy import select
+
+        from runmal.app import default_session_factory
+        from runmal.db.models import User
+        from runmal.portable.archive import export_archive
+
+        factory = default_session_factory()
+        async with factory() as session:
+            user_id = args.user_id
+            if user_id is None:
+                users = list(await session.scalars(select(User)))
+                if len(users) != 1:
+                    raise ValueError(
+                        "--user-id is required unless exactly one local "
+                        f"user exists (found {len(users)})"
+                    )
+                user_id = users[0].id
+            info = await export_archive(session, user_id, args.output)
+            return info.to_dict()
+
+    try:
+        out = asyncio.run(_go())
+    except ValueError as exc:
+        print(f"archive export failed: {exc}", file=sys.stderr)
         return 1
     print(json.dumps(out, indent=2))
     return 0
