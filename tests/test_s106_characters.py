@@ -34,7 +34,7 @@ def test_migration_0002_applied(tmp_path) -> None:
     db_path = tmp_path / "m.db"
     applied = migrate_to_head(db_path)
     assert "0002" in applied and applied.index("0002") < applied.index("0003")
-    assert current_revision(db_path) == "0015"
+    assert current_revision(db_path) == "0016"
 
 
 def test_character_crud(app_client) -> None:

@@ -151,6 +151,8 @@ select = ["E", "F", "W", "I", "N", "UP", "B"]
 
 [tool.ruff.lint.per-file-ignores]
 "src/runmal/app.py" = ["B008"]
+"src/runmal/bridge/auth.py" = ["B008"]
+"src/runmal/bridge/router.py" = ["B008"]
 "src/runmal/characters/router.py" = ["B008"]
 "src/runmal/chats/router.py" = ["B008"]
 "src/runmal/db/deps.py" = ["B008"]

@@ -367,6 +367,29 @@ class ChatSummary(Base):
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
 
 
+class BridgeCredential(Base):
+    """Per-bridge scoped credential (S601, BRIDGE_PROTOCOL §2).
+
+    Only the SHA-256 hash of the token is stored; the plaintext is
+    shown once at creation and never persisted (INV-023/INV-029).
+    Revocation is a timestamp — a revoked credential authenticates
+    nothing, but its row remains as the audit record.
+    """
+
+    __tablename__ = "bridge_credentials"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_new_id)
+    user_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    name: Mapped[str] = mapped_column(String(200), nullable=False, default="")
+    token_hash: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
+    scopes_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
+    created_at: Mapped[str] = mapped_column(String(40), nullable=False, default="")
+    revoked_at: Mapped[str | None] = mapped_column(String(40), nullable=True, default=None)
+    last_used_at: Mapped[str | None] = mapped_column(String(40), nullable=True, default=None)
+
+
 class CharacterVoiceProfile(Base):
     """Per-character TTS reference (S512): backend + voice + params.
 

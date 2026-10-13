@@ -14,6 +14,8 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from runmal import __version__
 from runmal.auth import get_or_create_credential, verify_credential
 from runmal.backups.router import router as backups_router
+from runmal.bridge.router import admin_router as bridge_admin_router
+from runmal.bridge.router import router as bridge_router
 from runmal.characters.router import router as characters_router
 from runmal.chats.router import router as chats_router
 from runmal.connections.router import router as connections_router
@@ -128,6 +130,14 @@ def create_app(
         prefix="/api/v1",
         dependencies=[Depends(require_local_auth)],
     )
+    app.include_router(
+        bridge_admin_router,
+        prefix="/api/v1",
+        dependencies=[Depends(require_local_auth)],
+    )
+    # Bridge-facing API: authenticated by scoped bridge tokens only,
+    # never by the local credential (S601, INV-029).
+    app.include_router(bridge_router, prefix="/api/v1")
     # Browser UI: public page (no secrets in it; loopback bind is the boundary
     # per ADR-0003). All /api/v1/* calls from the page stay bearer-gated.
     app.include_router(web_router)

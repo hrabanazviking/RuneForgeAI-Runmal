@@ -22,6 +22,25 @@ Each bridge receives its own revocable credential and declared scope set, for ex
 
 A valid bridge token is not an application-admin token.
 
+**As implemented (S601).** A scope string is `<capability>` or
+`<capability>:<resource>`. Capabilities: `chat:read`, `chat:write`
+(append turns and request/cancel generation for the chat),
+`events:read` (poll/ack the outbox), `persona:select` (resource is a
+character id) — these four require a resource — and `tts:request`,
+which takes none. The resource `*` wildcards within its capability
+only. Matching is exact on capability, exact-or-wildcard on resource;
+nothing prefix-matches, so a grant cannot quietly widen.
+
+Credentials are created by the owner through the local-auth admin API
+(`POST /api/v1/bridge/credentials`, list + `.../revoke` alongside).
+The token (`rmb_` + 32 random bytes, URL-safe) is shown **once** at
+creation; only its SHA-256 hash is stored. Bridges authenticate with
+`Authorization: Bearer <token>` on `/api/v1/bridge/...` routes only —
+the local application credential is not a bridge token, and a bridge
+token is not an application credential. `GET /api/v1/bridge/whoami`
+returns the bridge's id, name and granted scopes (never token or hash)
+as a pairing/scope probe.
+
 ## 3. Core resources
 
 The v1 contract should provide:

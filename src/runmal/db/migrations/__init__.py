@@ -23,6 +23,7 @@ from runmal.db.migrations import (
     m0013_embedding_activation,
     m0014_memory_core,
     m0015_voice_profiles,
+    m0016_bridge_credentials,
 )
 
 MIGRATIONS: list[tuple[str, str, object]] = [
@@ -96,5 +97,10 @@ MIGRATIONS: list[tuple[str, str, object]] = [
         m0015_voice_profiles.REVISION,
         m0015_voice_profiles.DESCRIPTION,
         m0015_voice_profiles,
+    ),
+    (
+        m0016_bridge_credentials.REVISION,
+        m0016_bridge_credentials.DESCRIPTION,
+        m0016_bridge_credentials,
     ),
 ]
