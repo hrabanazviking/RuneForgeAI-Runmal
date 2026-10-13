@@ -1,8 +1,10 @@
 """TTS service seam (S504, reworked by ADR-0005).
 
 Rúnmál's speech is MULTI-BACKEND: engines sit behind this seam and
-register in :mod:`runmal.voice.backends` — CosyVoice and Chatterbox
-ship by default, Kitten and Piper are user-installed, and a future
+register in :mod:`runmal.voice.backends` — CosyVoice ships by
+default; Chatterbox, Kitten and Piper are user-installed (Chatterbox
+reclassified by Volmarr's ruling of 2026-10-13 — no lawful
+default-shipped tree exists for it), and a future
 first-party engine registers the same way. **Kokoro was REMOVED from
 the product**: its English path phonemized through Misaki, whose
 ``misaki[en]`` tree directly requires the forbidden eSpeak-NG carriers

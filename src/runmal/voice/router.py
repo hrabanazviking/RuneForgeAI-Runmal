@@ -153,7 +153,7 @@ def _backends_payload() -> dict:
         entry = backend_status(
             spec.plan,
             default_shipped=spec.default_shipped,
-            verified=spec.default_shipped,
+            verified=spec.verified,
             tree_packages=spec.tree_packages,
         )
         entry["display_name"] = spec.display_name

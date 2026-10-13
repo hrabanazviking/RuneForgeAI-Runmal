@@ -14,8 +14,9 @@ reason — never fabricated, never silently dropped.
 Sections: VAD segmentation (fixture corpus vs S502 contract), STT
 (fixed Flite corpus vs S503 contract), TTS (fixed corpus, measured
 PER BACKEND against the per-backend PREDECLARED thresholds of
-ADR-0005 / docs/BENCHMARKS.md — CosyVoice and Chatterbox bind;
-user-installed backends measure as information only), end-to-end
+ADR-0005 / docs/BENCHMARKS.md — CosyVoice, the sole default-shipped
+backend, binds; user-installed backends (Chatterbox included since
+Volmarr's 2026-10-13 reclassification) measure as information only), end-to-end
 simulated turn stages (S510 chain), interruption latency (S507
 fixture vs its 100 ms budget).
 """

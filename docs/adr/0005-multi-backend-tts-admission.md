@@ -111,3 +111,35 @@ and decided both default backends:
    the 5.x line's soxr behavior makes any librosa-carrying tree
    unshippable. Backend trees are judged with their pinned
    transformers line as part of the evidence from now on.
+
+## Addendum — Chatterbox reclassified user-installed (2026-10-13)
+
+Volmarr ruled at 05:45 EDT: **"Make Chatterbox user-installed —
+one-button choice, gate stays pure."**
+
+This addendum supersedes the Chatterbox portions of points 4 and 6
+above and resolves the held state recorded in the admission-evidence
+addendum:
+
+1. **Chatterbox is a user-installed backend**, in the same class as
+   Kitten and Piper. CosyVoice is the sole default-shipped TTS
+   backend, and the S504 gate continues to guard only that default
+   shipped tree.
+2. **Its one-button recipe is the stock upstream tree.** The recipe
+   installs `chatterbox-tts==0.1.7` with dependency resolution on:
+   no pykakasi/librosa pruning and no curated `--no-deps` surgery.
+   A user's own install is the user's own choice.
+3. **Its audit verdict is information, never a block.** The verdict
+   scopes to the installed dependency closure of the stock recipe
+   and is displayed in the backends panel with the existing
+   user-install notice. It honestly flags the stock tree's soxr
+   (LGPL-2.1-or-later) and pykakasi (GPL-3.0) components.
+4. **No binding performance thresholds remain for Chatterbox.**
+   The 4.0 s first-audio / 1.0 RTF values declared while it was
+   default-class were retired unmeasured when its class changed;
+   later measurements are information only. CosyVoice's thresholds
+   are unchanged.
+5. The PerTh watermark and sentence-chunk streaming facts remain
+   as recorded. Under the stock recipe, `resemble-perth` is resolved
+   from upstream's declared package requirement rather than the
+   retired curated recipe's forge pin.

@@ -152,7 +152,9 @@ def test_backends_endpoint_lists_registry_with_honest_labels(tmp_path, monkeypat
     assert tts["cosyvoice"]["default_shipped"] is True
     assert tts["cosyvoice"]["notice"] == ""  # shipped: no user-install notice
     assert tts["cosyvoice"]["thresholds"]["max_first_audio_p50_s"] == 1.5
-    assert tts["chatterbox"]["thresholds"]["max_first_audio_p50_s"] == 4.0
+    assert tts["chatterbox"]["default_shipped"] is False  # user-installed (2026-10-13 ruling)
+    assert "Not shipped with Rúnmál" in tts["chatterbox"]["notice"]
+    assert tts["chatterbox"]["thresholds"]["max_first_audio_p50_s"] is None
     assert tts["kitten"]["default_shipped"] is False
     assert "Not shipped with Rúnmál" in tts["kitten"]["notice"]
     assert tts["kitten"]["unverified_label"] == \

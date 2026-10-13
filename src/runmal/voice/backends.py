@@ -4,18 +4,20 @@ Rúnmál is not locked to one speech engine. This registry is the
 single place that knows the TTS backends, their install plans, and
 their admission class:
 
-* ``default_shipped`` — CosyVoice (admitted; Chatterbox is
-  default-class by ruling but HELD at admission — its pinned tree
-  requires soxr, LGPL-2.1-or-later, via librosa/transformers; see
-  the registry note). Their trees are part of what Rúnmál ships;
-  the S504 gate binds them (the default shipped tree must audit
-  green).
-* ``user_installed`` — Kitten and Piper. Adapter code ships (it is
-  ours, Apache-2.0); the engines install ONLY through the user's
-  explicit one-button action (:mod:`runmal.voice.install`), carry the
-  honest user-install notice, and their audit verdicts display as
+* ``default_shipped`` — CosyVoice (admitted). Its tree is part of
+  what Rúnmál ships; the S504 gate binds it (the default shipped
+  tree must audit green).
+* ``user_installed`` — Kitten, Piper, and (since Volmarr's ruling
+  of 2026-10-13) Chatterbox. Adapter code ships (it is ours,
+  Apache-2.0); the engines install ONLY through the user's explicit
+  one-button action (:mod:`runmal.voice.install`), carry the honest
+  user-install notice, and their audit verdicts display as
   information — never as a block (Volmarr's policy-scope ruling,
-  2026-10-13).
+  2026-10-13). Chatterbox's recipe is its STOCK upstream tree
+  (dependency resolution on, no pruning): no lawful default-shipped
+  tree exists for it — its pinned transformers 5.x hard-imports
+  ``soxr`` (LGPL-2.1-or-later) whenever librosa is present — so it
+  left the default class rather than the product.
 
 Kokoro is REMOVED from the product: the misaki → espeakng-loader /
 phonemizer-fork chain (GPL-3.0 eSpeak-NG) can never pass the gate,
@@ -52,38 +54,22 @@ class BackendUnavailable(RuntimeError):
     """The backend's runtime is not installed (install is a user act)."""
 
 
-#: PerTh watermark library pinned to a fixed commit (survey finding:
-#: upstream chatterbox-tts leaves resemble-perth unpinned).
-PERTH_GIT = "https://github.com/resemble-ai/Perth"
-PERTH_COMMIT = "ff1c8ac55a976971245cdd53c18d6131ca00d993"
-
 #: CosyVoice upstream pinned commit (FunAudioLLM/CosyVoice).
 COSYVOICE_GIT = "https://github.com/FunAudioLLM/CosyVoice"
 COSYVOICE_COMMIT = "074ca6dc9e80a2f424f1f74b48bdd7d3fea531cc"
 
-#: Curated pip set for Chatterbox — its full Requires-Dist MINUS
-#: ``pykakasi==2.3.0`` (GPL-3.0, Japanese-only path, never imported by
-#: the English pipeline) and minus ``gradio`` (demo UI only). Installed
-#: with --no-deps so nothing unlisted can enter the tree. Mirrors the
-#: ``voice-chatterbox`` extra in pyproject.toml (a test guards drift).
-#: NOTE: the set is a faithful record of the backend's tree, but the
-#: plan is HELD (enable=False) — see the registry note: librosa's
-#: presence makes its pinned transformers import soxr (LGPL-2.1+).
+#: Stock recipe for Chatterbox (user-installed class, Volmarr's
+#: ruling 2026-10-13): the single upstream package, installed WITH
+#: dependency resolution — pip builds upstream's full Requires-Dist
+#: tree exactly as declared, INCLUDING ``pykakasi==2.3.0`` (GPL-3.0)
+#: and ``gradio`` (demo stack), which the retired default-class
+#: curated set pruned. No surgery: a user's own install is the
+#: user's own choice. The audit verdict scopes to the resolved
+#: dependency closure (see install._dependency_closure) and is
+#: displayed as information. The ``voice-chatterbox`` extra in
+#: pyproject.toml mirrors this root (a test guards drift).
 CHATTERBOX_PACKAGES: tuple[str, ...] = (
     "chatterbox-tts==0.1.7",
-    "numpy>=1.24,<2.0",
-    "librosa==0.11.0",
-    "s3tokenizer",
-    "torch==2.6.0",
-    "torchaudio==2.6.0",
-    "transformers==5.2.0",
-    "diffusers==0.29.0",
-    f"resemble-perth @ git+{PERTH_GIT}@{PERTH_COMMIT}",
-    "conformer==0.3.2",
-    "safetensors==0.5.3",
-    "spacy-pkuseg",
-    "pyloudnorm",
-    "omegaconf",
 )
 
 
@@ -254,6 +240,10 @@ class TTSBackendSpec:
     display_name: str
     default_shipped: bool
     plan: InstallPlan
+    #: Forge verification is separate from admission class: a
+    #: user-installed recipe can be forge-verified (real install +
+    #: synthesis evidence) without becoming default-shipped.
+    verified: bool = False
     #: Distributions the per-backend audit display scopes to.
     tree_packages: tuple[str, ...] = ()
     first_audio_p50_s: float | None = None  # predeclared (docs/BENCHMARKS.md)
@@ -269,6 +259,7 @@ TTS_REGISTRY: dict[str, TTSBackendSpec] = {
         key="cosyvoice",
         display_name="CosyVoice 2 (0.5B)",
         default_shipped=True,
+        verified=True,
         plan=_plan(
             "cosyvoice",
             pip_packages=COSYVOICE_PACKAGES,
@@ -284,28 +275,23 @@ TTS_REGISTRY: dict[str, TTSBackendSpec] = {
     "chatterbox": TTSBackendSpec(
         key="chatterbox",
         display_name="Chatterbox",
-        default_shipped=True,
+        default_shipped=False,
         plan=_plan(
             "chatterbox",
             pip_packages=CHATTERBOX_PACKAGES,
+            resolve_dependencies=True,
             probe_import="chatterbox",
             warmup="runmal.voice.backends:warm_chatterbox",
-            enable=False,
-            note="HELD at admission (purplelongship evidence, 2026-10-13): "
-            "chatterbox.tts imports librosa at module level, and its "
-            "own pinned transformers 5.2 hard-imports soxr whenever "
-            "librosa is present; python-soxr declares "
-            "LGPL-2.1-or-later — forbidden in the shipped tree. "
-            "Registered fail-closed until Volmarr rules "
-            "(user-installed reclassification, a patch fork, or "
-            "dropping the backend). MIT code + weights; curated "
-            "install excludes GPL pykakasi (Japanese-only) — English "
-            "path never imports it. Output carries the upstream "
+            note="User-installed (Volmarr's ruling, 2026-10-13). "
+            "Installed by your one-button action as the STOCK "
+            "upstream tree — no pruning. That tree carries "
+            "pykakasi (GPL-3.0) and, via librosa, soxr "
+            "(LGPL-2.1-or-later): the license audit verdict is "
+            "shown as information and never blocks your install. "
+            "MIT code + weights; output carries the upstream "
             "PerTh watermark.",
         ),
         tree_packages=_dist_names(CHATTERBOX_PACKAGES),
-        first_audio_p50_s=4.0,
-        rtf_p50=1.0,
     ),
     "kitten": TTSBackendSpec(
         key="kitten",
@@ -646,8 +632,8 @@ def warm_cosyvoice() -> None:
 
 
 def warm_chatterbox() -> None:
-    """Pull Chatterbox weights and prove the curated tree imports —
-    critically, WITHOUT pykakasi present."""
+    """Pull Chatterbox weights and prove the stock installed tree
+    imports (user-installed warm-up; the tree is upstream's own)."""
     from chatterbox.tts import ChatterboxTTS as _Upstream
 
     _Upstream.from_pretrained(device="cpu")

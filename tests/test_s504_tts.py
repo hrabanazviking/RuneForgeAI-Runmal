@@ -2,11 +2,12 @@
 
 The audit is executable policy over each backend's OWN tree:
 eSpeak-carrying trees fail, permissive trees pass. The gate BINDS
-only the default shipped tree (CosyVoice + Chatterbox + the base
-voice tree); user-installed backends (Kitten, Piper) get their
+only the default shipped tree (CosyVoice + the base
+voice tree); user-installed backends (Kitten, Piper, Chatterbox) get their
 verdict displayed as information, never as a block. Plus the registry
-model (admission classes, curated --no-deps install sets, PREDECLARED
-thresholds), the pyproject↔curated-set drift guard, fail-closed
+model (admission classes, curated --no-deps install sets for shipped
+backends, the stock resolved recipe for user-installed Chatterbox,
+PREDECLARED thresholds), the pyproject↔registry drift guard, fail-closed
 backend construction, sentence streaming, cancellation, audition,
 and fixed-corpus synthesis.
 """
@@ -192,9 +193,12 @@ def test_registry_tree_packages_scope_each_backend():
 
     cosy = set(TTS_REGISTRY["cosyvoice"].tree_packages)
     chat = set(TTS_REGISTRY["chatterbox"].tree_packages)
-    assert "torch" in cosy and "torch" in chat
-    assert "transformers" in cosy and "transformers" in chat
-    assert "resemble-perth" in chat
+    assert "torch" in cosy and "transformers" in cosy
+    # Chatterbox's scope names the stock recipe ROOT only; the audit
+    # expands it to the resolved dependency closure at verdict time
+    # (install._dependency_closure) — the tree judged is the tree
+    # the user's stock install actually made.
+    assert chat == {"chatterbox-tts"}
     assert "pykakasi" not in chat and "misaki" not in cosy | chat
     assert set(TTS_REGISTRY["kitten"].tree_packages) == {"kittentts", "soundfile"}
     assert set(TTS_REGISTRY["piper"].tree_packages) == {"piper-tts"}
@@ -208,7 +212,9 @@ def test_registry_admission_classes_and_defaults():
 
     assert DEFAULT_TTS_BACKEND == "cosyvoice"
     assert TTS_REGISTRY["cosyvoice"].default_shipped
-    assert TTS_REGISTRY["chatterbox"].default_shipped
+    # Chatterbox joined the user-installed class by Volmarr's ruling
+    # (2026-10-13): no lawful default-shipped tree exists for it.
+    assert not TTS_REGISTRY["chatterbox"].default_shipped
     assert not TTS_REGISTRY["kitten"].default_shipped
     assert not TTS_REGISTRY["piper"].default_shipped
     assert set(KNOWN_TTS_BACKENDS) == {
@@ -223,21 +229,27 @@ def test_predeclared_thresholds_are_the_benchmarks_md_values():
 
     assert TTS_REGISTRY["cosyvoice"].first_audio_p50_s == 1.5
     assert TTS_REGISTRY["cosyvoice"].rtf_p50 == 1.0
-    assert TTS_REGISTRY["chatterbox"].first_audio_p50_s == 4.0
-    assert TTS_REGISTRY["chatterbox"].rtf_p50 == 1.0
-    # User-installed backends carry no binding thresholds.
+    # User-installed backends carry no binding thresholds — Chatterbox
+    # included, since its reclassification (it is measured as
+    # information only, like Kitten and Piper).
+    assert TTS_REGISTRY["chatterbox"].first_audio_p50_s is None
+    assert TTS_REGISTRY["chatterbox"].rtf_p50 is None
     assert TTS_REGISTRY["kitten"].first_audio_p50_s is None
     assert TTS_REGISTRY["piper"].rtf_p50 is None
 
 
-def test_chatterbox_curated_set_excludes_pykakasi_and_gradio():
-    from runmal.voice.backends import CHATTERBOX_PACKAGES
+def test_chatterbox_stock_recipe_is_the_unpruned_upstream_package():
+    # Volmarr's ruling (2026-10-13): as a user-installed backend,
+    # Chatterbox installs STOCK — the single upstream package with
+    # dependency resolution on. The retired default-class surgery
+    # (pruning pykakasi/gradio out of a curated --no-deps set) is
+    # gone: what upstream declares is what the user's install gets.
+    from runmal.voice.backends import CHATTERBOX_PACKAGES, TTS_REGISTRY
 
-    names = {re.split(r"[<>=!~ @\[]", p, maxsplit=1)[0].lower()
-             for p in CHATTERBOX_PACKAGES}
-    assert "pykakasi" not in names  # GPL-3.0, Japanese-only path
-    assert "gradio" not in names  # demo UI only
-    assert "chatterbox-tts" in names
+    assert CHATTERBOX_PACKAGES == ("chatterbox-tts==0.1.7",)
+    plan = TTS_REGISTRY["chatterbox"].plan
+    assert plan.resolve_dependencies is True
+    assert plan.enable is True
 
 
 def test_cosyvoice_install_never_touches_the_pypi_namesquat():
@@ -302,16 +314,65 @@ def test_cosyvoice_set_excludes_soxr_and_uses_cpu_torch():
     assert "modelscope==1.32.0" in COSYVOICE_PACKAGES
 
 
-def test_chatterbox_held_fail_closed_at_admission():
-    # Admission evidence (purplelongship, 2026-10-13): its pinned
-    # tree needs soxr (LGPL-2.1-or-later) — the plan refuses to run
-    # until Volmarr rules. The backend stays registered and visible.
+def test_chatterbox_user_installed_class_and_notice():
+    # Volmarr's disposition (2026-10-13): Chatterbox is a
+    # USER-INSTALLED backend. Its stock tree cannot pass the gate
+    # (librosa + transformers 5.x drag in soxr, LGPL-2.1-or-later;
+    # pykakasi is GPL-3.0) — as a default shipment that failed it;
+    # as the user's own one-button install it is their choice, with
+    # the audit verdict displayed as information, never binding.
     from runmal.voice.backends import TTS_REGISTRY
+    from runmal.voice.install import USER_INSTALL_NOTICE, backend_status
 
-    plan = TTS_REGISTRY["chatterbox"].plan
-    assert TTS_REGISTRY["chatterbox"].default_shipped  # class by ruling
-    assert plan.enable is False
-    assert "soxr" in plan.note and "LGPL" in plan.note
+    spec = TTS_REGISTRY["chatterbox"]
+    assert not spec.default_shipped
+    assert spec.plan.enable is True  # the button works — user's act
+    status = backend_status(
+        spec.plan,
+        default_shipped=spec.default_shipped,
+        verified=False,
+        tree_packages=spec.tree_packages,
+    )
+    assert status["notice"] == USER_INSTALL_NOTICE
+    assert status["installable"] is True
+    if status["audit"] is not None:  # installed in this environment
+        assert status["audit"]["binding"] is False
+
+
+def test_stock_install_step_resolves_dependencies(tmp_path, monkeypatch):
+    # The one-button machinery runs a stock plan WITHOUT --no-deps:
+    # pip's resolver builds upstream's declared tree.
+    from types import SimpleNamespace
+
+    from runmal.voice.install import InstallPlan, run_install
+
+    monkeypatch.setenv("RUNMAL_DATA_DIR", str(tmp_path))
+    commands = []
+
+    def fake_runner(cmd, **kwargs):
+        commands.append(cmd)
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+    plan = InstallPlan(
+        key="stock-demo", kind="tts",
+        pip_packages=("demo-pkg==1.0",), resolve_dependencies=True,
+    )
+    state = run_install(plan, runner=fake_runner)
+    assert state.status == "done"
+    assert commands and "--no-deps" not in commands[0]
+    assert "demo-pkg==1.0" in commands[0]
+
+
+def test_dependency_closure_walks_installed_requires():
+    # The audit scope for a stock install is the resolved closure:
+    # pytest (a real installed root in the dev environment) reaches
+    # its declared dependencies.
+    from runmal.voice.install import _dependency_closure
+
+    closure = set(_dependency_closure(("pytest",)))
+    assert "pytest" in closure
+    assert "pluggy" in closure and "iniconfig" in closure
+    assert "chatterbox-tts" not in closure  # not installed here
 
 
 def test_classifier_recognizes_attested_permissive_spellings():

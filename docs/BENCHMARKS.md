@@ -58,12 +58,13 @@ fixed S504 corpus (`TTS_CORPUS_TEXTS`).
 
   cosyvoice (CosyVoice2-0.5B, native streaming, GPU):
     first-audio p50 <= 1.5 s; synthesis RTF p50 <= 1.0
-  chatterbox (Chatterbox, sentence-chunk streaming at the seam, GPU):
-    first-chunk-audio p50 <= 4.0 s; synthesis RTF p50 <= 1.0
 
-User-installed backends (kitten, piper) carry no predeclared thresholds:
-they are not shipped, and any numbers measured for them are reported as
-information only.
+User-installed backends (kitten, piper, chatterbox) carry no binding
+predeclared thresholds: they are not shipped, and any numbers measured
+for them are reported as information only. Chatterbox's 4.0 s / 1.0
+values, declared while it was default-class, were retired unmeasured
+by Volmarr's 2026-10-13 user-installed reclassification — a class
+change, not a post-result adjustment.
 
 End-to-end:
   endpoint hangover:

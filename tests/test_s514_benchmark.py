@@ -46,7 +46,10 @@ def test_thresholds_are_the_imported_constants_not_copies(tmp_path):
         TTS_REGISTRY["cosyvoice"].first_audio_p50_s == 1.5
     assert cosy["max_rtf_p50"] == TTS_REGISTRY["cosyvoice"].rtf_p50 == 1.0
     chat = report["tts"]["backends"]["chatterbox"]["contract"]
-    assert chat["max_first_audio_p50_s"] == 4.0
+    # Chatterbox is user-installed (Volmarr, 2026-10-13): no binding
+    # thresholds — the harness measures it as information only.
+    assert chat["max_first_audio_p50_s"] is None
+    assert chat["max_rtf_p50"] is None
     # Running the harness must not mutate the contracts.
     assert STT_CONTRACT["max_wer"] == 0.25
     assert SEGMENTATION_CONTRACT["min_recall"] == 0.90

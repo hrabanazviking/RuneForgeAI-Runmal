@@ -22,8 +22,9 @@ committed as binaries.
 ## TTS corpus (S504/S514)
 
 - Texts: fixed in `src/runmal/voice/tts.py` (`TTS_CORPUS_TEXTS`).
-- Synthesized per registered backend (ADR-0005: CosyVoice/Chatterbox
-  by default; the deterministic fake in fixture runs); outputs are checked
+- Synthesized per registered backend (ADR-0005: CosyVoice by default,
+  Chatterbox/Kitten/Piper as user-installed backends; the deterministic
+  fake in fixture runs); outputs are checked
   for non-silence, duration sanity and first-audio latency — TTS has no
   reference waveform, so quality gates are structural, not invented
   perceptual scores. (The corpus's first line also serves as the

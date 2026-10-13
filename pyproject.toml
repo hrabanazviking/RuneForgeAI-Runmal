@@ -36,11 +36,15 @@ voice = [
     "sounddevice>=0.4",
     "faster-whisper>=1.0",
 ]
-# ADR-0005 default-shipped TTS backends. These lists MIRROR the curated
-# --no-deps install sets in runmal.voice.backends (COSYVOICE_PACKAGES /
-# CHATTERBOX_PACKAGES); tests/test_s504_tts.py guards drift both ways.
-# The extras exist for developers and the default-tree audit; the app
-# itself installs backends only through the one-button machinery.
+# ADR-0005 TTS backend extras. These lists MIRROR the install sets
+# in runmal.voice.backends (COSYVOICE_PACKAGES / CHATTERBOX_PACKAGES);
+# tests/test_s504_tts.py guards drift both ways. The extras exist for
+# developers and the default-tree audit; the app itself installs
+# backends only through the one-button machinery. voice-cosyvoice is
+# the default-shipped curated --no-deps set; voice-chatterbox names
+# only the stock root package of a USER-INSTALLED backend (Volmarr's
+# ruling, 2026-10-13) — pip resolves upstream's full tree for it,
+# and it is never part of the default shipped tree.
 voice-cosyvoice = [
     "conformer",
     "diffusers==0.29.0",
@@ -115,19 +119,6 @@ voice-cosyvoice = [
 ]
 voice-chatterbox = [
     "chatterbox-tts==0.1.7",
-    "numpy>=1.24,<2.0",
-    "librosa==0.11.0",
-    "s3tokenizer",
-    "torch==2.6.0",
-    "torchaudio==2.6.0",
-    "transformers==5.2.0",
-    "diffusers==0.29.0",
-    "resemble-perth @ git+https://github.com/resemble-ai/Perth@ff1c8ac55a976971245cdd53c18d6131ca00d993",
-    "conformer==0.3.2",
-    "safetensors==0.5.3",
-    "spacy-pkuseg",
-    "pyloudnorm",
-    "omegaconf",
 ]
 
 [project.scripts]
@@ -136,9 +127,9 @@ runmal = "runmal.__main__:main"
 [tool.hatch.build.targets.wheel]
 packages = ["src/runmal"]
 
-# The voice-chatterbox extra pins resemble-perth to an exact upstream
-# commit via a direct git reference (ADR-0005) — hatchling requires
-# this explicit allowance for direct references.
+# Direct references remain in the voice-cosyvoice extra's history of
+# pinned wheels; hatchling requires this explicit allowance for
+# direct references wherever they appear.
 [tool.hatch.metadata]
 allow-direct-references = true
 

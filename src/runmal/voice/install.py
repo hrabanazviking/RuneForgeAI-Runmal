@@ -10,12 +10,14 @@ tools of any kind.*
 This module is the shared machinery behind that button:
 
 * :class:`InstallPlan` — the declarative recipe for one backend:
-  python packages (installed with dependency resolution DISABLED —
-  ``pip install --no-deps`` — so a backend can never smuggle an
-  unlisted transitive package, e.g. Chatterbox's GPL ``pykakasi``,
-  into the tree), an optional pinned git checkout (CosyVoice ships
-  from its GitHub repository, never from the name-squatted PyPI
-  project), and model downloads.
+  python packages (curated plans install with dependency resolution
+  DISABLED — ``pip install --no-deps`` — so a shipped backend can
+  never smuggle an unlisted transitive package into the tree;
+  user-installed stock plans set ``resolve_dependencies`` and take
+  upstream's tree exactly as declared — the user's own choice),
+  an optional pinned git checkout (CosyVoice ships from its GitHub
+  repository, never from the name-squatted PyPI project), and model
+  downloads.
 * :func:`run_install` executes a plan step by step, recording progress
   in a JSON state file the settings UI polls. ``enable=False`` plans
   (registered-but-unverified STT extras) refuse to run: there is no
@@ -36,6 +38,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
 import sys
 import threading
@@ -65,8 +68,17 @@ class InstallPlan:
 
     key: str
     kind: str  # "tts" | "stt"
-    #: pip install --no-deps targets (exact pins / VCS URLs).
+    #: pip install targets (exact pins / VCS URLs). Installed with
+    #: --no-deps (curated sets) unless ``resolve_dependencies`` is set.
     pip_packages: tuple[str, ...] = ()
+    #: True = install the listed packages WITH pip's dependency
+    #: resolution — the stock upstream tree, exactly as upstream
+    #: declares it. Used only by user-installed backends whose recipe
+    #: is the stock package (Volmarr's ruling, 2026-10-13: a user's
+    #: own install is the user's own choice — no pruning surgery).
+    #: The per-backend audit then scopes to the resolved dependency
+    #: closure and displays its verdict as information.
+    resolve_dependencies: bool = False
     #: (git URL, pinned commit, checkout dir name under the vendor dir)
     git_checkout: tuple[str, str, str] | None = None
     #: (URL, destination file name under the vendor models dir)
@@ -193,13 +205,22 @@ def run_install(plan: InstallPlan, *, runner=None, timeout: int = 3600) -> Insta
         vdir = vendor_dir()
         vdir.mkdir(parents=True, exist_ok=True)
         if plan.pip_packages:
-            _run(
-                [sys.executable, "-m", "pip", "install", "--no-deps", *plan.pip_packages],
-                step="pip install --no-deps (curated set)",
-                state=state,
-                runner=runner,
-                timeout=timeout,
-            )
+            if plan.resolve_dependencies:
+                _run(
+                    [sys.executable, "-m", "pip", "install", *plan.pip_packages],
+                    step="pip install (stock tree — dependency resolution on)",
+                    state=state,
+                    runner=runner,
+                    timeout=timeout,
+                )
+            else:
+                _run(
+                    [sys.executable, "-m", "pip", "install", "--no-deps", *plan.pip_packages],
+                    step="pip install --no-deps (curated set)",
+                    state=state,
+                    runner=runner,
+                    timeout=timeout,
+                )
         if plan.git_checkout is not None:
             url, commit, dirname = plan.git_checkout
             dest = vdir / dirname
@@ -280,6 +301,38 @@ def start_install(plan: InstallPlan) -> InstallState:
         return InstallState(key=plan.key, status="running", step="starting")
 
 
+def _dependency_closure(roots: tuple[str, ...]) -> tuple[str, ...]:
+    """Installed distributions reachable from ``roots`` through
+    Requires-Dist — the real tree of a dependency-resolved (stock)
+    install. Optional-extra requirements (``extra ==`` markers) are
+    not traversed: a stock install does not install them. Only
+    distributions actually installed are followed or returned."""
+    from importlib import metadata
+
+    def norm(name: str) -> str:
+        return name.strip().lower().replace("_", "-")
+
+    installed: dict[str, object] = {}
+    for dist in metadata.distributions():
+        name = dist.metadata.get("Name") or ""
+        if name:
+            installed[norm(name)] = dist
+    seen: set[str] = set()
+    stack = [norm(r) for r in roots]
+    while stack:
+        key = stack.pop()
+        if key in seen or key not in installed:
+            continue
+        seen.add(key)
+        for req in installed[key].requires or []:
+            if "extra ==" in req:
+                continue
+            match = re.match(r"^\s*([A-Za-z0-9._-]+)", req)
+            if match:
+                stack.append(norm(match.group(1)))
+    return tuple(sorted(seen))
+
+
 def audit_for_plan(plan: InstallPlan, *, tree_packages: tuple[str, ...] = ()) -> AuditReport | None:
     """Audit the backend's REAL installed tree; None when not installed.
 
@@ -287,10 +340,16 @@ def audit_for_plan(plan: InstallPlan, *, tree_packages: tuple[str, ...] = ()) ->
     audited — the honest view for backends whose tree is the shared
     environment (the default shipped pair). User-installed backends
     pass their curated package list to scope the verdict display.
+    For a dependency-resolved (stock) plan, ``tree_packages`` names
+    the recipe roots and the verdict scopes to their installed
+    dependency closure — the tree the user's install actually made.
     """
     if not is_installed(plan):
         return None
-    snapshot = installed_snapshot(tree_packages or None)
+    names = tree_packages
+    if plan.resolve_dependencies and names:
+        names = _dependency_closure(names)
+    snapshot = installed_snapshot(names or None)
     return audit_snapshot(snapshot)
 
 
