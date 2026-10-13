@@ -88,6 +88,24 @@ Commit:
 
 For **user-installed** backends the same evidence block is recorded, but the verdict is **informational**: it is displayed in the settings/audition UI next to the user-install notice and never blocks the user's own installation (scope section above).
 
+## STT backend registry (ADR-0006)
+
+STT admission mirrors TTS: one shipped default, the rest user-downloadable under the same scope line and notice requirement. The forge does **not** pre-claim licenses for user-downloadable STT extras — the per-backend audit's own verdict, computed on the user's real installed tree, is the only license statement the UI makes about them.
+
+| Backend key | Class | Upstream | Forge state |
+|---|---|---|---|
+| `faster-whisper` | **default** (shipped) | faster-whisper + Whisper small int8 | ✅ cleared — MIT package tree; weights MIT; contract verified on purplelongship (WER 0.1111, RTF 0.8362) |
+| `distil-whisper` | user-downloadable | distil-whisper weights via the shipped faster-whisper runtime | registered; one-button = model download; mechanism proof extra for the Campaign V landing |
+| `whisper-cpp` | user-downloadable | whisper.cpp (via pywhispercpp) | registered — not forge-verified |
+| `openai-whisper` | user-downloadable | OpenAI Whisper reference implementation | registered — not forge-verified |
+| `moonshine` | user-downloadable | Moonshine (Useful Sensors) | registered — not forge-verified |
+| `parakeet` | user-downloadable | NVIDIA Parakeet (NeMo) | registered — not forge-verified |
+| `canary` | user-downloadable | NVIDIA Canary (NeMo) | registered — not forge-verified |
+| `vosk` | user-downloadable | Vosk (Kaldi) | registered — not forge-verified |
+| `sherpa-onnx-stt` | user-downloadable | sherpa-ONNX STT models | registered — not forge-verified (note: sherpa-ONNX *TTS* Kokoro/Piper paths carry eSpeak data per the survey; STT models are judged by their own audit) |
+| `silero-stt` | user-downloadable | Silero STT models | registered — not forge-verified |
+| `fake-stt` | test fixture | Rúnmál's own code | deterministic test double |
+
 ## Automated gate
 
 Campaign VIII should generate an SBOM/license report from the release environment, but automation supplements manual review for model/voice assets that ordinary Python license scanners may not understand.

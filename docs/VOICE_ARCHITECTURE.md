@@ -117,6 +117,8 @@ Voice providers are replaceable services:
 - cancellation;
 - language/model metadata.
 
+**Multi-backend registry (ADR-0006).** STT mirrors the TTS model exactly. Backends register a spec in `runmal.voice.stt_backends` behind the `STTBackend` seam, and the user selects the **default STT backend in settings**. The **default shipped backend is faster-whisper** (small int8; contract verified on purplelongship). Additional engines — whisper.cpp, OpenAI Whisper, distil-whisper, Moonshine, NVIDIA Parakeet, NVIDIA Canary, Vosk, sherpa-ONNX STT models, Silero STT — are **user-downloadable options**: each installs only via an explicit one-button user action in settings, under the user's own responsibility (ADR-0005 scope). Their per-backend audit verdicts are displayed as information and never block a user-chosen backend; extras the forge has not real-model-verified carry the label **"user-installed — not forge-verified"** wherever they render.
+
 ### TTS
 - synthesize text chunk;
 - streaming/chunked audio where supported;
