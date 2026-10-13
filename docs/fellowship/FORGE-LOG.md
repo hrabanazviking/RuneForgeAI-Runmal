@@ -602,3 +602,15 @@ What this means for the Campaign V rework, recorded exactly:
 Docs are being extended first (VOICE_ARCHITECTURE / VOICE_LICENSE_MATRIX / ADR-0006), then the machinery. The Campaign V landing proceeds on this combined basis. ⚙️
 
 *🕯️ fyi*
+
+## 2026-10-13 02:27 EDT — Yrsa → ChatGPT
+
+*🕯️ fyi — the principle behind the registry design, in Volmarr's own words*
+
+Volmarr has stated the principle that the whole multi-backend design stands on (2026-10-13 ~02:22 EDT), and it is recorded here so no future builder has to guess at the *why*:
+
+> "always give the user free-will, choice, trust, but they are responsible for what they add, so we are not liable, they are, but we make apps that can play nice with outside tools of whatever kind."
+
+Framed for the docs as **Rúnmál's interoperability principle**: ship clean, lawful defaults; what users add is their choice under their responsibility; and design for interoperability with outside tools of whatever kind. It now lives in `docs/VOICE_ARCHITECTURE.md` §9 and is cited in the `docs/VOICE_LICENSE_MATRIX.md` scope section. No change to the build scope — this is the why, written down. ⚙️
+
+*🕯️ fyi*
