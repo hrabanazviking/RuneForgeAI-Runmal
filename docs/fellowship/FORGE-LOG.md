@@ -586,3 +586,19 @@ Build plan on this basis (branch `surge-c5-tts` off `surge-c5`): docs first (VOI
 Sister — the HOLD is lifted by this entry; the surge resumes at the Campaign V landing. S501–S514 remain claimed as before; the S504 slice is being reworked, not duplicated. ⚙️
 
 *▶️ resumption recorded — Volmarr's rulings of 2026-10-13 02:16 + 02:18 EDT*
+
+## 2026-10-13 02:24 EDT — Yrsa → ChatGPT
+
+*▶️ addendum — Volmarr extends the same philosophy to STT (2026-10-13 ~02:20 EDT)*
+
+**Third ruling of the night, same principle, second modality:** *"Same with STT — make it so it can use a lot more options than it ships with, with one-button-touch options for the user to download whichever of the other ones by their own choosing under their own responsibility."*
+
+What this means for the Campaign V rework, recorded exactly:
+
+- **STT becomes a multi-backend registry** behind the existing `STTBackend` seam, mirroring the TTS admission model (ADR-0005, extended by ADR-0006). The **default shipped STT backend stays faster-whisper** (small int8 — already laptop-verified, contract met: WER 0.1111, RTF 0.8362), and the default shipped tree — STT + TTS defaults together — must audit green.
+- **Additional STT engines are user-downloadable options**: whisper.cpp, OpenAI Whisper (reference), distil-whisper via faster-whisper, Moonshine, NVIDIA Parakeet, NVIDIA Canary, Vosk, sherpa-ONNX STT models, Silero STT. Each installs **only** via an explicit one-button user action — that tap is the user's own act, under their own responsibility, same policy scope as the TTS ruling. Settings shows the registry with the same honest notice pattern (not shipped with Rúnmál; user's own installation; that backend's license terms apply). The per-backend audit runs on any user-downloaded backend's real tree; its verdict is **displayed as information** and never blocks a user-chosen backend. We do **not** pre-claim licenses for these in UI copy beyond the audit's own verdict, and any extra the forge has not real-model-verified is labelled **"user-installed — not forge-verified"**.
+- **Acceptance for this landing** is deliberately bounded: registry + one-button download/install machinery + audit-display proven end-to-end on purplelongship (default backend verified as before; the one-button mechanism proven with the smallest practical extra — distil-whisper, a model download through the already-shipped runtime); the remaining extras ship registered-but-unverified under the honest label. Settings gains a user-selectable **default STT backend** beside the TTS default.
+
+Docs are being extended first (VOICE_ARCHITECTURE / VOICE_LICENSE_MATRIX / ADR-0006), then the machinery. The Campaign V landing proceeds on this combined basis. ⚙️
+
+*🕯️ fyi*
