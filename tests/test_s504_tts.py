@@ -98,6 +98,48 @@ def test_gate_binds_only_the_default_shipped_tree():
 
 # ------------------------------------------------------------ registry
 
+def test_declared_license_reads_expression_not_full_text():
+    # PEP 639: the SPDX expression wins; a full license BODY in the
+    # License field is not an expression and must never be classified
+    # (an MIT body would read unknown; a PSF body mentioning GPL in
+    # prose would read forbidden — both are reader artifacts).
+    from email.message import Message
+
+    from runmal.voice.license_audit import _declared_license
+
+    pep639 = Message()
+    pep639["License-Expression"] = "MIT"
+    pep639["License"] = "MIT License\n\nCopyright (c) someone\n\nPermission..."
+    assert _declared_license(pep639) == "MIT"
+
+    full_text_only = Message()
+    full_text_only["License"] = (
+        "MIT License\n\nCopyright (c) someone\n\nPermission is hereby "
+        "granted, free of charge, to any person obtaining a copy...")
+    assert _declared_license(full_text_only) == ""
+
+    classifier_fallback = Message()
+    classifier_fallback["Classifier"] = \
+        "License :: OSI Approved :: Apache Software License"
+    assert _declared_license(classifier_fallback) == "Apache Software License"
+
+    short_form = Message()
+    short_form["License"] = "BSD-3-Clause"
+    assert _declared_license(short_form) == "BSD-3-Clause"
+
+
+def test_registry_tree_packages_scope_each_backend():
+    from runmal.voice.backends import TTS_REGISTRY
+
+    cosy = set(TTS_REGISTRY["cosyvoice"].tree_packages)
+    chat = set(TTS_REGISTRY["chatterbox"].tree_packages)
+    assert "torch" in cosy and "torch" in chat
+    assert "transformers" in cosy and "transformers" in chat
+    assert "resemble-perth" in chat
+    assert "pykakasi" not in chat and "misaki" not in cosy | chat
+    assert set(TTS_REGISTRY["kitten"].tree_packages) == {"kittentts", "soundfile"}
+    assert set(TTS_REGISTRY["piper"].tree_packages) == {"piper-tts"}
+
 def test_registry_admission_classes_and_defaults():
     from runmal.voice.backends import (
         DEFAULT_TTS_BACKEND,

@@ -137,8 +137,32 @@ def audit_distributions(distributions: dict[str, str]) -> AuditReport:
     return report
 
 
+def _declared_license(metadata) -> str:
+    """Extract a distribution's declared license EXPRESSION.
+
+    Modern packaging (PEP 639) puts the SPDX expression in
+    ``License-Expression``; older packages put a short expression in
+    ``License`` — or the field's FULL TEXT, which is not an expression
+    and must never reach the classifier (a PSF license body containing
+    the word "GPL" in a comment would otherwise read as forbidden,
+    and an MIT body as unknown). Fallback order: License-Expression →
+    short License field → OSI classifier.
+    """
+    expr = (metadata.get("License-Expression") or "").strip()
+    if expr:
+        return expr
+    raw = (metadata.get("License") or "").strip()
+    if raw and raw != "UNKNOWN" and "\n" not in raw and len(raw) <= 80:
+        return raw
+    classifiers = [c for c in (metadata.get_all("Classifier") or [])
+                   if c.startswith("License :: OSI Approved ::")]
+    if classifiers:
+        return classifiers[0].split("::")[-1].strip()
+    return ""
+
+
 def installed_distributions() -> dict[str, str]:
-    """Collect {name: license} for every installed distribution."""
+    """Collect {name: license expression} for every installed distribution."""
     from importlib.metadata import distributions
 
     out: dict[str, str] = {}
@@ -146,12 +170,7 @@ def installed_distributions() -> dict[str, str]:
         name = dist.metadata.get("Name") or ""
         if not name:
             continue
-        license_text = dist.metadata.get("License") or ""
-        if not license_text or license_text == "UNKNOWN":
-            classifiers = [c for c in (dist.metadata.get_all("Classifier") or [])
-                           if c.startswith("License :: OSI Approved ::")]
-            license_text = classifiers[0].split("::")[-1].strip() if classifiers else ""
-        out[name] = license_text
+        out[name] = _declared_license(dist.metadata)
     return out
 
 

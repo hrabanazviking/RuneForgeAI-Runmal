@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 import sys
 import threading
 from dataclasses import dataclass, field
@@ -112,6 +113,22 @@ KITTEN_WHEEL = (
 )
 
 
+def _dist_names(packages: tuple[str, ...]) -> tuple[str, ...]:
+    """Distribution names for a curated pip set — the per-backend
+    audit scope (``tree_packages``): the tree a backend ships is the
+    set its install plan installs, judged on its own contents
+    (ADR-0005 per-backend admission, mirroring the STT registry)."""
+    names: list[str] = []
+    for entry in packages:
+        if " @ " in entry:  # direct reference: "name @ url"
+            names.append(entry.split(" @ ", 1)[0].strip())
+        elif "://" in entry:  # bare wheel URL
+            names.append(entry.rsplit("/", 1)[-1].split("-")[0])
+        else:
+            names.append(re.split(r"[<>=!~\[]", entry, maxsplit=1)[0].strip())
+    return tuple(names)
+
+
 @dataclass(frozen=True)
 class TTSBackendSpec:
     key: str
@@ -141,6 +158,7 @@ TTS_REGISTRY: dict[str, TTSBackendSpec] = {
             warmup="runmal.voice.backends:warm_cosyvoice",
             note="Apache-2.0 code + weights; WeTextProcessing frontend (never ttsfrd).",
         ),
+        tree_packages=_dist_names(COSYVOICE_PACKAGES),
         first_audio_p50_s=1.5,
         rtf_p50=1.0,
     ),
@@ -157,6 +175,7 @@ TTS_REGISTRY: dict[str, TTSBackendSpec] = {
                  "(Japanese-only) — English path never imports it. Output "
                  "carries the upstream PerTh watermark.",
         ),
+        tree_packages=_dist_names(CHATTERBOX_PACKAGES),
         first_audio_p50_s=4.0,
         rtf_p50=1.0,
     ),
@@ -172,6 +191,7 @@ TTS_REGISTRY: dict[str, TTSBackendSpec] = {
             note="User-installed. Its tree phonemizes via eSpeak-NG "
                  "(GPL-3.0) — the audit verdict is shown as information.",
         ),
+        tree_packages=_dist_names((KITTEN_WHEEL, "soundfile")),
     ),
     "piper": TTSBackendSpec(
         key="piper",
@@ -184,6 +204,7 @@ TTS_REGISTRY: dict[str, TTSBackendSpec] = {
             note="User-installed. piper-tts is GPL-3.0-or-later — the "
                  "audit verdict is shown as information.",
         ),
+        tree_packages=_dist_names(("piper-tts==1.8.0",)),
     ),
 }
 
