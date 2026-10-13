@@ -14,7 +14,7 @@ from runmal.auth import get_or_create_credential
 from runmal.db.base import create_db_engine, create_session_factory
 from runmal.db.migrate import migrate_to_head
 from runmal.voice.audio import AudioDevice, FixtureDeviceProvider, RingBuffer
-from runmal.voice.install import InstallPlan, is_installed
+from runmal.voice.install import InstallPlan, is_installed, run_install
 from runmal.voice.license_audit import FORBIDDEN_DISTRIBUTIONS, audit_distributions
 from runmal.voice.router import waveform_levels
 
@@ -193,6 +193,30 @@ def test_is_installed_probes_vendor_checkout_for_git_backends(
     pkg.mkdir(parents=True)
     (pkg / "__init__.py").write_text("")
     assert is_installed(plan)
+
+
+def test_run_install_initializes_submodules_for_git_checkouts(
+        tmp_path, monkeypatch):
+    # CosyVoice vendors Matcha-TTS as a submodule; a plain clone left
+    # it empty and the runtime died at build time (purplelongship).
+    from types import SimpleNamespace
+    monkeypatch.setenv("RUNMAL_DATA_DIR", str(tmp_path))
+    dest = tmp_path / "vendor" / "CosyVoice"
+    dest.mkdir(parents=True)
+    (dest / ".gitmodules").write_text("[submodule]\n")
+    commands = []
+
+    def fake_runner(cmd, **kwargs):
+        commands.append(cmd)
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+    plan = InstallPlan(
+        key="cosyvoice", kind="tts",
+        git_checkout=("https://example.invalid/CosyVoice.git", "abc123",
+                      "CosyVoice"))
+    state = run_install(plan, runner=fake_runner)
+    assert state.status == "done"
+    assert any("submodule" in cmd for cmd in commands)
 
 
 def test_settings_defaults_round_trip_and_validation(tmp_path, monkeypatch):

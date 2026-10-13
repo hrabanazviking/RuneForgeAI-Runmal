@@ -196,6 +196,14 @@ def run_install(plan: InstallPlan, *, runner=None, timeout: int = 3600) -> Insta
             _run(["git", "-C", str(dest), "checkout", commit],
                  step=f"pin commit {commit[:12]}", state=state,
                  runner=runner, timeout=timeout)
+            if (dest / ".gitmodules").exists():
+                # Upstream layouts can vendor submodules (CosyVoice's
+                # third_party/Matcha-TTS); a plain clone leaves them
+                # empty and the runtime dies on import at build time.
+                _run(["git", "-C", str(dest), "submodule", "update",
+                      "--init", "--recursive"],
+                     step="git submodules", state=state,
+                     runner=runner, timeout=timeout)
         if plan.downloads:
             models = vdir / "models"
             models.mkdir(parents=True, exist_ok=True)
