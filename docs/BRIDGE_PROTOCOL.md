@@ -53,6 +53,21 @@ The v1 contract should provide:
 - event outbox / poll or callback mechanism;
 - health/capability discovery.
 
+**As implemented (S602).** Under `/api/v1/bridge`, every response
+carries the protocol version (`protocol_version` field / the
+`X-Bridge-Protocol` header on streams):
+
+- `GET /bridge/chats/{chat_id}` (`chat:read`) — state: chat metadata,
+  active persona, ordered messages with speaker snapshots.
+- `POST /bridge/chats/{chat_id}/turns` (`chat:write`) — one turn per
+  §6; 201 with the stored message.
+- `POST /bridge/chats/{chat_id}/generate` (`chat:write`) — SSE stream:
+  `turn_started` (with `request_id`), the normalized generation
+  events, and `turn_stored` after a clean finish persists the reply
+  as the active persona. Cancelled/errored generations store nothing.
+- `POST /bridge/chats/{chat_id}/generate/cancel` (`chat:write`) —
+  `{request_id}` → `{cancelled: bool}`.
+
 ## 4. Idempotency
 
 Externally retried writes accept an idempotency key. Repeating the same key with the same logical request returns the existing result instead of duplicating messages/actions.

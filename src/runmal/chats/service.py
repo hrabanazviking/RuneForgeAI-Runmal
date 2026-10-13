@@ -43,6 +43,8 @@ def message_to_dict(message: Message) -> dict:
         "chat_id": message.chat_id,
         "role": message.role,
         "content": message.content,
+        "speaker_id": message.speaker_id,
+        "speaker_name": message.speaker_name,
         "created_at": message.created_at.isoformat(),
         "updated_at": message.updated_at.isoformat() if message.updated_at else None,
     }
@@ -184,7 +186,15 @@ async def delete_chat(session: AsyncSession, user_id: str, chat_id: str) -> bool
 
 
 async def append_message(
-    session: AsyncSession, user_id: str, chat_id: str, role: str, content: str
+    session: AsyncSession,
+    user_id: str,
+    chat_id: str,
+    role: str,
+    content: str,
+    *,
+    speaker_id: str | None = None,
+    speaker_name: str | None = None,
+    event_data: dict | None = None,
 ) -> Message:
     chat = await _get_owned_chat(session, user_id, chat_id)
     if chat is None:
@@ -193,12 +203,19 @@ async def append_message(
         raise ValueError(f"invalid role: {role!r}")
     if not content:
         raise ValueError("message content must not be empty")
-    message = Message(chat_id=chat_id, role=role, content=content)
+    message = Message(
+        chat_id=chat_id,
+        role=role,
+        content=content,
+        speaker_id=speaker_id,
+        speaker_name=speaker_name,
+    )
     session.add(message)
     await session.flush()
-    await _record_event(
-        session, chat_id, EVENT_MESSAGE_APPENDED, message_id=message.id, data={"role": role}
-    )
+    data = {"role": role}
+    if event_data:
+        data.update(event_data)
+    await _record_event(session, chat_id, EVENT_MESSAGE_APPENDED, message_id=message.id, data=data)
     await session.commit()
     return message
 
