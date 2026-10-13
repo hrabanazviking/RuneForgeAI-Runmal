@@ -91,9 +91,13 @@ class PlaybackLedger:
         turn = self._turns.setdefault(turn_id, _TurnLedger())
         total_frames = max(1, len(chunk.pcm) // (512 * 2))
         record = ChunkPlaybackRecord(
-            turn_id=turn_id, chunk_index=chunk.index, text=chunk.text,
-            total_frames=total_frames, started_at=self._clock(),
-            word_timings=chunk.word_timings)
+            turn_id=turn_id,
+            chunk_index=chunk.index,
+            text=chunk.text,
+            total_frames=total_frames,
+            started_at=self._clock(),
+            word_timings=chunk.word_timings,
+        )
         turn.records.append(record)
         turn.open_record = record
         return record
@@ -101,8 +105,7 @@ class PlaybackLedger:
     def chunk_progress(self, turn_id: int, frames_played: int) -> None:
         turn = self._turns.get(turn_id)
         if turn and turn.open_record is not None:
-            turn.open_record.frames_played = max(
-                turn.open_record.frames_played, frames_played)
+            turn.open_record.frames_played = max(turn.open_record.frames_played, frames_played)
 
     def chunk_finished(self, turn_id: int, chunk: AudioChunk, frames_played: int) -> None:
         turn = self._turns.get(turn_id)
@@ -120,6 +123,20 @@ class PlaybackLedger:
     def records(self, turn_id: int) -> list[ChunkPlaybackRecord]:
         turn = self._turns.get(turn_id)
         return list(turn.records) if turn else []
+
+    def playback_spans(self) -> list[tuple[float, float | None]]:
+        """(start, end) clock spans of every started chunk, all turns.
+
+        ``end`` is None for a chunk still playing. Consumers that must
+        avoid hearing the companion's own voice (room ingress, S611)
+        test capture frames against these spans.
+        """
+        spans: list[tuple[float, float | None]] = []
+        for turn in self._turns.values():
+            for record in turn.records:
+                if record.started_at is not None:
+                    spans.append((record.started_at, record.stopped_at))
+        return spans
 
     # ------------------------------------------------------- reconstruction
 
@@ -160,4 +177,5 @@ class PlaybackLedger:
         return HeardReconstruction(
             certain_text=" ".join(certain).strip(),
             uncertain_text=" ".join(uncertain).strip(),
-            unplayed_text=" ".join(unplayed).strip())
+            unplayed_text=" ".join(unplayed).strip(),
+        )

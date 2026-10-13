@@ -61,37 +61,47 @@ def assess_support(facts: RouteFacts) -> SupportAssessment:
     """The support contract as a pure function of route facts."""
     if facts.output_is_headset:
         return SupportAssessment(
-            SupportMode.HEADSET, True,
+            SupportMode.HEADSET,
+            True,
             "Headset output: acoustic self-leakage is negligible; "
-            "barge-in VAD hears the user, not the companion.")
+            "barge-in VAD hears the user, not the companion.",
+        )
     if facts.output_on_separate_channel and not facts.capture_includes_output:
         return SupportAssessment(
-            SupportMode.SEPARATED_OUTPUT, True,
+            SupportMode.SEPARATED_OUTPUT,
+            True,
             "Companion output is on a channel excluded from capture; "
-            "self-output cannot reach VAD/STT.")
+            "self-output cannot reach VAD/STT.",
+        )
     if facts.output_on_separate_channel and facts.capture_includes_output:
         return SupportAssessment(
-            SupportMode.SEPARATED_OUTPUT, True,
+            SupportMode.SEPARATED_OUTPUT,
+            True,
             "Companion output is separable: the known playback reference "
             "is subtracted/marked before VAD (SelfOutputSuppressor).",
-            requirements=("run SelfOutputSuppressor on the capture path",))
+            requirements=("run SelfOutputSuppressor on the capture path",),
+        )
     if facts.aec_in_route and facts.aec_verified:
         return SupportAssessment(
-            SupportMode.OPEN_SPEAKER_AEC, True,
-            "Open speakers with AEC verified on this route.")
+            SupportMode.OPEN_SPEAKER_AEC, True, "Open speakers with AEC verified on this route."
+        )
     if facts.aec_in_route and not facts.aec_verified:
         return SupportAssessment(
-            SupportMode.OPEN_SPEAKER_RAW, False,
+            SupportMode.OPEN_SPEAKER_RAW,
+            False,
             "AEC is present but NOT verified on this route; per the "
             "architecture contract that is not support. Verify AEC on "
             "the real route or use a headset / separated output.",
-            requirements=("verify AEC on the actual route", "or use headset mode"))
+            requirements=("verify AEC on the actual route", "or use headset mode"),
+        )
     return SupportAssessment(
-        SupportMode.OPEN_SPEAKER_RAW, False,
+        SupportMode.OPEN_SPEAKER_RAW,
+        False,
         "Open speakers without AEC on a shared capture are UNSUPPORTED: "
         "the companion would hear itself and self-interrupt. Use a "
         "headset or a separated (virtual-cable) output.",
-        requirements=("headset", "or separated companion output"))
+        requirements=("headset", "or separated companion output"),
+    )
 
 
 class SelfOutputSuppressor:
@@ -105,8 +115,13 @@ class SelfOutputSuppressor:
     not a general echo canceller, and it does not claim to be one.
     """
 
-    def __init__(self, *, history_frames: int = 8, min_correlation: float = 0.9,
-                 min_reference_rms: float = 0.01):
+    def __init__(
+        self,
+        *,
+        history_frames: int = 8,
+        min_correlation: float = 0.9,
+        min_reference_rms: float = 0.01,
+    ):
         self.history_frames = history_frames
         self.min_correlation = min_correlation
         self.min_reference_rms = min_reference_rms
@@ -137,8 +152,9 @@ class SelfOutputSuppressor:
         rms = (sum(v * v for v in values) / len(values)) ** 0.5 if values else 0.0
         if rms > 0:
             for reference in self._reference:
-                ref_rms = (sum(v * v for v in reference) / len(reference)) ** 0.5 \
-                    if reference else 0.0
+                ref_rms = (
+                    (sum(v * v for v in reference) / len(reference)) ** 0.5 if reference else 0.0
+                )
                 if ref_rms < self.min_reference_rms:
                     continue
                 if self._correlation(values, reference) >= self.min_correlation:

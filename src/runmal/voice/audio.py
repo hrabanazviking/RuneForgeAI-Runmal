@@ -237,10 +237,8 @@ class FixtureDeviceProvider(DeviceProvider):
 
 def _default_fixture_devices() -> list[AudioDevice]:
     return [
-        AudioDevice("fix-mic", "Fixture Microphone", "input", "fixture",
-                    is_system_default=True),
-        AudioDevice("fix-headset", "Fixture Headset", "output", "fixture",
-                    is_system_default=True),
+        AudioDevice("fix-mic", "Fixture Microphone", "input", "fixture", is_system_default=True),
+        AudioDevice("fix-headset", "Fixture Headset", "output", "fixture", is_system_default=True),
         AudioDevice("fix-cable", "Fixture Virtual Cable", "output", "fixture"),
         AudioDevice("fix-room", "Fixture Room Capture", "input", "fixture"),
     ]
@@ -274,22 +272,38 @@ class SoundDeviceProvider(DeviceProvider):
             host = host_apis[raw["hostapi"]]["name"] if raw.get("hostapi") is not None else ""
             rate = int(raw.get("default_samplerate") or SAMPLE_RATE)
             if raw["max_input_channels"] > 0:
-                devices.append(AudioDevice(
-                    device_id=f"sd:{idx}:in", name=raw["name"], direction="input",
-                    host_api=host, max_channels=int(raw["max_input_channels"]),
-                    sample_rates=(rate,), is_system_default=(idx == default_in)))
+                devices.append(
+                    AudioDevice(
+                        device_id=f"sd:{idx}:in",
+                        name=raw["name"],
+                        direction="input",
+                        host_api=host,
+                        max_channels=int(raw["max_input_channels"]),
+                        sample_rates=(rate,),
+                        is_system_default=(idx == default_in),
+                    )
+                )
             if raw["max_output_channels"] > 0:
-                devices.append(AudioDevice(
-                    device_id=f"sd:{idx}:out", name=raw["name"], direction="output",
-                    host_api=host, max_channels=int(raw["max_output_channels"]),
-                    sample_rates=(rate,), is_system_default=(idx == default_out)))
+                devices.append(
+                    AudioDevice(
+                        device_id=f"sd:{idx}:out",
+                        name=raw["name"],
+                        direction="output",
+                        host_api=host,
+                        max_channels=int(raw["max_output_channels"]),
+                        sample_rates=(rate,),
+                        is_system_default=(idx == default_out),
+                    )
+                )
         return devices
 
     @staticmethod
     def _index(device_id: str, direction: str) -> int:
         parts = device_id.split(":")
-        if len(parts) != 3 or parts[0] != "sd" or parts[2] != (
-            "in" if direction == "input" else "out"
+        if (
+            len(parts) != 3
+            or parts[0] != "sd"
+            or parts[2] != ("in" if direction == "input" else "out")
         ):
             raise DeviceUnavailableError(f"not a sounddevice {direction} id: {device_id}")
         return int(parts[1])
@@ -299,8 +313,8 @@ class SoundDeviceProvider(DeviceProvider):
         if self.find(device_id) is None:
             raise DeviceUnavailableError(f"device not present: {device_id}")
         stream = self._sd.RawInputStream(
-            samplerate=SAMPLE_RATE, blocksize=FRAME_SAMPLES, device=idx,
-            channels=1, dtype="int16")
+            samplerate=SAMPLE_RATE, blocksize=FRAME_SAMPLES, device=idx, channels=1, dtype="int16"
+        )
         stream.start()
         return _SoundDeviceCapture(stream)
 
@@ -309,8 +323,8 @@ class SoundDeviceProvider(DeviceProvider):
         if self.find(device_id) is None:
             raise DeviceUnavailableError(f"device not present: {device_id}")
         stream = self._sd.RawOutputStream(
-            samplerate=SAMPLE_RATE, blocksize=FRAME_SAMPLES, device=idx,
-            channels=1, dtype="int16")
+            samplerate=SAMPLE_RATE, blocksize=FRAME_SAMPLES, device=idx, channels=1, dtype="int16"
+        )
         stream.start()
         return _SoundDevicePlayback(stream)
 
@@ -372,8 +386,11 @@ class SavedDeviceRef:
 
     @classmethod
     def from_dict(cls, data: dict) -> SavedDeviceRef:
-        return cls(device_id=str(data.get("device_id", "")),
-                   name=str(data.get("name", "")), host_api=str(data.get("host_api", "")))
+        return cls(
+            device_id=str(data.get("device_id", "")),
+            name=str(data.get("name", "")),
+            host_api=str(data.get("host_api", "")),
+        )
 
 
 class RoleStatus(StrEnum):

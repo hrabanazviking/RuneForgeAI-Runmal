@@ -39,9 +39,14 @@ class Stage(StrEnum):
 
 #: Required stages for a complete (non-interrupted) turn, in order.
 TURN_CHAIN: tuple[Stage, ...] = (
-    Stage.VAD_SPEECH_ON, Stage.ENDPOINT, Stage.STT_FINAL,
-    Stage.LLM_FIRST_TOKEN, Stage.FIRST_SYNTH_CHUNK, Stage.TTS_FIRST_AUDIO,
-    Stage.PLAYBACK_START, Stage.PLAYBACK_END,
+    Stage.VAD_SPEECH_ON,
+    Stage.ENDPOINT,
+    Stage.STT_FINAL,
+    Stage.LLM_FIRST_TOKEN,
+    Stage.FIRST_SYNTH_CHUNK,
+    Stage.TTS_FIRST_AUDIO,
+    Stage.PLAYBACK_START,
+    Stage.PLAYBACK_END,
 )
 
 #: Derived durations: name -> (start stage, end stage).
@@ -78,15 +83,15 @@ class TurnTiming:
             if self.stages[later] < self.stages[earlier]:
                 problems.append(
                     f"impossible ordering: {later.value} ({self.stages[later]:.4f}) "
-                    f"< {earlier.value} ({self.stages[earlier]:.4f})")
+                    f"< {earlier.value} ({self.stages[earlier]:.4f})"
+                )
         if Stage.INTERRUPTION_DETECTED in self.stages:
             detected = self.stages[Stage.INTERRUPTION_DETECTED]
             if Stage.PLAYBACK_STOPPED not in self.stages:
                 problems.append("interruption without playback_stopped")
             elif self.stages[Stage.PLAYBACK_STOPPED] < detected:
                 problems.append("playback stopped before interruption detected")
-            if (Stage.PLAYBACK_START in self.stages
-                    and detected < self.stages[Stage.PLAYBACK_START]):
+            if Stage.PLAYBACK_START in self.stages and detected < self.stages[Stage.PLAYBACK_START]:
                 problems.append("interruption detected before playback started")
         return problems
 
@@ -113,8 +118,7 @@ class LatencyReport:
     violations: list[str]
 
     def to_dict(self) -> dict:
-        return {"turns": self.turns, "series": self.series,
-                "violations": self.violations}
+        return {"turns": self.turns, "series": self.series, "violations": self.violations}
 
 
 class MetricsCollector:
@@ -140,16 +144,13 @@ class MetricsCollector:
         violations: list[str] = []
         per_metric: dict[str, list[float]] = {}
         for timing in self._turns.values():
-            violations.extend(
-                f"turn {timing.turn_id}: {p}" for p in timing.validate())
+            violations.extend(f"turn {timing.turn_id}: {p}" for p in timing.validate())
             for name in DERIVED:
                 value = timing.duration(name)
                 if value is not None:
                     per_metric.setdefault(name, []).append(value)
         series = {
-            name: {"p50": percentile(values, 50), "p95": percentile(values, 95),
-                   "n": len(values)}
+            name: {"p50": percentile(values, 50), "p95": percentile(values, 95), "n": len(values)}
             for name, values in sorted(per_metric.items())
         }
-        return LatencyReport(turns=len(self._turns), series=series,
-                             violations=violations)
+        return LatencyReport(turns=len(self._turns), series=series, violations=violations)

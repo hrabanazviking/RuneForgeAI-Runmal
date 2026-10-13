@@ -111,7 +111,7 @@ async def capabilities(identity: BridgeIdentity = Depends(get_bridge_identity)):
             "tts_hook": True,
             "event_outbox": True,
             "idempotency": True,
-            "room_audio_ingress": False,  # lands with S611
+            "room_audio_ingress": True,  # S611: voice.room_ingress over the S513 route
         },
         "latency_classes": [
             "realtime_voice",

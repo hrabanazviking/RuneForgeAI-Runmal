@@ -116,8 +116,9 @@ class FakeSTTBackend(STTBackend):
         self._language = language
 
     def model_info(self) -> STTModelInfo:
-        return STTModelInfo(self.backend_key, "fake-stt-1", self._language,
-                            supports_word_timestamps=True)
+        return STTModelInfo(
+            self.backend_key, "fake-stt-1", self._language, supports_word_timestamps=True
+        )
 
     def transcribe(self, pcm: bytes, sample_rate: int = SAMPLE_RATE) -> Transcript:
         duration = (len(pcm) // 2) / sample_rate if sample_rate else 0.0
@@ -125,10 +126,16 @@ class FakeSTTBackend(STTBackend):
         step = duration / len(words) if words else 0.0
         timed = tuple(
             TranscriptWord(w, round(i * step, 3), round((i + 1) * step, 3))
-            for i, w in enumerate(words))
+            for i, w in enumerate(words)
+        )
         segment = TranscriptSegment(self._text, 0.0, round(duration, 3), timed)
-        return Transcript(self._text, self._language, (segment,),
-                          model_id="fake-stt-1", backend_key=self.backend_key)
+        return Transcript(
+            self._text,
+            self._language,
+            (segment,),
+            model_id="fake-stt-1",
+            backend_key=self.backend_key,
+        )
 
 
 class FasterWhisperSTT(STTBackend):
@@ -137,8 +144,9 @@ class FasterWhisperSTT(STTBackend):
 
     backend_key = "faster-whisper"
 
-    def __init__(self, model_size: str = "small", cache_dir: str | Path | None = None,
-                 language: str = "en"):
+    def __init__(
+        self, model_size: str = "small", cache_dir: str | Path | None = None, language: str = "en"
+    ):
         try:
             from faster_whisper import WhisperModel
         except Exception as exc:
@@ -146,12 +154,16 @@ class FasterWhisperSTT(STTBackend):
         self.model_id = model_size
         self._language = language
         self._model = WhisperModel(
-            model_size, device="cpu", compute_type=STT_CONTRACT["compute_type"],
-            download_root=str(cache_dir) if cache_dir else None)
+            model_size,
+            device="cpu",
+            compute_type=STT_CONTRACT["compute_type"],
+            download_root=str(cache_dir) if cache_dir else None,
+        )
 
     def model_info(self) -> STTModelInfo:
-        return STTModelInfo(self.backend_key, self.model_id, self._language,
-                            supports_word_timestamps=True)
+        return STTModelInfo(
+            self.backend_key, self.model_id, self._language, supports_word_timestamps=True
+        )
 
     def transcribe(self, pcm: bytes, sample_rate: int = SAMPLE_RATE) -> Transcript:
         import numpy as np
@@ -161,21 +173,26 @@ class FasterWhisperSTT(STTBackend):
         if sample_rate != SAMPLE_RATE:
             raise ValueError(f"faster-whisper path expects {SAMPLE_RATE} Hz, got {sample_rate}")
         segments_iter, info = self._model.transcribe(
-            audio, language=self._language or None, word_timestamps=True,
-            vad_filter=False)
+            audio, language=self._language or None, word_timestamps=True, vad_filter=False
+        )
         segments: list[TranscriptSegment] = []
         texts: list[str] = []
         for seg in segments_iter:
             words = tuple(
-                TranscriptWord(w.word.strip(), float(w.start), float(w.end),
-                               float(w.probability))
-                for w in (seg.words or []) if w.word.strip())
+                TranscriptWord(w.word.strip(), float(w.start), float(w.end), float(w.probability))
+                for w in (seg.words or [])
+                if w.word.strip()
+            )
             text = seg.text.strip()
             texts.append(text)
             segments.append(TranscriptSegment(text, float(seg.start), float(seg.end), words))
-        return Transcript(" ".join(t for t in texts if t), info.language or self._language,
-                          tuple(segments), model_id=self.model_id,
-                          backend_key=self.backend_key)
+        return Transcript(
+            " ".join(t for t in texts if t),
+            info.language or self._language,
+            tuple(segments),
+            model_id=self.model_id,
+            backend_key=self.backend_key,
+        )
 
 
 # ------------------------------------------------------------- WER + bench
@@ -184,6 +201,7 @@ class FasterWhisperSTT(STTBackend):
 def word_error_rate(reference: str, hypothesis: str) -> float:
     """Levenshtein WER over normalized (lowercased, punctuation-stripped)
     word sequences. 0.0 = identical; can exceed 1.0 with insertions."""
+
     def words(text: str) -> list[str]:
         cleaned = "".join(c if c.isalnum() or c.isspace() else " " for c in text.lower())
         return cleaned.split()
@@ -251,12 +269,17 @@ def benchmark_stt(backend: STTBackend, corpus: list[CorpusItem]) -> STTBenchmark
         ref_words = len(item.reference_text.split())
         total_errors_weighted += wer * ref_words
         total_ref_words += ref_words
-        result.items.append({
-            "name": item.name, "reference": item.reference_text,
-            "hypothesis": transcript.text, "wer": round(wer, 4),
-            "rtf": round(rtf, 4), "duration_s": round(item.duration_s, 3),
-            "words": len(transcript.words),
-        })
+        result.items.append(
+            {
+                "name": item.name,
+                "reference": item.reference_text,
+                "hypothesis": transcript.text,
+                "wer": round(wer, 4),
+                "rtf": round(rtf, 4),
+                "duration_s": round(item.duration_s, 3),
+                "words": len(transcript.words),
+            }
+        )
     result.wer = total_errors_weighted / total_ref_words if total_ref_words else 0.0
     result.rtf_p50 = _median(rtfs) if rtfs else 0.0
     if rtfs:
@@ -277,9 +300,19 @@ def synthesize_flite_wav(text: str, out_path: Path, voice: str = "slt") -> Path:
     the real-corpus path as tagged-optional, never as a silent pass.
     """
     cmd = [
-        "ffmpeg", "-y", "-v", "error", "-f", "lavfi",
-        "-i", f"flite=text='{text}':voice={voice}",
-        "-ar", str(SAMPLE_RATE), "-ac", "1", str(out_path),
+        "ffmpeg",
+        "-y",
+        "-v",
+        "error",
+        "-f",
+        "lavfi",
+        "-i",
+        f"flite=text='{text}':voice={voice}",
+        "-ar",
+        str(SAMPLE_RATE),
+        "-ac",
+        "1",
+        str(out_path),
     ]
     proc = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
     if proc.returncode != 0 or not out_path.exists():

@@ -93,8 +93,11 @@ class InstallState:
 
     def as_dict(self) -> dict:
         return {
-            "key": self.key, "status": self.status, "step": self.step,
-            "error": self.error, "started_at": self.started_at,
+            "key": self.key,
+            "status": self.status,
+            "step": self.step,
+            "error": self.error,
+            "started_at": self.started_at,
             "finished_at": self.finished_at,
         }
 
@@ -117,9 +120,12 @@ def _load_states() -> dict[str, InstallState]:
         raw = json.loads(_state_path().read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return {}
-    return {k: InstallState(**{f: v.get(f) for f in
-            ("key", "status", "step", "error", "started_at", "finished_at")})
-            for k, v in raw.items()}
+    return {
+        k: InstallState(
+            **{f: v.get(f) for f in ("key", "status", "step", "error", "started_at", "finished_at")}
+        )
+        for k, v in raw.items()
+    }
 
 
 def _save_state(state: InstallState) -> None:
@@ -128,8 +134,9 @@ def _save_state(state: InstallState) -> None:
     path = _state_path()
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix(".tmp")
-    tmp.write_text(json.dumps({k: v.as_dict() for k, v in states.items()},
-                              indent=2), encoding="utf-8")
+    tmp.write_text(
+        json.dumps({k: v.as_dict() for k, v in states.items()}, indent=2), encoding="utf-8"
+    )
     tmp.replace(path)
 
 
@@ -142,6 +149,7 @@ def is_installed(plan: InstallPlan) -> bool:
     plans, when its downloads are all present)."""
     if plan.probe_import:
         import importlib.util
+
         if importlib.util.find_spec(plan.probe_import) is not None:
             return True
         if plan.git_checkout is not None:
@@ -158,8 +166,9 @@ def is_installed(plan: InstallPlan) -> bool:
     return install_state(plan.key).status == "done"
 
 
-def _run(cmd: list[str], *, step: str, state: InstallState,
-         runner=None, timeout: int = 3600) -> None:
+def _run(
+    cmd: list[str], *, step: str, state: InstallState, runner=None, timeout: int = 3600
+) -> None:
     state.step = step
     _save_state(state)
     run = runner or subprocess.run
@@ -179,43 +188,64 @@ def run_install(plan: InstallPlan, *, runner=None, timeout: int = 3600) -> Insta
         if not plan.enable:
             raise PermissionError(
                 f"backend '{plan.key}' is registered but has no verified "
-                "install recipe yet — nothing was installed.")
+                "install recipe yet — nothing was installed."
+            )
         vdir = vendor_dir()
         vdir.mkdir(parents=True, exist_ok=True)
         if plan.pip_packages:
-            _run([sys.executable, "-m", "pip", "install", "--no-deps",
-                  *plan.pip_packages],
-                 step="pip install --no-deps (curated set)", state=state,
-                 runner=runner, timeout=timeout)
+            _run(
+                [sys.executable, "-m", "pip", "install", "--no-deps", *plan.pip_packages],
+                step="pip install --no-deps (curated set)",
+                state=state,
+                runner=runner,
+                timeout=timeout,
+            )
         if plan.git_checkout is not None:
             url, commit, dirname = plan.git_checkout
             dest = vdir / dirname
             if not dest.exists():
-                _run(["git", "clone", url, str(dest)], step="git clone",
-                     state=state, runner=runner, timeout=timeout)
-            _run(["git", "-C", str(dest), "checkout", commit],
-                 step=f"pin commit {commit[:12]}", state=state,
-                 runner=runner, timeout=timeout)
+                _run(
+                    ["git", "clone", url, str(dest)],
+                    step="git clone",
+                    state=state,
+                    runner=runner,
+                    timeout=timeout,
+                )
+            _run(
+                ["git", "-C", str(dest), "checkout", commit],
+                step=f"pin commit {commit[:12]}",
+                state=state,
+                runner=runner,
+                timeout=timeout,
+            )
             if (dest / ".gitmodules").exists():
                 # Upstream layouts can vendor submodules (CosyVoice's
                 # third_party/Matcha-TTS); a plain clone leaves them
                 # empty and the runtime dies on import at build time.
-                _run(["git", "-C", str(dest), "submodule", "update",
-                      "--init", "--recursive"],
-                     step="git submodules", state=state,
-                     runner=runner, timeout=timeout)
+                _run(
+                    ["git", "-C", str(dest), "submodule", "update", "--init", "--recursive"],
+                    step="git submodules",
+                    state=state,
+                    runner=runner,
+                    timeout=timeout,
+                )
         if plan.downloads:
             models = vdir / "models"
             models.mkdir(parents=True, exist_ok=True)
             for url, name in plan.downloads:
-                _run(["curl", "-fL", "-o", str(models / name), url],
-                     step=f"download {name}", state=state, runner=runner,
-                     timeout=timeout)
+                _run(
+                    ["curl", "-fL", "-o", str(models / name), url],
+                    step=f"download {name}",
+                    state=state,
+                    runner=runner,
+                    timeout=timeout,
+                )
         if plan.warmup:
             state.step = "warm-up (model download + import smoke test)"
             _save_state(state)
             module_name, _, func_name = plan.warmup.partition(":")
             import importlib
+
             func = getattr(importlib.import_module(module_name), func_name)
             func()
         state.status = "done"
@@ -242,8 +272,9 @@ def start_install(plan: InstallPlan) -> InstallState:
         thread = _install_threads.get(plan.key)
         if current.status == "running" and thread is not None and thread.is_alive():
             return current
-        thread = threading.Thread(target=run_install, args=(plan,),
-                                  name=f"runmal-install-{plan.key}", daemon=True)
+        thread = threading.Thread(
+            target=run_install, args=(plan,), name=f"runmal-install-{plan.key}", daemon=True
+        )
         _install_threads[plan.key] = thread
         thread.start()
         return InstallState(key=plan.key, status="running", step="starting")
@@ -263,8 +294,9 @@ def audit_for_plan(plan: InstallPlan, *, tree_packages: tuple[str, ...] = ()) ->
     return audit_snapshot(snapshot)
 
 
-def backend_status(plan: InstallPlan, *, default_shipped: bool,
-                   verified: bool, tree_packages: tuple[str, ...] = ()) -> dict:
+def backend_status(
+    plan: InstallPlan, *, default_shipped: bool, verified: bool, tree_packages: tuple[str, ...] = ()
+) -> dict:
     """UI-facing status for one registered backend."""
     installed = is_installed(plan)
     report = audit_for_plan(plan, tree_packages=tree_packages) if installed else None
@@ -281,7 +313,9 @@ def backend_status(plan: InstallPlan, *, default_shipped: bool,
         "installable": plan.enable,
         "notice": "" if default_shipped else USER_INSTALL_NOTICE,
         "unverified_label": "" if verified else UNVERIFIED_LABEL,
-        "audit": None if report is None else {
+        "audit": None
+        if report is None
+        else {
             "passed": report.passed,
             "violations": list(report.violations),
             "checked": report.checked,

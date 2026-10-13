@@ -29,28 +29,58 @@ from dataclasses import dataclass, field
 #: spellings (SPDX, setuptools-era long forms). Nothing copyleft is
 #: admitted here; the forbidden-marker check runs before this set.
 PERMISSIVE_LICENSES = {
-    "apache-2.0", "apache 2.0", "apache license 2.0", "apache software license",
-    "apache 2.0 license", "apache",
-    "mit", "mit license", "mit-cmu", "bsd", "bsd-2-clause", "bsd-3-clause",
-    "bsd license", "bsd 3-clause license", "3-clause bsd license",
-    "isc", "python software foundation license", "psf",
-    "zlib", "unlicense", "cc0-1.0", "public domain", "cnri-python",
+    "apache-2.0",
+    "apache 2.0",
+    "apache license 2.0",
+    "apache software license",
+    "apache 2.0 license",
+    "apache",
+    "mit",
+    "mit license",
+    "mit-cmu",
+    "bsd",
+    "bsd-2-clause",
+    "bsd-3-clause",
+    "bsd license",
+    "bsd 3-clause license",
+    "3-clause bsd license",
+    "isc",
+    "python software foundation license",
+    "psf",
+    "zlib",
+    "unlicense",
+    "cc0-1.0",
+    "public domain",
+    "cnri-python",
     # BSD-0-Clause: the BSD license with zero conditions — strictly
     # more permissive than the accepted 2-/3-clause forms (numpy's
     # real License-Expression compounds it with BSD/MIT/Zlib/CC0).
-    "0bsd", "bsd-0-clause",
+    "0bsd",
+    "bsd-0-clause",
 }
 
 #: License markers that fail the gate outright.
-FORBIDDEN_MARKERS = ("gpl", "agpl", "lgpl", "copyleft", "noncommercial",
-                     "non-commercial", "cc-by-nc")
+FORBIDDEN_MARKERS = (
+    "gpl",
+    "agpl",
+    "lgpl",
+    "copyleft",
+    "noncommercial",
+    "non-commercial",
+    "cc-by-nc",
+)
 
 #: Distributions that must never appear in the shipped voice tree,
 #: regardless of what a metadata license field claims (they exist to
 #: load eSpeak-NG, GPL-3.0).
 FORBIDDEN_DISTRIBUTIONS = {
-    "espeakng-loader", "espeak-ng", "espeakng", "phonemizer",
-    "phonemizer-fork", "piper-phonemize", "py-espeak-ng",
+    "espeakng-loader",
+    "espeak-ng",
+    "espeakng",
+    "phonemizer",
+    "phonemizer-fork",
+    "piper-phonemize",
+    "py-espeak-ng",
 }
 
 
@@ -116,19 +146,24 @@ class AuditReport:
         """Human-readable failure lines (UI display; install.backend_status)."""
         out: list[str] = []
         for finding in self.failures:
-            line = (f"{finding.distribution} "
-                    f"({finding.license or 'no license metadata'}): {finding.verdict}")
+            line = (
+                f"{finding.distribution} "
+                f"({finding.license or 'no license metadata'}): {finding.verdict}"
+            )
             if finding.reason:
                 line += f" — {finding.reason}"
             out.append(line)
         return out
 
     def summary(self) -> str:
-        lines = [f"{'PASS' if self.passed else 'FAIL'}: voice license audit "
-                 f"({len(self.findings)} distributions)"]
+        lines = [
+            f"{'PASS' if self.passed else 'FAIL'}: voice license audit "
+            f"({len(self.findings)} distributions)"
+        ]
         for finding in self.failures:
-            lines.append(f"  {finding.verdict}: {finding.distribution} "
-                         f"({finding.license}) {finding.reason}")
+            lines.append(
+                f"  {finding.verdict}: {finding.distribution} ({finding.license}) {finding.reason}"
+            )
         return "\n".join(lines)
 
 
@@ -149,14 +184,25 @@ def audit_distributions(distributions: dict[str, str]) -> AuditReport:
         key = _normalize(name)
         raw_license = distributions[name]
         if key in FORBIDDEN_DISTRIBUTIONS:
-            report.findings.append(AuditFinding(
-                name, raw_license, "forbidden",
-                "distribution is an eSpeak-NG carrier (GPL-3.0) — rejected by policy"))
+            report.findings.append(
+                AuditFinding(
+                    name,
+                    raw_license,
+                    "forbidden",
+                    "distribution is an eSpeak-NG carrier (GPL-3.0) — rejected by policy",
+                )
+            )
             continue
         verdict = classify_license(raw_license)
-        reason = "" if verdict == "permissive" else (
-            "license is copyleft/restricted" if verdict == "forbidden"
-            else "license not in the reviewed permissive set — human review required")
+        reason = (
+            ""
+            if verdict == "permissive"
+            else (
+                "license is copyleft/restricted"
+                if verdict == "forbidden"
+                else "license not in the reviewed permissive set — human review required"
+            )
+        )
         report.findings.append(AuditFinding(name, raw_license, verdict, reason))
     return report
 
@@ -190,12 +236,18 @@ def _declared_license(metadata) -> str:
             # and falls through to the classifiers.
             first = raw.splitlines()[0].strip()
             words = first.split()
-            if (len(first) <= 40 and len(words) <= 4
-                    and any(ch.isalpha() for ch in first)
-                    and ("license" in first.lower() or len(words) == 1)):
+            if (
+                len(first) <= 40
+                and len(words) <= 4
+                and any(ch.isalpha() for ch in first)
+                and ("license" in first.lower() or len(words) == 1)
+            ):
                 candidate = first
-    classifiers = [c for c in (metadata.get_all("Classifier") or [])
-                   if c.startswith("License :: OSI Approved ::")]
+    classifiers = [
+        c
+        for c in (metadata.get_all("Classifier") or [])
+        if c.startswith("License :: OSI Approved ::")
+    ]
     classifier = classifiers[0].split("::")[-1].strip() if classifiers else ""
     # A License-field candidate that names no recognizable license
     # ("Dual License") must not shadow a clear OSI classifier; a

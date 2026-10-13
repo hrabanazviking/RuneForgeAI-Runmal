@@ -105,7 +105,7 @@ class PlaybackQueue:
             for i in range(total):
                 if self.stopped:
                     break
-                piece = chunk.pcm[i * step:(i + 1) * step]
+                piece = chunk.pcm[i * step : (i + 1) * step]
                 if piece:
                     sink.write_frame(piece)
                 self.frames_written += 1
@@ -125,13 +125,13 @@ class InterruptionController:
     (``begin_episode`` re-arms it for the next companion turn).
     """
 
-    def __init__(self, model: VadModel, *, confirm_frames: int = 5,
-                 min_speech_frames: int = 3):
+    def __init__(self, model: VadModel, *, confirm_frames: int = 5, min_speech_frames: int = 3):
         if confirm_frames < min_speech_frames:
             raise ValueError("confirm_frames must be >= min_speech_frames")
-        self._segmenter = VadSegmenter(model, VadConfig(
-            min_speech_frames=min_speech_frames, hangover_frames=0,
-            pre_roll_frames=0))
+        self._segmenter = VadSegmenter(
+            model,
+            VadConfig(min_speech_frames=min_speech_frames, hangover_frames=0, pre_roll_frames=0),
+        )
         self.confirm_frames = confirm_frames
         # The three propagation arms (INV-021):
         self.llm_cancel = threading.Event()
@@ -179,14 +179,15 @@ class InterruptionController:
         self._fired = True
         before = self.playback.frames_written if self.playback else 0
         # Propagate to all three arms, in architecture order (§3):
-        self.llm_cancel.set()          # 1. active LLM stream
-        self.tts_cancel.set()          # 2. assembly + queued/in-flight TTS
+        self.llm_cancel.set()  # 1. active LLM stream
+        self.tts_cancel.set()  # 2. assembly + queued/in-flight TTS
         if self.playback is not None:
-            self.playback.stop()       # 3. playback queue/device
+            self.playback.stop()  # 3. playback queue/device
         after = self.playback.frames_written if self.playback else 0
         self.event = InterruptionEvent(
             turn_id=self.turn_id or 0,
             detected_at_frame=self._mic_frame,
             stopped_at_frame=after,
-            frames_played_after_detection=after - before)
+            frames_played_after_detection=after - before,
+        )
         return InterruptionOutcome.INTERRUPTED

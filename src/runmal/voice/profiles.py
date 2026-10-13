@@ -39,9 +39,12 @@ DEFAULT_PROMPT_TEXT = "Hello, wanderer. The wind carried whispers of your arriva
 #: CosyVoice zero-shot (ADR-0005 default-shipped backend); the prompt
 #: wav resolves at synthesis time from the profile params or the
 #: vendored default prompt asset.
-DEFAULT_VOICE = VoiceInfo(voice_id="cosyvoice-zero-shot", language="en-us",
-                          backend_key="cosyvoice",
-                          prompt_text=DEFAULT_PROMPT_TEXT)
+DEFAULT_VOICE = VoiceInfo(
+    voice_id="cosyvoice-zero-shot",
+    language="en-us",
+    backend_key="cosyvoice",
+    prompt_text=DEFAULT_PROMPT_TEXT,
+)
 #: Selectable TTS backends = the ADR-0005 registry + the fake.
 KNOWN_TTS_BACKENDS = _REGISTRY_TTS_BACKENDS
 
@@ -55,15 +58,22 @@ class CharacterVoice:
 
     def to_voice_info(self) -> VoiceInfo:
         return VoiceInfo(
-            voice_id=self.voice_id, language=self.language,
+            voice_id=self.voice_id,
+            language=self.language,
             backend_key=self.tts_backend,
             prompt_text=str(self.params.get("prompt_text", "") or ""),
-            prompt_wav=str(self.params.get("prompt_wav", "") or ""))
+            prompt_wav=str(self.params.get("prompt_wav", "") or ""),
+        )
 
 
 async def set_character_voice(
-    session: AsyncSession, user_id: str, character_id: str, *,
-    tts_backend: str = "", voice_id: str = "", language: str = "en-us",
+    session: AsyncSession,
+    user_id: str,
+    character_id: str,
+    *,
+    tts_backend: str = "",
+    voice_id: str = "",
+    language: str = "en-us",
     params: dict | None = None,
 ) -> CharacterVoiceProfile:
     character = await session.get(Character, character_id)
@@ -93,9 +103,7 @@ async def get_character_voice(
     return row
 
 
-async def delete_character_voice(
-    session: AsyncSession, user_id: str, character_id: str
-) -> bool:
+async def delete_character_voice(session: AsyncSession, user_id: str, character_id: str) -> bool:
     row = await get_character_voice(session, user_id, character_id)
     if row is None:
         return False
@@ -110,8 +118,9 @@ async def resolve_character_voice(
     """Resolve with field-level fallback to DEFAULT_VOICE."""
     row = await get_character_voice(session, user_id, character_id)
     if row is None:
-        return CharacterVoice(DEFAULT_VOICE.backend_key, DEFAULT_VOICE.voice_id,
-                              DEFAULT_VOICE.language, {})
+        return CharacterVoice(
+            DEFAULT_VOICE.backend_key, DEFAULT_VOICE.voice_id, DEFAULT_VOICE.language, {}
+        )
     try:
         params = json.loads(row.params_json or "{}")
     except json.JSONDecodeError:

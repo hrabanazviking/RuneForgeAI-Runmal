@@ -83,11 +83,14 @@ class TurnCoordinator:
     def __init__(self, model: VadModel, config: TurnTakingConfig | None = None):
         self.config = config or TurnTakingConfig()
         self.config.validate()
-        self._segmenter = VadSegmenter(model, VadConfig(
-            min_speech_frames=self.config.min_speech_frames,
-            hangover_frames=0,  # hangover policy lives HERE, not in the VAD
-            pre_roll_frames=0,
-        ))
+        self._segmenter = VadSegmenter(
+            model,
+            VadConfig(
+                min_speech_frames=self.config.min_speech_frames,
+                hangover_frames=0,  # hangover policy lives HERE, not in the VAD
+                pre_roll_frames=0,
+            ),
+        )
         self._frame_index = 0
         self._next_id = 1
         self._current: _Utterance | None = None
@@ -116,7 +119,7 @@ class TurnCoordinator:
                 # a (re)confirmed segment's onset frames are never lost
                 # and never double-counted.
                 open_frames = self._segmenter.open_segment_speech_frames
-                fresh = open_frames[self._segment_consumed:]
+                fresh = open_frames[self._segment_consumed :]
                 self._current.frames.extend(fresh)
                 self._segment_consumed = len(open_frames)
                 if fresh:
@@ -130,23 +133,32 @@ class TurnCoordinator:
                 self._current.frames.append(frame)
             self._silence_run += 1
             current = self._current
-            if (current.preemptive_at is None
-                    and self._silence_run > self.config.hangover_frames):
+            if current.preemptive_at is None and self._silence_run > self.config.hangover_frames:
                 current.preemptive_at = idx
-                events.append(TurnEvent(
-                    TurnEventKind.PREEMPTIVE_FINALIZE, idx, current.utterance_id,
-                    audio=current.audio))
-            elif (current.preemptive_at is not None
-                  and idx - current.preemptive_at > self.config.resume_window_frames):
+                events.append(
+                    TurnEvent(
+                        TurnEventKind.PREEMPTIVE_FINALIZE,
+                        idx,
+                        current.utterance_id,
+                        audio=current.audio,
+                    )
+                )
+            elif (
+                current.preemptive_at is not None
+                and idx - current.preemptive_at > self.config.resume_window_frames
+            ):
                 current.committed = True
-                events.append(TurnEvent(
-                    TurnEventKind.COMMITTED, idx, current.utterance_id,
-                    audio=current.audio))
+                events.append(
+                    TurnEvent(
+                        TurnEventKind.COMMITTED, idx, current.utterance_id, audio=current.audio
+                    )
+                )
                 self._current = None
         for _segment in segments:
             if self._current is not None and not self._current.committed:
-                events.append(TurnEvent(
-                    TurnEventKind.SPEECH_ENDED, idx, self._current.utterance_id))
+                events.append(
+                    TurnEvent(TurnEventKind.SPEECH_ENDED, idx, self._current.utterance_id)
+                )
         self._in_speech = in_speech
         return events
 
@@ -158,8 +170,7 @@ class TurnCoordinator:
                 # continue the SAME utterance.
                 current.preemptive_at = None
                 self._silence_run = 0
-                return [TurnEvent(TurnEventKind.RESUME_CANCEL, idx,
-                                  current.utterance_id)]
+                return [TurnEvent(TurnEventKind.RESUME_CANCEL, idx, current.utterance_id)]
             return []  # still the same speaking phase (shouldn't happen)
         utterance = _Utterance(utterance_id=self._next_id)
         self._next_id += 1
@@ -176,12 +187,22 @@ class TurnCoordinator:
             current = self._current
             current.committed = True
             if current.preemptive_at is None:
-                events.append(TurnEvent(
-                    TurnEventKind.PREEMPTIVE_FINALIZE, self._frame_index,
-                    current.utterance_id, audio=current.audio))
-            events.append(TurnEvent(
-                TurnEventKind.COMMITTED, self._frame_index, current.utterance_id,
-                audio=current.audio))
+                events.append(
+                    TurnEvent(
+                        TurnEventKind.PREEMPTIVE_FINALIZE,
+                        self._frame_index,
+                        current.utterance_id,
+                        audio=current.audio,
+                    )
+                )
+            events.append(
+                TurnEvent(
+                    TurnEventKind.COMMITTED,
+                    self._frame_index,
+                    current.utterance_id,
+                    audio=current.audio,
+                )
+            )
             self._current = None
         return events
 

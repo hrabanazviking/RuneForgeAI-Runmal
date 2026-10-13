@@ -107,12 +107,10 @@ class VoiceOrchestrator:
 
     # ------------------------------------------------------------ state
 
-    def _set_state(self, to_state: VoiceState, turn_id: int | None = None,
-                   note: str = "") -> None:
+    def _set_state(self, to_state: VoiceState, turn_id: int | None = None, note: str = "") -> None:
         if to_state is self.state:
             return
-        self.transitions.append(Transition(
-            self.state, to_state, self._clock(), turn_id, note))
+        self.transitions.append(Transition(self.state, to_state, self._clock(), turn_id, note))
         self.state = to_state
 
     def state_sequence(self) -> list[VoiceState]:
@@ -188,8 +186,7 @@ class VoiceOrchestrator:
 
     def _speak(self, turn_id: int, record: TurnRecord) -> None:
         self._set_state(VoiceState.SYNTHESIZING, turn_id)
-        stream = self.tts.synthesize_stream(
-            record.response_text, self.voice, self._cancel)
+        stream = self.tts.synthesize_stream(record.response_text, self.voice, self._cancel)
         first = True
         self._speaking = True
         try:
@@ -225,7 +222,7 @@ class VoiceOrchestrator:
         for i in range(total_frames):
             if self._cancel.is_set():
                 break
-            piece = chunk.pcm[i * step:(i + 1) * step]
+            piece = chunk.pcm[i * step : (i + 1) * step]
             if piece:
                 self.playback.write_frame(piece)
             played += 1
@@ -240,7 +237,10 @@ class VoiceOrchestrator:
         the TTS stream and playback via the shared event. Returns False
         when nothing was playing (a no-op, not an error)."""
         if not self._speaking and self.state not in (
-                VoiceState.SPEAKING, VoiceState.SYNTHESIZING, VoiceState.THINKING):
+            VoiceState.SPEAKING,
+            VoiceState.SYNTHESIZING,
+            VoiceState.THINKING,
+        ):
             return False
         self._set_state(VoiceState.INTERRUPTING, note=note)
         self._cancel.set()

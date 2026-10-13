@@ -64,7 +64,7 @@ def waveform_levels(samples, buckets: int = 48) -> list[float]:
     size = max(1, len(values) // buckets)
     levels: list[float] = []
     for i in range(buckets):
-        window = values[i * size:(i + 1) * size]
+        window = values[i * size : (i + 1) * size]
         if not window:
             levels.append(0.0)
         else:
@@ -75,8 +75,10 @@ def waveform_levels(samples, buckets: int = 48) -> list[float]:
 @router.get("/voice/devices")
 async def list_devices(request: Request) -> dict:
     provider = get_provider(request)
-    return {"devices": [d.to_dict() for d in provider.list_devices()],
-            "provider": provider.provider_key}
+    return {
+        "devices": [d.to_dict() for d in provider.list_devices()],
+        "provider": provider.provider_key,
+    }
 
 
 @router.get("/voice/roles")
@@ -101,20 +103,21 @@ async def set_role(role: str, payload: dict, request: Request) -> dict:
     try:
         device_role = DeviceRole(role)
     except ValueError:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"unknown role: {role}") from None
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"unknown role: {role}"
+        ) from None
     provider = get_provider(request)
     device = provider.find(str(payload.get("device_id", "")))
     if device is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail="device not present; pick a present device "
-                                   "(no silent default substitution)")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="device not present; pick a present device (no silent default substitution)",
+        )
     roles = load_roles(request)
     try:
         roles.assign(device_role, device)
     except ValueError as exc:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail=str(exc)) from None
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from None
     roles.save(_roles_path(request))
     return {"role": role, "device_id": device.device_id, "status": "ok"}
 
@@ -122,8 +125,7 @@ async def set_role(role: str, payload: dict, request: Request) -> dict:
 @router.get("/voice/status")
 async def voice_status(request: Request) -> dict:
     session = getattr(request.app.state, "voice_session", None)
-    collector: MetricsCollector | None = getattr(
-        request.app.state, "voice_metrics", None)
+    collector: MetricsCollector | None = getattr(request.app.state, "voice_metrics", None)
     ring = getattr(request.app.state, "voice_ring", None)
     report = collector.report().to_dict() if collector is not None else None
     return {
@@ -135,6 +137,7 @@ async def voice_status(request: Request) -> dict:
 
 
 # ------------------------------------------------------- backends (ADR-0005/6)
+
 
 def _backends_payload() -> dict:
     """Registry + live status for every TTS/STT backend (UI surface).
@@ -148,8 +151,11 @@ def _backends_payload() -> dict:
     tts: list[dict] = []
     for key, spec in TTS_REGISTRY.items():
         entry = backend_status(
-            spec.plan, default_shipped=spec.default_shipped,
-            verified=spec.default_shipped, tree_packages=spec.tree_packages)
+            spec.plan,
+            default_shipped=spec.default_shipped,
+            verified=spec.default_shipped,
+            tree_packages=spec.tree_packages,
+        )
         entry["display_name"] = spec.display_name
         entry["selected"] = settings.tts_backend == key
         entry["thresholds"] = {
@@ -160,14 +166,19 @@ def _backends_payload() -> dict:
     stt: list[dict] = []
     for key, spec in STT_REGISTRY.items():
         entry = backend_status(
-            spec.plan, default_shipped=spec.default_shipped,
-            verified=spec.verified, tree_packages=spec.tree_packages)
+            spec.plan,
+            default_shipped=spec.default_shipped,
+            verified=spec.verified,
+            tree_packages=spec.tree_packages,
+        )
         entry["display_name"] = spec.display_name
         entry["selected"] = settings.stt_backend == key
         stt.append(entry)
-    return {"tts": tts, "stt": stt,
-            "defaults": {"tts_backend": settings.tts_backend,
-                         "stt_backend": settings.stt_backend}}
+    return {
+        "tts": tts,
+        "stt": stt,
+        "defaults": {"tts_backend": settings.tts_backend, "stt_backend": settings.stt_backend},
+    }
 
 
 @router.get("/voice/backends")
@@ -183,12 +194,16 @@ async def install_backend(kind: str, key: str, request: Request) -> dict:
     registry = {"tts": TTS_REGISTRY, "stt": STT_REGISTRY}.get(kind)
     spec = registry.get(key) if registry is not None else None
     if spec is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"unknown backend: {kind}/{key}")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"unknown backend: {kind}/{key}"
+        )
     if not spec.plan.enable:
-        return {"key": key, "kind": kind, "status": "refused",
-                "error": spec.plan.note or
-                "registered but not forge-verified — no install recipe yet"}
+        return {
+            "key": key,
+            "kind": kind,
+            "status": "refused",
+            "error": spec.plan.note or "registered but not forge-verified — no install recipe yet",
+        }
     state = start_install(spec.plan)
     return state.as_dict()
 
@@ -196,8 +211,7 @@ async def install_backend(kind: str, key: str, request: Request) -> dict:
 @router.get("/voice/settings/defaults")
 async def get_defaults(request: Request) -> dict:
     settings = VoiceSettings.load()
-    return {"tts_backend": settings.tts_backend,
-            "stt_backend": settings.stt_backend}
+    return {"tts_backend": settings.tts_backend, "stt_backend": settings.stt_backend}
 
 
 @router.put("/voice/settings/defaults")
@@ -209,11 +223,13 @@ async def set_defaults(payload: dict, request: Request) -> dict:
         if payload.get("stt_backend"):
             settings.set_stt_backend(str(payload["stt_backend"]))
     except ValueError as exc:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                            detail=str(exc)) from None
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from None
     settings.save(settings_path())
-    return {"tts_backend": settings.tts_backend,
-            "stt_backend": settings.stt_backend, "status": "ok"}
+    return {
+        "tts_backend": settings.tts_backend,
+        "stt_backend": settings.stt_backend,
+        "status": "ok",
+    }
 
 
 _PAGE = """<!doctype html>
@@ -260,30 +276,31 @@ def _backends_panel() -> str:
     rows: list[str] = []
     for kind in ("tts", "stt"):
         for entry in payload[kind]:
-            classes = ["shipped by default" if entry["default_shipped"]
-                       else "user-installed"]
+            classes = ["shipped by default" if entry["default_shipped"] else "user-installed"]
             if entry["unverified_label"]:
                 classes.append(entry["unverified_label"])
             audit = entry["audit"]
             if audit is None:
                 audit_line = "license audit: not installed yet"
             elif audit["passed"]:
-                audit_line = (f"license audit: PASS "
-                              f"({audit['checked']} distributions checked)")
+                audit_line = f"license audit: PASS ({audit['checked']} distributions checked)"
             else:
                 audit_line = "license audit: " + "; ".join(audit["violations"])
             if audit is not None and not audit["binding"]:
                 audit_line += " (information only — your choice, your terms)"
-            notice = (f'<p class="user-install-notice">'
-                      f'{html.escape(entry["notice"])}</p>'
-                      if entry["notice"] else "")
+            notice = (
+                f'<p class="user-install-notice">{html.escape(entry["notice"])}</p>'
+                if entry["notice"]
+                else ""
+            )
             rows.append(
                 f'<div class="backend" data-key="{html.escape(entry["key"])}">'
                 f"<h3>{html.escape(entry['display_name'])}</h3>"
                 f"<p>{html.escape(' · '.join(classes))}</p>"
                 f"<p>installed: {'yes' if entry['installed'] else 'no'}"
                 f" · selected default: {'yes' if entry['selected'] else 'no'}</p>"
-                f"<p>{html.escape(audit_line)}</p>{notice}</div>")
+                f"<p>{html.escape(audit_line)}</p>{notice}</div>"
+            )
     return "\n".join(rows)
 
 
@@ -307,10 +324,12 @@ async def voice_page(request: Request) -> HTMLResponse:
                 selected = " selected"
             options.append(
                 f'<option value="{html.escape(device.device_id)}"{selected}>'
-                f"{html.escape(device.name)}</option>")
+                f"{html.escape(device.name)}</option>"
+            )
         selectors.append(
-            f'<label>{role.value} [{html.escape(entry.status.value)}] '
-            f'<select name="{role.value}">{"".join(options)}</select></label>')
+            f"<label>{role.value} [{html.escape(entry.status.value)}] "
+            f'<select name="{role.value}">{"".join(options)}</select></label>'
+        )
     page = _PAGE.format(state="LISTENING", selectors="\n".join(selectors))
     page = page.replace("<!-- BACKENDS -->", _backends_panel())
     if any_remap:

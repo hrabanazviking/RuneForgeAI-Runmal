@@ -46,7 +46,10 @@ def _registered(key: str, name: str, note: str) -> STTBackendSpec:
     """A registered-but-unverified extra: visible in settings, honest
     label, NO install recipe yet (the button explains; nothing runs)."""
     return STTBackendSpec(
-        key=key, display_name=name, default_shipped=False, verified=False,
+        key=key,
+        display_name=name,
+        default_shipped=False,
+        verified=False,
         plan=_plan(key, enable=False, probe_import="", note=note),
     )
 
@@ -57,58 +60,72 @@ STT_REGISTRY: dict[str, STTBackendSpec] = {
         display_name="faster-whisper (Whisper small, int8)",
         default_shipped=True,
         verified=True,
-        plan=_plan("faster-whisper", probe_import="faster_whisper",
-                   note="Default shipped ear. Forge-verified on "
-                        "purplelongship: WER 0.1111, RTF p50 0.8362."),
-        tree_packages=("faster-whisper", "ctranslate2", "tokenizers",
-                       "onnxruntime"),
+        plan=_plan(
+            "faster-whisper",
+            probe_import="faster_whisper",
+            note="Default shipped ear. Forge-verified on "
+            "purplelongship: WER 0.1111, RTF p50 0.8362.",
+        ),
+        tree_packages=("faster-whisper", "ctranslate2", "tokenizers", "onnxruntime"),
     ),
     "distil-whisper": STTBackendSpec(
         key="distil-whisper",
         display_name="Distil-Whisper (via faster-whisper)",
         default_shipped=False,
         verified=True,
-        plan=_plan("distil-whisper", probe_import="faster_whisper",
-                   warmup="runmal.voice.stt_backends:warm_distil_model",
-                   note="Same verified faster-whisper runtime; the "
-                        "one-button action downloads the distil-small.en "
-                        "model. The mechanism-proof extra for ADR-0006."),
-        tree_packages=("faster-whisper", "ctranslate2", "tokenizers",
-                       "onnxruntime"),
+        plan=_plan(
+            "distil-whisper",
+            probe_import="faster_whisper",
+            warmup="runmal.voice.stt_backends:warm_distil_model",
+            note="Same verified faster-whisper runtime; the "
+            "one-button action downloads the distil-small.en "
+            "model. The mechanism-proof extra for ADR-0006.",
+        ),
+        tree_packages=("faster-whisper", "ctranslate2", "tokenizers", "onnxruntime"),
     ),
     "whisper-cpp": _registered(
-        "whisper-cpp", "whisper.cpp",
+        "whisper-cpp",
+        "whisper.cpp",
         "Registered — forge has not yet shipped a verified build "
-        "recipe for the whisper.cpp binary + ggml models."),
+        "recipe for the whisper.cpp binary + ggml models.",
+    ),
     "openai-whisper": _registered(
-        "openai-whisper", "OpenAI Whisper (reference implementation)",
-        "Registered — reference PyTorch implementation; recipe not "
-        "yet forge-verified."),
+        "openai-whisper",
+        "OpenAI Whisper (reference implementation)",
+        "Registered — reference PyTorch implementation; recipe not yet forge-verified.",
+    ),
     "moonshine": _registered(
-        "moonshine", "Moonshine",
-        "Registered — Useful Sensors' Moonshine models; recipe not "
-        "yet forge-verified."),
+        "moonshine",
+        "Moonshine",
+        "Registered — Useful Sensors' Moonshine models; recipe not yet forge-verified.",
+    ),
     "parakeet": _registered(
-        "parakeet", "NVIDIA Parakeet",
-        "Registered — NeMo toolkit tree is large; recipe not yet "
-        "forge-verified."),
+        "parakeet",
+        "NVIDIA Parakeet",
+        "Registered — NeMo toolkit tree is large; recipe not yet forge-verified.",
+    ),
     "canary": _registered(
-        "canary", "NVIDIA Canary",
-        "Registered — NeMo toolkit tree is large; recipe not yet "
-        "forge-verified."),
+        "canary",
+        "NVIDIA Canary",
+        "Registered — NeMo toolkit tree is large; recipe not yet forge-verified.",
+    ),
     "vosk": _registered(
-        "vosk", "Vosk",
-        "Registered — Kaldi-based offline recognizer; recipe not yet "
-        "forge-verified."),
+        "vosk",
+        "Vosk",
+        "Registered — Kaldi-based offline recognizer; recipe not yet forge-verified.",
+    ),
     "sherpa-onnx-stt": _registered(
-        "sherpa-onnx-stt", "sherpa-ONNX STT models",
+        "sherpa-onnx-stt",
+        "sherpa-ONNX STT models",
         "Registered — note the sherpa-ONNX runtime also bundles "
         "eSpeak-NG data for its TTS paths; audit-at-install will "
-        "judge the real tree. Recipe not yet forge-verified."),
+        "judge the real tree. Recipe not yet forge-verified.",
+    ),
     "silero-stt": _registered(
-        "silero-stt", "Silero STT",
-        "Registered — torch-based models; recipe not yet "
-        "forge-verified."),
+        "silero-stt",
+        "Silero STT",
+        "Registered — torch-based models; recipe not yet forge-verified.",
+    ),
 }
 
 #: The default STT backend when the user has not chosen one.
@@ -144,7 +161,8 @@ def build_stt_backend(key: str, **kwargs) -> STTBackend:
     if key in STT_REGISTRY:
         raise BackendUnavailable(
             f"STT backend '{key}' is registered but not forge-verified — "
-            "it has no install recipe yet and cannot be selected.")
+            "it has no install recipe yet and cannot be selected."
+        )
     raise BackendUnavailable(f"unknown STT backend '{key}'")
 
 

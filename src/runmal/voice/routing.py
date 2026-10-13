@@ -37,9 +37,11 @@ class RouteKind(StrEnum):
 
     @property
     def direction(self) -> str:
-        return "input" if self in (
-            RouteKind.ROOM_INGRESS, RouteKind.GAME_INGRESS, RouteKind.USER_MIC
-        ) else "output"
+        return (
+            "input"
+            if self in (RouteKind.ROOM_INGRESS, RouteKind.GAME_INGRESS, RouteKind.USER_MIC)
+            else "output"
+        )
 
 
 class RouteStatus(StrEnum):
@@ -55,14 +57,15 @@ class LogicalRoute:
     label: str = ""
 
     def to_dict(self) -> dict:
-        return {"kind": self.kind.value, "device": self.device.to_dict(),
-                "label": self.label}
+        return {"kind": self.kind.value, "device": self.device.to_dict(), "label": self.label}
 
     @classmethod
     def from_dict(cls, data: dict) -> LogicalRoute:
-        return cls(kind=RouteKind(data["kind"]),
-                   device=SavedDeviceRef.from_dict(data.get("device") or {}),
-                   label=str(data.get("label", "")))
+        return cls(
+            kind=RouteKind(data["kind"]),
+            device=SavedDeviceRef.from_dict(data.get("device") or {}),
+            label=str(data.get("label", "")),
+        )
 
 
 @dataclass(frozen=True)
@@ -86,7 +89,8 @@ class RouteStore:
     def set_route(self, kind: RouteKind, device: AudioDevice, label: str = "") -> None:
         if device.direction != kind.direction:
             raise ValueError(
-                f"{kind.value} needs a {kind.direction} device, got {device.direction}")
+                f"{kind.value} needs a {kind.direction} device, got {device.direction}"
+            )
         self.routes[kind] = LogicalRoute(kind, SavedDeviceRef.of(device), label)
 
     def clear_route(self, kind: RouteKind) -> None:
@@ -102,11 +106,9 @@ class RouteStore:
                 continue
             device = present.get(route.device.device_id)
             if device is None or device.direction != kind.direction:
-                out[kind] = RouteResolution(
-                    kind, RouteStatus.DEVICE_MISSING, route=route)
+                out[kind] = RouteResolution(kind, RouteStatus.DEVICE_MISSING, route=route)
             else:
-                out[kind] = RouteResolution(
-                    kind, RouteStatus.ACTIVE, route=route, device=device)
+                out[kind] = RouteResolution(kind, RouteStatus.ACTIVE, route=route, device=device)
         return out
 
     def open_playback(self, provider: DeviceProvider, kind: RouteKind):
@@ -116,7 +118,8 @@ class RouteStore:
         if not resolution.usable:
             raise RuntimeError(
                 f"route {kind.value} is {resolution.status.value}; refusing to "
-                "reroute silently — remap the route explicitly")
+                "reroute silently — remap the route explicitly"
+            )
         return provider.open_playback(resolution.device.device_id)
 
     def open_capture(self, provider: DeviceProvider, kind: RouteKind):
@@ -124,14 +127,17 @@ class RouteStore:
         if not resolution.usable:
             raise RuntimeError(
                 f"route {kind.value} is {resolution.status.value}; refusing to "
-                "reroute silently — remap the route explicitly")
+                "reroute silently — remap the route explicitly"
+            )
         return provider.open_capture(resolution.device.device_id)
 
     # ------------------------------------------------------------ persist
 
     def to_dict(self) -> dict:
-        return {"version": ROUTE_STORE_VERSION,
-                "routes": [route.to_dict() for route in self.routes.values()]}
+        return {
+            "version": ROUTE_STORE_VERSION,
+            "routes": [route.to_dict() for route in self.routes.values()],
+        }
 
     @classmethod
     def from_dict(cls, data: dict) -> RouteStore:

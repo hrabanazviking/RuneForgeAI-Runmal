@@ -41,7 +41,8 @@ hard-split as a last resort).
 parameters only; nothing in this bridge hears the user or other
 participants. A companion that should *listen* in VRChat needs the
 PC-host room-audio ingress of S611 (an explicit audio route into
-Rúnmál's voice pipeline, with known self-output excluded or marked).
+Rúnmál's voice pipeline, with known self-output excluded or marked;
+see `VRCHAT_ROOM_AUDIO.md` for the setup and test procedure).
 Standalone-Quest room listening is not supported by this design.
 
 Speaking *aloud* in-world (rather than chatbox text) is likewise a

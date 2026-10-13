@@ -114,8 +114,7 @@ class SileroVadModel(VadModel):
         path = Path(model_path)
         if not path.exists():
             raise RuntimeError(f"silero model file missing: {path}")
-        self._session = ort.InferenceSession(
-            str(path), providers=["CPUExecutionProvider"])
+        self._session = ort.InferenceSession(str(path), providers=["CPUExecutionProvider"])
         self.reset()
 
     def reset(self) -> None:
@@ -131,7 +130,8 @@ class SileroVadModel(VadModel):
             raise ValueError(f"silero frame must be {FRAME_SAMPLES} samples")
         x = np.concatenate([self._context, samples], axis=1)
         out, state = self._session.run(
-            None, {"input": x, "state": self._state, "sr": np.array(16000, dtype=np.int64)})
+            None, {"input": x, "state": self._state, "sr": np.array(16000, dtype=np.int64)}
+        )
         self._state = state
         self._context = x[:, -64:]
         return float(out[0][0])
@@ -218,8 +218,11 @@ class VadSegmenter:
         keep = self._last_speech_end - self._segment_start
         frames = self._segment[:keep]
         segment = SpeechSegment(
-            start_frame=self._segment_start, onset_frame=self._segment_onset,
-            end_frame=self._segment_start + keep, frames=frames)
+            start_frame=self._segment_start,
+            onset_frame=self._segment_onset,
+            end_frame=self._segment_start + keep,
+            frames=frames,
+        )
         self._segment = None
         self._silence_run = 0
         return segment
@@ -253,7 +256,7 @@ class VadSegmenter:
             if prob >= cfg.end_threshold:
                 self._candidate.append(frame)
                 if len(self._candidate) >= cfg.min_speech_frames:
-                    pre = self._history[-cfg.pre_roll_frames:] if cfg.pre_roll_frames else []
+                    pre = self._history[-cfg.pre_roll_frames :] if cfg.pre_roll_frames else []
                     self._segment = list(pre) + list(self._candidate)
                     self._segment_onset = self._candidate_start
                     self._segment_start = self._candidate_start - len(pre)
@@ -272,7 +275,7 @@ class VadSegmenter:
             self._candidate = [frame]
             self._candidate_start = idx
             if cfg.min_speech_frames <= 1:
-                pre = self._history[-cfg.pre_roll_frames:] if cfg.pre_roll_frames else []
+                pre = self._history[-cfg.pre_roll_frames :] if cfg.pre_roll_frames else []
                 self._segment = list(pre) + list(self._candidate)
                 self._segment_onset = idx
                 self._segment_start = idx - len(pre)
@@ -301,9 +304,7 @@ class VadSegmenter:
         return out
 
 
-def segmentation_metrics(
-    expected: list[tuple[int, int]], detected: list[SpeechSegment]
-) -> dict:
+def segmentation_metrics(expected: list[tuple[int, int]], detected: list[SpeechSegment]) -> dict:
     """Score detected segments against expected (onset, end) frame spans.
 
     A detection matches an expectation when their spans overlap; onset /

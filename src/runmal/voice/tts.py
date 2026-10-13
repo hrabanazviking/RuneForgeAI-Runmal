@@ -137,13 +137,15 @@ class TTSBackend(ABC):
         return self.name
 
     @abstractmethod
-    def synthesize(self, text: str, voice: VoiceInfo, *,
-                   speaking_rate: float = 1.0) -> Iterator[AudioChunk]:
+    def synthesize(
+        self, text: str, voice: VoiceInfo, *, speaking_rate: float = 1.0
+    ) -> Iterator[AudioChunk]:
         """Yield chunks in text order; real backends end with an
         ``is_final`` sentinel chunk (empty pcm)."""
 
-    def synthesize_stream(self, text: str, voice: VoiceInfo,
-                          cancel: threading.Event) -> Iterator[AudioChunk]:
+    def synthesize_stream(
+        self, text: str, voice: VoiceInfo, cancel: threading.Event
+    ) -> Iterator[AudioChunk]:
         """The orchestrator's cancellable view of :meth:`synthesize`.
 
         Stops before the next chunk whenever ``cancel`` is set; the
@@ -172,8 +174,9 @@ class TTSBackend(ABC):
         """Voices this backend instance offers (empty when unknown)."""
         return ()
 
-    def audition(self, voice: VoiceInfo,
-                 text: str = "Hello, I am ready when you are.") -> list[AudioChunk]:
+    def audition(
+        self, voice: VoiceInfo, text: str = "Hello, I am ready when you are."
+    ) -> list[AudioChunk]:
         """Voice audition: synthesize the fixed sample line for a voice."""
         return self.synthesize_all(text, voice)
 
@@ -190,12 +193,16 @@ class FakeTTSBackend(TTSBackend):
         self.amplitude = amplitude
 
     def model_info(self) -> TTSModelInfo:
-        return TTSModelInfo(self.backend_key, "fake-tts-1", ("fake-voice",),
-                            native_sample_rate=SAMPLE_RATE)
+        return TTSModelInfo(
+            self.backend_key, "fake-tts-1", ("fake-voice",), native_sample_rate=SAMPLE_RATE
+        )
 
     def voices(self) -> tuple[VoiceInfo, ...]:
-        return (VoiceInfo(voice_id="fake-voice", name="Fake voice",
-                          language="en", backend_key=self.name),)
+        return (
+            VoiceInfo(
+                voice_id="fake-voice", name="Fake voice", language="en", backend_key=self.name
+            ),
+        )
 
     def synthesize(self, text, voice, *, speaking_rate: float = 1.0):
         import math
@@ -203,13 +210,17 @@ class FakeTTSBackend(TTSBackend):
         for index, piece in enumerate(split_text_into_chunks(text)):
             samples = max(1, int(len(piece) * self.seconds_per_char * SAMPLE_RATE))
             pcm = floats_to_pcm16(
-                [self.amplitude * math.sin(2 * math.pi * 220 * i / SAMPLE_RATE)
-                 for i in range(samples)])
+                [
+                    self.amplitude * math.sin(2 * math.pi * 220 * i / SAMPLE_RATE)
+                    for i in range(samples)
+                ]
+            )
             duration = samples / SAMPLE_RATE
             words = piece.split()
             step = duration / len(words) if words else 0.0
             timings = tuple(
-                (w, round(i * step, 4), round((i + 1) * step, 4))
-                for i, w in enumerate(words))
-            yield AudioChunk(pcm=pcm, text=piece, index=index,
-                             sample_rate=SAMPLE_RATE, word_timings=timings)
+                (w, round(i * step, 4), round((i + 1) * step, 4)) for i, w in enumerate(words)
+            )
+            yield AudioChunk(
+                pcm=pcm, text=piece, index=index, sample_rate=SAMPLE_RATE, word_timings=timings
+            )

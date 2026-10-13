@@ -39,7 +39,13 @@ from pathlib import Path
 from typing import Iterator
 
 from runmal.voice.install import InstallPlan, vendor_dir
-from runmal.voice.tts import AudioChunk, FakeTTSBackend, TTSBackend, VoiceInfo, split_text_into_chunks
+from runmal.voice.tts import (
+    AudioChunk,
+    FakeTTSBackend,
+    TTSBackend,
+    VoiceInfo,
+    split_text_into_chunks,
+)
 
 
 class BackendUnavailable(RuntimeError):
@@ -79,6 +85,7 @@ CHATTERBOX_PACKAGES: tuple[str, ...] = (
     "pyloudnorm",
     "omegaconf",
 )
+
 
 def _torch_cpu_refs() -> tuple[str, str]:
     """CPU builds of torch/torchaudio 2.6.0 as direct wheel URLs.
@@ -221,8 +228,7 @@ COSYVOICE_PACKAGES: tuple[str, ...] = (
 #: Kitten TTS runtime wheel (user-installed only). KittenTTS is not on
 #: PyPI; upstream distributes a wheel from its GitHub releases.
 KITTEN_WHEEL = (
-    "https://github.com/KittenML/KittenTTS/releases/download/0.8.1/"
-    "kittentts-0.8.1-py3-none-any.whl"
+    "https://github.com/KittenML/KittenTTS/releases/download/0.8.1/kittentts-0.8.1-py3-none-any.whl"
 )
 
 
@@ -286,16 +292,16 @@ TTS_REGISTRY: dict[str, TTSBackendSpec] = {
             warmup="runmal.voice.backends:warm_chatterbox",
             enable=False,
             note="HELD at admission (purplelongship evidence, 2026-10-13): "
-                 "chatterbox.tts imports librosa at module level, and its "
-                 "own pinned transformers 5.2 hard-imports soxr whenever "
-                 "librosa is present; python-soxr declares "
-                 "LGPL-2.1-or-later — forbidden in the shipped tree. "
-                 "Registered fail-closed until Volmarr rules "
-                 "(user-installed reclassification, a patch fork, or "
-                 "dropping the backend). MIT code + weights; curated "
-                 "install excludes GPL pykakasi (Japanese-only) — English "
-                 "path never imports it. Output carries the upstream "
-                 "PerTh watermark.",
+            "chatterbox.tts imports librosa at module level, and its "
+            "own pinned transformers 5.2 hard-imports soxr whenever "
+            "librosa is present; python-soxr declares "
+            "LGPL-2.1-or-later — forbidden in the shipped tree. "
+            "Registered fail-closed until Volmarr rules "
+            "(user-installed reclassification, a patch fork, or "
+            "dropping the backend). MIT code + weights; curated "
+            "install excludes GPL pykakasi (Japanese-only) — English "
+            "path never imports it. Output carries the upstream "
+            "PerTh watermark.",
         ),
         tree_packages=_dist_names(CHATTERBOX_PACKAGES),
         first_audio_p50_s=4.0,
@@ -311,7 +317,7 @@ TTS_REGISTRY: dict[str, TTSBackendSpec] = {
             probe_import="kittentts",
             warmup="runmal.voice.backends:warm_kitten",
             note="User-installed. Its tree phonemizes via eSpeak-NG "
-                 "(GPL-3.0) — the audit verdict is shown as information.",
+            "(GPL-3.0) — the audit verdict is shown as information.",
         ),
         tree_packages=_dist_names((KITTEN_WHEEL, "soundfile")),
     ),
@@ -324,7 +330,7 @@ TTS_REGISTRY: dict[str, TTSBackendSpec] = {
             pip_packages=("piper-tts==1.8.0",),
             probe_import="piper",
             note="User-installed. piper-tts is GPL-3.0-or-later — the "
-                 "audit verdict is shown as information.",
+            "audit verdict is shown as information.",
         ),
         tree_packages=_dist_names(("piper-tts==1.8.0",)),
     ),
@@ -339,10 +345,12 @@ KNOWN_TTS_BACKENDS: tuple[str, ...] = tuple(TTS_REGISTRY) + ("fake-tts",)
 
 def _require_importable(module: str, key: str) -> None:
     import importlib.util
+
     if importlib.util.find_spec(module) is None:
         raise BackendUnavailable(
             f"TTS backend '{key}' is not installed — installation is a "
-            "user action in Settings → Voice (one-button install).")
+            "user action in Settings → Voice (one-button install)."
+        )
 
 
 class CosyVoiceTTS(TTSBackend):
@@ -357,32 +365,36 @@ class CosyVoiceTTS(TTSBackend):
 
     name = "cosyvoice"
 
-    def __init__(self, model_dir: str | None = None,
-                 *, repo_dir: Path | None = None, runtime=None):
+    def __init__(self, model_dir: str | None = None, *, repo_dir: Path | None = None, runtime=None):
         if runtime is None:
             repo = repo_dir or (vendor_dir() / "CosyVoice")
             if not (repo / "cosyvoice").is_dir():
                 raise BackendUnavailable(
                     "CosyVoice runtime not found in the vendor dir — "
-                    "install it from Settings → Voice.")
+                    "install it from Settings → Voice."
+                )
             for entry in (str(repo), str(repo / "third_party" / "Matcha-TTS")):
                 if entry not in sys.path:
                     sys.path.insert(0, entry)
             try:
                 from cosyvoice.cli.cosyvoice import CosyVoice2
             except ImportError as exc:
-                raise BackendUnavailable(
-                    f"CosyVoice runtime not importable: {exc}") from exc
-            resolved = model_dir or str(
-                repo / "pretrained_models" / "CosyVoice2-0.5B")
+                raise BackendUnavailable(f"CosyVoice runtime not importable: {exc}") from exc
+            resolved = model_dir or str(repo / "pretrained_models" / "CosyVoice2-0.5B")
             runtime = CosyVoice2(resolved, load_jit=False, load_trt=False)
         self._runtime = runtime
 
     def voices(self) -> list[VoiceInfo]:
         # CosyVoice 2 zero-shot: voices are prompt-defined; the app
         # ships one default profile voice (see profiles.DEFAULT_VOICE).
-        return [VoiceInfo(voice_id="cosyvoice-zero-shot", name="CosyVoice zero-shot",
-                          language="en", backend_key=self.name)]
+        return [
+            VoiceInfo(
+                voice_id="cosyvoice-zero-shot",
+                name="CosyVoice zero-shot",
+                language="en",
+                backend_key=self.name,
+            )
+        ]
 
     @staticmethod
     def _resolve_default_prompt() -> tuple[str, str] | None:
@@ -399,14 +411,16 @@ class CosyVoiceTTS(TTSBackend):
             return None
         text = os.environ.get(
             "RUNMAL_VOICE_PROMPT_TEXT",
-            "Hello, wanderer. The wind carried whispers of your arrival.")
+            "Hello, wanderer. The wind carried whispers of your arrival.",
+        )
         logging.getLogger(__name__).warning(
-            "cosyvoice: voice carries no prompt — using the app default "
-            "prompt asset %s", wav)
+            "cosyvoice: voice carries no prompt — using the app default prompt asset %s", wav
+        )
         return text, wav
 
-    def synthesize(self, text: str, voice: VoiceInfo, *,
-                   speaking_rate: float = 1.0) -> Iterator[AudioChunk]:
+    def synthesize(
+        self, text: str, voice: VoiceInfo, *, speaking_rate: float = 1.0
+    ) -> Iterator[AudioChunk]:
         prompt_text = getattr(voice, "prompt_text", "") or "You are a helpful assistant."
         prompt_wav = getattr(voice, "prompt_wav", "") or ""
         if not prompt_wav and voice.voice_id == "cosyvoice-zero-shot":
@@ -417,14 +431,13 @@ class CosyVoiceTTS(TTSBackend):
             raise BackendUnavailable(
                 "CosyVoice zero-shot synthesis needs a prompt wav: set "
                 "one on the voice profile, or place the default prompt "
-                "asset at <vendor>/models/default_prompt.wav.")
-        stream = self._runtime.inference_zero_shot(
-            text, prompt_text, prompt_wav, stream=True)
+                "asset at <vendor>/models/default_prompt.wav."
+            )
+        stream = self._runtime.inference_zero_shot(text, prompt_text, prompt_wav, stream=True)
         for i, out in enumerate(stream):
             speech = out["tts_speech"]
             pcm = _tensor_to_pcm16(speech)
-            yield AudioChunk(pcm=pcm, sample_rate=24000, index=i,
-                             is_final=False)
+            yield AudioChunk(pcm=pcm, sample_rate=24000, index=i, is_final=False)
         yield AudioChunk(pcm=b"", sample_rate=24000, index=-1, is_final=True)
 
 
@@ -445,25 +458,31 @@ class ChatterboxTTS(TTSBackend):
         if model is None:
             _require_importable("chatterbox", self.name)
             from chatterbox.tts import ChatterboxTTS as _Upstream
+
             model = _Upstream.from_pretrained(device=device)
         self._model = model
 
     def voices(self) -> list[VoiceInfo]:
-        return [VoiceInfo(voice_id="chatterbox-default", name="Chatterbox default",
-                          language="en", backend_key=self.name)]
+        return [
+            VoiceInfo(
+                voice_id="chatterbox-default",
+                name="Chatterbox default",
+                language="en",
+                backend_key=self.name,
+            )
+        ]
 
-    def synthesize(self, text: str, voice: VoiceInfo, *,
-                   speaking_rate: float = 1.0) -> Iterator[AudioChunk]:
+    def synthesize(
+        self, text: str, voice: VoiceInfo, *, speaking_rate: float = 1.0
+    ) -> Iterator[AudioChunk]:
         prompt_wav = getattr(voice, "prompt_wav", "") or None
         index = 0
         for sentence in split_text_into_chunks(text) or [text]:
             wav = self._model.generate(sentence, audio_prompt_path=prompt_wav)
             pcm = _tensor_to_pcm16(wav)
-            yield AudioChunk(pcm=pcm, sample_rate=int(self._model.sr),
-                             index=index, is_final=False)
+            yield AudioChunk(pcm=pcm, sample_rate=int(self._model.sr), index=index, is_final=False)
             index += 1
-        yield AudioChunk(pcm=b"", sample_rate=int(self._model.sr),
-                         index=index, is_final=True)
+        yield AudioChunk(pcm=b"", sample_rate=int(self._model.sr), index=index, is_final=True)
 
 
 class KittenTTS(TTSBackend):
@@ -481,15 +500,23 @@ class KittenTTS(TTSBackend):
         if model is None:
             _require_importable("kittentts", self.name)
             from kittentts import KittenTTS as _Upstream
+
             model = _Upstream("KittenML/kitten-tts-nano-0.8")
         self._model = model
 
     def voices(self) -> list[VoiceInfo]:
-        return [VoiceInfo(voice_id="expr-voice-2-f", name="Kitten expr-voice-2-f",
-                          language="en", backend_key=self.name)]
+        return [
+            VoiceInfo(
+                voice_id="expr-voice-2-f",
+                name="Kitten expr-voice-2-f",
+                language="en",
+                backend_key=self.name,
+            )
+        ]
 
-    def synthesize(self, text: str, voice: VoiceInfo, *,
-                   speaking_rate: float = 1.0) -> Iterator[AudioChunk]:
+    def synthesize(
+        self, text: str, voice: VoiceInfo, *, speaking_rate: float = 1.0
+    ) -> Iterator[AudioChunk]:
         audio = self._model.generate(text, voice="expr-voice-2-f")
         pcm = _float_to_pcm16(audio)
         yield AudioChunk(pcm=pcm, sample_rate=24000, index=0, is_final=False)
@@ -511,11 +538,13 @@ class PiperTTS(TTSBackend):
         if voice_model is None:
             _require_importable("piper", self.name)
             from piper import PiperVoice
+
             model = model_path or self._default_model_path()
             if model is None or not Path(model).exists():
                 raise BackendUnavailable(
                     "No Piper voice model (.onnx) in the vendor models "
-                    "dir — download one from the Piper voice catalogue.")
+                    "dir — download one from the Piper voice catalogue."
+                )
             voice_model = PiperVoice.load(str(model))
         self._voice = voice_model
 
@@ -526,13 +555,18 @@ class PiperTTS(TTSBackend):
         return candidates[0] if candidates else None
 
     def voices(self) -> list[VoiceInfo]:
-        return [VoiceInfo(voice_id="piper-voice", name="Piper voice",
-                          language="en", backend_key=self.name)]
+        return [
+            VoiceInfo(
+                voice_id="piper-voice", name="Piper voice", language="en", backend_key=self.name
+            )
+        ]
 
-    def synthesize(self, text: str, voice: VoiceInfo, *,
-                   speaking_rate: float = 1.0) -> Iterator[AudioChunk]:
+    def synthesize(
+        self, text: str, voice: VoiceInfo, *, speaking_rate: float = 1.0
+    ) -> Iterator[AudioChunk]:
         import io
         import wave
+
         index = 0
         for chunk in self._voice.synthesize(text):
             buf = io.BytesIO()
@@ -541,8 +575,7 @@ class PiperTTS(TTSBackend):
                 wav_file.writeframes(chunk.audio_int16_bytes)
             raw = buf.getvalue()
             pcm = raw[44:] if raw[:4] == b"RIFF" else raw
-            yield AudioChunk(pcm=pcm, sample_rate=chunk.sample_rate,
-                             index=index, is_final=False)
+            yield AudioChunk(pcm=pcm, sample_rate=chunk.sample_rate, index=index, is_final=False)
             index += 1
         yield AudioChunk(pcm=b"", sample_rate=22050, index=index, is_final=True)
 
@@ -551,6 +584,7 @@ def _tensor_to_pcm16(tensor) -> bytes:
     """Torch tensor / array-like of float samples → little-endian PCM16."""
     try:
         import torch
+
         if isinstance(tensor, torch.Tensor):
             tensor = tensor.detach().cpu().numpy()
     except ImportError:
@@ -560,6 +594,7 @@ def _tensor_to_pcm16(tensor) -> bytes:
 
 def _float_to_pcm16(samples) -> bytes:
     import numpy as np
+
     arr = np.asarray(samples, dtype=np.float32).reshape(-1)
     clipped = np.clip(arr, -1.0, 1.0)
     return (clipped * 32767.0).astype("<i2").tobytes()
@@ -604,6 +639,7 @@ def warm_cosyvoice() -> None:
     """Download CosyVoice2-0.5B into the vendor checkout via modelscope
     (the upstream-sanctioned channel) and smoke-test the import."""
     from modelscope import snapshot_download
+
     dest = vendor_dir() / "CosyVoice" / "pretrained_models"
     dest.mkdir(parents=True, exist_ok=True)
     snapshot_download("iic/CosyVoice2-0.5B", local_dir=str(dest / "CosyVoice2-0.5B"))
@@ -613,10 +649,12 @@ def warm_chatterbox() -> None:
     """Pull Chatterbox weights and prove the curated tree imports —
     critically, WITHOUT pykakasi present."""
     from chatterbox.tts import ChatterboxTTS as _Upstream
+
     _Upstream.from_pretrained(device="cpu")
 
 
 def warm_kitten() -> None:
     """Pull the Kitten nano model and smoke-test the user-installed tree."""
     from kittentts import KittenTTS as _Upstream
+
     _Upstream("KittenML/kitten-tts-nano-0.8")

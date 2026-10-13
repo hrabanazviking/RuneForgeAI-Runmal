@@ -61,14 +61,18 @@ class VoiceSettings:
     # ------------------------------------------------------------ persist
 
     def to_dict(self) -> dict:
-        return {"version": SETTINGS_VERSION,
-                "tts_backend": self.tts_backend,
-                "stt_backend": self.stt_backend}
+        return {
+            "version": SETTINGS_VERSION,
+            "tts_backend": self.tts_backend,
+            "stt_backend": self.stt_backend,
+        }
 
     @classmethod
     def from_dict(cls, data: dict) -> VoiceSettings:
-        return cls(tts_backend=str(data.get("tts_backend") or DEFAULT_TTS_BACKEND),
-                   stt_backend=str(data.get("stt_backend") or DEFAULT_STT_BACKEND))
+        return cls(
+            tts_backend=str(data.get("tts_backend") or DEFAULT_TTS_BACKEND),
+            stt_backend=str(data.get("stt_backend") or DEFAULT_STT_BACKEND),
+        )
 
     def save(self, path: Path | None = None) -> None:
         target = path or settings_path()
