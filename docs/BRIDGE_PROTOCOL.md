@@ -74,6 +74,19 @@ Externally retried writes accept an idempotency key. Repeating the same key with
 
 Conflicting reuse of the same key is an error.
 
+**As implemented (S610).** Keys arrive via the `Idempotency-Key`
+header or the body's `idempotency_key` field (max 200 chars), scoped
+per credential + operation in `bridge_idempotency_keys` (migration
+0018). A SHA-256 fingerprint of the canonical request detects
+conflicting reuse: same key + different request = **409**. Turn
+retries replay the stored 201 response verbatim with an
+`Idempotency-Replayed: true` header. Generation retries replay the
+stored terminal summary (`turn_started`, `done`, `turn_stored`) —
+the outcome, not a re-performance of the token stream — and never
+persist a second companion turn. Discovery lives at
+`GET /api/v1/bridge/capabilities` (any valid bridge token): protocol
+version, granted scopes, feature flags, event kinds, and limits.
+
 ## 5. Event outbox
 
 Bridges need more than request/response when a companion may initiate speech.
