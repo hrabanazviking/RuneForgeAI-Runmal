@@ -29,8 +29,8 @@ from runmal.db.migrate import migrate_to_head
 from runmal.db.models import (
     Character,
     Chat,
-    LoreEntry,
     Lorebook,
+    LoreEntry,
     Memory,
     MemoryChunk,
     MemorySource,
