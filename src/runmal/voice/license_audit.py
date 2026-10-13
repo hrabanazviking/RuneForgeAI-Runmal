@@ -21,6 +21,7 @@ collects the real map from importlib.metadata.
 
 from __future__ import annotations
 
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 
 #: Licenses the project policy accepts for the distributed voice tree.
@@ -81,6 +82,23 @@ class AuditReport:
     def failures(self) -> list[AuditFinding]:
         return [f for f in self.findings if f.verdict != "permissive"]
 
+    @property
+    def checked(self) -> int:
+        """How many distributions the audit judged (UI display)."""
+        return len(self.findings)
+
+    @property
+    def violations(self) -> list[str]:
+        """Human-readable failure lines (UI display; install.backend_status)."""
+        out: list[str] = []
+        for finding in self.failures:
+            line = (f"{finding.distribution} "
+                    f"({finding.license or 'no license metadata'}): {finding.verdict}")
+            if finding.reason:
+                line += f" — {finding.reason}"
+            out.append(line)
+        return out
+
     def summary(self) -> str:
         lines = [f"{'PASS' if self.passed else 'FAIL'}: voice license audit "
                  f"({len(self.findings)} distributions)"]
@@ -135,59 +153,6 @@ def installed_distributions() -> dict[str, str]:
             license_text = classifiers[0].split("::")[-1].strip() if classifiers else ""
         out[name] = license_text
     return out
-
-
-#: The exact runtime tree the shipped Kokoro ONNX path (S504) is audited
-#: against — pinned expectations, reviewed 2026-10-12 (see the filled
-#: evidence table in docs/VOICE_LICENSE_MATRIX.md). Assets (model/voices)
-#: are audited separately there: Kokoro-82M weights + voices, Apache-2.0.
-def installed_distributions() -> dict[str, str]:
-    """Collect {name: license} for every installed distribution."""
-    from importlib.metadata import distributions
-
-    out: dict[str, str] = {}
-    for dist in distributions():
-        name = dist.metadata.get("Name") or ""
-        if not name:
-            continue
-        license_text = dist.metadata.get("License") or ""
-        if not license_text or license_text == "UNKNOWN":
-            classifiers = [c for c in (dist.metadata.get_all("Classifier") or [])
-                           if c.startswith("License :: OSI Approved ::")]
-            license_text = classifiers[0].split("::")[-1].strip() if classifiers else ""
-        out[name] = license_text
-    return out
-
-
-#: The exact runtime tree the shipped Kokoro ONNX path (S504) is audited
-#: against — pinned expectations, reviewed 2026-10-12 (see the filled
-#: evidence table in docs/VOICE_LICENSE_MATRIX.md). Assets (model/voices)
-#: are audited separately there: Kokoro-82M weights + voices, Apache-2.0.
-VOICE_RUNTIME_TREE = (
-    "onnxruntime",  # MIT — inference runtime for the ONNX graph
-    "numpy",  # BSD-3-Clause — audio tensors
-    "misaki",  # Apache-2.0 — G2P (used WITHOUT its espeak fallback)
-    "kokoro-onnx-model",  # pseudo-entry: ONNX graph derived from Kokoro-82M (Apache-2.0)
-)
-
-
-def audit_voice_environment() -> AuditReport:
-    """Audit the live environment's voice-relevant distributions.
-
-    Only distributions that are part of the voice runtime tree (plus any
-    forbidden carriers, wherever they hide) are judged — unrelated site
-    packages are out of scope for the S504 gate.
-    """
-    installed = installed_distributions()
-    relevant: dict[str, str] = {}
-    for name, license_text in installed.items():
-        key = _normalize(name)
-        if key in FORBIDDEN_DISTRIBUTIONS or key in {
-                _normalize(n) for n in VOICE_RUNTIME_TREE if n != "kokoro-onnx-model"}:
-            relevant[name] = license_text
-    if not any(_normalize(n) == "onnxruntime" for n in relevant):
-        relevant["onnxruntime"] = ""  # missing -> unknown -> audit fails honestly
-    return audit_distributions(relevant)
 
 
 def installed_snapshot(package_names: Iterable[str] | None = None) -> dict[str, str]:

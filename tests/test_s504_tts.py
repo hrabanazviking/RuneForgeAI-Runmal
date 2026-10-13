@@ -1,26 +1,40 @@
-"""S504 — TTS service + LICENSE GATE: the audit is executable policy —
-eSpeak-carrying trees fail, the permissive independent-ONNX tree passes;
-sentence streaming, cancellation, audition, fixed corpus synthesis."""
+"""S504 — TTS service seam + PER-BACKEND LICENSE GATE (ADR-0005).
+
+The audit is executable policy over each backend's OWN tree:
+eSpeak-carrying trees fail, permissive trees pass. The gate BINDS
+only the default shipped tree (CosyVoice + Chatterbox + the base
+voice tree); user-installed backends (Kitten, Piper) get their
+verdict displayed as information, never as a block. Plus the registry
+model (admission classes, curated --no-deps install sets, PREDECLARED
+thresholds), the pyproject↔curated-set drift guard, fail-closed
+backend construction, sentence streaming, cancellation, audition,
+and fixed-corpus synthesis.
+"""
 
 from __future__ import annotations
 
+import re
 import threading
+from pathlib import Path
+
+import pytest
 
 from runmal.voice.license_audit import (
     audit_distributions,
-    audit_voice_environment,
+    audit_snapshot,
     classify_license,
 )
 from runmal.voice.tts import (
     TTS_CORPUS_TEXTS,
     FakeTTSBackend,
     VoiceInfo,
-    resample_linear,
     split_text_into_chunks,
 )
 
 FAKE_VOICE = VoiceInfo("fake-voice", backend_key="fake-tts")
 
+
+# ------------------------------------------------------------ the gate
 
 def test_license_classifier():
     assert classify_license("Apache-2.0") == "permissive"
@@ -33,7 +47,8 @@ def test_license_classifier():
 
 
 def test_gate_rejects_espeak_carrying_tree():
-    # The kokoro-onnx wrapper tree: permissive top level, GPL in the roots.
+    # The removed Kokoro wrapper tree: permissive top level, GPL in
+    # the roots — exactly why Kokoro could never ship (ADR-0005).
     report = audit_distributions({
         "kokoro-onnx": "MIT",
         "onnxruntime": "MIT",
@@ -52,25 +67,146 @@ def test_gate_rejects_copyleft_and_unknown_licenses():
     assert not audit_distributions({}).passed  # empty tree is not a pass
 
 
-def test_gate_passes_the_selected_independent_onnx_tree():
+def test_gate_passes_a_permissive_backend_tree():
     report = audit_distributions({
         "onnxruntime": "MIT",
         "numpy": "BSD-3-Clause",
-        "misaki": "Apache-2.0",
         "transformers": "Apache-2.0",
+        "safetensors": "Apache-2.0",
         "regex": "Apache-2.0",
     })
     assert report.passed, report.summary()
 
 
-def test_live_environment_audit_shape():
-    # On hosts without the voice extras, onnxruntime is missing -> the
-    # audit must FAIL honestly (unknown), never rubber-stamp.
-    report = audit_voice_environment()
-    assert isinstance(report.passed, bool)
-    if not report.passed:
-        assert report.failures  # and it can say why
+def test_gate_binds_only_the_default_shipped_tree():
+    # A user-installed tree may legitimately contain forbidden
+    # carriers (Kitten phonemizes via eSpeak-NG): the audit still
+    # computes its verdict honestly — FAIL — and that verdict is
+    # information for the user's own choice...
+    user_tree = audit_snapshot({
+        "kittentts": "Apache-2.0", "espeakng-loader": "MIT"})
+    assert not user_tree.passed
+    assert user_tree.violations  # ...with reasons the UI can display
+    assert user_tree.checked == 2
+    # ...while the default shipped tree is judged on its OWN contents
+    # and must pass on them alone.
+    default_tree = audit_snapshot({
+        "numpy": "BSD-3-Clause", "onnxruntime": "MIT",
+        "transformers": "Apache-2.0", "safetensors": "Apache-2.0"})
+    assert default_tree.passed, default_tree.summary()
 
+
+# ------------------------------------------------------------ registry
+
+def test_registry_admission_classes_and_defaults():
+    from runmal.voice.backends import (
+        DEFAULT_TTS_BACKEND,
+        KNOWN_TTS_BACKENDS,
+        TTS_REGISTRY,
+    )
+
+    assert DEFAULT_TTS_BACKEND == "cosyvoice"
+    assert TTS_REGISTRY["cosyvoice"].default_shipped
+    assert TTS_REGISTRY["chatterbox"].default_shipped
+    assert not TTS_REGISTRY["kitten"].default_shipped
+    assert not TTS_REGISTRY["piper"].default_shipped
+    assert set(KNOWN_TTS_BACKENDS) == {
+        "cosyvoice", "chatterbox", "kitten", "piper", "fake-tts"}
+    assert "kokoro-onnx" not in KNOWN_TTS_BACKENDS  # removed, ADR-0005
+
+
+def test_predeclared_thresholds_are_the_benchmarks_md_values():
+    # Declared in docs/BENCHMARKS.md on 2026-10-13 BEFORE measurement;
+    # a failed benchmark is evidence — these are never rewritten to pass.
+    from runmal.voice.backends import TTS_REGISTRY
+
+    assert TTS_REGISTRY["cosyvoice"].first_audio_p50_s == 1.5
+    assert TTS_REGISTRY["cosyvoice"].rtf_p50 == 1.0
+    assert TTS_REGISTRY["chatterbox"].first_audio_p50_s == 4.0
+    assert TTS_REGISTRY["chatterbox"].rtf_p50 == 1.0
+    # User-installed backends carry no binding thresholds.
+    assert TTS_REGISTRY["kitten"].first_audio_p50_s is None
+    assert TTS_REGISTRY["piper"].rtf_p50 is None
+
+
+def test_chatterbox_curated_set_excludes_pykakasi_and_gradio():
+    from runmal.voice.backends import CHATTERBOX_PACKAGES
+
+    names = {re.split(r"[<>=!~ @\[]", p, maxsplit=1)[0].lower()
+             for p in CHATTERBOX_PACKAGES}
+    assert "pykakasi" not in names  # GPL-3.0, Japanese-only path
+    assert "gradio" not in names  # demo UI only
+    assert "chatterbox-tts" in names
+
+
+def test_cosyvoice_install_never_touches_the_pypi_namesquat():
+    from runmal.voice.backends import (
+        COSYVOICE_COMMIT,
+        COSYVOICE_GIT,
+        TTS_REGISTRY,
+    )
+
+    plan = TTS_REGISTRY["cosyvoice"].plan
+    # The runtime comes ONLY from the pinned FunAudioLLM git checkout;
+    # PyPI 'cosyvoice' 0.0.8 is an unrelated GPL-claiming name-squat.
+    assert plan.git_checkout == (COSYVOICE_GIT, COSYVOICE_COMMIT, "CosyVoice")
+    assert COSYVOICE_COMMIT.startswith("074ca6dc")
+    pip_names = {p.split("==")[0].split(">=")[0].lower()
+                 for p in plan.pip_packages}
+    assert "cosyvoice" not in pip_names
+    assert "ttsfrd" not in pip_names  # proprietary frontend never ships
+
+
+def _pyproject_extra(name: str) -> list[str]:
+    text = Path("pyproject.toml").read_text()
+    block = text.split(f"{name} = [", 1)[1].split("]", 1)[0]
+    return re.findall(r'"([^"]+)"', block)
+
+
+def test_pyproject_extras_mirror_curated_install_sets():
+    # Drift guard: the declared extras and install.py's curated sets
+    # are two writings of one list — they may never silently diverge.
+    from runmal.voice.backends import CHATTERBOX_PACKAGES, COSYVOICE_PACKAGES
+
+    assert _pyproject_extra("voice-cosyvoice") == list(COSYVOICE_PACKAGES)
+    assert _pyproject_extra("voice-chatterbox") == list(CHATTERBOX_PACKAGES)
+    assert not any("misaki" in entry for entry in _pyproject_extra("voice"))
+
+
+# ------------------------------------------------------- fail-closed
+
+def test_unknown_backend_fails_closed_and_fake_fallback_is_explicit():
+    from runmal.voice.backends import (
+        BackendUnavailable,
+        build_tts_backend,
+        resolve_tts_backend,
+    )
+
+    with pytest.raises(BackendUnavailable):
+        build_tts_backend("no-such-backend")
+    with pytest.raises(BackendUnavailable):
+        resolve_tts_backend("no-such-backend")  # no silent degradation
+    fake = resolve_tts_backend("no-such-backend", fallback_fake=True)
+    assert isinstance(fake, FakeTTSBackend)  # only when asked, loudly
+
+
+def test_real_backends_fail_closed_when_runtime_absent(tmp_path, monkeypatch):
+    import importlib.util
+
+    from runmal.voice.backends import BackendUnavailable, build_tts_backend
+
+    monkeypatch.setenv("RUNMAL_VENDOR_DIR", str(tmp_path / "vendor"))
+    with pytest.raises(BackendUnavailable):
+        build_tts_backend("cosyvoice")  # no vendor checkout -> refuse
+    for key, module in (("chatterbox", "chatterbox"),
+                        ("kitten", "kittentts"), ("piper", "piper")):
+        if importlib.util.find_spec(module) is not None:
+            continue  # runtime installed: the evidence path, not this test
+        with pytest.raises(BackendUnavailable):
+            build_tts_backend(key)
+
+
+# ------------------------------------------------------------ the seam
 
 def test_sentence_chunking_is_deterministic_and_ordered():
     text = "First one. Second two! Is this third? Yes — fourth and last"
@@ -85,23 +221,39 @@ def test_sentence_chunking_is_deterministic_and_ordered():
 
 def test_fake_tts_streams_chunks_in_order_with_text_spans():
     backend = FakeTTSBackend()
-    chunks = backend.synthesize(TTS_CORPUS_TEXTS[0], FAKE_VOICE)
+    chunks = backend.synthesize_all(TTS_CORPUS_TEXTS[0], FAKE_VOICE)
     assert [c.index for c in chunks] == list(range(len(chunks)))
     assert chunks[0].text.startswith("Hello, wanderer.")
     assert all(c.duration_s > 0 for c in chunks)
     assert all(c.sample_rate == 16000 for c in chunks)
+    assert all(not c.is_final for c in chunks)  # content chunks only
+    # The generator form yields the identical stream.
+    assert list(backend.synthesize(TTS_CORPUS_TEXTS[0], FAKE_VOICE)) == chunks
+
+
+def test_fake_tts_identity_and_voices():
+    backend = FakeTTSBackend()
+    assert backend.backend_key == backend.name == "fake-tts"
+    assert backend.model_info().backend_key == "fake-tts"
+    assert backend.voices()[0].voice_id == "fake-voice"
 
 
 def test_fake_tts_cancellation_stops_stream():
     backend = FakeTTSBackend()
     cancel = threading.Event()
     cancel.set()
-    assert backend.synthesize(TTS_CORPUS_TEXTS[1], FAKE_VOICE) == [] \
-        or True  # pre-set cancel: synthesize() uses a fresh event by design
-    seen = []
-    for chunk in backend.synthesize_stream(TTS_CORPUS_TEXTS[1], FAKE_VOICE, cancel):
-        seen.append(chunk)
-    assert seen == []  # the SAME event, already set: nothing is produced
+    seen = list(backend.synthesize_stream(TTS_CORPUS_TEXTS[1], FAKE_VOICE, cancel))
+    assert seen == []  # pre-set event: nothing is produced
+
+
+def test_fake_tts_cancellation_stops_mid_stream():
+    backend = FakeTTSBackend()
+    cancel = threading.Event()
+    stream = backend.synthesize_stream(TTS_CORPUS_TEXTS[1], FAKE_VOICE, cancel)
+    first = next(stream)
+    assert first.index == 0
+    cancel.set()
+    assert list(stream) == []  # INV-003: production stops promptly
 
 
 def test_audition_synthesizes_sample_line():
@@ -109,20 +261,10 @@ def test_audition_synthesizes_sample_line():
     assert chunks and chunks[0].text.startswith("Hello, I am ready")
 
 
-def test_resample_linear_rate_math():
-    from runmal.voice.audio import floats_to_pcm16
-
-    pcm24 = floats_to_pcm16([0.5] * 24000)  # 1 s at 24 kHz
-    pcm16 = resample_linear(pcm24, 24000, 16000)
-    assert len(pcm16) == 16000 * 2  # exactly 1 s at 16 kHz
-    assert resample_linear(pcm16, 16000, 16000) == pcm16
-    assert resample_linear(b"", 24000, 16000) == b""
-
-
 def test_fixed_corpus_synthesizes_with_fake_backend():
     backend = FakeTTSBackend()
     for text in TTS_CORPUS_TEXTS:
-        chunks = backend.synthesize(text, FAKE_VOICE)
+        chunks = backend.synthesize_all(text, FAKE_VOICE)
         assert chunks, text
         joined = " ".join(c.text for c in chunks)
         assert joined.split() == text.split()

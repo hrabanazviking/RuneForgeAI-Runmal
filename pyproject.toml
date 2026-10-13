@@ -26,14 +26,62 @@ dependencies = [
 dev = ["pytest>=8", "ruff>=0.8", "pytest-asyncio>=0.24"]
 # Campaign V voice extras — every entry passed the S504 license gate
 # (docs/VOICE_LICENSE_MATRIX.md): Apache-2.0 / MIT / BSD only. Model
-# weights (Whisper small, Kokoro-82M, Silero VAD) download separately
-# into cache dirs; no eSpeak-NG carrier is permitted in this tree.
+# weights (Whisper small, Silero VAD) download separately into cache
+# dirs; no eSpeak-NG carrier is permitted in this tree. Kokoro/misaki
+# were REMOVED (ADR-0005): misaki[en] directly requires the forbidden
+# eSpeak-NG carriers espeakng-loader / phonemizer-fork (GPL-3.0).
 voice = [
     "numpy>=1.26",
     "onnxruntime>=1.17",
     "sounddevice>=0.4",
     "faster-whisper>=1.0",
-    "misaki[en]>=0.9",
+]
+# ADR-0005 default-shipped TTS backends. These lists MIRROR the curated
+# --no-deps install sets in runmal.voice.backends (COSYVOICE_PACKAGES /
+# CHATTERBOX_PACKAGES); tests/test_s504_tts.py guards drift both ways.
+# The extras exist for developers and the default-tree audit; the app
+# itself installs backends only through the one-button machinery.
+voice-cosyvoice = [
+    "conformer",
+    "diffusers",
+    "hydra-core",
+    "HyperPyYAML",
+    "inflect",
+    "librosa",
+    "lightning",
+    "matplotlib",
+    "modelscope",
+    "networkx",
+    "numpy",
+    "omegaconf",
+    "onnxruntime",
+    "protobuf",
+    "pydantic",
+    "rich",
+    "soundfile",
+    "tensorboard",
+    "transformers",
+    "WeTextProcessing",
+    "wget",
+    "x-transformers",
+    "torch",
+    "torchaudio",
+]
+voice-chatterbox = [
+    "chatterbox-tts==0.1.7",
+    "numpy>=1.24,<2.0",
+    "librosa==0.11.0",
+    "s3tokenizer",
+    "torch==2.6.0",
+    "torchaudio==2.6.0",
+    "transformers==5.2.0",
+    "diffusers==0.29.0",
+    "resemble-perth @ git+https://github.com/resemble-ai/Perth@ff1c8ac55a976971245cdd53c18d6131ca00d993",
+    "conformer==0.3.2",
+    "safetensors==0.5.3",
+    "spacy-pkuseg",
+    "pyloudnorm",
+    "omegaconf",
 ]
 
 [project.scripts]
@@ -41,6 +89,12 @@ runmal = "runmal.__main__:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/runmal"]
+
+# The voice-chatterbox extra pins resemble-perth to an exact upstream
+# commit via a direct git reference (ADR-0005) — hatchling requires
+# this explicit allowance for direct references.
+[tool.hatch.metadata]
+allow-direct-references = true
 
 [tool.ruff]
 line-length = 100

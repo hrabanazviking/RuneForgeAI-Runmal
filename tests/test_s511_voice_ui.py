@@ -109,16 +109,18 @@ def test_waveform_levels_math():
 
 def test_license_scan_stays_green_over_declared_voice_tree():
     """Campaign hardening: the pyproject voice extras contain no
-    forbidden distribution, and the runtime tree audit passes."""
+    forbidden distribution, and the runtime tree audit passes.
+    Kokoro/misaki are GONE from the declared tree (ADR-0005)."""
     pyproject = Path("pyproject.toml").read_text()
     voice_block = pyproject.split("voice = [", 1)[1].split("]", 1)[0]
     names = re.findall(r'"([A-Za-z0-9_.-]+)', voice_block)
     lowered = {n.lower().replace("_", "-") for n in names}
     assert not (lowered & FORBIDDEN_DISTRIBUTIONS), lowered
+    assert "misaki" not in lowered
     report = audit_distributions({
         "numpy": "BSD-3-Clause", "onnxruntime": "MIT",
         "sounddevice": "MIT", "faster-whisper": "MIT",
-        "misaki": "Apache-2.0", "ctranslate2": "MIT",
+        "ctranslate2": "MIT",
     })
     assert report.passed, report.summary()
 
@@ -138,3 +140,75 @@ def test_extra_device_directions_kept_straight(tmp_path, monkeypatch):
     page = client.get("/voice").text
     # No output devices exist: output selects render empty, not faked.
     assert "Solo Mic" in page
+
+
+# ------------------------------------------------- backends (ADR-0005/6)
+
+def test_backends_endpoint_lists_registry_with_honest_labels(tmp_path, monkeypatch):
+    client = make_client(tmp_path, monkeypatch)
+    data = client.get("/api/v1/voice/backends").json()
+    tts = {e["key"]: e for e in data["tts"]}
+    assert tts["cosyvoice"]["default_shipped"] is True
+    assert tts["cosyvoice"]["notice"] == ""  # shipped: no user-install notice
+    assert tts["cosyvoice"]["thresholds"]["max_first_audio_p50_s"] == 1.5
+    assert tts["chatterbox"]["thresholds"]["max_first_audio_p50_s"] == 4.0
+    assert tts["kitten"]["default_shipped"] is False
+    assert "Not shipped with Rúnmál" in tts["kitten"]["notice"]
+    assert tts["kitten"]["unverified_label"] == \
+        "user-installed — not forge-verified"
+    assert tts["piper"]["installable"] is True  # user's own one-button choice
+    stt = {e["key"]: e for e in data["stt"]}
+    assert stt["faster-whisper"]["default_shipped"] is True
+    assert stt["faster-whisper"]["verified"] is True
+    assert stt["distil-whisper"]["verified"] is True  # mechanism-proof extra
+    assert stt["moonshine"]["installable"] is False  # registered, no recipe
+    assert stt["moonshine"]["unverified_label"] == \
+        "user-installed — not forge-verified"
+    assert data["defaults"] == {"tts_backend": "cosyvoice",
+                                "stt_backend": "faster-whisper"}
+
+
+def test_install_endpoint_refuses_unverified_and_unknown(tmp_path, monkeypatch):
+    client = make_client(tmp_path, monkeypatch)
+    refused = client.post("/api/v1/voice/backends/stt/moonshine/install")
+    assert refused.status_code == 200
+    assert refused.json()["status"] == "refused"  # explains; nothing runs
+    missing = client.post("/api/v1/voice/backends/tts/nope/install")
+    assert missing.status_code == 404
+
+
+def test_settings_defaults_round_trip_and_validation(tmp_path, monkeypatch):
+    client = make_client(tmp_path, monkeypatch)
+    res = client.put("/api/v1/voice/settings/defaults",
+                     json={"tts_backend": "chatterbox"})
+    assert res.status_code == 200 and res.json()["tts_backend"] == "chatterbox"
+    assert (tmp_path / "voice_settings.json").exists()
+    client2 = make_client(tmp_path, monkeypatch)
+    defaults = client2.get("/api/v1/voice/settings/defaults").json()
+    assert defaults["tts_backend"] == "chatterbox"  # persisted across clients
+    bad = client.put("/api/v1/voice/settings/defaults",
+                     json={"tts_backend": "kokoro-onnx"})
+    assert bad.status_code == 400  # the removed engine is not selectable
+
+
+def test_voice_page_renders_backends_panel_with_notices(tmp_path, monkeypatch):
+    client = make_client(tmp_path, monkeypatch)
+    page = client.get("/voice").text
+    assert 'id="voice-backends"' in page
+    assert "CosyVoice" in page and "Kitten" in page
+    assert "Not shipped with Rúnmál" in page
+    assert "user-installed — not forge-verified" in page
+
+
+def test_voice_settings_store_tolerant_load(tmp_path, monkeypatch):
+    from runmal.voice.settings import VoiceSettings, settings_path
+
+    monkeypatch.setenv("RUNMAL_DATA_DIR", str(tmp_path))
+    settings = VoiceSettings.load()
+    assert settings.tts_backend == "cosyvoice"
+    assert settings.stt_backend == "faster-whisper"
+    settings.set_tts_backend("piper")
+    settings.save()
+    assert VoiceSettings.load().tts_backend == "piper"
+    settings_path().write_text("{corrupt")
+    assert VoiceSettings.load().tts_backend == "cosyvoice"  # never bricks

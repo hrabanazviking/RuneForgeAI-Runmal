@@ -26,6 +26,8 @@ or silently falls back.
 
 from __future__ import annotations
 
+import logging
+import os
 import sys
 import threading
 from dataclasses import dataclass, field
@@ -238,14 +240,40 @@ class CosyVoiceTTS(TTSBackend):
         return [VoiceInfo(voice_id="cosyvoice-zero-shot", name="CosyVoice zero-shot",
                           language="en", backend_key=self.name)]
 
+    @staticmethod
+    def _resolve_default_prompt() -> tuple[str, str] | None:
+        """Resolve the app-level default zero-shot prompt.
+
+        Order: ``RUNMAL_VOICE_PROMPT_WAV`` env override → the vendored
+        default prompt asset. The prompt text comes from
+        ``RUNMAL_VOICE_PROMPT_TEXT`` or the recorded corpus line.
+        Returns ``None`` when no prompt wav exists (fail-closed)."""
+        overridable = os.environ.get("RUNMAL_VOICE_PROMPT_WAV", "")
+        asset = vendor_dir() / "models" / "default_prompt.wav"
+        wav = overridable or (str(asset) if asset.exists() else "")
+        if not wav:
+            return None
+        text = os.environ.get(
+            "RUNMAL_VOICE_PROMPT_TEXT",
+            "Hello, wanderer. The wind carried whispers of your arrival.")
+        logging.getLogger(__name__).warning(
+            "cosyvoice: voice carries no prompt — using the app default "
+            "prompt asset %s", wav)
+        return text, wav
+
     def synthesize(self, text: str, voice: VoiceInfo, *,
                    speaking_rate: float = 1.0) -> Iterator[AudioChunk]:
         prompt_text = getattr(voice, "prompt_text", "") or "You are a helpful assistant."
         prompt_wav = getattr(voice, "prompt_wav", "") or ""
+        if not prompt_wav and voice.voice_id == "cosyvoice-zero-shot":
+            resolved = self._resolve_default_prompt()
+            if resolved is not None:
+                prompt_text, prompt_wav = resolved
         if not prompt_wav:
             raise BackendUnavailable(
-                "CosyVoice zero-shot synthesis needs a prompt wav on the "
-                "voice profile (voice cloning reference audio).")
+                "CosyVoice zero-shot synthesis needs a prompt wav: set "
+                "one on the voice profile, or place the default prompt "
+                "asset at <vendor>/models/default_prompt.wav.")
         stream = self._runtime.inference_zero_shot(
             text, prompt_text, prompt_wav, stream=True)
         for i, out in enumerate(stream):

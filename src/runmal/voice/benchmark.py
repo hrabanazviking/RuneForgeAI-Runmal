@@ -12,9 +12,12 @@ real dependencies/models are absent are reported as "not run" with the
 reason — never fabricated, never silently dropped.
 
 Sections: VAD segmentation (fixture corpus vs S502 contract), STT
-(fixed Flite corpus vs S503 contract), TTS (fixed corpus: first-audio +
-RTF vs S504 contract), end-to-end simulated turn stages (S510 chain),
-interruption latency (S507 fixture vs its 100 ms budget).
+(fixed Flite corpus vs S503 contract), TTS (fixed corpus, measured
+PER BACKEND against the per-backend PREDECLARED thresholds of
+ADR-0005 / docs/BENCHMARKS.md — CosyVoice and Chatterbox bind;
+user-installed backends measure as information only), end-to-end
+simulated turn stages (S510 chain), interruption latency (S507
+fixture vs its 100 ms budget).
 """
 
 from __future__ import annotations
@@ -29,7 +32,7 @@ from runmal.voice import FRAME_SAMPLES
 from runmal.voice.audio import floats_to_pcm16
 from runmal.voice.metrics import percentile
 from runmal.voice.stt import STT_CONTRACT, FakeSTTBackend, benchmark_stt
-from runmal.voice.tts import TTS_CONTRACT, FakeTTSBackend, VoiceInfo
+from runmal.voice.tts import FakeTTSBackend, VoiceInfo
 from runmal.voice.vad import (
     SEGMENTATION_CONTRACT,
     EnergyVadModel,
@@ -66,7 +69,7 @@ def package_versions() -> dict:
 
     out: dict[str, str] = {}
     for name in ("numpy", "onnxruntime", "faster-whisper", "ctranslate2",
-                 "sounddevice", "misaki", "silero-vad"):
+                 "sounddevice", "silero-vad"):
         try:
             out[name] = version(name)
         except PackageNotFoundError:
@@ -143,34 +146,90 @@ def stt_section(real: bool, workdir: Path) -> dict:
     return section
 
 
-def tts_section(real: bool, workdir: Path) -> dict:
+def _measure_tts(backend, voice) -> dict:
+    """First-audio + RTF over the fixed corpus. The clock starts with
+    the backend already constructed (model warm/loaded, per
+    docs/BENCHMARKS.md); model-load time is reported separately."""
     from runmal.voice.tts import TTS_CORPUS_TEXTS
 
-    section: dict = {"contract": dict(TTS_CONTRACT)}
-    backend = FakeTTSBackend()
-    voice = VoiceInfo("fake-voice", backend_key="fake-tts")
-    section["backend"] = backend.backend_key
-    if real:
-        section["status"] = (
-            "fixture backend measured for harness shape; the gated Kokoro "
-            "ONNX backend is measured when its model assets are present "
-            "in the benchmark cache (see VOICE_LICENSE_MATRIX evidence)")
     first_audio: list[float] = []
     rtfs: list[float] = []
     for text in TTS_CORPUS_TEXTS:
         started = time.perf_counter()
-        chunks = backend.synthesize(text, voice)
+        chunks = []
+        first_at: float | None = None
+        for chunk in backend.synthesize(text, voice):
+            if first_at is None and chunk.pcm:
+                first_at = time.perf_counter()
+            chunks.append(chunk)
         elapsed = time.perf_counter() - started
         total_audio = sum(c.duration_s for c in chunks)
-        first_audio.append(0.0 if chunks else elapsed)  # fake: first chunk is instant
+        first_audio.append(
+            (first_at - started) if first_at is not None else elapsed)
         rtfs.append(elapsed / total_audio if total_audio else 0.0)
-    section.update({
+    return {
         "texts": len(TTS_CORPUS_TEXTS),
         "first_audio_p50_s": round(percentile(first_audio, 50), 4),
         "first_audio_p95_s": round(percentile(first_audio, 95), 4),
         "rtf_p50": round(percentile(rtfs, 50), 4),
         "rtf_p95": round(percentile(rtfs, 95), 4),
-    })
+    }
+
+
+def tts_section(real: bool, workdir: Path) -> dict:
+    """Per-backend TTS section (ADR-0005). The fake is always measured
+    for harness shape; registered backends measure only under --real,
+    and only when their runtime is actually installed — otherwise the
+    entry is an honest "not run" with the reason, never fabricated."""
+    from runmal.voice.backends import TTS_REGISTRY
+
+    section: dict = {"backends": {}}
+    fake_entry = _measure_tts(
+        FakeTTSBackend(), VoiceInfo("fake-voice", backend_key="fake-tts"))
+    fake_entry.update({
+        "kind": "fixture", "pass": None,
+        "note": "fixture backend measured for harness shape; "
+                "no thresholds bind the fake"})
+    section["backends"]["fake-tts"] = fake_entry
+    for key, spec in TTS_REGISTRY.items():
+        contract = {"max_first_audio_p50_s": spec.first_audio_p50_s,
+                    "max_rtf_p50": spec.rtf_p50}
+        if not real:
+            section["backends"][key] = {
+                "contract": contract,
+                "status": "not run: fixture mode (use --real)"}
+            continue
+        from runmal.voice.backends import BackendUnavailable, build_tts_backend
+
+        started = time.perf_counter()
+        try:
+            backend = build_tts_backend(key)
+        except BackendUnavailable as exc:
+            section["backends"][key] = {
+                "contract": contract, "status": f"not run: {exc}"}
+            continue
+        load_s = time.perf_counter() - started
+        voices = backend.voices()
+        voice = voices[0] if voices else VoiceInfo(key, backend_key=key)
+        try:
+            measured = _measure_tts(backend, voice)
+        except Exception as exc:
+            section["backends"][key] = {
+                "contract": contract,
+                "status": f"not run: {type(exc).__name__}: {exc}"}
+            continue
+        passed: bool | None = None
+        if spec.first_audio_p50_s is not None and spec.rtf_p50 is not None:
+            passed = (
+                measured["first_audio_p50_s"] <= spec.first_audio_p50_s
+                and measured["rtf_p50"] <= spec.rtf_p50)
+        measured.update({"kind": "real", "contract": contract,
+                         "model_load_s": round(load_s, 4), "pass": passed})
+        if passed is None:
+            measured["note"] = (
+                "user-installed backend: measured as information; "
+                "no predeclared thresholds bind it")
+        section["backends"][key] = measured
     return section
 
 
@@ -183,7 +242,7 @@ def interruption_section() -> dict:
     )
 
     backend = FakeTTSBackend(seconds_per_char=0.05)
-    chunks = backend.synthesize(
+    chunks = backend.synthesize_all(
         "This is a long companion answer that keeps speaking for a while.",
         VoiceInfo("fake-voice", backend_key="fake-tts"))
     queue = PlaybackQueue()
@@ -218,7 +277,8 @@ def run_benchmarks(real: bool = False, workdir: Path | None = None) -> dict:
         "interruption": interruption_section(),
         "thresholds_note": (
             "Thresholds are the predeclared contracts imported from "
-            "vad/stt/tts/bargein; this harness never rewrites them."),
+            "vad/stt/bargein and the per-backend TTS registry specs "
+            "(docs/BENCHMARKS.md); this harness never rewrites them."),
     }
 
 

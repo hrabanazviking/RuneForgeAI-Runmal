@@ -4,9 +4,9 @@ versions, models, p50/p95; thresholds are imported, never rewritten."""
 from __future__ import annotations
 
 from runmal.voice import benchmark as bench
+from runmal.voice.backends import TTS_REGISTRY
 from runmal.voice.bargein import INTERRUPTION_STOP_BUDGET_MS
 from runmal.voice.stt import STT_CONTRACT
-from runmal.voice.tts import TTS_CONTRACT
 from runmal.voice.vad import SEGMENTATION_CONTRACT
 
 
@@ -39,11 +39,29 @@ def test_interruption_section_meets_predeclared_budget(tmp_path):
 def test_thresholds_are_the_imported_constants_not_copies(tmp_path):
     report = bench.run_benchmarks(real=False, workdir=tmp_path)
     assert report["stt"]["contract"]["max_wer"] == STT_CONTRACT["max_wer"]
-    assert report["tts"]["contract"]["max_first_audio_p50_s"] == \
-        TTS_CONTRACT["max_first_audio_p50_s"]
+    # TTS thresholds are the registry's PREDECLARED per-backend values
+    # (docs/BENCHMARKS.md, declared 2026-10-13 before measurement).
+    cosy = report["tts"]["backends"]["cosyvoice"]["contract"]
+    assert cosy["max_first_audio_p50_s"] == \
+        TTS_REGISTRY["cosyvoice"].first_audio_p50_s == 1.5
+    assert cosy["max_rtf_p50"] == TTS_REGISTRY["cosyvoice"].rtf_p50 == 1.0
+    chat = report["tts"]["backends"]["chatterbox"]["contract"]
+    assert chat["max_first_audio_p50_s"] == 4.0
     # Running the harness must not mutate the contracts.
     assert STT_CONTRACT["max_wer"] == 0.25
     assert SEGMENTATION_CONTRACT["min_recall"] == 0.90
+
+
+def test_tts_section_is_per_backend_and_honest_in_fixture_mode(tmp_path):
+    report = bench.run_benchmarks(real=False, workdir=tmp_path)
+    backends = report["tts"]["backends"]
+    assert backends["fake-tts"]["kind"] == "fixture"
+    assert "rtf_p50" in backends["fake-tts"]
+    # Real backends are reported "not run" with a reason — never
+    # fabricated numbers in fixture mode.
+    for key in ("cosyvoice", "chatterbox", "kitten", "piper"):
+        assert "not run" in backends[key]["status"]
+    assert "misaki" not in report["packages"]  # Kokoro chain removed
 
 
 def test_markdown_render_records_everything(tmp_path):

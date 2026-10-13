@@ -9,6 +9,13 @@ Personas carry a TTS backend/voice/params REFERENCE with fallback
 3. never the chat backend: voice selection is an independent modality
    (BACKEND_CONTRACT §1) — the acceptance test proves a persona switch
    changes the voice while the chat profile stays byte-identical.
+
+ADR-0005 (2026-10-13): TTS is multi-backend and Kokoro was REMOVED
+from the product. A stored profile naming a backend that no longer
+exists (a legacy ``kokoro-onnx`` row) resolves through this same
+fallback path to the default backend — its voice ids are meaningless
+to any surviving engine, so the whole reference falls back; it never
+errors and never resurrects the removed engine.
 """
 
 from __future__ import annotations
@@ -20,12 +27,23 @@ from datetime import UTC, datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.db.models import Character, CharacterVoiceProfile
+from runmal.voice.backends import KNOWN_TTS_BACKENDS as _REGISTRY_TTS_BACKENDS
 from runmal.voice.tts import VoiceInfo
 
+#: Prompt transcript for the default zero-shot voice (corpus line 1;
+#: the matching reference wav is the vendored default prompt asset —
+#: see profiles/CosyVoice prompt resolution in backends.py).
+DEFAULT_PROMPT_TEXT = "Hello, wanderer. The wind carried whispers of your arrival."
+
 #: Fallback voice when a character has no (or a partial) voice profile.
-DEFAULT_VOICE = VoiceInfo(voice_id="af_heart", language="en-us",
-                          backend_key="kokoro-onnx")
-KNOWN_TTS_BACKENDS = ("kokoro-onnx", "fake-tts")
+#: CosyVoice zero-shot (ADR-0005 default-shipped backend); the prompt
+#: wav resolves at synthesis time from the profile params or the
+#: vendored default prompt asset.
+DEFAULT_VOICE = VoiceInfo(voice_id="cosyvoice-zero-shot", language="en-us",
+                          backend_key="cosyvoice",
+                          prompt_text=DEFAULT_PROMPT_TEXT)
+#: Selectable TTS backends = the ADR-0005 registry + the fake.
+KNOWN_TTS_BACKENDS = _REGISTRY_TTS_BACKENDS
 
 
 @dataclass(frozen=True)
@@ -36,8 +54,11 @@ class CharacterVoice:
     params: dict
 
     def to_voice_info(self) -> VoiceInfo:
-        return VoiceInfo(voice_id=self.voice_id, language=self.language,
-                         backend_key=self.tts_backend)
+        return VoiceInfo(
+            voice_id=self.voice_id, language=self.language,
+            backend_key=self.tts_backend,
+            prompt_text=str(self.params.get("prompt_text", "") or ""),
+            prompt_wav=str(self.params.get("prompt_wav", "") or ""))
 
 
 async def set_character_voice(
@@ -95,9 +116,17 @@ async def resolve_character_voice(
         params = json.loads(row.params_json or "{}")
     except json.JSONDecodeError:
         params = {}
+    backend = row.tts_backend or ""
+    voice_id = row.voice_id or ""
+    if backend and backend not in KNOWN_TTS_BACKENDS:
+        # Legacy/removed backend (e.g. a stored 'kokoro-onnx' profile):
+        # the whole voice reference falls back to the default — never
+        # an error, never the removed engine.
+        backend = DEFAULT_VOICE.backend_key
+        voice_id = DEFAULT_VOICE.voice_id
     return CharacterVoice(
-        tts_backend=row.tts_backend or DEFAULT_VOICE.backend_key,
-        voice_id=row.voice_id or DEFAULT_VOICE.voice_id,
+        tts_backend=backend or DEFAULT_VOICE.backend_key,
+        voice_id=voice_id or DEFAULT_VOICE.voice_id,
         language=row.language or DEFAULT_VOICE.language,
         params=params if isinstance(params, dict) else {},
     )

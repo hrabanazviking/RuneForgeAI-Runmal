@@ -6,7 +6,11 @@ Layered, provider-isolated pieces (see docs/VOICE_ARCHITECTURE.md):
   playback seams, 16 kHz mono ring buffer with pre-roll (S501).
 - ``vad``       — voice-activity detection: frame/state/hysteresis (S502).
 - ``stt``       — speech-to-text service seam + faster-whisper (S503).
-- ``tts``       — text-to-speech service seam + license-gated Kokoro (S504).
+- ``tts``       — text-to-speech service seam (S504); engines register
+  in ``backends`` (TTS, ADR-0005) / ``stt_backends`` (STT, ADR-0006),
+  install through ``install`` (one-button, user action only), and are
+  license-audited per backend by ``license_audit``. Kokoro REMOVED.
+- ``settings``  — persisted user backend defaults (voice_settings.json).
 - ``orchestrator`` / ``turntaking`` / ``bargein`` — the live loop (S505-507).
 - ``ledger``    — playback truth ledger (S508).
 - ``support``   — echo / self-interruption support contract (S509).

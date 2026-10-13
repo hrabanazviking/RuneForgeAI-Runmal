@@ -22,7 +22,9 @@ committed as binaries.
 ## TTS corpus (S504/S514)
 
 - Texts: fixed in `src/runmal/voice/tts.py` (`TTS_CORPUS_TEXTS`).
-- Synthesized by the license-gated Kokoro ONNX path; outputs are checked
+- Synthesized per registered backend (ADR-0005: CosyVoice/Chatterbox
+  by default; the deterministic fake in fixture runs); outputs are checked
   for non-silence, duration sanity and first-audio latency — TTS has no
   reference waveform, so quality gates are structural, not invented
-  perceptual scores.
+  perceptual scores. (The corpus's first line also serves as the
+  transcript of the default CosyVoice zero-shot prompt asset.)

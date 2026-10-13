@@ -64,8 +64,9 @@ def test_persona_switch_selects_voice_without_touching_chat_backend(tmp_path):
                 embedding_model="nomic-embed-text")
             before = backend_profiles.profile_to_dict(profile)
             await set_character_voice(
-                session, owner_id, yrsa_id, tts_backend="kokoro-onnx",
-                voice_id="bf_emma", language="en-gb", params={"speed": 1.1})
+                session, owner_id, yrsa_id, tts_backend="chatterbox",
+                voice_id="chatterbox-default", language="en-gb",
+                params={"speed": 1.1})
             await set_character_voice(
                 session, owner_id, other_id, tts_backend="fake-tts",
                 voice_id="fake-voice")
@@ -76,9 +77,10 @@ def test_persona_switch_selects_voice_without_touching_chat_backend(tmp_path):
             return yrsa_voice, other_voice, before, after
 
     yrsa_voice, other_voice, before, after = asyncio.run(go())
-    assert yrsa_voice.voice_id == "bf_emma" and yrsa_voice.language == "en-gb"
+    assert yrsa_voice.voice_id == "chatterbox-default"
+    assert yrsa_voice.language == "en-gb"
     assert yrsa_voice.params == {"speed": 1.1}
-    assert yrsa_voice.to_voice_info().backend_key == "kokoro-onnx"
+    assert yrsa_voice.to_voice_info().backend_key == "chatterbox"
     assert other_voice.voice_id == "fake-voice"
     # THE acceptance invariant: chat composition is byte-identical.
     assert before == after
@@ -129,3 +131,35 @@ def test_delete_restores_default_and_owner_isolation(tmp_path):
             assert other.voice_id == DEFAULT_VOICE.voice_id  # no cross-owner leak
 
     asyncio.run(go())
+
+
+def test_legacy_kokoro_profile_resolves_to_default_backend(tmp_path):
+    """ADR-0005: a stored profile naming the REMOVED kokoro-onnx
+    backend resolves through the fallback path to the default
+    backend — never an error, never the removed engine, and its
+    Kokoro voice ids do not leak into the new backend."""
+    from runmal.db.models import CharacterVoiceProfile
+
+    factory = setup_db(tmp_path)
+    owner_id, yrsa_id, _ = seed(factory)
+
+    async def go():
+        async with factory() as session:
+            session.add(CharacterVoiceProfile(
+                character_id=yrsa_id, user_id=owner_id,
+                tts_backend="kokoro-onnx", voice_id="af_heart",
+                language="en-us", params_json="{}"))
+            await session.commit()
+            return await resolve_character_voice(session, owner_id, yrsa_id)
+
+    resolved = asyncio.run(go())
+    assert resolved.tts_backend == DEFAULT_VOICE.backend_key == "cosyvoice"
+    assert resolved.voice_id == DEFAULT_VOICE.voice_id == "cosyvoice-zero-shot"
+    # And writing the removed backend through the API is refused.
+    async def write():
+        async with factory() as session:
+            with pytest.raises(ValueError):
+                await set_character_voice(session, owner_id, yrsa_id,
+                                          tts_backend="kokoro-onnx")
+
+    asyncio.run(write())

@@ -30,7 +30,11 @@ from runmal.voice.audio import (
     FixtureDeviceProvider,
     RoleMap,
 )
+from runmal.voice.backends import TTS_REGISTRY
+from runmal.voice.install import backend_status, start_install
 from runmal.voice.metrics import MetricsCollector
+from runmal.voice.settings import VoiceSettings, settings_path
+from runmal.voice.stt_backends import STT_REGISTRY
 
 router = APIRouter(tags=["voice"])
 
@@ -130,6 +134,88 @@ async def voice_status(request: Request) -> dict:
     }
 
 
+# ------------------------------------------------------- backends (ADR-0005/6)
+
+def _backends_payload() -> dict:
+    """Registry + live status for every TTS/STT backend (UI surface).
+
+    The audit verdict is BINDING only for default-shipped backends;
+    for user-installed backends it is displayed as information, with
+    the honest notice — the gate guards only what Rúnmál ships
+    (Volmarr's policy-scope ruling, 2026-10-13).
+    """
+    settings = VoiceSettings.load()
+    tts: list[dict] = []
+    for key, spec in TTS_REGISTRY.items():
+        entry = backend_status(
+            spec.plan, default_shipped=spec.default_shipped,
+            verified=spec.default_shipped, tree_packages=spec.tree_packages)
+        entry["display_name"] = spec.display_name
+        entry["selected"] = settings.tts_backend == key
+        entry["thresholds"] = {
+            "max_first_audio_p50_s": spec.first_audio_p50_s,
+            "max_rtf_p50": spec.rtf_p50,
+        }
+        tts.append(entry)
+    stt: list[dict] = []
+    for key, spec in STT_REGISTRY.items():
+        entry = backend_status(
+            spec.plan, default_shipped=spec.default_shipped,
+            verified=spec.verified, tree_packages=spec.tree_packages)
+        entry["display_name"] = spec.display_name
+        entry["selected"] = settings.stt_backend == key
+        stt.append(entry)
+    return {"tts": tts, "stt": stt,
+            "defaults": {"tts_backend": settings.tts_backend,
+                         "stt_backend": settings.stt_backend}}
+
+
+@router.get("/voice/backends")
+async def list_backends(request: Request) -> dict:
+    return _backends_payload()
+
+
+@router.post("/voice/backends/{kind}/{key}/install")
+async def install_backend(kind: str, key: str, request: Request) -> dict:
+    """The one-button install: an explicit user action, and the ONLY
+    path that installs a backend (ADR-0005/0006). Registered-but-
+    unverified plans refuse — the button explains, nothing runs."""
+    registry = {"tts": TTS_REGISTRY, "stt": STT_REGISTRY}.get(kind)
+    spec = registry.get(key) if registry is not None else None
+    if spec is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"unknown backend: {kind}/{key}")
+    if not spec.plan.enable:
+        return {"key": key, "kind": kind, "status": "refused",
+                "error": spec.plan.note or
+                "registered but not forge-verified — no install recipe yet"}
+    state = start_install(spec.plan)
+    return state.as_dict()
+
+
+@router.get("/voice/settings/defaults")
+async def get_defaults(request: Request) -> dict:
+    settings = VoiceSettings.load()
+    return {"tts_backend": settings.tts_backend,
+            "stt_backend": settings.stt_backend}
+
+
+@router.put("/voice/settings/defaults")
+async def set_defaults(payload: dict, request: Request) -> dict:
+    settings = VoiceSettings.load()
+    try:
+        if payload.get("tts_backend"):
+            settings.set_tts_backend(str(payload["tts_backend"]))
+        if payload.get("stt_backend"):
+            settings.set_stt_backend(str(payload["stt_backend"]))
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=str(exc)) from None
+    settings.save(settings_path())
+    return {"tts_backend": settings.tts_backend,
+            "stt_backend": settings.stt_backend, "status": "ok"}
+
+
 _PAGE = """<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <title>Rúnmál — Voice</title></head>
@@ -142,6 +228,10 @@ _PAGE = """<!doctype html>
 </section>
 <p id="remap-warning" hidden>⚠ A saved device is missing — remap it above.
 Rúnmál never substitutes the OS default silently.</p>
+<section id="voice-backends">
+<h2>Voice backends</h2>
+<!-- BACKENDS -->
+</section>
 <script>
 async function refresh() {{
   const res = await fetch('/api/v1/voice/status');
@@ -160,6 +250,41 @@ async function refresh() {{
 setInterval(refresh, 500); refresh();
 </script>
 </body></html>"""
+
+
+def _backends_panel() -> str:
+    """Server-rendered backends panel: admission class, install state,
+    the honest user-install notice, and the audit verdict (binding
+    only for default-shipped backends; information otherwise)."""
+    payload = _backends_payload()
+    rows: list[str] = []
+    for kind in ("tts", "stt"):
+        for entry in payload[kind]:
+            classes = ["shipped by default" if entry["default_shipped"]
+                       else "user-installed"]
+            if entry["unverified_label"]:
+                classes.append(entry["unverified_label"])
+            audit = entry["audit"]
+            if audit is None:
+                audit_line = "license audit: not installed yet"
+            elif audit["passed"]:
+                audit_line = (f"license audit: PASS "
+                              f"({audit['checked']} distributions checked)")
+            else:
+                audit_line = "license audit: " + "; ".join(audit["violations"])
+            if audit is not None and not audit["binding"]:
+                audit_line += " (information only — your choice, your terms)"
+            notice = (f'<p class="user-install-notice">'
+                      f'{html.escape(entry["notice"])}</p>'
+                      if entry["notice"] else "")
+            rows.append(
+                f'<div class="backend" data-key="{html.escape(entry["key"])}">'
+                f"<h3>{html.escape(entry['display_name'])}</h3>"
+                f"<p>{html.escape(' · '.join(classes))}</p>"
+                f"<p>installed: {'yes' if entry['installed'] else 'no'}"
+                f" · selected default: {'yes' if entry['selected'] else 'no'}</p>"
+                f"<p>{html.escape(audit_line)}</p>{notice}</div>")
+    return "\n".join(rows)
 
 
 async def voice_page(request: Request) -> HTMLResponse:
@@ -187,6 +312,7 @@ async def voice_page(request: Request) -> HTMLResponse:
             f'<label>{role.value} [{html.escape(entry.status.value)}] '
             f'<select name="{role.value}">{"".join(options)}</select></label>')
     page = _PAGE.format(state="LISTENING", selectors="\n".join(selectors))
+    page = page.replace("<!-- BACKENDS -->", _backends_panel())
     if any_remap:
         page = page.replace('id="remap-warning" hidden', 'id="remap-warning"')
     return HTMLResponse(page)

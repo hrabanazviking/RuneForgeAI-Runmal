@@ -1,31 +1,32 @@
-"""TTS service + license gate (S504).
+"""TTS service seam (S504, reworked by ADR-0005).
 
-Selected path: **independent ONNX inference** over the Kokoro-82M graph
-(Apache-2.0 weights + voices) via onnxruntime (MIT), phonemized by Misaki
-(Apache-2.0) used WITHOUT its eSpeak fallback. The popular wrapper paths
-were audited and REJECTED by the gate in
-:mod:`runmal.voice.license_audit`:
+Rúnmál's speech is MULTI-BACKEND: engines sit behind this seam and
+register in :mod:`runmal.voice.backends` — CosyVoice and Chatterbox
+ship by default, Kitten and Piper are user-installed, and a future
+first-party engine registers the same way. **Kokoro was REMOVED from
+the product**: its English path phonemized through Misaki, whose
+``misaki[en]`` tree directly requires the forbidden eSpeak-NG carriers
+``espeakng-loader`` / ``phonemizer-fork`` (GPL-3.0) — the S504 license
+gate (:mod:`runmal.voice.license_audit`, policy:
+docs/VOICE_LICENSE_MATRIX.md) can never pass that tree, and better
+engines exist (docs/TTS_ENGINE_SURVEY.md).
 
-- ``kokoro-onnx`` requires ``espeakng-loader`` + ``phonemizer-fork``
-  (eSpeak-NG, GPL-3.0) — forbidden in the distributed tree;
-- the torch ``kokoro`` pipeline wires Misaki's EspeakFallback by default.
+The seam contract:
 
-Here, :class:`KokoroOnnxTTS` refuses to construct when the environment
-audit fails (a forbidden carrier installed for this path, or an
-unreviewed license in the tree). Out-of-lexicon words are spelled
-through a grapheme fallback — a documented quality limitation, not a
-silent GPL dependency.
+- :meth:`TTSBackend.synthesize` — the core: an iterator of
+  :class:`AudioChunk` (PCM16 mono; the rate is per-chunk — backends
+  synthesize at their native rate), in text order. Real backends end
+  the stream with an explicit ``is_final`` sentinel chunk.
+- :meth:`TTSBackend.synthesize_stream` — the orchestrator's view:
+  the same chunks, but production stops promptly when the caller's
+  cancellation event is set (INV-003, barge-in).
+- :meth:`TTSBackend.synthesize_all` — the materialized list, for
+  audition and benchmark callers.
 
-Predeclared first-audio threshold (declared BEFORE any benchmark run):
-TTS time-to-first-audio p50 <= 2.0 s for the fixed corpus on
-purplelongship CPU (ONNX fp32 graph, cold-ish per-sentence synthesis);
-synthesis RTF p50 <= 1.0. See :data:`TTS_CONTRACT`.
-
-Output contract: chunks of PCM16 mono at the pipeline rate (16 kHz) —
-Kokoro's native 24 kHz float audio is linearly resampled so the whole
-voice pipeline keeps one format (S501). Sentence/chunk streaming:
-:meth:`TTSBackend.synthesize_stream` yields one chunk per sentence-piece
-in order, honoring the cancellation event between chunks (INV-003).
+Per-backend latency thresholds are PREDECLARED per backend in
+docs/BENCHMARKS.md and mirrored on the registry specs in
+:mod:`runmal.voice.backends` — never rewritten after measurement
+merely to pass.
 """
 
 from __future__ import annotations
@@ -35,21 +36,9 @@ import threading
 from abc import ABC, abstractmethod
 from collections.abc import Iterator
 from dataclasses import dataclass
-from pathlib import Path
 
 from runmal.voice import SAMPLE_RATE
 from runmal.voice.audio import floats_to_pcm16
-from runmal.voice.license_audit import audit_voice_environment
-
-#: Predeclared S504 thresholds — see module docstring. Not to be edited
-#: after seeing benchmark results merely to pass.
-TTS_CONTRACT = {
-    "max_first_audio_p50_s": 2.0,
-    "max_rtf_p50": 1.0,
-    "output_sample_rate": SAMPLE_RATE,
-}
-
-KOKORO_NATIVE_RATE = 24000
 
 #: Fixed TTS corpus (provenance: tests/fixtures/voice/README.md).
 TTS_CORPUS_TEXTS: tuple[str, ...] = (
@@ -58,22 +47,34 @@ TTS_CORPUS_TEXTS: tuple[str, ...] = (
     "Take the left path at the old bridge, then walk toward the river.",
 )
 
+#: The native rate most registered backends synthesize at.
+DEFAULT_NATIVE_RATE = 24000
+
 
 @dataclass(frozen=True)
 class VoiceInfo:
     voice_id: str
     language: str = "en-us"
     backend_key: str = ""
+    name: str = ""
+    #: Zero-shot / cloning backends (CosyVoice): the prompt transcript
+    #: and reference wav that define this voice. Empty for fixed-voice
+    #: backends. Persona params may carry both (see profiles.py).
+    prompt_text: str = ""
+    prompt_wav: str = ""
 
 
 @dataclass(frozen=True)
 class AudioChunk:
-    """One synthesized chunk: PCM16 at the pipeline sample rate."""
+    """One synthesized chunk: PCM16 mono at ``sample_rate``."""
 
     pcm: bytes
-    text: str  # the exact source text span this chunk synthesizes
-    index: int
+    text: str = ""  # the exact source text span this chunk synthesizes
+    index: int = 0
     sample_rate: int = SAMPLE_RATE
+    #: True on the explicit end-of-stream sentinel chunk (real backends
+    #: emit one; its pcm is empty and it is never played as audio).
+    is_final: bool = False
     #: Optional (word, start_s, end_s) alignment inside this chunk, when
     #: the backend can provide it. The S508 ledger uses it — and when it
     #: is absent, the ledger MUST stay conservative (no certain words
@@ -90,7 +91,7 @@ class TTSModelInfo:
     backend_key: str
     model_id: str
     voices: tuple[str, ...] = ()
-    native_sample_rate: int = KOKORO_NATIVE_RATE
+    native_sample_rate: int = DEFAULT_NATIVE_RATE
 
 
 _SENTENCE_RE = re.compile(r"[^.!?…]+[.!?…]+|\S[^.!?…]*$")
@@ -120,27 +121,61 @@ def split_text_into_chunks(text: str, max_chars: int = 180) -> list[str]:
 
 
 class TTSBackend(ABC):
-    """Text-to-speech seam: streaming chunks + cancellation + audition."""
+    """Text-to-speech seam: streaming chunks + cancellation + audition.
 
-    backend_key: str = "abstract"
+    Concrete backends register in :mod:`runmal.voice.backends` and set
+    :attr:`name` to their registry key. Construction of a real backend
+    whose runtime is not installed raises
+    :class:`~runmal.voice.backends.BackendUnavailable` — installation
+    is a user action, never a silent side effect.
+    """
+
+    name: str = "abstract"
+
+    @property
+    def backend_key(self) -> str:
+        return self.name
 
     @abstractmethod
-    def synthesize_stream(
-        self, text: str, voice: VoiceInfo, cancel: threading.Event
-    ) -> Iterator[AudioChunk]:
-        """Yield chunks in order; stop promptly when ``cancel`` is set."""
+    def synthesize(self, text: str, voice: VoiceInfo, *,
+                   speaking_rate: float = 1.0) -> Iterator[AudioChunk]:
+        """Yield chunks in text order; real backends end with an
+        ``is_final`` sentinel chunk (empty pcm)."""
 
-    @abstractmethod
+    def synthesize_stream(self, text: str, voice: VoiceInfo,
+                          cancel: threading.Event) -> Iterator[AudioChunk]:
+        """The orchestrator's cancellable view of :meth:`synthesize`.
+
+        Stops before the next chunk whenever ``cancel`` is set; the
+        underlying generator is closed so backends release promptly.
+        """
+        if cancel.is_set():
+            return
+        stream = self.synthesize(text, voice)
+        for chunk in stream:
+            if cancel.is_set():
+                close = getattr(stream, "close", None)
+                if close is not None:
+                    close()
+                return
+            yield chunk
+
+    def synthesize_all(self, text: str, voice: VoiceInfo) -> list[AudioChunk]:
+        """Materialize the full chunk list (audition/benchmark path)."""
+        return list(self.synthesize(text, voice))
+
     def model_info(self) -> TTSModelInfo:
-        """Static model/voice metadata."""
+        """Static model/voice metadata (backends may refine)."""
+        return TTSModelInfo(self.backend_key, self.name)
 
-    def synthesize(self, text: str, voice: VoiceInfo) -> list[AudioChunk]:
-        return list(self.synthesize_stream(text, voice, threading.Event()))
+    def voices(self) -> tuple[VoiceInfo, ...]:
+        """Voices this backend instance offers (empty when unknown)."""
+        return ()
 
-    def audition(self, voice: VoiceInfo, text: str = "Hello, I am ready when you are."
-                 ) -> list[AudioChunk]:
+    def audition(self, voice: VoiceInfo,
+                 text: str = "Hello, I am ready when you are.") -> list[AudioChunk]:
         """Voice audition: synthesize the fixed sample line for a voice."""
-        return self.synthesize(text, voice)
+        return self.synthesize_all(text, voice)
 
 
 class FakeTTSBackend(TTSBackend):
@@ -148,7 +183,7 @@ class FakeTTSBackend(TTSBackend):
     duration scales with the chunk's character count. Never presented as
     real speech; exists so orchestration/barge-in tests are exact."""
 
-    backend_key = "fake-tts"
+    name = "fake-tts"
 
     def __init__(self, seconds_per_char: float = 0.02, amplitude: float = 0.2):
         self.seconds_per_char = seconds_per_char
@@ -158,12 +193,14 @@ class FakeTTSBackend(TTSBackend):
         return TTSModelInfo(self.backend_key, "fake-tts-1", ("fake-voice",),
                             native_sample_rate=SAMPLE_RATE)
 
-    def synthesize_stream(self, text, voice, cancel):
+    def voices(self) -> tuple[VoiceInfo, ...]:
+        return (VoiceInfo(voice_id="fake-voice", name="Fake voice",
+                          language="en", backend_key=self.name),)
+
+    def synthesize(self, text, voice, *, speaking_rate: float = 1.0):
         import math
 
         for index, piece in enumerate(split_text_into_chunks(text)):
-            if cancel.is_set():
-                return
             samples = max(1, int(len(piece) * self.seconds_per_char * SAMPLE_RATE))
             pcm = floats_to_pcm16(
                 [self.amplitude * math.sin(2 * math.pi * 220 * i / SAMPLE_RATE)
@@ -174,140 +211,5 @@ class FakeTTSBackend(TTSBackend):
             timings = tuple(
                 (w, round(i * step, 4), round((i + 1) * step, 4))
                 for i, w in enumerate(words))
-            yield AudioChunk(pcm=pcm, text=piece, index=index, word_timings=timings)
-
-
-# ------------------------------------------------------------- phonemizers
-
-
-class Phonemizer(ABC):
-    """Text → Kokoro phoneme string seam (license-audited per backend)."""
-
-    @abstractmethod
-    def phonemize(self, text: str, british: bool = False) -> str:
-        """Return the phoneme string for one chunk of text."""
-
-
-class MisakiPhonemizer(Phonemizer):
-    """Misaki English G2P with NO eSpeak fallback.
-
-    Constructs ``misaki.en.G2P`` with the fallback explicitly disabled /
-    absent: unknown words are dropped to the grapheme path in
-    :meth:`phonemize` rather than routed to eSpeak-NG. If the installed
-    misaki *requires* an espeak fallback object, construction raises —
-    the gate would rather fail loudly than ship GPL (see license_audit).
-    """
-
-    def __init__(self):
-        try:
-            from misaki.en import G2P
-        except Exception as exc:
-            raise RuntimeError(f"misaki not installed: {exc}") from exc
-        try:
-            self._g2p = G2P(trf=False, british=False, fallback=None, unk="")
-        except TypeError:
-            self._g2p = G2P(trf=False, british=False)
-
-    def phonemize(self, text: str, british: bool = False) -> str:
-        phonemes, _tokens = self._g2p(text)
-        return phonemes
-
-
-class FixturePhonemizer(Phonemizer):
-    """Deterministic test phonemizer: maps letters to fixed phoneme-ish
-    symbols so tokenization/audio plumbing can be tested without misaki."""
-
-    def phonemize(self, text: str, british: bool = False) -> str:
-        return "".join(ch if ch.isalpha() else " " for ch in text.lower())
-
-
-# ------------------------------------------------------------ kokoro onnx
-
-
-def resample_linear(pcm: bytes, from_rate: int, to_rate: int) -> bytes:
-    """Linear-interpolation resample of PCM16 mono (stdlib only)."""
-    if from_rate == to_rate:
-        return pcm
-    from runmal.voice.audio import pcm16_to_floats
-
-    values = pcm16_to_floats(pcm)
-    if not values:
-        return b""
-    out_len = max(1, int(len(values) * to_rate / from_rate))
-    out: list[float] = []
-    for i in range(out_len):
-        pos = i * from_rate / to_rate
-        low = int(pos)
-        high = min(low + 1, len(values) - 1)
-        frac = pos - low
-        out.append(values[low] * (1 - frac) + values[high] * frac)
-    return floats_to_pcm16(out)
-
-
-class KokoroOnnxTTS(TTSBackend):
-    """Kokoro-82M via an independent ONNX session (the gated path).
-
-    Assets (downloaded to a cache dir, never committed):
-    - ``model_path``: ONNX graph exported from hexgrad/Kokoro-82M
-      (Apache-2.0);
-    - ``voices_path``: voice style pack (.npz) from the same project
-      (Apache-2.0);
-    - ``config_path``: the model's config.json carrying the phoneme vocab.
-
-    Construction runs the license gate first and raises RuntimeError with
-    the audit summary when the environment fails policy.
-    """
-
-    backend_key = "kokoro-onnx"
-
-    def __init__(self, model_path: str | Path, voices_path: str | Path,
-                 config_path: str | Path, phonemizer: Phonemizer | None = None,
-                 *, enforce_license_gate: bool = True):
-        if enforce_license_gate:
-            report = audit_voice_environment()
-            if not report.passed:
-                raise RuntimeError(f"TTS license gate failed:\n{report.summary()}")
-        try:
-            import numpy as np
-            import onnxruntime as ort
-        except Exception as exc:
-            raise RuntimeError(f"kokoro onnx path needs numpy+onnxruntime: {exc}") from exc
-        import json
-
-        self._np = np
-        self._session = ort.InferenceSession(
-            str(model_path), providers=["CPUExecutionProvider"])
-        with Path(config_path).open() as handle:
-            config = json.load(handle)
-        self._vocab: dict[str, int] = config["vocab"]
-        self._voices = np.load(str(voices_path))
-        self._phonemizer = phonemizer or MisakiPhonemizer()
-        self.model_id = "kokoro-82m-v1.0-onnx"
-
-    def model_info(self) -> TTSModelInfo:
-        names = tuple(sorted(k for k in self._voices.files)) \
-            if hasattr(self._voices, "files") else ()
-        return TTSModelInfo(self.backend_key, self.model_id, names)
-
-    def _tokens_for(self, phonemes: str) -> list[int]:
-        ids = [self._vocab[ch] for ch in phonemes if ch in self._vocab]
-        return [0, *ids, 0]  # BOS/EOS padding token 0, per Kokoro convention
-
-    def synthesize_stream(self, text, voice, cancel):
-        np = self._np
-        style_all = self._voices[voice.voice_id] \
-            if not isinstance(self._voices, dict) else self._voices[voice.voice_id]
-        for index, piece in enumerate(split_text_into_chunks(text)):
-            if cancel.is_set():
-                return
-            phonemes = self._phonemizer.phonemize(piece, british=voice.language == "en-gb")
-            tokens = self._tokens_for(phonemes)
-            style = style_all[len(tokens) - 2] if len(tokens) >= 2 else style_all[0]
-            audio = self._session.run(None, {
-                "input_ids": np.array([tokens], dtype=np.int64),
-                "style": np.array(style, dtype=np.float32).reshape(1, 256),
-                "speed": np.array([1.0], dtype=np.float32),
-            })[0]
-            pcm24 = floats_to_pcm16([float(v) for v in np.asarray(audio).flatten()])
-            pcm = resample_linear(pcm24, KOKORO_NATIVE_RATE, SAMPLE_RATE)
-            yield AudioChunk(pcm=pcm, text=piece, index=index)
+            yield AudioChunk(pcm=pcm, text=piece, index=index,
+                             sample_rate=SAMPLE_RATE, word_timings=timings)
