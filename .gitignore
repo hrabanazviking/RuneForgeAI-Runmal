@@ -17,6 +17,8 @@ htmlcov/
 .runmal/
 *.db
 *.sqlite3
+# S803 upgrade fixtures are intentional, versioned test data
+!tests/fixtures/upgrades/*.db
 # OS / editors
 .DS_Store
 .idea/
