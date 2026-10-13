@@ -81,3 +81,33 @@ carriers as shipped upstream.
 
 Detailed contract: `docs/VOICE_LICENSE_MATRIX.md` (admission model and
 evidence), `docs/VOICE_ARCHITECTURE.md` §8–§9.
+
+## Addendum — admission evidence (2026-10-13, Campaign V landing)
+
+Real-tree evidence on purplelongship amended two points of this ADR
+and decided both default backends:
+
+1. **CosyVoice is ADMITTED.** Its curated tree (70 distributions)
+   audits green and synthesizes the fixed corpus for real. The
+   closure was proven by build + synthesis, not import alone; the
+   full record is the matrix's admission-evidence block.
+2. **Chatterbox is HELD at admission** (a state this ADR did not
+   foresee). Dependency surgery (pykakasi/gradio pruning) proved
+   insufficient: chatterbox-tts 0.1.7 hard-pins librosa and
+   transformers==5.2.0, and transformers 5.x hard-imports
+   `soxr` (LGPL-2.1-or-later) whenever librosa is present. Its
+   install plan is disabled; the machinery refuses it. Resolution
+   requires Volmarr's ruling (user-installed reclassification under
+   his scope ruling of 2026-10-13, a patched fork, or removal) —
+   the forge does not route around a failed gate.
+3. **Correction to point 7 (frontend):** the pinned CosyVoice2
+   runtime does not import WeTextProcessing. Its open frontend is
+   `wetext`, whose model assets are not anonymously downloadable
+   through the pinned modelscope client, so the shipped
+   configuration runs with the frontend slot empty — upstream's
+   own supported fallback. `ttsfrd` remains excluded, as decided.
+4. **The transformers line is a license surface:** CosyVoice's set
+   holds upstream's own transformers==4.51.3 pin precisely because
+   the 5.x line's soxr behavior makes any librosa-carrying tree
+   unshippable. Backend trees are judged with their pinned
+   transformers line as part of the evidence from now on.

@@ -72,7 +72,14 @@ async def test_aggregated_health():
     assert dicts["ollama"]["ok"] is True
 
 
-def test_token_count_quality_is_surfaced():
+def test_token_count_quality_is_surfaced(monkeypatch):
+    # The fake backend's counts are ESTIMATED unless an exact
+    # tokenizer is installed (tokens.count_tokens' documented rule).
+    # Pin the no-tokenizer path explicitly — the same pattern as
+    # test_s214 — because a full voice environment legitimately
+    # contains tiktoken (the CosyVoice tree installs it), which
+    # would otherwise flip this assertion with the environment.
+    monkeypatch.setattr("runmal.tokens.get_exact_tokenizer", lambda: None)
     reg = registry()
     report = reg.token_count("fake", MSGS, "fake-1")
     assert report.quality is TokenQuality.ESTIMATED

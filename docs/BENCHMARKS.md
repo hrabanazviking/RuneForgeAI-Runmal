@@ -120,3 +120,35 @@ Performance never excuses data loss or bypassing validation.
 ## Results
 
 No authoritative local Rúnmál benchmark results have been recorded yet. Campaign V/VII/VIII slices will append dated result sections rather than replacing old evidence, so regressions and hardware changes remain visible.
+
+### 2026-10-13 — Campaign V voice benchmark (S514, `--real`, purplelongship)
+
+Reference host: purplelongship (Ryzen 9, RTX 2060 Max-Q — GPU present but the shipped TTS tree runs the **CPU** torch build; see the license note in `docs/VOICE_LICENSE_MATRIX.md`). Environment: clean uv Python 3.12.13 venv, backends installed in one pass by the one-button machinery (`runmal.voice.install.run_install`); model warm/loaded, load time reported separately; corpus: the fixed S504 corpus (`TTS_CORPUS_TEXTS`).
+
+```text
+VAD: pass (predeclared segmentation contract)
+
+STT (default shipped, faster-whisper small int8):
+  WER 0.1111 (contract <= 0.25) — pass
+  RTF p50 0.7095 (contract <= 1.0) — pass
+
+TTS cosyvoice (CosyVoice2-0.5B, CPU build, zero-shot default voice):
+  model load: 10.25 s (reported separately, per the rules)
+  first-audio p50 23.15 s (predeclared <= 1.5 s) — NOT MET
+  first-audio p95 23.63 s
+  synthesis RTF p50 6.73 (predeclared <= 1.0) — NOT MET
+  synthesis RTF p95 7.50
+  Independent synthesis-evidence run, same host/build: first-audio
+  p50 18.78 s, RTF p50 6.42, load 10.71 s (3 texts, run-to-run
+  variance on a shared laptop; same order of magnitude).
+
+TTS chatterbox: not run — backend HELD at admission (see matrix);
+  its predeclared thresholds (first-chunk p50 <= 4.0 s, RTF <= 1.0)
+  stand unmeasured and unrewritten.
+TTS kitten / piper: not run — user-installed class, not installed;
+  no predeclared thresholds bind them.
+
+Interruption: pass (stop latency 0 ms vs 100 ms budget, fake TTS)
+```
+
+**Reading of the CosyVoice result, recorded plainly:** the thresholds were predeclared for the GPU reference configuration. The license gate (NVIDIA's wheels declare no license metadata) forces the shipped tree onto CPU torch builds, on which CosyVoice2-0.5B is roughly 6–7× slower than real time on this host. The backend is **admitted** (license gate green, real synthesis, streaming seam works) and its performance contract is **not met on the shipped build** — the thresholds were not adjusted after measurement, per this ledger's rule. A user who installs CUDA torch themselves (their own choice under the interoperability principle) would close most of this gap; re-measurement on a GPU build is future evidence, not a promise.
