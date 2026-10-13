@@ -17,7 +17,9 @@ from dataclasses import dataclass
 
 import httpx
 
-from runmal.backends.errors import BackendError, BackendUnavailable
+from runmal.backends.aesir import DEFAULT_BASE_URL as AESIR_DEFAULT_BASE_URL
+from runmal.backends.aesir import map_error as aesir_map_error
+from runmal.backends.errors import BackendError, BackendTimeout, BackendUnavailable
 from runmal.backends.models import HealthStatus
 from runmal.backends.ollama import map_status_error
 
@@ -34,8 +36,12 @@ class EmbeddingProvenance:
         return (self.provider, self.model, self.dims, self.version)
 
     def to_dict(self) -> dict:
-        return {"provider": self.provider, "model": self.model,
-                "dims": self.dims, "version": self.version}
+        return {
+            "provider": self.provider,
+            "model": self.model,
+            "dims": self.dims,
+            "version": self.version,
+        }
 
 
 @dataclass(frozen=True)
@@ -44,8 +50,7 @@ class EmbeddingResult:
     provenance: EmbeddingProvenance
 
     def to_dict(self) -> dict:
-        return {"vectors": [list(v) for v in self.vectors],
-                "provenance": self.provenance.to_dict()}
+        return {"vectors": [list(v) for v in self.vectors], "provenance": self.provenance.to_dict()}
 
 
 @dataclass(frozen=True)
@@ -56,8 +61,12 @@ class EmbeddingModelInfo:
     version: str = "1"
 
     def to_dict(self) -> dict:
-        return {"model_id": self.model_id, "provider": self.provider,
-                "dims": self.dims, "version": self.version}
+        return {
+            "model_id": self.model_id,
+            "provider": self.provider,
+            "dims": self.dims,
+            "version": self.version,
+        }
 
 
 @dataclass(frozen=True)
@@ -70,9 +79,12 @@ class FtsFallbackResult:
     provenance: EmbeddingProvenance | None = None
 
     def to_dict(self) -> dict:
-        return {"degraded": self.degraded, "mode": self.mode,
-                "reason": self.reason,
-                "provenance": self.provenance.to_dict() if self.provenance else None}
+        return {
+            "degraded": self.degraded,
+            "mode": self.mode,
+            "reason": self.reason,
+            "provenance": self.provenance.to_dict() if self.provenance else None,
+        }
 
 
 class EmbeddingBackend(ABC):
@@ -117,8 +129,7 @@ class UnavailableEmbeddingBackend(EmbeddingBackend):
 class FakeEmbeddingBackend(EmbeddingBackend):
     backend_key = "fake"
 
-    def __init__(self, dims: int = 8, model: str = "fake-embed-1",
-                 fail: bool = False):
+    def __init__(self, dims: int = 8, model: str = "fake-embed-1", fail: bool = False):
         self._dims = dims
         self._model = model
         self._fail = fail
@@ -133,11 +144,14 @@ class FakeEmbeddingBackend(EmbeddingBackend):
         return EmbeddingResult(
             vectors=tuple(self._vector(t) for t in texts),
             provenance=EmbeddingProvenance(
-                provider="fake", model=self._model, dims=self._dims, version="1"))
+                provider="fake", model=self._model, dims=self._dims, version="1"
+            ),
+        )
 
     def model_info(self) -> EmbeddingModelInfo:
-        return EmbeddingModelInfo(model_id=self._model, provider="fake",
-                                   dims=self._dims, version="1")
+        return EmbeddingModelInfo(
+            model_id=self._model, provider="fake", dims=self._dims, version="1"
+        )
 
     async def health_check(self) -> HealthStatus:
         return HealthStatus(ok=not self._fail, detail="fake embeddings")
@@ -148,30 +162,36 @@ class OllamaEmbeddingBackend(EmbeddingBackend):
 
     backend_key = "ollama"
 
-    def __init__(self, base_url: str = "http://127.0.0.1:11434",
-                 model: str = "nomic-embed-text",
-                 client: httpx.AsyncClient | None = None,
-                 transport: httpx.AsyncBaseTransport | None = None,
-                 timeout_s: float = 60.0):
+    def __init__(
+        self,
+        base_url: str = "http://127.0.0.1:11434",
+        model: str = "nomic-embed-text",
+        client: httpx.AsyncClient | None = None,
+        transport: httpx.AsyncBaseTransport | None = None,
+        timeout_s: float = 60.0,
+    ):
         self._model = model
         self._client = client or httpx.AsyncClient(
-            base_url=base_url.rstrip("/"), timeout=timeout_s, transport=transport)
+            base_url=base_url.rstrip("/"), timeout=timeout_s, transport=transport
+        )
 
     async def embed(self, texts: list[str]) -> EmbeddingResult:
         try:
             resp = await self._client.post(
-                "/api/embed", json={"model": self._model, "input": texts})
+                "/api/embed", json={"model": self._model, "input": texts}
+            )
         except httpx.ConnectError as exc:
             raise BackendUnavailable("ollama unreachable") from exc
         if resp.status_code >= 400:
             raise map_status_error(resp.status_code, resp.text)
-        vectors = tuple(tuple(float(x) for x in v)
-                        for v in resp.json().get("embeddings", []))
+        vectors = tuple(tuple(float(x) for x in v) for v in resp.json().get("embeddings", []))
         dims = len(vectors[0]) if vectors else 0
         return EmbeddingResult(
             vectors=vectors,
             provenance=EmbeddingProvenance(
-                provider="ollama", model=self._model, dims=dims, version="1"))
+                provider="ollama", model=self._model, dims=dims, version="1"
+            ),
+        )
 
     def model_info(self) -> EmbeddingModelInfo:
         return EmbeddingModelInfo(model_id=self._model, provider="ollama", dims=0)
@@ -181,13 +201,86 @@ class OllamaEmbeddingBackend(EmbeddingBackend):
         try:
             resp = await self._client.get("/api/tags")
         except Exception as exc:  # health reports, never raises
-            return HealthStatus(ok=False,
-                                detail=f"ollama unreachable: {type(exc).__name__}")
+            return HealthStatus(ok=False, detail=f"ollama unreachable: {type(exc).__name__}")
         latency = (time.monotonic() - start) * 1000
         ok = resp.status_code < 400
-        return HealthStatus(ok=ok, detail="ollama embeddings reachable" if ok
-                            else f"ollama HTTP {resp.status_code}",
-                            latency_ms=latency)
+        return HealthStatus(
+            ok=ok,
+            detail="ollama embeddings reachable" if ok else f"ollama HTTP {resp.status_code}",
+            latency_ms=latency,
+        )
+
+
+class AesirEmbeddingBackend(EmbeddingBackend):
+    """Aesir embeddings via its OpenAI-compatible ``POST /embeddings`` (S703).
+
+    Independent of the Aesir chat adapter (ADR-0001): a profile may pair
+    Aesir chat with other embeddings or Aesir embeddings with other chat.
+    Every result carries provenance {provider="aesir", model, dims,
+    version} (INV-019). If the Aesir surface is unreachable or errors,
+    ``embed`` raises BackendError subclasses and callers degrade through
+    ``embed_or_fallback`` to the FTS contract — never a crash, never a
+    silently mixed space.
+    """
+
+    backend_key = "aesir"
+
+    def __init__(
+        self,
+        base_url: str = AESIR_DEFAULT_BASE_URL,
+        model: str = "local-embed",
+        api_key: str | None = None,
+        client: httpx.AsyncClient | None = None,
+        transport: httpx.AsyncBaseTransport | None = None,
+        timeout_s: float = 60.0,
+    ):
+        self._model = model
+        headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
+        self._client = client or httpx.AsyncClient(
+            base_url=base_url.rstrip("/"), timeout=timeout_s, transport=transport, headers=headers
+        )
+
+    async def embed(self, texts: list[str]) -> EmbeddingResult:
+        try:
+            resp = await self._client.post(
+                "/embeddings", json={"model": self._model, "input": texts}
+            )
+        except httpx.ConnectError as exc:
+            raise BackendUnavailable("aesir embeddings unreachable") from exc
+        except httpx.TimeoutException as exc:
+            raise BackendTimeout("aesir embeddings request timed out") from exc
+        if resp.status_code >= 400:
+            raise aesir_map_error(resp.status_code, resp.text)
+        entries = sorted(resp.json().get("data", []), key=lambda e: e.get("index", 0))
+        vectors = tuple(tuple(float(x) for x in e.get("embedding", [])) for e in entries)
+        dims = len(vectors[0]) if vectors else 0
+        return EmbeddingResult(
+            vectors=vectors,
+            provenance=EmbeddingProvenance(
+                provider="aesir", model=self._model, dims=dims, version="1"
+            ),
+        )
+
+    def model_info(self) -> EmbeddingModelInfo:
+        return EmbeddingModelInfo(model_id=self._model, provider="aesir", dims=0)
+
+    async def health_check(self) -> HealthStatus:
+        start = time.monotonic()
+        try:
+            resp = await self._client.get("/models")
+        except Exception as exc:  # health reports, never raises
+            return HealthStatus(
+                ok=False, detail=f"aesir embeddings unreachable: {type(exc).__name__}"
+            )
+        latency = (time.monotonic() - start) * 1000
+        ok = resp.status_code < 400
+        return HealthStatus(
+            ok=ok,
+            detail="aesir embeddings reachable"
+            if ok
+            else f"aesir embeddings HTTP {resp.status_code}",
+            latency_ms=latency,
+        )
 
 
 async def check_embedding_contract(backend: EmbeddingBackend) -> None:

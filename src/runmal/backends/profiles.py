@@ -24,6 +24,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from runmal.backends.aesir import AesirChatBackend
 from runmal.backends.base import ChatBackend
 from runmal.backends.embeddings import (
+    AesirEmbeddingBackend,
     EmbeddingBackend,
     FakeEmbeddingBackend,
     OllamaEmbeddingBackend,
@@ -35,7 +36,7 @@ from runmal.backends.openrouter import OpenRouterChatBackend
 from runmal.db.models import BackendProfile, SecretEntry
 
 CHAT_BACKENDS = ("fake", "ollama", "openrouter", "aesir")
-EMBEDDING_BACKENDS = ("", "fake", "ollama")
+EMBEDDING_BACKENDS = ("", "fake", "ollama", "aesir")
 
 
 def _bad(message: str) -> ValueError:
@@ -52,8 +53,7 @@ async def put_secret(session: AsyncSession, user_id: str, value: str) -> str:
     return ref
 
 
-async def resolve_secret(session: AsyncSession, user_id: str,
-                         ref: str) -> str | None:
+async def resolve_secret(session: AsyncSession, user_id: str, ref: str) -> str | None:
     """Server-side only: fetch a secret value by reference (owner-scoped)."""
     if not ref:
         return None
@@ -96,11 +96,18 @@ def profile_to_dict(profile: BackendProfile) -> dict:
 
 
 async def create_profile(
-    session: AsyncSession, user_id: str, *, name: str,
-    chat_backend: str = "fake", chat_model: str = "",
-    embedding_backend: str = "", embedding_model: str = "",
-    stt_ref: str = "", tts_ref: str = "",
-    chat_secret_ref: str = "", embedding_secret_ref: str = "",
+    session: AsyncSession,
+    user_id: str,
+    *,
+    name: str,
+    chat_backend: str = "fake",
+    chat_model: str = "",
+    embedding_backend: str = "",
+    embedding_model: str = "",
+    stt_ref: str = "",
+    tts_ref: str = "",
+    chat_secret_ref: str = "",
+    embedding_secret_ref: str = "",
     config: dict | None = None,
 ) -> BackendProfile:
     if not name.strip():
@@ -113,14 +120,19 @@ async def create_profile(
         if ref and await resolve_secret(session, user_id, ref) is None:
             raise _bad(f"unknown secret reference: {ref}")
     existing = await session.scalar(
-        select(BackendProfile).where(
-            BackendProfile.user_id == user_id, BackendProfile.name == name))
+        select(BackendProfile).where(BackendProfile.user_id == user_id, BackendProfile.name == name)
+    )
     if existing is not None:
         raise _bad(f"profile name already exists: {name}")
     profile = BackendProfile(
-        user_id=user_id, name=name, chat_backend=chat_backend,
-        chat_model=chat_model, embedding_backend=embedding_backend,
-        embedding_model=embedding_model, stt_ref=stt_ref, tts_ref=tts_ref,
+        user_id=user_id,
+        name=name,
+        chat_backend=chat_backend,
+        chat_model=chat_model,
+        embedding_backend=embedding_backend,
+        embedding_model=embedding_model,
+        stt_ref=stt_ref,
+        tts_ref=tts_ref,
         chat_secret_ref=chat_secret_ref,
         embedding_secret_ref=embedding_secret_ref,
         config_json=json.dumps(config or {}),
@@ -131,25 +143,25 @@ async def create_profile(
     return profile
 
 
-async def get_profile(session: AsyncSession, user_id: str,
-                      profile_id: str) -> BackendProfile | None:
+async def get_profile(
+    session: AsyncSession, user_id: str, profile_id: str
+) -> BackendProfile | None:
     profile = await session.get(BackendProfile, profile_id)
     if profile is None or profile.user_id != user_id:
         return None
     return profile
 
 
-async def list_profiles(session: AsyncSession,
-                        user_id: str) -> list[BackendProfile]:
+async def list_profiles(session: AsyncSession, user_id: str) -> list[BackendProfile]:
     rows = await session.scalars(
         select(BackendProfile)
         .where(BackendProfile.user_id == user_id)
-        .order_by(BackendProfile.name))
+        .order_by(BackendProfile.name)
+    )
     return list(rows)
 
 
-async def delete_profile(session: AsyncSession, user_id: str,
-                         profile_id: str) -> bool:
+async def delete_profile(session: AsyncSession, user_id: str, profile_id: str) -> bool:
     profile = await get_profile(session, user_id, profile_id)
     if profile is None:
         return False
@@ -165,17 +177,15 @@ class ResolvedProfile:
     embedding: EmbeddingBackend
 
 
-async def build_chat_backend(session: AsyncSession,
-                             profile: BackendProfile) -> ChatBackend:
+async def build_chat_backend(session: AsyncSession, profile: BackendProfile) -> ChatBackend:
     """Instantiate the profile's chat backend, resolving its secret ref."""
-    secret = await resolve_secret(session, profile.user_id,
-                                  profile.chat_secret_ref)
+    secret = await resolve_secret(session, profile.user_id, profile.chat_secret_ref)
     if profile.chat_backend == "ollama":
         return OllamaChatBackend(model=profile.chat_model or "llama3.1")
     if profile.chat_backend == "openrouter":
         return OpenRouterChatBackend(
-            model=profile.chat_model or "openai/gpt-4o-mini",
-            api_key=secret or "")
+            model=profile.chat_model or "openai/gpt-4o-mini", api_key=secret or ""
+        )
     if profile.chat_backend == "aesir":
         try:
             config = json.loads(profile.config_json or "{}")
@@ -185,23 +195,35 @@ async def build_chat_backend(session: AsyncSession,
         return AesirChatBackend(
             model=profile.chat_model or "local-model",
             base_url=base_url or "http://127.0.0.1:8000/v1",
-            api_key=secret)
+            api_key=secret,
+        )
     return FakeChatBackend()
 
 
-async def build_embedding_backend(session: AsyncSession,
-                                  profile: BackendProfile) -> EmbeddingBackend:
+async def build_embedding_backend(
+    session: AsyncSession, profile: BackendProfile
+) -> EmbeddingBackend:
     if profile.embedding_backend == "ollama":
-        return OllamaEmbeddingBackend(
-            model=profile.embedding_model or "nomic-embed-text")
+        return OllamaEmbeddingBackend(model=profile.embedding_model or "nomic-embed-text")
+    if profile.embedding_backend == "aesir":
+        secret = await resolve_secret(session, profile.user_id, profile.embedding_secret_ref)
+        try:
+            config = json.loads(profile.config_json or "{}")
+        except json.JSONDecodeError:
+            config = {}
+        base_url = config.get("base_url") if isinstance(config, dict) else None
+        kwargs = {"model": profile.embedding_model or "local-embed", "api_key": secret}
+        if base_url:
+            kwargs["base_url"] = base_url
+        return AesirEmbeddingBackend(**kwargs)
     if profile.embedding_backend == "fake":
         return FakeEmbeddingBackend()
     return UnavailableEmbeddingBackend()
 
 
-async def resolve_profile(session: AsyncSession,
-                          profile: BackendProfile) -> ResolvedProfile:
+async def resolve_profile(session: AsyncSession, profile: BackendProfile) -> ResolvedProfile:
     return ResolvedProfile(
         profile=profile,
         chat=await build_chat_backend(session, profile),
-        embedding=await build_embedding_backend(session, profile))
+        embedding=await build_embedding_backend(session, profile),
+    )

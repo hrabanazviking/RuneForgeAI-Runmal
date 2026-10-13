@@ -161,6 +161,8 @@ Prefer an OpenAI-compatible external surface when that reduces integration cost,
 
 Mapped and unsupported sets together account for every canonical control; there is no silently-ignored third category (INV-005). Token counting is the conservative estimator; server-reported usage surfaces as `UsageUpdate` events.
 
+*Embeddings (S703, `src/runmal/backends/embeddings.py`):* `AesirEmbeddingBackend` speaks the same surface's `POST /embeddings`, independently selectable per profile (ADR-0001), and returns provenance `{provider: "aesir", model, dims, version}` with every result (INV-019). When the surface is unreachable or errors, callers degrade through `embed_or_fallback` to the documented FTS fallback result — never a crash.
+
 ## 13. Contract tests
 
 Each adapter must pass the same fake/recorded contract suite for:
