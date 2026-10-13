@@ -137,6 +137,12 @@ The registry is extensible by design: a future backend — including a first-par
 
 ## 9. Licensing gate
 
+### The interoperability principle (Volmarr, 2026-10-13)
+
+> "always give the user free-will, choice, trust, but they are responsible for what they add, so we are not liable, they are, but we make apps that can play nice with outside tools of whatever kind."
+
+This is the stated principle behind the registry design in §8 and the gate scope below — **Rúnmál's interoperability principle**: ship clean, lawful defaults; user additions are user choice under user responsibility; design for interoperability with outside tools of any kind. The gate that follows exists to keep the *defaults* clean and the *choices* honest — never to fence the user in.
+
 Voice dependencies require a dependency-tree audit before adoption. A permissively licensed model or wrapper is not sufficient if runtime dependencies pull incompatible packages.
 
 Since Volmarr's 2026-10-13 rulings (ADR-0005), the gate is **per-backend admission** with an explicit scope:

@@ -8,6 +8,8 @@ This file is a release/build gate, not legal advice. Re-verify exact versions up
 
 > "Backends a user installs themselves are the user's own choice — the gate guards only what Rúnmál ships by default."
 
+This scope line applies **Rúnmál's interoperability principle** (Volmarr, 2026-10-13; full text in `docs/VOICE_ARCHITECTURE.md` §9): *always give the user free-will, choice, trust, but they are responsible for what they add — and we make apps that can play nice with outside tools of whatever kind.* Ship clean lawful defaults; user additions are user choice under user responsibility; design for interop with outside tools of any kind.
+
 - The S504 gate guards the **default shipped tree**: the default install plus the default TTS backends (**CosyVoice**, and **Chatterbox with pykakasi excluded**). That tree must audit green against the real installed environment before the voice campaign ships.
 - **User-installed backends are the user's own choice.** For backends in that class (Kitten, Piper), Rúnmál ships only its own Apache-2.0 adapter code. Installation happens only on the user's explicit per-backend install action — never in the default install. The settings/audition UI must show an honest notice for such backends: *not shipped with Rúnmál; installed by you; the backend's own license terms (including any GPL-3.0 components in its tree) apply to your installation.* The per-backend audit still runs for user-installed backends and its verdict is **displayed as information**; it does not block a user-installed backend.
 - The full ruling and its rationale are recorded in `docs/adr/0005-multi-backend-tts-admission.md`; the field evidence is `docs/TTS_ENGINE_SURVEY.md`.
@@ -38,6 +40,7 @@ Admission is **per backend**, against that backend's own real installed tree —
 - **Chatterbox — Perth pin:** upstream declares `resemble-perth` as an unpinned git dependency (`@master`). Our curated install pins it to a fixed commit (see `runmal.voice.install` / pyproject notes).
 - **Chatterbox — streaming:** upstream has no streaming API (`generate()` returns a whole waveform). Sentence-chunk streaming is built at the Rúnmál seam (`split_text_into_chunks` + per-chunk generate), which is also what keeps barge-in cancellation meaningful for this backend.
 - **CosyVoice — frontend:** text normalization uses the open WeTextProcessing frontend. The optional proprietary `ttsfrd` package is **not** installed and must not enter the tree (it would classify *unknown* and fail the default-tree audit).
+- **CosyVoice — distribution trap:** CosyVoice is **not** installed from PyPI. The PyPI project named `cosyvoice` (0.0.8, claiming GPL-3.0) is an **unrelated package squatting the name** — never `pip install cosyvoice`. The real CosyVoice ships from the FunAudioLLM GitHub repository; Rúnmál's installer clones it at a pinned commit into the app vendor dir and installs a curated dependency set (see `runmal.voice.install`).
 
 ## Candidate stack ledger
 
