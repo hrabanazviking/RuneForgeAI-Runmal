@@ -99,22 +99,30 @@ def _torch_cpu_refs() -> tuple[str, str]:
     )
 
 
-#: Curated pip set for CosyVoice — its upstream requirements MINUS the
-#: proprietary ``ttsfrd`` (the open WeTextProcessing frontend ships
-#: instead) and MINUS ``librosa`` (the runtime never imports it — grep
-#: evidence, 2026-10-13 — and its mere presence makes transformers 5.x
-#: hard-import ``soxr``; python-soxr declares LGPL-2.1-or-later,
-#: forbidden in the shipped tree). The runtime itself comes from the
-#: pinned git checkout. Mirrors the ``voice-cosyvoice`` extra in
-#: pyproject.toml (a test guards drift).
+#: Curated pip set for CosyVoice — upstream's requirements MINUS the
+#: proprietary ``ttsfrd`` (the open ``wetext`` frontend ships
+#: instead), MINUS the GPU/serving/training-only entries (deepspeed,
+#: gradio, the fastapi/grpc serving stack, tensorrt,
+#: onnxruntime-gpu), with the transformers line held at upstream's
+#: own pin. transformers 5.x hard-imports ``soxr`` whenever librosa
+#: is present (its audio_utils), librosa IS required (Matcha-TTS's
+#: audio utils import it on the flow path), and python-soxr
+#: declares LGPL-2.1-or-later — forbidden in the shipped tree.
+#: transformers 4.51.3's audio_utils imports librosa only; soxr is
+#: neither installed nor imported on this tree (sys.modules
+#: evidence, purplelongship 2026-10-13). The runtime itself comes
+#: from the pinned git checkout. Mirrors the ``voice-cosyvoice``
+#: extra in pyproject.toml (a test guards drift).
 COSYVOICE_PACKAGES: tuple[str, ...] = (
     "conformer",
-    "diffusers",
+    # Upstream pin; latest diffusers needs hub APIs that the
+    # transformers-4.51 hub line (<1.0) no longer exports.
+    "diffusers==0.29.0",
     # Matcha-TTS's instantiators call hydra.utils.instantiate on the
     # flow path (proven by the real build) — hydra-core belongs in
-    # the set after all, WITH its own runtime dependency antlr4
-    # (omegaconf's grammar parser; its absence is also what broke
-    # pytest via hydra's entry-point plugin).
+    # the set, WITH its own runtime dependency antlr4 (omegaconf's
+    # grammar parser; its absence is also what broke pytest via
+    # hydra's entry-point plugin).
     "hydra-core",
     "antlr4-python3-runtime==4.9.3",
     "HyperPyYAML",
@@ -142,27 +150,28 @@ COSYVOICE_PACKAGES: tuple[str, ...] = (
     "scipy",
     "soundfile",
     "tensorboard",
-    # Pinned to the version the closure was proven against: newer 5.x
-    # raises its tokenizers floor past 0.22.1 (the newest tokenizers
-    # transformers 5.2 accepts and faster-whisper's tree also allows).
-    "transformers==5.2.0",
+    # Upstream's own pin (requirements.txt). The 5.x line is
+    # unshippable for this tree — see the block comment above.
+    "transformers==4.51.3",
     "WeTextProcessing",
+    # Upstream pin; the frontend the runtime actually selects first.
+    "wetext==0.0.4",
     "wget",
     "x-transformers",
     *_torch_cpu_refs(),
-    # Proven dependency closure (purplelongship, 2026-10-13): the
-    # upstream requirements name the direct packages only; these are
-    # what the runtime actually imports, each one audit-passed.
+    # Proven dependency closure (purplelongship, 2026-10-13 — by
+    # real build + synthesis, not import alone; every entry
+    # audit-passed on the real tree).
     "einops",  # x-transformers
-    "huggingface-hub>=1.3.0,<2.0",  # transformers 5.x constraint
-    "tokenizers==0.22.1",  # transformers 5.x constraint (<=0.23.0)
+    "huggingface-hub==0.36.0",  # transformers 4.51 constraint (<1.0)
+    "tokenizers==0.21.4",  # transformers 4.51 constraint (<0.22)
     # Pinned <0.18: ruamel 0.18 changed the Loader API HyperPyYAML
     # composes (max_depth) — proven by the real build, 2026-10-13.
     "ruamel.yaml==0.17.21",  # HyperPyYAML
     "openai-whisper",  # cosyvoice.cli.frontend speech tokenizer
     "tiktoken",  # openai-whisper
     "more-itertools",  # openai-whisper / inflect
-    "numba",  # openai-whisper
+    "numba",  # openai-whisper / librosa
     "llvmlite",  # numba
     "pynini",  # WeTextProcessing runtime
     # HyperPyYAML's substrate (it composes PyYAML + ruamel at import).
@@ -175,6 +184,37 @@ COSYVOICE_PACKAGES: tuple[str, ...] = (
     "sympy",  # torch / transformers
     "mpmath",  # sympy
     "typeguard",  # inflect
+    "cloudpickle",  # transformers.generation.utils
+    # Matcha-TTS / librosa family (the flow path, via the vendored
+    # submodule): librosa arrives WITHOUT soxr — see block comment.
+    "librosa",
+    "lazy_loader",  # librosa
+    "msgpack",  # librosa
+    "pooch",  # librosa
+    "platformdirs",  # pooch
+    "decorator",  # librosa
+    "audioread",  # librosa
+    "joblib",  # librosa / scikit-learn
+    "scikit-learn",  # librosa
+    "threadpoolctl",  # scikit-learn
+    "narwhals",  # scikit-learn
+    "gdown",  # matcha checkpoint downloads
+    "beautifulsoup4",  # gdown
+    "soupsieve",  # beautifulsoup4
+    "pyarrow",  # cosyvoice.dataset.processor (config-located)
+    "pyworld",  # cosyvoice.dataset.processor
+    "setuptools==80.9.0",  # pyworld imports pkg_resources (<81 only)
+    # lightning family (the set's lightning, completed):
+    "lightning-utilities",
+    "torchmetrics",
+    # matplotlib family (the set's matplotlib, completed):
+    "pyparsing",
+    "kiwisolver",
+    "cycler",
+    "fonttools",
+    "contourpy",
+    "python-dateutil",
+    "six",  # python-dateutil
 )
 
 #: Kitten TTS runtime wheel (user-installed only). KittenTTS is not on
