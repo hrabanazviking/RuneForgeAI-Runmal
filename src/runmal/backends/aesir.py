@@ -71,8 +71,9 @@ SAMPLERS = frozenset(
 )
 #: Canonical bag key -> Aesir wire name. ``repetition_penalty`` is the one
 #: rename: the OpenAI-compatible local-engine surface spells it
-#: ``repeat_penalty``.
-_WIRE_NAMES = {
+#: ``repeat_penalty``. Public so the S310 negotiation layer can build the
+#: S208 compatibility profile from the adapter's own mapping (S702).
+WIRE_NAMES = {
     "temperature": "temperature",
     "top_p": "top_p",
     "top_k": "top_k",
@@ -82,6 +83,34 @@ _WIRE_NAMES = {
     "stop": "stop",
     "seed": "seed",
 }
+#: Canonical controls Aesir deliberately does NOT map (S702 declaration).
+#: Presence/frequency penalties are cloud-API shaping controls the local
+#: engine surface does not declare; requested context length is an engine
+#: property, not a per-request control. Together with ``SAMPLERS`` this set
+#: accounts for EVERY canonical control — there is no third, silently
+#: ignored category (INV-005).
+UNSUPPORTED_SAMPLERS = frozenset({"presence_penalty", "frequency_penalty", "context_length"})
+
+
+def map_params(params) -> tuple[dict, list[str]]:
+    """Canonical SamplingParams -> (Aesir wire dict, warnings) (S702).
+
+    The single mapping path ``chat_stream`` itself uses: supported
+    canonical controls are renamed to their wire names; unsupported ones
+    are omitted and named in a structured warning each — never sent,
+    never pretended honored (INV-005). Driven by the declared sets
+    (``WIRE_NAMES`` / ``UNSUPPORTED_SAMPLERS``), which together account
+    for every canonical control.
+    """
+    bag = params.to_bag()
+    wire: dict = {}
+    warnings: list[str] = []
+    for key in sorted(bag):
+        if key in WIRE_NAMES:
+            wire[WIRE_NAMES[key]] = bag[key]
+        else:
+            warnings.append(f"unsupported parameter dropped: {key}")
+    return wire, warnings
 
 
 def map_error(code: int, message: str = ""):
@@ -140,16 +169,14 @@ class AesirChatBackend(ChatBackend):
     async def chat_stream(self, messages, params, cancel):
         if cancel.is_set():
             raise GenerationCancelled("generation cancelled")
-        filtered, _w = self.filter_params(params)
+        wire_params, _warnings = map_params(params)
         payload = {
             "model": self._model,
             "messages": [m.to_dict() for m in messages],
             "stream": True,
             "stream_options": {"include_usage": True},
         }
-        for key, value in filtered.to_bag().items():
-            if key in _WIRE_NAMES:
-                payload[_WIRE_NAMES[key]] = value
+        payload.update(wire_params)
         usage: UsageUpdate | None = None
         reason = "stop"
         try:

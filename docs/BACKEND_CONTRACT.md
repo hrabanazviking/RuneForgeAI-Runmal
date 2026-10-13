@@ -143,6 +143,24 @@ Use its OpenAI-compatible chat surface but normalize namespaced model IDs, routi
 ### Aesir
 Prefer an OpenAI-compatible external surface when that reduces integration cost, but Rúnmál's internal contract remains its own normalized interface. Aesir must declare unsupported controls rather than accepting-and-ignoring them.
 
+*As implemented (S701/S702, `src/runmal/backends/aesir.py`):* the adapter speaks the OpenAI-compatible surface (`POST /chat/completions` SSE, `GET /models`) at a profile-configurable `base_url` and passes the shared contract suite against recorded fixtures. The canonical → wire sampling mapping is a single public table (`WIRE_NAMES`, exercised by the same `map_params` path `chat_stream` uses):
+
+| Canonical | Aesir wire | Notes |
+|---|---|---|
+| temperature | temperature | |
+| top_p | top_p | |
+| top_k | top_k | |
+| min_p | min_p | |
+| repetition_penalty | repeat_penalty | the one rename |
+| max_tokens | max_tokens | |
+| stop | stop | |
+| seed | seed | |
+| presence_penalty | — | **declared unsupported**: dropped with a structured warning, never sent |
+| frequency_penalty | — | **declared unsupported**: dropped with a structured warning, never sent |
+| context_length | — | **declared unsupported**: an engine property, not a per-request control |
+
+Mapped and unsupported sets together account for every canonical control; there is no silently-ignored third category (INV-005). Token counting is the conservative estimator; server-reported usage surfaces as `UsageUpdate` events.
+
 ## 13. Contract tests
 
 Each adapter must pass the same fake/recorded contract suite for:
