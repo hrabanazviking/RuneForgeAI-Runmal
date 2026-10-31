@@ -1,0 +1,149 @@
+{
+  "corpus": "P-005 interop corpus",
+  "fixtures": [
+    {
+      "bytes": 3589,
+      "expectation": "imports; every known field read; unknown fields of every JSON type and the extension zoo survive v2 and v3 export round trips verbatim (raw preservation)",
+      "file": "card_v2_rich.json",
+      "kind": "character-card",
+      "sha256": "332ca7d310941aadad6607931e8df4123556a3c7b2c73501d0916a76861fbca3",
+      "shape": "Character Card v2 JSON, full field set + embedded character_book in the mirror's dict-keyed entries shape",
+      "stresses": [
+        "ST-02 card depth",
+        "ST-05 embedded lore",
+        "ST-06 advanced definitions / extensions"
+      ]
+    },
+    {
+      "bytes": 1731,
+      "expectation": "imports; data.assets array, group_only_greetings, nickname and unknown fields survive a v3 export round trip verbatim",
+      "file": "card_v3_rich.json",
+      "kind": "character-card",
+      "sha256": "d052f00563343e458aea8408df01a88445f4739a8cb08164e3fd4c654562e42e",
+      "shape": "Character Card v3 JSON (fields under data)",
+      "stresses": [
+        "ST-02 v3 additions",
+        "P-016/P-023 homes: assets + group-only greetings"
+      ]
+    },
+    {
+      "bytes": 189,
+      "expectation": "imports as spec 1 with empty defaults for every absent optional field",
+      "file": "card_v1_minimal.json",
+      "kind": "character-card",
+      "sha256": "4798d4653edab5166ff832c9d25a117d6a60b6aaece25c41bc18f59b8ee62b8d",
+      "shape": "Character Card v1 JSON, sparse (name + description only)",
+      "stresses": [
+        "ST-02 sparse real-world files"
+      ]
+    },
+    {
+      "bytes": 539,
+      "expectation": "imports; null/non-string members of string lists are dropped, never stringified into literal 'None' greetings/tags (P-005 fix); deep unknown structures survive verbatim",
+      "file": "card_v2_edge.json",
+      "kind": "character-card",
+      "sha256": "ba0885f5c52be2b979a85da66d2488a54475f4dd9fdb2a80e8587c633b800fee",
+      "shape": "Character Card v2 JSON, edge values: empty strings/lists/objects, nulls inside lists, deeply nested unknowns",
+      "stresses": [
+        "ST-02 defensive parsing",
+        "P-027 kin"
+      ]
+    },
+    {
+      "bytes": 580,
+      "expectation": "imports as the v3 payload (ccv3 preferred over chara, the parser's documented order)",
+      "file": "card_dual_ccv3.png",
+      "kind": "character-card",
+      "sha256": "58b0a1954f10a232a40077817038d4a49d2753a2591e05078feaed7b4b8df211",
+      "shape": "PNG carrying BOTH a chara (v2) and a ccv3 (v3) tEXt chunk, as dual-published cards do",
+      "stresses": [
+        "ST-02 dual-published PNGs"
+      ]
+    },
+    {
+      "bytes": 1564,
+      "expectation": "imports via parse_import; mapped fields asserted (keys, priority, caseSensitive, matchWholeWords honoured since P-005, sticky/cooldown/delay mapped since P-005); the still-dropped field set is pinned exactly in the corpus test and shrinks only by deliberate later slices",
+      "file": "lorebook_worldinfo_full.json",
+      "kind": "lorebook",
+      "sha256": "c1a55b4d1502490b7a35a6a68f690e654cee0bede0b7ae41eb6c081e2779f9ed",
+      "shape": "Mirror world-info JSON (uid-keyed entries) with the full documented per-entry field set",
+      "stresses": [
+        "VX-27 book interop",
+        "ST lore depth: selective logic, probability, recursion, groups, depth (Part III homes)"
+      ]
+    },
+    {
+      "bytes": 548,
+      "expectation": "imports via parse_import with defaults, never a bare TypeError (P-005 fix); numeric strings coerced",
+      "file": "lorebook_worldinfo_nulls.json",
+      "kind": "lorebook",
+      "sha256": "32905428ef8866574179f4efe74d41408a2b29f49d75814d8a4588ace14903ef",
+      "shape": "Mirror world-info JSON whose numeric fields are explicit nulls or numeric strings, as real exporters leave them",
+      "stresses": [
+        "defensive parsing",
+        "P-027 kin"
+      ]
+    },
+    {
+      "bytes": 773,
+      "expectation": "imports via parse_import with every native field carried, including timed effects and at_depth position string kept as data",
+      "file": "lorebook_native_rich.json",
+      "kind": "lorebook",
+      "sha256": "a6689a455bd16b000f10b9005156d82acd14f8887f2034936c355b5202938557",
+      "shape": "Rúnmál native lorebook JSON (runmal-lorebook v1)",
+      "stresses": [
+        "native round trip baseline"
+      ]
+    },
+    {
+      "bytes": 727,
+      "expectation": "no ST-preset importer exists yet (P-021 is its home); corpus test pins that the file is well-formed and that validate_params carries the mirror's key spellings (temp, rep_pen, min_p, tfs) as opaque unknowns today — the gap P-021 must close deliberately",
+      "file": "preset_st_textcompletion.json",
+      "kind": "preset",
+      "sha256": "8ddf0591c335bff5c4fb7407e40c5f5438a31e903cdfc804b253e72b0aea0ce8",
+      "shape": "Mirror text-completion preset JSON: flat sampler keys in the mirror's own spellings",
+      "stresses": [
+        "ST-34 presets",
+        "P-021 home"
+      ]
+    },
+    {
+      "bytes": 1008,
+      "expectation": "no importer exists yet (P-021/P-051 homes); corpus test pins well-formedness and the prompts/prompt_order structure surviving a JSON round trip byte-semantically",
+      "file": "preset_st_chatcompletion.json",
+      "kind": "preset",
+      "sha256": "dd09bf6a2b1eed996de9766b8ae0f14f44a32451e6c10ed243a0abe80fc45a53",
+      "shape": "Mirror chat-completion preset JSON: sampler keys plus prompts[] and prompt_order[]",
+      "stresses": [
+        "ST-34 presets",
+        "ST prompt-manager shape"
+      ]
+    },
+    {
+      "bytes": 789,
+      "expectation": "no chat importer exists yet (P-020 is its home); corpus test pins JSONL well-formedness: metadata header line, swipe arrays present as data",
+      "file": "chat_st.jsonl",
+      "kind": "chat",
+      "sha256": "158895f6d195789bd8215953dc176d2ff634eaf5a764854b775ad2e71108425b",
+      "shape": "Mirror chat export: JSONL, first line metadata, then one message object per line with swipes",
+      "stresses": [
+        "P-020 home",
+        "ST- chat file shape"
+      ]
+    },
+    {
+      "bytes": 398,
+      "expectation": "no persona-file importer exists yet (P-018 is its home); corpus test pins well-formedness of the exchanged persona shape",
+      "file": "persona_st.json",
+      "kind": "persona",
+      "sha256": "00854cafec2bfe5f917d2fae5bf5b31b15e9d47cb5d43aa8ee2708f3e7ab2127",
+      "shape": "Persona JSON as exchanged between mirror users (name, description, prompt, placement fields)",
+      "stresses": [
+        "P-018 home",
+        "ST-05 persona conversion kin"
+      ]
+    }
+  ],
+  "provenance": "Every fixture in this corpus was authored fresh for Rúnmál by the campaign keeper on 2026-10-30. No third-party user content was copied, downloaded, or scraped: the shapes follow the mirrors' public file-format specifications and public documentation only (clean-room law), and all names, text, and worlds are original to this corpus. Fixtures are therefore under the repository's own licence and may be redistributed with it.",
+  "purpose": "Real-world-shaped character cards, lorebooks, presets, a chat file, and a persona file, used as test fixtures so users' content can be proven to survive import/export trips through Rúnmál's current code — and so the losses that remain are pinned exactly, with their roadmap homes named, instead of discovered by users."
+}

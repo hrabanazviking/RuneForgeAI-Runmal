@@ -10,7 +10,14 @@ Export is Rúnmál's native shape. Import accepts two shapes:
    "order": int, "position": int}}}`` (``entries`` may also be a list).
    Field mapping: key->keys, keysecondary->secondary_keys,
    comment->name, order->priority, disable->not enabled,
-   position 0->before_char / 1->after_char (anything else -> before_char).
+   position 0->before_char / 1->after_char (anything else -> before_char),
+   caseSensitive->case_sensitive, matchWholeWords->whole_word,
+   sticky/cooldown/delay -> sticky/cooldown/delay_prompts (P-005).
+   Numeric fields coerce tolerantly: explicit nulls and numeric
+   strings in real files mean the default / the number, never a
+   crash (P-005). Fields with no Rúnmál home yet (selectiveLogic,
+   probability, recursion flags, groups, depth…) are still dropped;
+   the P-005 corpus test pins that set exactly.
 """
 
 from __future__ import annotations
@@ -51,21 +58,43 @@ def export_book(book: dict, entries: list[dict]) -> dict:
     }
 
 
+def _as_int(value: object, default: int) -> int:
+    """Tolerant int coercion for imported files (P-005).
+
+    Real-world lorebook files carry explicit nulls and occasionally
+    numeric strings/floats in integer fields; a null must mean the
+    default, never a bare ``TypeError`` escaping ``parse_import``.
+    Booleans are not integers here.
+    """
+    if isinstance(value, bool) or value is None:
+        return default
+    if isinstance(value, int):
+        return value
+    if isinstance(value, float):
+        return int(value)
+    if isinstance(value, str):
+        try:
+            return int(float(value)) if ("." in value or "e" in value.lower()) else int(value)
+        except ValueError:
+            return default
+    return default
+
+
 def _native_entry(raw: dict) -> dict:
     return {
         "name": str(raw.get("name", "")),
         "content": str(raw.get("content", "")),
         "keys": list(raw.get("keys") or []),
         "secondary_keys": list(raw.get("secondary_keys") or []),
-        "priority": int(raw.get("priority", 100)),
+        "priority": _as_int(raw.get("priority"), 100),
         "position": str(raw.get("position", "before_char")),
         "enabled": bool(raw.get("enabled", True)),
         "constant": bool(raw.get("constant", False)),
         "case_sensitive": bool(raw.get("case_sensitive", False)),
         "whole_word": bool(raw.get("whole_word", True)),
-        "sticky_prompts": int(raw.get("sticky_prompts", 0)),
-        "cooldown_prompts": int(raw.get("cooldown_prompts", 0)),
-        "delay_prompts": int(raw.get("delay_prompts", 0)),
+        "sticky_prompts": _as_int(raw.get("sticky_prompts"), 0),
+        "cooldown_prompts": _as_int(raw.get("cooldown_prompts"), 0),
+        "delay_prompts": _as_int(raw.get("delay_prompts"), 0),
     }
 
 
@@ -79,20 +108,25 @@ def _worldinfo_entry(raw: dict) -> dict:
     secondary = raw.get("keysecondary") or []
     if isinstance(secondary, str):
         secondary = [secondary]
+    whole_word = raw.get("matchWholeWords")
     return {
         "name": str(raw.get("comment") or raw.get("name") or ""),
         "content": str(raw.get("content", "")),
         "keys": [str(k) for k in keys],
         "secondary_keys": [str(k) for k in secondary],
-        "priority": int(raw.get("order", 100)),
+        "priority": _as_int(raw.get("order"), 100),
         "position": position,
         "enabled": not bool(raw.get("disable", False)),
         "constant": bool(raw.get("constant", False)),
         "case_sensitive": bool(raw.get("caseSensitive", False)),
-        "whole_word": True,
-        "sticky_prompts": 0,
-        "cooldown_prompts": 0,
-        "delay_prompts": 0,
+        # P-005: honour the source's whole-word flag instead of
+        # silently forcing it on; absent means the mirror default.
+        "whole_word": True if whole_word is None else bool(whole_word),
+        # P-005: the timed-effect fields exist on both sides of the
+        # mapping (sticky/cooldown/delay <-> *_prompts); carry them.
+        "sticky_prompts": _as_int(raw.get("sticky"), 0),
+        "cooldown_prompts": _as_int(raw.get("cooldown"), 0),
+        "delay_prompts": _as_int(raw.get("delay"), 0),
     }
 
 
@@ -122,7 +156,7 @@ def parse_import(data: dict) -> tuple[dict, list[dict]]:
             book = {
                 "name": str(data.get("name") or ""),
                 "description": str(data.get("description") or ""),
-                "scan_depth": int(data.get("scan_depth") or 4),
+                "scan_depth": _as_int(data.get("scan_depth"), 4),
                 "token_budget": data.get("token_budget"),
             }
     else:

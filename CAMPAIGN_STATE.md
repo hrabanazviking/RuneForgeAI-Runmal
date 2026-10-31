@@ -98,8 +98,31 @@ invented by the keeper.
     or dropped by the gate, never silently. Full suite re-run
     this tick on the VM (sanitised proxy env): 685 passed,
     6 skipped, 0 failed — matches the P-007 baseline exactly.
+- P-005 interop corpus — banked this tick (see git log). Corpus:
+    tests/fixtures/interop/ (12 fixtures + manifest with sha256
+    pins + make_corpus.py), tests/test_p005_interop_corpus.py
+    (15 tests), doc docs/INTEROP_CORPUS_2026-10-30.md. Provenance
+    decision recorded in the doc: no redistributable public user
+    corpus exists, so all fixtures were authored fresh for Rúnmál
+    (shapes from public specs/docs only) rather than scraping
+    strangers' content. Measured: cards travel well (unknowns of
+    every JSON type + extension zoo survive v2/v3 round trips;
+    v3 assets + group-only greetings survive; dual-chunk PNG
+    imports as ccv3). Lorebook still-dropped set pinned exactly
+    in the test (23 world-info fields + at-depth position) with
+    Part III homes. Presets/chat/persona have NO importer yet
+    (P-021/P-020/P-018) — pinned as well-formedness targets.
+    Four bugs found by the corpus and FIXED in-slice: lorebook
+    import crashed with bare TypeError on null numerics (now
+    tolerant _as_int); world-info matchWholeWords ignored
+    (whole_word forced True — now honoured); world-info
+    sticky/cooldown/delay zeroed despite native *_prompts fields
+    (now mapped); card string lists stringified nulls into
+    literal "None" greetings/tags (now genuine strings only).
+    Full suite re-run this tick on the VM (sanitised proxy env):
+    700 passed, 6 skipped, 0 failed — baseline 685 + 15 new.
 - IN PROGRESS: none (tick closing cleanly).
-- Next slice: P-005 interop corpus (then P-008…P-014 in
+- Next slice: P-008 backend parity ledger (then P-009…P-014 in
   roadmap order).
 
-Last updated: 2026-10-30 22:10 EDT
+Last updated: 2026-10-30 22:31 EDT

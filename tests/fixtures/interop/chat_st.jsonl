@@ -1,0 +1,4 @@
+{"character_name":"Old Bruni","chat_metadata":{"integrity":"corpus-placeholder"},"create_date":"2026-10-01 @20h 00m 00s 000ms","user_name":"Ferry Passenger"}
+{"extra":{"api":"corpus","model":"corpus-model"},"is_system":false,"is_user":false,"mes":"Mind the gap. It minds you.","name":"Old Bruni","send_date":"2026-10-01 @20h 00m 01s","swipe_id":0,"swipes":["Mind the gap. It minds you.","Step careful. The planks remember rain."]}
+{"is_user":true,"mes":"Is the letter heavy, Bruni?","name":"Ferry Passenger","send_date":"2026-10-01 @20h 01m 00s","swipe_id":0,"swipes":["Is the letter heavy, Bruni?"]}
+{"extra":{},"is_user":false,"mes":"Letters are never heavy. News is.","name":"Old Bruni","send_date":"2026-10-01 @20h 01m 30s","swipe_id":0,"swipes":["Letters are never heavy. News is."]}

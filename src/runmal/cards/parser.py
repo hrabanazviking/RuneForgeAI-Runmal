@@ -64,7 +64,10 @@ def _as_str(value: object) -> str:
 
 def _as_str_list(value: object) -> list[str]:
     if isinstance(value, list):
-        return [str(item) for item in value]
+        # P-005: keep only genuine strings. Coercing nulls/numbers
+        # silently manufactured literal "None"/"42" greetings and
+        # tags from real-world files that carry them.
+        return [item for item in value if isinstance(item, str)]
     return []
 
 
