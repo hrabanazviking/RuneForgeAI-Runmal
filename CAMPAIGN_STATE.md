@@ -146,8 +146,37 @@ invented by the keeper.
     profiles, FTS-degrading embeddings are Rúnmál-only.
     Full suite re-run this tick on the VM (sanitised proxy env):
     705 passed, 6 skipped, 0 failed — P-005 baseline 700 + 5 new.
+- P-009 Aesir readiness check — banked this tick (see git log).
+    Doc: docs/AESIR_READINESS_2026-10-30.md + pinning tests
+    tests/test_p009_aesir_readiness.py (6 tests). Headline: Aesir
+    chat through Rúnmál's adapter is NOT PROVEN LIVE (S701–S706
+    proved against fixtures/mocks only) and as shipped would fail
+    against Aesir's real server, judged from Aesir's own v1 API
+    matrix + capability ledger (Aesir repo @ 1eed9706). D1:
+    adapter sends stream_options on every request — Aesir's chat
+    route rejects it (400), so no real request can complete. D2:
+    sampler overclaim — of the adapter's 8 declared-honoured
+    controls the OpenAI route accepts only temperature/top_p/
+    max_tokens/seed; top_k/min_p/repeat_penalty/stop are rejected
+    fields (the full set is served on the native /v1/generate
+    route instead). D3: Aesir embeddings NOT SERVED (no
+    /v1/embeddings route; calls 404 → honest FTS degradation;
+    Aesir's own posture: "Embeddings remain Ollama"). D4: default
+    base_url :8000 matches neither Aesir port (18434 native /
+    11434 ollama-mode) — ready only if configured. Also recorded:
+    catalog-vs-resident listing trap (D5), incomplete-stream
+    Done-on-EOF honesty gap (D6), 128-msg/131072-byte admission
+    bounds vs full-history sends (D7), unmapped 422 (D8),
+    unconsumed served surface incl. /v1/completions (D9), and an
+    unproven Ollama-mode interop path (D10). First recommendation
+    to P-014 (kin to P-008's): an Aesir binding-repair slice,
+    NO HOME in Parts II–VI; plus the owed live smoke on
+    purplelongship. No live server was run by this tick — the
+    ledger binds documents to documents and says so. Full suite
+    re-run this tick on the VM (sanitised proxy env): 711 passed,
+    6 skipped, 0 failed — P-008 baseline 705 + 6 new.
 - IN PROGRESS: none (tick closing cleanly).
-- Next slice: P-009 Aesir readiness check (then P-010…P-014 in
+- Next slice: P-010 voice provider census (then P-011…P-014 in
   roadmap order).
 
-Last updated: 2026-10-30 22:37 EDT
+Last updated: 2026-10-30 22:47 EDT
