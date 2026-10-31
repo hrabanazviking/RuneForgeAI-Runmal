@@ -41,8 +41,18 @@ invented by the keeper.
     must sanitise proxy env (command in
     docs/TWO_MIRRORS_BASELINE_2026-10-30.md). Purplelongship
     confirmation leg still owed at P-014 (Part I gate).
+- P-001 founding audit — banked this tick (see git log). Doc:
+    docs/FOUNDING_AUDIT_2026-10-30.md — all 94 founding slices stated
+    as behaviour with proving tests named (111 test files matched by
+    slice number; only S101/S112 lack a dedicated file and are named
+    as such), the extra UI campaign inventoried separately (18 items,
+    287-green wave close 5bd28cd), post-founding additions and honest
+    caveats recorded (CosyVoice CPU speed = HAVE-THIN; Windows leg
+    not run by ruling). Full suite re-run this tick on the VM
+    (sanitised proxy env): 685 passed, 6 skipped, 0 failed — matches
+    the P-007 baseline exactly.
 - IN PROGRESS: none (tick closing cleanly).
-- Next slice: P-001 founding audit (then P-002, P-003, P-004, P-005,
+- Next slice: P-002 SillyTavern census (then P-003, P-004, P-005,
   P-008…P-014 in roadmap order).
 
-Last updated: 2026-10-30 21:40 EDT
+Last updated: 2026-10-30 21:37 EDT
