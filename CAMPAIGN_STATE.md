@@ -60,8 +60,25 @@ invented by the keeper.
     Full suite re-run this tick on the VM (sanitised proxy env):
     685 passed, 6 skipped, 0 failed — matches the P-007 baseline
     exactly.
+- P-003 Voxta census — banked this tick (see git log). Doc:
+    docs/VOXTA_CENSUS_2026-10-30.md — 67 behaviour rows
+    (VX-01–VX-67) in P-001's language, from Voxta's official
+    public site + official documentation (doc.voxta.ai: Scenarios,
+    Events, Actions & tools, Buttons & controls, Contexts, Memory
+    books, Scripting, Templates, Messages, Packages, HUD & stage
+    effects — read in full) + published release notes only
+    (v1.11.0 baseline; v1.9.0/v1.9.3 read in full; no source
+    code exists in public and none was sought — clean-room law).
+    Honest flags carried in the doc: live docs are not
+    version-pinned (doc-only rows may post-date 1.11.0), one
+    flagged unofficial corroboration on VX-15 only, MP4/AVIF
+    video avatars + vision folder-watcher rest on roadmap §1,
+    and the Assistant view / full Inspector surface are recorded
+    as surveyed-but-not-yet-read, not rows. Full suite re-run
+    this tick on the VM (sanitised proxy env): 685 passed,
+    6 skipped, 0 failed — matches the P-007 baseline exactly.
 - IN PROGRESS: none (tick closing cleanly).
-- Next slice: P-003 Voxta census (then P-004, P-005,
-  P-008…P-014 in roadmap order).
+- Next slice: P-004 delta table (then P-005, P-008…P-014 in
+  roadmap order).
 
-Last updated: 2026-10-30 21:53 EDT
+Last updated: 2026-10-30 22:02 EDT
