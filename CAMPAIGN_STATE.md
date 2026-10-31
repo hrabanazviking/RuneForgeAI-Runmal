@@ -266,8 +266,44 @@ invented by the keeper.
     re-run this tick on the VM (sanitised proxy env):
     728 passed, 6 skipped, 0 failed — P-011 baseline
     722 + 6 new.
+- P-013 priority order ratified — banked this tick (see git log).
+    Doc: docs/PRIORITY_ORDER_2026-10-30.md + pinning tests
+    tests/test_p013_priority_order.py (7 tests) + the P-013
+    entry appended to the clean-room log per its §0(5) rule.
+    Verdict: the roadmap §3 order STANDS — no part renumbered
+    or re-sequenced, no roadmap text edited. Ratified sequence:
+    (0) Evaluation Sitting first, Volmarr-gated, its findings
+    interrupt parity slices in flight (P-006's rule kept);
+    (1) P-014 gate next; (2) Parts II–VI in numeric order —
+    the only defined parts, forming the dependency chain the
+    slices themselves declare (P-093 store + P-082 sandbox law
+    → Part IX; P-087 → Part X; P-028/P-045/P-063/P-083 packs
+    → Part XII; P-043/P-059 → Part XIII Inspector);
+    (3) Parts VII–XIII in numeric order once definitions
+    exist, with VII (Voice) and IX (Scenarios) FIRST in the
+    definition queue as the block's daily-use peaks, XII
+    (Hub) late by sovereign design, XIII after IX and waiting
+    on P-012's direct Assistant/Inspector reading;
+    (4) Part XIV last by definition. The literal move —
+    VII/IX executed ahead of II–VI — was considered and
+    REJECTED with three recorded reasons (would not deliver
+    sooner: voice already HAVE, scenarios need II–VI
+    substrates; neither part has slice definitions to
+    execute; P-004's priority note supports the order as
+    shaped). Two priority rulings inside the order: A — the
+    NO-HOME adapter family (P-008 generic chat adapter,
+    P-009 Aesir binding repair, P-010 generic speech adapter)
+    ranks FIRST among P-014's homing candidates (ranking is
+    P-013's act, homing remains the gate's); B — P-011's PWA
+    shell + browser-capture items ride with Part VII as its
+    run-up, viewport repair rides the first web slice.
+    Census basis: 141 rows 14/69/55/3 (P-004); scenario block
+    VX-28–VX-47 = 20 rows, 0 HAVE (17 MISSING, 2 HAVE-THIN
+    substrates, 1 DELIBERATELY-DIFFERENT); 34 of 55 MISSING
+    rows carry a title-only road home. Full suite re-run this
+    tick on the VM (sanitised proxy env): 735 passed,
+    6 skipped, 0 failed — P-012 baseline 728 + 7 new.
 - IN PROGRESS: none (tick closing cleanly).
-- Next slice: P-013 priority order ratified (then P-014,
-  the Part I gate, in roadmap order).
+- Next slice: P-014, the Part I gate (in roadmap order).
 
-Last updated: 2026-10-30 23:08 EDT
+Last updated: 2026-10-30 23:11 EDT

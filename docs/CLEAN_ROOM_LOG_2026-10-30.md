@@ -230,6 +230,15 @@ its full text. Its consulted sources, per area, were:
   the census; CONNECT verdicts judge a future user-key
   adapter, SHIP verdicts rest on papers.
 
+### Priority order (P-013)
+
+- **P-013 (2026-10-30, derived / own documents only):** no
+  new external source and no mirror reading. Its inputs are
+  this campaign's own banked records (the filed roadmap,
+  P-004, P-006, P-008, P-009, P-010, P-011 and this log),
+  read in full on 2026-10-30. The ratification rests on
+  provenance already logged above; it creates none.
+
 ## §3 Open reading carried forward
 
 These gaps are part of the log, not omissions from it.
