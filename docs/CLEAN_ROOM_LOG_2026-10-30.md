@@ -317,3 +317,11 @@ source in §0(2) and appends its entry here:
   inputs are the P-014 gate's homing and F-01's wire
   discipline, both already logged above. No live server was
   run; NOT PROVEN LIVE stands until the owed smoke runs.
+- **F-03 (2026-10-30, own tree only):** no new external source
+  and no mirror reading. The generic OpenAI-compatible speech
+  adapter implements the common speech surface exactly as
+  P-010's census already recorded it from the mirrors'
+  official documentation (logged in §2 above), behind
+  Rúnmál's own TTS/STT seams and in F-01's adapter pattern;
+  its other inputs are the P-014 gate's homing and P-010 §3's
+  sizing, both already logged. No live endpoint was called.

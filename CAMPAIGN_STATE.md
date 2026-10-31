@@ -416,8 +416,48 @@ invented by the keeper.
     targeted set then passed twice clean, 62 passed, and
     the full suite is green — recorded as a transient,
     not hidden.)
+- F-03 generic OpenAI-compatible speech adapter — banked
+    this tick (see git log). Build:
+    src/runmal/voice/openai_compat.py — OpenAICompatibleTTS
+    Backend (POST /audio/speech, response_format "pcm":
+    PCM16 24 kHz chunks unmodified at sample_rate 24000,
+    seam sentence splitter per piece, is_final sentinel,
+    caller's voice wins, speaking_rate clipped to the served
+    0.25–4.0 speed range) + OpenAICompatibleSTTBackend
+    (POST /audio/transcriptions, multipart WAV framed by
+    stdlib wave, verbose_json normalized into segments/words;
+    a segment-less reply becomes one segment spanning the
+    audio). Both seams name the adapter "openai"; both
+    registries gained an "openai" spec with a DISABLED
+    install plan (CONNECT class, P-010: Rúnmál ships only
+    its adapter code; the plan note is the configuration
+    instruction — OPENAI_API_KEY + RUNMAL_SPEECH_BASE_URL
+    env fallbacks; default base URL pinned equal to F-01's
+    chat default by test). Both factories build it, so
+    voice settings + character voice profiles can select
+    it; the STT entry is distinct from the registered
+    local "openai-whisper" reference implementation, which
+    stands unchanged. Key travels only as an Authorization
+    header; errors are generic-worded by status, bodies
+    never echoed. Doc:
+    docs/GENERIC_OPENAI_SPEECH_ADAPTER_2026-10-30.md +
+    fixture tests/fixtures/voice/openai_transcription.json
+    + tests/test_f03_openai_speech.py (11 tests). The
+    census gained its appended §7 F-03 follow-on (original
+    verdicts stand) and the clean-room log its F-03 entry
+    (own tree only; no live endpoint was called).
+    Deliberately updated pins, each with its reason in the
+    test: tests/test_p010_voice_provider_census.py (both
+    registry tuples), tests/test_s504_tts.py (known set +
+    connect class + thresholds). Unchanged and re-verified:
+    KNOWN_* == registry + fake formulas, shipped defaults
+    still CosyVoice / faster-whisper only. Full suite
+    re-run this tick on the VM (sanitised proxy env):
+    775 passed, 6 skipped, 0 failed — F-02 baseline
+    764 + 11 new. Ruff: no new findings (the 5 in
+    voice/backends.py are pre-existing on the baseline).
 - IN PROGRESS: none (tick closing cleanly).
-- Next slice: F-03, the generic OpenAI-compatible speech
-  adapter (gate follow-on block, before P-015).
+- Next slice: F-04, the clean-up tool over runmal doctor
+  (gate follow-on block, last before P-015).
 
-Last updated: 2026-10-30 23:41 EDT tick (F-02 banked)
+Last updated: 2026-10-30 23:51 EDT tick (F-03 banked)

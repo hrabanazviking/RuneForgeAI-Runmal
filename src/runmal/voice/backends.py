@@ -41,6 +41,7 @@ from pathlib import Path
 from typing import Iterator
 
 from runmal.voice.install import InstallPlan, vendor_dir
+from runmal.voice.openai_compat import OpenAICompatibleTTSBackend
 from runmal.voice.tts import (
     AudioChunk,
     FakeTTSBackend,
@@ -336,6 +337,30 @@ TTS_REGISTRY: dict[str, TTSBackendSpec] = {
         ),
         tree_packages=_dist_names(("piper-tts==1.8.0",)),
     ),
+    # F-03 (Part I follow-on): a CONNECT adapter, not an install —
+    # the generic OpenAI-compatible speech shape (P-010's 4
+    # WANTED-GENERIC rows). Rúnmál ships only its own adapter code
+    # (runmal.voice.openai_compat); the service is the user's own
+    # key / own server, so there is no install recipe: the plan is
+    # disabled and its note is the configuration instruction the
+    # install button explains instead of running anything.
+    "openai": TTSBackendSpec(
+        key="openai",
+        display_name="OpenAI-compatible speech (connection)",
+        default_shipped=False,
+        verified=True,
+        plan=_plan(
+            "openai",
+            enable=False,
+            probe_import="",
+            note="Connection, not an install: nothing to download. "
+            "Set OPENAI_API_KEY for the key and, for a non-OpenAI "
+            "endpoint, RUNMAL_SPEECH_BASE_URL — then select this "
+            "backend. Covers OpenAI TTS, Pollinations, and any "
+            "server speaking the common speech shape (F-03).",
+        ),
+        tree_packages=(),
+    ),
 }
 
 #: The default TTS backend when the user has not chosen one.
@@ -607,6 +632,7 @@ _FACTORIES = {
     "chatterbox": ChatterboxTTS,
     "kitten": KittenTTS,
     "piper": PiperTTS,
+    "openai": OpenAICompatibleTTSBackend,
     "fake-tts": FakeTTSBackend,
 }
 

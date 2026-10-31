@@ -232,3 +232,22 @@ recommend the three as one generic-adapter family.
    (FAIL-SHIP), Electron Hub / NovelAI / Voxta Cloud voice
    services (UNWANTED, inheriting P-008), Coqui-TTS route
    (DEPRECATED by its own mirror).
+
+## §7 F-03 follow-on (2026-10-30, appended — the census stands)
+
+The P-014 gate homed §6 recommendation 1 as follow-on **F-03**,
+and F-03 is banked: the generic OpenAI-compatible speech
+adapter now exists in `src/runmal/voice/openai_compat.py` —
+synthesis (`POST /audio/speech`, `pcm` format) behind the TTS
+seam and transcription (`POST /audio/transcriptions`,
+`verbose_json`) behind the STT seam, selectable as backend key
+`openai` on both seams and configured by base URL + the user's
+own key (CONNECT class: Rúnmál ships only its adapter code).
+The 4 WANTED-GENERIC rows (OpenAI TTS, OpenAI STT,
+Pollinations, OpenAI-compatible) are covered by this one build
+wherever the named service offers the compatible surface; no
+live endpoint was called. §6 recommendations 2–4 are unchanged:
+the cloud connectors remain queued to the Part VII definition
+queue (ElevenLabs first), the REVERIFY rows remain REVERIFY,
+and the closed rows remain closed. The build record is
+`docs/GENERIC_OPENAI_SPEECH_ADAPTER_2026-10-30.md`.

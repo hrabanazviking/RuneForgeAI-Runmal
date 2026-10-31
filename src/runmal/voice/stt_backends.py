@@ -25,6 +25,7 @@ from dataclasses import dataclass
 
 from runmal.voice.backends import BackendUnavailable
 from runmal.voice.install import InstallPlan, vendor_dir
+from runmal.voice.openai_compat import OpenAICompatibleSTTBackend
 from runmal.voice.stt import FakeSTTBackend, FasterWhisperSTT, STTBackend
 
 
@@ -126,6 +127,29 @@ STT_REGISTRY: dict[str, STTBackendSpec] = {
         "Silero STT",
         "Registered — torch-based models; recipe not yet forge-verified.",
     ),
+    # F-03 (Part I follow-on): a CONNECT adapter, not an install —
+    # the generic OpenAI-compatible transcription shape (P-010's
+    # WANTED-GENERIC STT row). Distinct from the ``openai-whisper``
+    # entry above, which is the local reference implementation.
+    # The plan is disabled: its note is the configuration
+    # instruction the install button explains instead of running.
+    "openai": STTBackendSpec(
+        key="openai",
+        display_name="OpenAI-compatible transcription (connection)",
+        default_shipped=False,
+        verified=True,
+        plan=_plan(
+            "openai",
+            enable=False,
+            probe_import="",
+            note="Connection, not an install: nothing to download. "
+            "Set OPENAI_API_KEY for the key and, for a non-OpenAI "
+            "endpoint, RUNMAL_SPEECH_BASE_URL — then select this "
+            "backend. Covers OpenAI Whisper API and any server "
+            "speaking the common transcription shape (F-03).",
+        ),
+        tree_packages=(),
+    ),
 }
 
 #: The default STT backend when the user has not chosen one.
@@ -146,6 +170,10 @@ class DistilWhisperSTT(FasterWhisperSTT):
 
 def build_stt_backend(key: str, **kwargs) -> STTBackend:
     """Construct the backend for ``key`` or raise BackendUnavailable."""
+    if key == "openai":
+        # F-03 connect adapter: no local runtime to be unavailable;
+        # endpoint failures surface at call time as SpeechError.
+        return OpenAICompatibleSTTBackend(**kwargs)
     if key == "fake-stt":
         return FakeSTTBackend()
     if key == "faster-whisper":

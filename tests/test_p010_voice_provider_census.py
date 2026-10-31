@@ -8,6 +8,12 @@ census's own completeness (every judged provider named, the
 verdict totals and the NO-HOME recommendations recorded), so a
 future voice slice must update the census deliberately instead
 of the census silently going stale.
+
+Updated deliberately by F-03 (the gate's follow-on slice that
+built the generic speech adapter): the registry pins below now
+record the post-F-03 tree — the ``openai`` connect adapter
+appended on both seams — and the census carries F-03's
+follow-on note in its §7.
 """
 
 from __future__ import annotations
@@ -47,7 +53,7 @@ STT_PROVIDERS = (
 
 def test_tts_registry_is_exactly_the_census_tree_side() -> None:
     assert tuple(TTS_REGISTRY) == (
-        "cosyvoice", "chatterbox", "kitten", "piper",
+        "cosyvoice", "chatterbox", "kitten", "piper", "openai",
     )
     assert DEFAULT_TTS_BACKEND == "cosyvoice"
     assert KNOWN_TTS_BACKENDS == tuple(TTS_REGISTRY) + ("fake-tts",)
@@ -62,7 +68,7 @@ def test_stt_registry_is_exactly_the_census_tree_side() -> None:
     assert tuple(STT_REGISTRY) == (
         "faster-whisper", "distil-whisper", "whisper-cpp",
         "openai-whisper", "moonshine", "parakeet", "canary", "vosk",
-        "sherpa-onnx-stt", "silero-stt",
+        "sherpa-onnx-stt", "silero-stt", "openai",
     )
     assert DEFAULT_STT_BACKEND == "faster-whisper"
     assert KNOWN_STT_BACKENDS == tuple(STT_REGISTRY) + ("fake-stt",)

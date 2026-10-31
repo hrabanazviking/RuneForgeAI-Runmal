@@ -219,8 +219,13 @@ def test_registry_admission_classes_and_defaults():
     assert not TTS_REGISTRY["chatterbox"].default_shipped
     assert not TTS_REGISTRY["kitten"].default_shipped
     assert not TTS_REGISTRY["piper"].default_shipped
+    # F-03 added "openai": a CONNECT adapter (generic speech
+    # shape), not shipped and not an install — its plan is
+    # disabled and carries the configuration note instead.
+    assert not TTS_REGISTRY["openai"].default_shipped
+    assert TTS_REGISTRY["openai"].plan.enable is False
     assert set(KNOWN_TTS_BACKENDS) == {
-        "cosyvoice", "chatterbox", "kitten", "piper", "fake-tts"}
+        "cosyvoice", "chatterbox", "kitten", "piper", "openai", "fake-tts"}
     assert "kokoro-onnx" not in KNOWN_TTS_BACKENDS  # removed, ADR-0005
 
 
@@ -238,6 +243,8 @@ def test_predeclared_thresholds_are_the_benchmarks_md_values():
     assert TTS_REGISTRY["chatterbox"].rtf_p50 is None
     assert TTS_REGISTRY["kitten"].first_audio_p50_s is None
     assert TTS_REGISTRY["piper"].rtf_p50 is None
+    assert TTS_REGISTRY["openai"].first_audio_p50_s is None  # F-03 connect adapter
+    assert TTS_REGISTRY["openai"].rtf_p50 is None
 
 
 def test_chatterbox_stock_recipe_is_the_unpruned_upstream_package():
