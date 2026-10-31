@@ -239,6 +239,18 @@ its full text. Its consulted sources, per area, were:
   read in full on 2026-10-30. The ratification rests on
   provenance already logged above; it creates none.
 
+### Part I gate (P-014)
+
+- **P-014 (2026-10-30, derived / own documents and own-tree
+  measurement only):** no new external source and no mirror
+  reading. Its inputs are this campaign's own banked
+  records (the filed roadmap, P-001–P-013 and this log),
+  read in full on 2026-10-30, plus one own-tree measurement:
+  the project's own S806 release tooling
+  (`runmal release gate` / `runmal release licenses`) run
+  over this tree's installed set. The gate rests on
+  provenance already logged above; it creates none.
+
 ## §3 Open reading carried forward
 
 These gaps are part of the log, not omissions from it.

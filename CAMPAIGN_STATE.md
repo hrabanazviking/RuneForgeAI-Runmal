@@ -303,7 +303,57 @@ invented by the keeper.
     rows carry a title-only road home. Full suite re-run this
     tick on the VM (sanitised proxy env): 735 passed,
     6 skipped, 0 failed — P-012 baseline 728 + 7 new.
+- P-014 Part I gate — banked this tick (see git log). Doc:
+    docs/PART_I_GATE_2026-10-30.md + pinning tests
+    tests/test_p014_part1_gate.py (9 tests) + the P-014 entry
+    appended to the clean-room log. VERDICT: Part I COMPLETE,
+    gate PASSES. Parts II–VI re-validated by mechanical count
+    (100 defined slices P-001–P-100 continuous, no gaps or
+    duplicates; II–VI = 86 slices) and STAND as written; no
+    roadmap text edited, nothing renumbered. Every flagged
+    row homed, queued, or explicitly dropped: the NO-HOME
+    adapter family is homed as a Part I follow-on block
+    executed before P-015 — F-01 generic OpenAI-compatible
+    chat (+embeddings) adapter, F-02 Aesir binding repair,
+    F-03 generic OpenAI-compatible speech adapter (P-013
+    ruling A honoured, family first), then F-04 clean-up
+    tool (ST-73, over runmal doctor). Scope homes: ST-26 →
+    P-035/P-037, ST-27 → P-081/P-093 kin, ST-30/VX-18 →
+    P-052/P-053, ST-39 split P-049/P-052 + Part VIII queue,
+    ST-50 → P-068, VX-26 → P-085, text-completion paradigm
+    confirmed in Part IV. Definition queues: ST-55/VX-07 →
+    XIII (after the direct Assistant/Inspector reading),
+    VX-08/VX-17 → IX/XIII, VX-11/VX-58/cloud voice
+    connectors (ElevenLabs first) → VII, VX-52/VX-53 → X.
+    Explicit drops: ST-40 (re-open only if P-053 measures a
+    logprob-serving backend), ST-69 (curated tokens are the
+    shipped answer), ST-70, ST-71/VX-64 (single-owner by
+    ADR-0003); ST-44 carried DELIBERATELY-DIFFERENT per
+    P-008 §5; VX-19 homed narrowed inside F-02 (resident
+    readiness, no VRAM estimator); VX-23 no dedicated slice
+    (substance HAVE); Silero TTS / WhisperLive still
+    REVERIFY. Parts VII–XIV recorded AWAITING DEFINITIONS,
+    not validated; VII and IX first in the definition queue.
+    S806 re-check run this tick with the project's own
+    release tooling on the VM venv: 33 distributions,
+    28 permissive, 5 unknown (certifi MPL 2.0, greenlet
+    MIT AND PSF-2.0, packaging Apache-2.0 OR BSD-2-Clause,
+    sqlite-vec MIT/Apache, typing_extensions PSF-2.0),
+    0 forbidden — unknowns NOT cleared; the original
+    purplelongship set (7 unknowns) was not re-measured
+    there. Named debts still open at the gate: Evaluation
+    Sitting (Volmarr-gated, first, interrupt rule stands),
+    purplelongship baseline confirmation leg, Aesir live
+    smoke (inside F-02's completion criteria; Aesir chat
+    still NOT PROVEN LIVE), CosyVoice CPU performance fact,
+    HTTPS-for-LAN decision (Volmarr's), P-012's six
+    open-reading gaps. Full suite re-run this tick on the
+    VM (sanitised proxy env): 744 passed, 6 skipped,
+    0 failed — P-013 baseline 735 + 9 new.
+    PART I (P-001–P-014) IS COMPLETE — a part completion,
+    reportable to Volmarr under the keeper's reporting rule.
 - IN PROGRESS: none (tick closing cleanly).
-- Next slice: P-014, the Part I gate (in roadmap order).
+- Next slice: F-01, the generic OpenAI-compatible chat
+  (+embeddings) adapter (gate follow-on block, before P-015).
 
-Last updated: 2026-10-30 23:11 EDT
+Last updated: 2026-10-30 23:30 EDT
