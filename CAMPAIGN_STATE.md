@@ -51,8 +51,17 @@ invented by the keeper.
     not run by ruling). Full suite re-run this tick on the VM
     (sanitised proxy env): 685 passed, 6 skipped, 0 failed — matches
     the P-007 baseline exactly.
+- P-002 SillyTavern census — banked this tick (see git log). Doc:
+    docs/SILLYTAVERN_CENSUS_2026-10-30.md — 74 behaviour rows
+    (ST-01–ST-74) in P-001's language, from SillyTavern's official
+    public documentation + published release notes only (1.19
+    release line as baseline; 1.13.0 notes read in full; no source
+    code and no source-derived analysis used — clean-room law).
+    Full suite re-run this tick on the VM (sanitised proxy env):
+    685 passed, 6 skipped, 0 failed — matches the P-007 baseline
+    exactly.
 - IN PROGRESS: none (tick closing cleanly).
-- Next slice: P-002 SillyTavern census (then P-003, P-004, P-005,
+- Next slice: P-003 Voxta census (then P-004, P-005,
   P-008…P-014 in roadmap order).
 
-Last updated: 2026-10-30 21:37 EDT
+Last updated: 2026-10-30 21:53 EDT
