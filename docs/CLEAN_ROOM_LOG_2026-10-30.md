@@ -373,3 +373,13 @@ source in §0(2) and appends its entry here:
   shape P-005's own corpus fixture already carries, from the
   public card specs logged in §1. No card file was
   downloaded; no live endpoint was called.
+- **P-018 (2026-10-31, own tree only):** no new external
+  source and no mirror reading. The persona interop shape
+  and the description-position set implement ST-08/ST-09
+  exactly as P-002's census already recorded them from
+  SillyTavern's official public documentation (logged in
+  §2 above), in the shape P-005's authored corpus fixture
+  already carries; placement is made real against Rúnmál's
+  own prompt-composer slots (S205/S206). No persona file
+  was downloaded; the slice's test personas are authored
+  fresh in the test module (P-005 discipline).
