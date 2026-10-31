@@ -121,8 +121,33 @@ invented by the keeper.
     literal "None" greetings/tags (now genuine strings only).
     Full suite re-run this tick on the VM (sanitised proxy env):
     700 passed, 6 skipped, 0 failed — baseline 685 + 15 new.
+- P-008 backend parity ledger — banked this tick (see git log).
+    Doc: docs/BACKEND_PARITY_LEDGER_2026-10-30.md + pinning tests
+    tests/test_p008_backend_ledger.py (5 tests). Rúnmál side from
+    the tree: chat backends fake/ollama/openrouter/aesir,
+    embeddings fake/ollama/aesir + FTS-degrading unavailable.
+    Mirror side: 22 distinct named backends/sources (ST 13 chat
+    sources + 7 text backends, VX 3 engines, duplicates counted
+    once) judged 2 HAVE (Ollama, OpenRouter), 14 WANTED-GENERIC,
+    6 UNWANTED. Key gap: ONE generic OpenAI-compatible adapter
+    covers all 14 wanted rows — the connection layer (S211)
+    already names an "openai" kind but no chat adapter exists
+    behind it; the Aesir adapter proves the shape in-tree. Parts
+    II–VI contain no backend slice, so the generic adapter is
+    flagged NO HOME for the P-014 gate (first recommendation),
+    with text-completion paradigm WANTED-TEXT (kin Part IV).
+    AI Horde judged UNWANTED deliberately (privacy on volunteer
+    machines, no capability truth, local zero-setup already
+    exists) — the verdict P-004 reserved to this slice; P-014
+    should carry ST-44 as DELIBERATELY-DIFFERENT. Other unwanted:
+    Vertex (bespoke), Electron Hub (bespoke), NovelAI, ExLlamaV3
+    direct (covered via TabbyAPI), Voxta Cloud. Vice versa
+    recorded: Aesir, contract/fake backend, per-modality
+    profiles, FTS-degrading embeddings are Rúnmál-only.
+    Full suite re-run this tick on the VM (sanitised proxy env):
+    705 passed, 6 skipped, 0 failed — P-005 baseline 700 + 5 new.
 - IN PROGRESS: none (tick closing cleanly).
-- Next slice: P-008 backend parity ledger (then P-009…P-014 in
+- Next slice: P-009 Aesir readiness check (then P-010…P-014 in
   roadmap order).
 
-Last updated: 2026-10-30 22:31 EDT
+Last updated: 2026-10-30 22:37 EDT
