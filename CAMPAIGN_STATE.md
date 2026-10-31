@@ -77,8 +77,29 @@ invented by the keeper.
     as surveyed-but-not-yet-read, not rows. Full suite re-run
     this tick on the VM (sanitised proxy env): 685 passed,
     6 skipped, 0 failed — matches the P-007 baseline exactly.
+- P-004 delta table — banked this tick (see git log). Doc:
+    docs/DELTA_TABLE_2026-10-30.md — all 141 mirror rows judged
+    (ST 74 + VX 67, counted mechanically from the tables):
+    combined 14 HAVE, 69 HAVE-THIN, 55 MISSING, 3
+    DELIBERATELY-DIFFERENT (VX-01 no cloud/subscription tier,
+    VX-42 no arbitrary-code scripting, VX-59 no central store —
+    each with its sovereign replacement named). SillyTavern
+    splits 11/45/18/0 (a depth problem: cores exist, deltas are
+    named sub-depths); Voxta splits 3/24/37/3 (a territory
+    problem: scenarios/stage/workspaces/generation). Re-cut
+    verdict: Parts II–VI stand as shaped; Parts VII–XIV cannot
+    be re-validated (titles only in the filed roadmap — the
+    recorded discrepancy, now confirmed material, since most
+    MISSING rows live there — 34 of 55 MISSING rows carry a
+    title-only road home, counted from the table); the flagged
+    NO-HOME rows (ST-26, ST-30, ST-40, ST-69, ST-70, ST-71/VX-64,
+    ST-73, VX-11, VX-18) plus the kin-only rows (ST-27, ST-44,
+    ST-50, VX-19) are P-014's explicit agenda, assigned
+    or dropped by the gate, never silently. Full suite re-run
+    this tick on the VM (sanitised proxy env): 685 passed,
+    6 skipped, 0 failed — matches the P-007 baseline exactly.
 - IN PROGRESS: none (tick closing cleanly).
-- Next slice: P-004 delta table (then P-005, P-008…P-014 in
+- Next slice: P-005 interop corpus (then P-008…P-014 in
   roadmap order).
 
-Last updated: 2026-10-30 22:02 EDT
+Last updated: 2026-10-30 22:10 EDT
