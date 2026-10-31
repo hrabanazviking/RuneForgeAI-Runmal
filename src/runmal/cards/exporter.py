@@ -42,15 +42,54 @@ _KNOWN_FIELDS = (
 )
 
 
+# P-016: the v3 additions, model attribute → spec key. `assets` is
+# the spec key for the model's `asset_refs` descriptors.
+_V3_FIELD_KEYS = (
+    ("nickname", "nickname"),
+    ("group_only_greetings", "group_only_greetings"),
+    ("creator_notes_multilingual", "creator_notes_multilingual"),
+    ("source", "source"),
+    ("asset_refs", "assets"),
+)
+_V3_SPEC_KEYS = frozenset(
+    [key for _, key in _V3_FIELD_KEYS] + ["creation_date", "modification_date"]
+)
+
+
 def _known_field_map(card: CharacterCard) -> dict:
     return {field: getattr(card, field) for field in _KNOWN_FIELDS}
+
+
+def _v3_field_map(card: CharacterCard, *, only_set: bool = False) -> dict:
+    """The normalized v3 additions under their spec keys.
+
+    Full form (v3 export) always writes the five structural fields;
+    timestamps are written only when the card carries them — an
+    absent timestamp is omitted, never fabricated as 0/null.
+    `only_set` (v2 export) writes just the additions that differ
+    from their defaults, as flat data-level fields, so a v3 card
+    stored through the v2-shaped storage path keeps them.
+    """
+    out: dict = {}
+    for attr, key in _V3_FIELD_KEYS:
+        value = copy.deepcopy(getattr(card, attr))
+        if only_set and not value:
+            continue
+        out[key] = value
+    for attr in ("creation_date", "modification_date"):
+        value = getattr(card, attr)
+        if value is not None:
+            out[attr] = value
+    return out
 
 
 def _unknown_top_level(card: CharacterCard) -> dict:
     return {
         key: copy.deepcopy(value)
         for key, value in card.raw.items()
-        if key not in _KNOWN_FIELDS and key not in ("spec", "spec_version", "data")
+        if key not in _KNOWN_FIELDS
+        and key not in _V3_SPEC_KEYS
+        and key not in ("spec", "spec_version", "data")
     }
 
 
@@ -71,7 +110,9 @@ def export_json(card: CharacterCard, spec_version: str = "2") -> bytes:
             # stay at the data level and its top-level unknowns
             # stay at the top level; neither level is dropped.
             data_unknowns = {
-                k: copy.deepcopy(v) for k, v in raw_data.items() if k not in _KNOWN_FIELDS
+                k: copy.deepcopy(v)
+                for k, v in raw_data.items()
+                if k not in _KNOWN_FIELDS and k not in _V3_SPEC_KEYS
             }
             obj: dict = _unknown_top_level(card)
         else:
@@ -79,12 +120,14 @@ def export_json(card: CharacterCard, spec_version: str = "2") -> bytes:
             data_unknowns = {
                 k: copy.deepcopy(v)
                 for k, v in card.raw.items()
-                if k not in _KNOWN_FIELDS and k not in ("spec", "spec_version", "data")
+                if k not in _KNOWN_FIELDS
+                and k not in _V3_SPEC_KEYS
+                and k not in ("spec", "spec_version", "data")
             }
             obj = {}
         obj["spec"] = "chara_card_v3"
         obj["spec_version"] = "3.0"
-        obj["data"] = {**data_unknowns, **known}
+        obj["data"] = {**data_unknowns, **known, **_v3_field_map(card)}
     elif card.spec_version == "2" and wrapped:
         # P-015: a wrapped v2 card exports in the envelope it
         # arrived in — data-level unknowns verbatim inside `data`,
@@ -94,9 +137,15 @@ def export_json(card: CharacterCard, spec_version: str = "2") -> bytes:
         obj["spec"] = "chara_card_v2"
         obj["spec_version"] = "2.0"
         data_unknowns = {
-            k: copy.deepcopy(v) for k, v in raw_data.items() if k not in _KNOWN_FIELDS
+            k: copy.deepcopy(v)
+            for k, v in raw_data.items()
+            if k not in _KNOWN_FIELDS and k not in _V3_SPEC_KEYS
         }
-        obj["data"] = {**data_unknowns, **known}
+        obj["data"] = {
+            **data_unknowns,
+            **known,
+            **_v3_field_map(card, only_set=True),
+        }
     else:
         obj = _unknown_top_level(card)
         if "data" in card.raw and not wrapped:
@@ -107,6 +156,7 @@ def export_json(card: CharacterCard, spec_version: str = "2") -> bytes:
         obj["spec"] = "chara_card_v2"
         obj["spec_version"] = "2.0"
         obj.update(known)
+        obj.update(_v3_field_map(card, only_set=True))
     return json.dumps(obj, ensure_ascii=False, indent=2).encode("utf-8")
 
 

@@ -352,3 +352,16 @@ source in §0(2) and appends its entry here:
   read — neither project is the source of the card spec —
   and no card file was downloaded; the slice's test cards
   are authored fresh in the test module (P-005 discipline).
+- **P-016 (2026-10-31, public spec + own tree):** the v3
+  additions' field names and shapes (`assets` descriptors,
+  `nickname`, `creator_notes_multilingual`, `source`,
+  `group_only_greetings`, `creation_date`,
+  `modification_date`) rest on the normative public
+  Character Card v3 specification already logged in §1
+  (founding ledger) and on P-005's authored corpus fixture,
+  which already carried the shapes. No new external reading
+  was needed and none was done; no SillyTavern or Voxta
+  source code was read — neither project is the source of
+  the card spec — and no card file was downloaded; the
+  slice's test cards are authored fresh in the test module
+  (P-005 discipline).

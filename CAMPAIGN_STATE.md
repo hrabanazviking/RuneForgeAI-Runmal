@@ -1587,4 +1587,388 @@ invented by the keeper.
     ls-remote verification in the tick record). Next slice:
     P-016 in roadmap order.
 
-Last updated: 2026-10-31 ~09:28 EDT tick (P-015 BANKED — full suite 801 passed, 6 skipped, 0 failed; next slice P-016)
+- P-016 character card v3 import — BANKED 2026-10-31
+  ~11:56 EDT (see git log). Build tick 2026-10-31
+  ~09:32–09:50 EDT. The v3 additions
+  mapped to first-class model fields with a written mapping
+  (docs/CARD_V3_IMPORT_2026-10-31.md): nickname,
+  group_only_greetings, creator_notes_multilingual, source,
+  creation_date / modification_date (Unix seconds, None when
+  absent — never fabricated), and the declared `assets`
+  descriptors as `asset_refs` (verbatim dict copies, distinct
+  from the embedded-bytes `assets` dict; find_asset_ref added).
+  Recognition is by field name wherever a card carries them.
+  Defensive typing per the P-005 rule (non-strings dropped,
+  never stringified; bools/strings/fractional floats are not
+  timestamps; non-object asset entries dropped). Exporter:
+  v3 export writes the full addition set (timestamps only when
+  carried); v2 export writes set-only additions so the
+  character service's v2 storage path keeps a v3 card's
+  additions, and a plain v2 card gains no v3 keys. Files:
+  src/runmal/cards/{models,parser,exporter}.py,
+  tests/test_p016_card_v3.py (12 tests), clean-room log entry
+  appended. VERIFICATION SO FAR: targeted card set 67 passed
+  (P-016 + P-015 + P-005 + S104/S105/S113); wider card-adjacent
+  set (-k "card or character or persona or group or charx or
+  bridge") 193 passed; ruff clean on all touched files.
+  FULL SUITE NOT ATTEMPTED this tick: host is back in the
+  spoiled-run band (MemAvailable 492 → 564 → 515 MB across
+  samples, load 1-min 2.55 → 7.39, other campaigns' suites
+  running) — the same conditions that spoiled two P-015 full
+  runs. Banking still owed ONE clean-window full run
+  (expected 813 passed = 801 + 12, 6 skipped), then bank as
+  one local commit + push per policy. Do not re-build.
+  - FIRST BANKING TICK DEFERRED, NO FULL RUN ATTEMPTED (tick
+    2026-10-31 ~09:51–09:55 EDT): state was ~1–12 min old on
+    entry; no runmal worker was visibly live (no runmal
+    pytest process; the pytest process present belonged to
+    yggdrasil — none in this tree), so continuation was
+    checked directly. P-016 targeted re-verified green this
+    tick: 12 passed in 0.30 s (sanitised proxy env; run with
+    --capture=sys because this worker session's default
+    pytest capture hits a tempfile unlink EPERM in /tmp —
+    an environment quirk of the session, not a repo defect;
+    the --capture=sys mode is the one other campaigns were
+    running successfully at the same hour). Host conditions
+    remain in the spoiled-run band: MemAvailable 436 MB on
+    entry, then 547 → 520 → 477 MB across samples; load
+    (1-min, 4 cores) 3.93 → 3.11, 5-min ~3.9–4.2, with
+    another campaign's suite visibly running concurrently.
+    A full run under these conditions would repeat the two
+    spoiled P-015 counts, not produce evidence, and would
+    add contention. No full run was started. Working tree
+    unchanged (same 5 modified + 2 untracked P-016 files
+    plus the pre-existing CAMPAIGN_STATE.md modification,
+    HEAD still P-015 1463ad1). Slice remains built and
+    unbanked exactly as left; banking still owed ONE
+    clean-window full run (expected 813 passed =
+    801 + 12, 6 skipped), then bank + push per policy.
+    Do not re-build.
+
+  - SECOND BANKING TICK DEFERRED, NO FULL RUN ATTEMPTED (tick
+    2026-10-31 ~10:01–10:05 EDT): state was ~7 min old on
+    entry; no runmal worker was visibly live (no runmal
+    pytest process; the pytest processes present belonged
+    to yggdrasil — none in this tree), so continuation was
+    checked directly. P-016 targeted re-verified green this
+    tick: 12 passed in 0.40 s (sanitised proxy env,
+    --capture=sys as in the previous tick). Host conditions
+    remain in the spoiled-run band and are worse on memory:
+    MemAvailable ~230 MB on entry, 194–195 MB around the
+    targeted run, then 262 → 302 → 587 MB across closing
+    samples; load (1-min, 4 cores) 2.17 → 1.40–1.79, but
+    5-min load stayed 3.44–3.98, with another campaign's
+    full suite visibly running concurrently. A full run
+    under these conditions would repeat the two spoiled
+    P-015 counts, not produce evidence, and would add
+    contention. No full run was started. Working tree
+    unchanged (same 5 modified + 2 untracked P-016 files
+    plus the pre-existing CAMPAIGN_STATE.md modification,
+    HEAD still P-015 1463ad1). Slice remains built and
+    unbanked exactly as left; banking still owed ONE
+    clean-window full run (expected 813 passed =
+    801 + 12, 6 skipped), then bank + push per policy.
+    Do not re-build.
+
+  - THIRD BANKING TICK DEFERRED, NO FULL RUN ATTEMPTED (tick
+    2026-10-31 ~10:11–10:17 EDT): state was ~7 min old on
+    entry; no runmal worker was visibly live (no runmal
+    pytest process; pytest processes present belonged to
+    yggdrasil, mindspark, mythic-coder among them — none in
+    this tree), so continuation was checked directly. P-016
+    targeted re-verified green this tick: 12 passed in 0.20 s
+    (sanitised proxy env, --capture=sys as in the previous
+    ticks). Host conditions improved over the worst ticks
+    but remain outside the clean-window band that banked
+    P-015 (MemAvailable ~1781–2016 MB, 5-min load
+    1.19–1.59): MemAvailable 957 MB on entry, 986 → 941 MB
+    in samples, 859 MB after the targeted run; load (1-min,
+    4 cores) 2.97 on entry, rising 4.22 → 5.07 → 5.27,
+    5-min load 3.63–4.18, with other campaigns' suites
+    visibly running concurrently. A full run under these
+    conditions would risk repeating the two spoiled P-015
+    counts, not produce evidence, and would add contention.
+    No full run was started. Working tree unchanged (same 5
+    modified + 2 untracked P-016 files plus the
+    pre-existing CAMPAIGN_STATE.md modification, HEAD still
+    P-015 1463ad1). Slice remains built and unbanked exactly
+    as left; banking still owed ONE clean-window full run
+    (expected 813 passed = 801 + 12, 6 skipped), then bank
+    + push per policy. Do not re-build.
+
+  - FOURTH BANKING TICK DEFERRED, NO FULL RUN ATTEMPTED (tick
+    2026-10-31 ~10:21–10:24 EDT): state was ~8 min old on
+    entry; no runmal worker was visibly live (no runmal
+    pytest process; pytest processes present belonged to
+    other campaigns — sagnaskemma, yggdrasil, hermes among
+    them — none in this tree), so continuation was checked
+    directly. P-016 targeted re-verified green this tick:
+    12 passed in 0.20 s (sanitised proxy env, --capture=sys
+    as in the previous ticks). Host conditions remain well
+    outside the clean-window band that banked P-015
+    (MemAvailable ~1781–2016 MB, 5-min load 1.19–1.59) and
+    are worse on load than the prior tick: MemAvailable
+    818 MB on entry, 888 → 872 → 905 MB in samples,
+    910 → 951 → 953 MB after the targeted run; load
+    (1-min, 4 cores) 12.15 on entry, 13.37 → 12.86 in
+    samples, 11.91–12.00 after the targeted run, 5-min
+    load 6.92 → 7.54 → 7.42–7.51, with other campaigns'
+    suites visibly running concurrently. A full run under
+    these conditions would repeat the two spoiled P-015
+    counts, not produce evidence, and would add contention.
+    No full run was started. Working tree unchanged (same 5
+    modified + 2 untracked P-016 files plus the
+    pre-existing CAMPAIGN_STATE.md modification, HEAD still
+    P-015 1463ad1). Slice remains built and unbanked exactly
+    as left; banking still owed ONE clean-window full run
+    (expected 813 passed = 801 + 12, 6 skipped), then bank
+    + push per policy. Do not re-build.
+
+  - FIFTH BANKING TICK DEFERRED, NO FULL RUN ATTEMPTED (tick
+    2026-10-31 ~10:31–10:35 EDT): state was ~8 min old on
+    entry; no runmal worker was visibly live (no runmal
+    pytest process; pytest processes present belonged to
+    other campaigns — sagnaskemma, ember among them — none
+    in this tree), so continuation was checked directly.
+    P-016 targeted re-verified green this tick: 12 passed
+    in 1.32 s (sanitised proxy env, --capture=sys as in the
+    previous ticks). Host conditions are the worst yet on
+    load and remain well outside the clean-window band
+    that banked P-015 (MemAvailable ~1781–2016 MB, 5-min
+    load 1.19–1.59): MemAvailable 988 MB on entry, 916 MB
+    after the targeted run; load (1-min, 4 cores) 19.85 on
+    entry, 18.83 after the targeted run, 5-min load
+    16.20–16.44, 15-min 10.29–10.65, with other campaigns'
+    suites visibly running concurrently. A full run under
+    these conditions would repeat the two spoiled P-015
+    counts, not produce evidence, and would add contention.
+    No full run was started. Working tree unchanged (same 5
+    modified + 2 untracked P-016 files plus the
+    pre-existing CAMPAIGN_STATE.md modification, HEAD still
+    P-015 1463ad1). Slice remains built and unbanked exactly
+    as left; banking still owed ONE clean-window full run
+    (expected 813 passed = 801 + 12, 6 skipped), then bank
+    + push per policy. Do not re-build.
+
+  - SIXTH BANKING TICK DEFERRED, NO FULL RUN ATTEMPTED (tick
+    2026-10-31 ~10:41–10:44 EDT): state was ~7 min old on
+    entry; no runmal worker was visibly live (no runmal
+    pytest process; pytest processes present belonged to
+    other campaigns — hermes, yggdrasil among them — none
+    in this tree), so continuation was checked directly.
+    P-016 targeted re-verified green this tick: 12 passed
+    in 1.00 s (sanitised proxy env, --capture=sys as in the
+    previous ticks). Host conditions remain well outside
+    the clean-window band that banked P-015 (MemAvailable
+    ~1781–2016 MB, 5-min load 1.19–1.59): MemAvailable
+    846 MB on entry, then 529 → 501 MB in samples, 651 MB
+    after the targeted run; load (1-min, 4 cores) 3.60 on
+    entry, 2.24 after the targeted run, but 5-min load
+    stayed 10.29 → 9.32 and 15-min 10.60 → 10.27, with
+    ~9 other campaigns' pytest processes visibly running
+    concurrently. A full run under these conditions would
+    repeat the two spoiled P-015 counts, not produce
+    evidence, and would add contention. No full run was
+    started. Working tree unchanged (same 5 modified +
+    2 untracked P-016 files plus the pre-existing
+    CAMPAIGN_STATE.md modification, HEAD still P-015
+    1463ad1). Slice remains built and unbanked exactly as
+    left; banking still owed ONE clean-window full run
+    (expected 813 passed = 801 + 12, 6 skipped), then bank
+    + push per policy. Do not re-build.
+
+  - SEVENTH BANKING TICK DEFERRED, NO FULL RUN ATTEMPTED (tick
+    2026-10-31 ~10:51–10:56 EDT): state was ~7 min old on
+    entry; no runmal worker was visibly live (no runmal
+    pytest process; pytest processes present belonged to
+    other campaigns — sagnaskemma, mythic-coder among them —
+    none in this tree), so continuation was checked directly.
+    P-016 targeted re-verified green this tick: 12 passed
+    in 0.40 s (sanitised proxy env, --capture=sys as in the
+    previous ticks). Host conditions remain well outside
+    the clean-window band that banked P-015 (MemAvailable
+    ~1781–2016 MB, 5-min load 1.19–1.59): MemAvailable
+    844 MB on entry, 790 MB after the targeted run, then
+    730 → 679 → 632 MB across closing samples; load
+    (1-min, 4 cores) 2.89 on entry, 2.47–2.68 in closing
+    samples, but 5-min load stayed 6.56 → 6.17 and 15-min
+    8.52 → 8.34, with other campaigns' suites visibly
+    running concurrently. A full run under these conditions
+    would repeat the two spoiled P-015 counts, not produce
+    evidence, and would add contention. No full run was
+    started. Working tree unchanged (same 5 modified +
+    2 untracked P-016 files plus the pre-existing
+    CAMPAIGN_STATE.md modification, HEAD still P-015
+    1463ad1). Slice remains built and unbanked exactly as
+    left; banking still owed ONE clean-window full run
+    (expected 813 passed = 801 + 12, 6 skipped), then bank
+    + push per policy. Do not re-build.
+
+  - EIGHTH BANKING TICK DEFERRED, NO FULL RUN ATTEMPTED (tick
+    2026-10-31 ~11:01–11:06 EDT): state was ~5 min old on
+    entry; no runmal worker was visibly live (no runmal
+    pytest process; pytest processes present belonged to
+    other campaigns — yggdrasil, hermes among them — none
+    in this tree), so continuation was checked directly.
+    P-016 targeted re-verified green this tick: 12 passed
+    in 0.43 s (sanitised proxy env, --capture=sys as in the
+    previous ticks). Host conditions remain well outside
+    the clean-window band that banked P-015 (MemAvailable
+    ~1781–2016 MB, 5-min load 1.19–1.59): MemAvailable
+    355 MB on entry, then 587 → 524 → 519 MB in samples,
+    736 MB after the targeted run, 731 → 727 → 649 MB
+    across closing samples; load (1-min, 4 cores) 2.34 on
+    entry, rising 6.64 → 6.99 in samples, 8.82 after the
+    targeted run, 9.15 → 9.94 across closing samples,
+    5-min load 4.30 → 6.13, with ~8 other campaigns'
+    pytest processes visibly running concurrently. A full
+    run under these conditions would repeat the two
+    spoiled P-015 counts, not produce evidence, and would
+    add contention. No full run was started. Working tree
+    unchanged (same 5 modified + 2 untracked P-016 files
+    plus the pre-existing CAMPAIGN_STATE.md modification,
+    HEAD still P-015 1463ad1). Slice remains built and
+    unbanked exactly as left; banking still owed ONE
+    clean-window full run (expected 813 passed = 801 + 12,
+    6 skipped), then bank + push per policy. Do not re-build.
+
+  - NINTH BANKING TICK DEFERRED, NO FULL RUN ATTEMPTED (tick
+    2026-10-31 ~11:11–11:14 EDT): state was ~5 min old on
+    entry; no runmal worker was visibly live (no runmal
+    pytest process; ~10 pytest processes present belonged to
+    other campaigns — yggdrasil, mythic-coder among them —
+    none in this tree), so continuation was checked directly.
+    P-016 targeted re-verified green this tick: 12 passed
+    in 1.21 s (sanitised proxy env, --capture=sys as in the
+    previous ticks). Host conditions remain well outside
+    the clean-window band that banked P-015
+    (MemAvailable ~1781–2016 MB, 5-min load 1.19–1.59):
+    MemAvailable 386 MB on entry, 241 MB at the pre-run
+    check, 580 MB after the targeted run; load (1-min,
+    4 cores) 11.98 on entry, 11.81 at the pre-run check,
+    12.44 after the targeted run, 5-min load 7.52–8.06,
+    with other campaigns' suites visibly running
+    concurrently. A full run under these conditions would
+    repeat the two spoiled P-015 counts, not produce
+    evidence, and would add contention. No full run was
+    started. Working tree unchanged (same 5 modified +
+    2 untracked P-016 files plus the pre-existing
+    CAMPAIGN_STATE.md modification, HEAD still P-015
+    1463ad1, verified equal to origin/yrsa/two-mirrors-build
+    via ls-remote this tick). Slice remains built and
+    unbanked exactly as left; banking still owed ONE
+    clean-window full run (expected 813 passed = 801 + 12,
+    6 skipped), then bank + push per policy. Do not re-build.
+
+  - TENTH BANKING TICK DEFERRED, NO FULL RUN ATTEMPTED (tick
+    2026-10-31 ~11:21–11:25 EDT): state was ~7 min old on
+    entry; no runmal worker was visibly live (no runmal
+    pytest process; pytest processes present belonged to
+    other campaigns — yggdrasil, mythic-coder, ember among
+    them — none in this tree), so continuation was checked
+    directly. P-016 targeted re-verified green this tick:
+    12 passed in 1.27 s (sanitised proxy env, --capture=sys
+    as in the previous ticks). Host conditions remain well
+    outside the clean-window band that banked P-015
+    (MemAvailable ~1781–2016 MB, 5-min load 1.19–1.59):
+    on entry MemAvailable 1457 MB with load (1-min, 4
+    cores) 11.27 / 5-min 8.40, and targeted-run samples
+    at load 10.58 → 9.89 → 8.97 / 5-min ~8.4–8.6,
+    MemAvailable 1363 → 1063 → 2760 MB. A runtime restart
+    then briefly cleared the host (MemAvailable ~4655 MB,
+    5-min load dipping to 1.43 — inside the clean band),
+    but the window closed within ~3 minutes as other
+    campaigns restarted: pytest processes 0 → 4 → 7,
+    load 1-min 5.23 → 6.72 → 7.10 → 7.78 and 5-min
+    1.53 → 2.03 → 2.35 → 2.73 at tick end, MemAvailable
+    settling ~3939 MB. Memory alone was the best in many
+    ticks, but with load rising steeply and contention
+    returning, a full run started then would have raced
+    the same ramp that spoiled the two P-015 counts.
+    No full run was started. Working tree unchanged
+    (same 5 modified + 2 untracked P-016 files plus the
+    pre-existing CAMPAIGN_STATE.md modification, HEAD
+    still P-015 1463ad1). Slice remains built and
+    unbanked exactly as left; banking still owed ONE
+    clean-window full run (expected 813 passed =
+    801 + 12, 6 skipped), then bank + push per policy.
+    Do not re-build.
+
+  - ELEVENTH BANKING TICK DEFERRED, NO FULL RUN ATTEMPTED (tick
+    2026-10-31 ~11:31–11:34 EDT): state was ~6 min old on
+    entry; no runmal worker was visibly live (no runmal
+    pytest process; pytest processes present belonged to
+    other campaigns — Samverk full suite since 15:25 UTC,
+    yggdrasil soak, hermes — none in this tree, verified by
+    /proc cwd), so continuation was checked directly.
+    P-016 targeted re-verified green this tick: 12 passed
+    in 1.62 s (sanitised proxy env, --capture=sys as in the
+    previous ticks). Host conditions remain well outside
+    the clean-window band that banked P-015
+    (MemAvailable ~1781–2016 MB, 5-min load 1.19–1.59):
+    MemAvailable 1326 MB on entry, 1457 MB in samples,
+    1103 MB after the targeted run; load (1-min, 4 cores)
+    5.97 on entry, rising 7.95 → 11.06, 5-min load
+    4.13 → 4.66 → 5.73, with other campaigns' suites
+    visibly running concurrently. A full run under these
+    conditions would repeat the two spoiled P-015 counts,
+    not produce evidence, and would add contention. No
+    full run was started. Working tree unchanged
+    (same 5 modified + 2 untracked P-016 files plus the
+    pre-existing CAMPAIGN_STATE.md modification, HEAD
+    still P-015 1463ad1). Slice remains built and
+    unbanked exactly as left; banking still owed ONE
+    clean-window full run (expected 813 passed =
+    801 + 12, 6 skipped), then bank + push per policy.
+    Do not re-build.
+
+  - TWELFTH BANKING TICK DEFERRED, NO FULL RUN ATTEMPTED (tick
+    2026-10-31 ~11:41–11:46 EDT): state was ~7 min old on
+    entry; no runmal worker was visibly live (no runmal
+    pytest process; pytest processes present belonged to
+    other campaigns — yggdrasil full suite, hermes among
+    them — none in this tree), so continuation was checked
+    directly. P-016 targeted re-verified green this tick:
+    12 passed in 0.31 s (sanitised proxy env, --capture=sys
+    as in the previous ticks). Host conditions remain well
+    outside the clean-window band that banked P-015
+    (MemAvailable ~1781–2016 MB, 5-min load 1.19–1.59):
+    MemAvailable 920 MB on entry, then 762 → 640 → 582 →
+    494 MB across samples, 749 MB after the targeted run;
+    load (1-min, 4 cores) 4.95 on entry, rising 5.21 →
+    5.92 → 6.88 in samples, 8.34 after the targeted run,
+    5-min load 5.56 → 5.93 → 6.30, with other campaigns'
+    suites visibly running concurrently. A full run under
+    these conditions would repeat the two spoiled P-015
+    counts, not produce evidence, and would add contention.
+    No full run was started. Working tree unchanged
+    (same 5 modified + 2 untracked P-016 files plus the
+    pre-existing CAMPAIGN_STATE.md modification, HEAD
+    still P-015 1463ad1, verified equal to
+    origin/yrsa/two-mirrors-build via ls-remote this tick).
+    Slice remains built and unbanked exactly as left;
+    banking still owed ONE clean-window full run
+    (expected 813 passed = 801 + 12, 6 skipped), then bank
+    + push per policy. Do not re-build.
+
+  - BANKED (tick 2026-10-31 ~11:51–11:56 EDT): state was
+    ~5 min old on entry; no runmal worker was visibly live
+    (pytest processes present belonged to other campaigns —
+    yggdrasil full suite, mythic-coder — none in this tree),
+    so continuation was checked directly. P-016 targeted
+    re-verified green this tick: 12 passed in 0.10 s
+    (sanitised proxy env, --capture=sys). Host then opened
+    a clean window: the yggdrasil full suite (3.4 GB,
+    ~40% CPU) finished, MemAvailable rose 2074 → 1922 →
+    5223 → 5131 → 5056 MB, load (1-min, 4 cores) fell
+    6.08 → 5.65 → 4.84 → 4.65 → 3.83 (5-min load lagged at
+    5.5–6.2 from the finished hog; the only other suite
+    still running was a small mythic-coder chunk). Full
+    suite run in that window (sanitised proxy env,
+    --capture=sys): 813 passed, 6 skipped, 0 failed in
+    84.51 s — exactly the expected 801 + 12. P-016 banked
+    as one local commit this tick and pushed per policy
+    (see git log / ls-remote verification in the tick
+    record). Next slice: P-017 in roadmap order.
+
+Last updated: 2026-10-31 ~11:56 EDT tick (P-016 BANKED — full suite green in a clean window after the yggdrasil suite finished: 813 passed, 6 skipped, 0 failed; targeted 12 passed; banked as one local commit and pushed per policy; next slice: P-017)

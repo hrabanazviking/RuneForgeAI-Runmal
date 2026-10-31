@@ -3,7 +3,8 @@
 Supported inputs:
 - JSON: v1 (bare fields), v2 (`chara_card_v2` — fields under the
   spec's `data` envelope, with the flat legacy shape accepted via
-  top-level fallback), v3 (`chara_card_v3`, fields under `data`)
+  top-level fallback), v3 (`chara_card_v3`, fields under `data`;
+  the v3 additions are normalized per P-016's written mapping)
 - PNG: `chara` / `ccv3` textual chunks (tEXt, zTXt), base64 JSON
 - CHARX: zip archive with `card.json` at root plus assets
 
@@ -76,6 +77,45 @@ def _as_dict(value: object) -> dict:
     return dict(value) if isinstance(value, dict) else {}
 
 
+def _as_str_dict(value: object) -> dict:
+    """A string→string mapping (v3 `creator_notes_multilingual`).
+
+    Non-string values are dropped, never stringified — the P-005
+    rule for lists applied to mappings.
+    """
+    if isinstance(value, dict):
+        return {k: v for k, v in value.items() if isinstance(k, str) and isinstance(v, str)}
+    return {}
+
+
+def _as_timestamp(value: object) -> int | None:
+    """A v3 `creation_date` / `modification_date` (Unix seconds).
+
+    Accepts ints and integral floats; bools (an int subclass) and
+    everything else mean the card does not carry the timestamp.
+    """
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return value
+    if isinstance(value, float) and value.is_integer():
+        return int(value)
+    return None
+
+
+def _as_asset_refs(value: object) -> list[dict]:
+    """The v3 spec's declared `assets` descriptors (P-016).
+
+    Each descriptor is an object ({type, uri, name, ext, ...});
+    entries are copied verbatim — extra keys are the spec's own
+    extension room — while non-object entries are dropped, never
+    coerced.
+    """
+    if isinstance(value, list):
+        return [dict(item) for item in value if isinstance(item, dict)]
+    return []
+
+
 def _field_source(obj: dict, spec_version: str) -> dict:
     """Resolve where a card's fields live (P-015).
 
@@ -133,6 +173,19 @@ def _normalize_card(
         tags=_as_str_list(data.get("tags")),
         creator=_as_str(data.get("creator")),
         character_version=_as_str(data.get("character_version")),
+        # P-016: v3 additions are recognized by field name wherever
+        # a card carries them (the v3 spec is where they are
+        # defined; a v1/v2 file carrying one gets it normalized
+        # rather than left opaque).
+        nickname=_as_str(data.get("nickname")),
+        group_only_greetings=_as_str_list(data.get("group_only_greetings")),
+        creator_notes_multilingual=_as_str_dict(
+            data.get("creator_notes_multilingual")
+        ),
+        source=_as_str_list(data.get("source")),
+        creation_date=_as_timestamp(data.get("creation_date")),
+        modification_date=_as_timestamp(data.get("modification_date")),
+        asset_refs=_as_asset_refs(data.get("assets")),
         character_book=_as_dict(data.get("character_book")),
         extensions=_as_dict(data.get("extensions")),
         assets=dict(assets) if assets else {},
