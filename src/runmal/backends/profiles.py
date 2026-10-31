@@ -21,6 +21,7 @@ from dataclasses import dataclass
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from runmal.backends.aesir import DEFAULT_BASE_URL as AESIR_DEFAULT_BASE_URL
 from runmal.backends.aesir import AesirChatBackend
 from runmal.backends.base import ChatBackend
 from runmal.backends.embeddings import (
@@ -196,7 +197,7 @@ async def build_chat_backend(session: AsyncSession, profile: BackendProfile) -> 
         base_url = config.get("base_url") if isinstance(config, dict) else None
         return AesirChatBackend(
             model=profile.chat_model or "local-model",
-            base_url=base_url or "http://127.0.0.1:8000/v1",
+            base_url=base_url or AESIR_DEFAULT_BASE_URL,
             api_key=secret,
         )
     if profile.chat_backend == "openai":

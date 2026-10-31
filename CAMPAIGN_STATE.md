@@ -379,11 +379,45 @@ invented by the keeper.
     753 passed, 6 skipped, 0 failed, 759 collected — P-014
     baseline 744 + 9 new, collected delta verified against
     HEAD (750 → 759).
+- F-02 Aesir binding repair — banked this tick (see git log).
+    Build: src/runmal/backends/aesir.py repaired per P-009's
+    minimum — no stream_options sent (D1); SAMPLERS
+    re-declared to the served OpenAI-route subset
+    {temperature, top_p, max_tokens, seed}, top_k/min_p/
+    repetition_penalty/stop now declared unsupported (D2 —
+    the native-route rebind remains the recorded
+    alternative, not taken); DEFAULT_BASE_URL corrected to
+    Aesir's native serve port http://127.0.0.1:18434/v1 at
+    the adapter, the profile builder, and the doctor (D4,
+    doctor literal pinned equal by test); 422 maps to
+    ContextOverflow (D8); a stream with neither [DONE] nor a
+    finish reason raises instead of yielding Done (D6);
+    readiness_check() surfaces resident-model readiness
+    from /health/ready at the server root (D5 / VX-19
+    narrowed home — no VRAM estimated). D3's binding rule
+    recorded in AesirEmbeddingBackend's docstring:
+    embeddings bind to Ollama, never to Aesir (no behaviour
+    change; real-server calls already 404-degrade to FTS).
+    Doc: docs/AESIR_BINDING_REPAIR_2026-10-30.md + tests
+    tests/test_f02_aesir_binding.py (11 tests). Deliberately
+    updated pins, each with its reason in the test:
+    test_s701_aesir.py, test_s702_aesir_mapping.py,
+    test_p009_aesir_readiness.py; the readiness ledger gained
+    its appended §5 F-02 follow-on (original record stands)
+    and the clean-room log its F-02 entry (own tree + Aesir's
+    own ledger only, no live server run). NOT PROVEN LIVE
+    STANDS: the owed live smoke on purplelongship is still
+    F-02's open completion criterion, and D7 (admission
+    bounds) remains Part V's reckoning, as P-009 assigned.
+    Full suite re-run this tick on the VM (sanitised proxy
+    env): 764 passed, 6 skipped, 0 failed — F-01 baseline
+    753 + 11 new. (One early targeted run in this tick
+    reported 5 failures that did not reproduce: the same
+    targeted set then passed twice clean, 62 passed, and
+    the full suite is green — recorded as a transient,
+    not hidden.)
 - IN PROGRESS: none (tick closing cleanly).
-- Next slice: F-02, the Aesir binding repair (gate follow-on
-  block, before P-015; its completion also requires the owed
-  live smoke on purplelongship, which the keeper cannot run —
-  the code repair banks, NOT PROVEN LIVE stands until the
-  smoke runs).
+- Next slice: F-03, the generic OpenAI-compatible speech
+  adapter (gate follow-on block, before P-015).
 
-Last updated: 2026-10-30 23:31 EDT tick (F-01 banked)
+Last updated: 2026-10-30 23:41 EDT tick (F-02 banked)

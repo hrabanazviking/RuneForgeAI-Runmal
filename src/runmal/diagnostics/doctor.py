@@ -242,7 +242,11 @@ def _check_providers(
     findings: list[Finding] = []
     seen: set[tuple[str, str]] = set()
     for backend, config_json in rows:
-        base_url = "http://127.0.0.1:8000/v1" if backend == "aesir" else ""
+        # Aesir's native serve port (F-02; the old :8000 default
+        # reached nothing, P-009 D4). Kept a literal here so the
+        # doctor stays import-light on a possibly-broken install;
+        # tests pin it equal to the adapter's DEFAULT_BASE_URL.
+        base_url = "http://127.0.0.1:18434/v1" if backend == "aesir" else ""
         try:
             config = json.loads(config_json or "{}")
             if isinstance(config, dict) and config.get("base_url"):

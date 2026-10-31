@@ -94,6 +94,12 @@ async def test_error_payload_and_http_errors_map():
 
 
 async def test_wire_payload_uses_aesir_names():
+    # Deliberately updated by F-02 (the Aesir binding repair):
+    # P-009 D2 proved Aesir's OpenAI chat route rejects
+    # repetition_penalty/repeat_penalty, so the wire now carries
+    # only the served subset (temperature/top_p/max_tokens/seed)
+    # and no stream_options (D1). The full F-02 pin lives in
+    # tests/test_f02_aesir_binding.py.
     captured = {}
 
     def handler(request: httpx.Request) -> httpx.Response:
@@ -104,12 +110,16 @@ async def test_wire_payload_uses_aesir_names():
     b = AesirChatBackend(
         api_key="k", model="llama-3.1-8b-instruct", transport=httpx.MockTransport(handler)
     )
-    params = SamplingParams(temperature=0.3, max_output_tokens=16, repetition_penalty=1.1)
+    params = SamplingParams(
+        temperature=0.3, max_output_tokens=16, repetition_penalty=1.1, seed=7
+    )
     _ = [e async for e in b.chat_stream(MSGS, params, asyncio.Event())]
     assert captured["temperature"] == 0.3
     assert captured["max_tokens"] == 16
-    assert captured["repeat_penalty"] == 1.1
+    assert captured["seed"] == 7
+    assert "repeat_penalty" not in captured
     assert "repetition_penalty" not in captured
+    assert "stream_options" not in captured
     assert captured["model"] == "llama-3.1-8b-instruct"
     assert captured["auth"] == "Bearer k"
 

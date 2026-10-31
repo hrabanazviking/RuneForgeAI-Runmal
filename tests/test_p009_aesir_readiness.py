@@ -8,6 +8,15 @@ sent on every request) and D2 (the declared sampler set vs the
 served OpenAI-route subset) — so a future slice that repairs the
 adapter must update the ledger deliberately instead of the
 ledger silently going stale.
+
+F-02 (the P-014 gate's Aesir binding repair) was that slice:
+the pins below now record the REPAIRED tree (served sampler
+subset declared, no stream_options on the wire, native-port
+default), the ledger gained its appended F-02 follow-on
+section, and the full F-02 pin lives in
+tests/test_f02_aesir_binding.py. The ledger's original
+divergence record stands as the record of the gap; Aesir chat
+remains NOT PROVEN LIVE until the owed live smoke runs.
 """
 
 from __future__ import annotations
@@ -57,26 +66,31 @@ def _chat_backend(captured: dict) -> AesirChatBackend:
 
 
 def test_adapter_defaults_are_the_ledger_values() -> None:
-    # D4: the shipped default reaches neither Aesir port (18434
-    # native, 11434 ollama-mode); the ledger records both.
-    assert DEFAULT_BASE_URL == "http://127.0.0.1:8000/v1"
+    # D4, repaired by F-02: the shipped default is now Aesir's
+    # native serve port (18434); the ledger records both ports
+    # (18434 native, 11434 ollama-mode) and its original D4
+    # record of the :8000 default stands as history.
+    assert DEFAULT_BASE_URL == "http://127.0.0.1:18434/v1"
     assert DEFAULT_MODEL == "local-model"
     text = LEDGER.read_text(encoding="utf-8")
     assert "18434" in text and "11434" in text
 
 
 def test_declared_sampler_sets_are_pinned() -> None:
+    # Repaired by F-02: the declared-honoured set IS the served
+    # OpenAI-route subset; the formerly divergent controls are
+    # declared unsupported alongside the S702 originals.
     assert SAMPLERS == {
         "temperature",
         "top_p",
-        "top_k",
-        "min_p",
-        "repetition_penalty",
         "max_tokens",
-        "stop",
         "seed",
     }
     assert UNSUPPORTED_SAMPLERS == {
+        "top_k",
+        "min_p",
+        "repetition_penalty",
+        "stop",
         "presence_penalty",
         "frequency_penalty",
         "context_length",
@@ -84,23 +98,26 @@ def test_declared_sampler_sets_are_pinned() -> None:
 
 
 def test_sampler_divergence_against_served_subset() -> None:
-    # D2, computed: what the adapter declares honoured but the
-    # real OpenAI route rejects is exactly the divergent set.
-    assert set(SAMPLERS) - AESIR_OPENAI_CHAT_ACCEPTED == AESIR_OPENAI_CHAT_DIVERGENT
-    assert AESIR_OPENAI_CHAT_ACCEPTED <= set(SAMPLERS)
+    # D2, computed and closed by F-02: the declared-honoured set
+    # minus the served subset is now empty — the divergent set
+    # survives only as the declared-unsupported remainder.
+    assert set(SAMPLERS) - AESIR_OPENAI_CHAT_ACCEPTED == set()
+    assert AESIR_OPENAI_CHAT_ACCEPTED == set(SAMPLERS)
+    assert AESIR_OPENAI_CHAT_DIVERGENT <= set(UNSUPPORTED_SAMPLERS)
 
 
 async def test_wire_carries_stream_options_and_renamed_sampler() -> None:
-    # D1 + D2 on the wire itself: every chat request carries
-    # stream_options, and a set top_k travels under its own name
-    # — both are fields Aesir's real route rejects with 400.
+    # D1 + D2 on the wire itself, repaired by F-02: no
+    # stream_options is sent, and a set top_k is dropped with
+    # the other unserved controls instead of travelling.
     captured: dict = {}
     backend = _chat_backend(captured)
     params = SamplingParams(temperature=0.3, top_k=40)
     _ = [e async for e in backend.chat_stream(MSGS, params, asyncio.Event())]
     assert captured["path"].endswith("/chat/completions")
-    assert captured["stream_options"] == {"include_usage": True}
-    assert captured["top_k"] == 40
+    assert "stream_options" not in captured
+    assert "top_k" not in captured
+    assert captured["temperature"] == 0.3
 
 
 async def test_embedding_backend_posts_to_undeserved_route() -> None:

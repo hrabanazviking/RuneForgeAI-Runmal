@@ -223,6 +223,15 @@ class AesirEmbeddingBackend(EmbeddingBackend):
     ``embed`` raises BackendError subclasses and callers degrade through
     ``embed_or_fallback`` to the FTS contract — never a crash, never a
     silently mixed space.
+
+    NOT SERVED by the real engine (P-009 D3, binding rule from the
+    P-014 gate's F-02): Aesir's v1 matrix has no ``/v1/embeddings``
+    route in either mode — against a real Aesir server every call
+    404s and degrades to FTS, exactly as designed above. Parity
+    work therefore binds embeddings to Ollama, never to Aesir,
+    until Aesir publishes an embeddings route in a new matrix
+    version. This class remains the S703 contract shape, proven
+    against fixtures only; it is not a served capability.
     """
 
     backend_key = "aesir"

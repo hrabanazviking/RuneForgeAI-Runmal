@@ -307,3 +307,13 @@ source in §0(2) and appends its entry here:
   `generation/compat.py`); its inputs are P-008's ledger, the
   P-014 gate's homing, and P-009's wire lessons, all already
   logged above. No live endpoint was called.
+- **F-02 (2026-10-30, own tree + Volmarr's own engine ledger
+  only):** no new external source and no mirror reading. The
+  Aesir binding repair implements exactly the repair P-009
+  named, against Aesir's own v1 API matrix as already logged
+  in §2 (P-009's entry — Aesir is Volmarr's own engine, a
+  different class from the mirrors, and no Aesir source code
+  was read or copied for this slice either). Its other
+  inputs are the P-014 gate's homing and F-01's wire
+  discipline, both already logged above. No live server was
+  run; NOT PROVEN LIVE stands until the owed smoke runs.

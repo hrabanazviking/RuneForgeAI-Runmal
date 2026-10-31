@@ -60,21 +60,26 @@ def test_every_canonical_control_is_accounted_for():
 
 
 def test_map_params_maps_supported_and_names_dropped():
+    # Deliberately updated by F-02: P-009 D2 proved the OpenAI
+    # chat route serves only temperature/top_p/max_tokens/seed;
+    # top_k, min_p, repetition_penalty and stop are rejected
+    # fields there and are now declared unsupported, named in
+    # warnings, and never sent.
     wire, warnings = map_params(FULL_PARAMS)
     assert wire == {
         "temperature": 0.7,
         "top_p": 0.9,
-        "top_k": 40,
-        "min_p": 0.05,
-        "repeat_penalty": 1.1,  # the one rename
         "max_tokens": 128,
-        "stop": ["END"],
         "seed": 42,
     }
     assert sorted(warnings) == [
         "unsupported parameter dropped: context_length",
         "unsupported parameter dropped: frequency_penalty",
+        "unsupported parameter dropped: min_p",
         "unsupported parameter dropped: presence_penalty",
+        "unsupported parameter dropped: repetition_penalty",
+        "unsupported parameter dropped: stop",
+        "unsupported parameter dropped: top_k",
     ]
 
 
@@ -92,10 +97,19 @@ async def test_chat_stream_wire_never_carries_unsupported():
 
     b = AesirChatBackend(model="llama-3.1-8b-instruct", transport=httpx.MockTransport(handler))
     _ = [e async for e in b.chat_stream(MSGS, FULL_PARAMS, asyncio.Event())]
-    for forbidden in ("presence_penalty", "frequency_penalty", "context_length"):
+    for forbidden in (
+        "presence_penalty",
+        "frequency_penalty",
+        "context_length",
+        "top_k",
+        "min_p",
+        "repetition_penalty",
+        "repeat_penalty",
+        "stop",
+        "stream_options",
+    ):
         assert forbidden not in captured
-    assert captured["repeat_penalty"] == 1.1
-    assert "repetition_penalty" not in captured
+    assert captured["temperature"] == 0.7 and captured["seed"] == 42
 
 
 def _listed_model() -> ModelInfo:
@@ -135,14 +149,18 @@ def test_negotiation_consumes_aesir_declarations():
 
 
 def test_s208_filter_built_from_aesir_mapping():
+    # Deliberately updated by F-02: the mapping is now the
+    # served subset with identity wire names, so a served
+    # control (seed) is kept and an unserved one
+    # (repetition_penalty, like presence_penalty) is dropped.
     model = _listed_model()
     profile = profile_from_capabilities(model, WIRE_NAMES)
     result = filter_for_model(
-        {"temperature": 0.5, "repetition_penalty": 1.2, "presence_penalty": 0.1},
+        {"temperature": 0.5, "seed": 7, "repetition_penalty": 1.2, "presence_penalty": 0.1},
         model,
         WIRE_NAMES,
     )
-    assert result.params == {"temperature": 0.5, "repeat_penalty": 1.2}
-    assert [d.param for d in result.dropped] == ["presence_penalty"]
-    assert any(m.dest == "repeat_penalty" for m in result.mapped)
+    assert result.params == {"temperature": 0.5, "seed": 7}
+    assert [d.param for d in result.dropped] == ["presence_penalty", "repetition_penalty"]
+    assert result.mapped == ()
     assert profile.name == "aesir:llama-3.1-8b-instruct"

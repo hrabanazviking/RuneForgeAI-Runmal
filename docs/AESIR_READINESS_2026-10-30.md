@@ -242,3 +242,27 @@ corrections without new code.
    Aesir runs (purplelongship discipline), is the only evidence
    that can retire NOT PROVEN LIVE. This ledger deliberately
    ran no server; it binds documents to documents and says so.
+
+## 5. F-02 follow-on (2026-10-30, appended — the record above stands)
+
+The P-014 gate homed this ledger's first recommendation as
+follow-on **F-02**, and F-02 is banked: `stream_options` is
+no longer sent (D1 closed in code), the declared sampler set
+is re-declared to the served OpenAI-route subset
+{temperature, top_p, max_tokens, seed} (D2 closed in code;
+the native-route rebind remains the recorded alternative),
+the default base URL is Aesir's native port 18434 at the
+adapter, the profile builder, and the doctor (D4 closed),
+422 maps to `ContextOverflow` (D8 closed), and a stream
+with neither terminal marker nor finish reason raises
+instead of yielding `Done` (D6 closed). Resident-model
+readiness is surfaced from `/health/ready` at the server
+root (D5's truthful signal, VX-19's narrowed home). The D3
+binding rule — embeddings bind to Ollama, never to Aesir —
+is recorded in the embedding backend's own docstring.
+Full record: `docs/AESIR_BINDING_REPAIR_2026-10-30.md`.
+
+**NOT PROVEN LIVE stands, unchanged.** F-02's remaining
+completion criterion is the live smoke of §4 point 4, a
+purplelongship leg the keeper cannot run. D7 (admission
+bounds), D9 and D10 stand as this ledger recorded them.
