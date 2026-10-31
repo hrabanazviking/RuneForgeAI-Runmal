@@ -325,3 +325,12 @@ source in §0(2) and appends its entry here:
   Rúnmál's own TTS/STT seams and in F-01's adapter pattern;
   its other inputs are the P-014 gate's homing and P-010 §3's
   sizing, both already logged. No live endpoint was called.
+- **F-04 (2026-10-31, own tree only):** no new external source
+  and no mirror reading. The clean-up tool implements ST-73
+  exactly as P-002's census already recorded it from
+  SillyTavern's official public documentation (logged in §2
+  above) and the P-014 gate homed it, over Rúnmál's own
+  S804 doctor diagnostics and its own data-dir layout; no
+  live endpoint was called and no installation was cleaned —
+  all evidence is fixture installs under pytest temporary
+  directories.

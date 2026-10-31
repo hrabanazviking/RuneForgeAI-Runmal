@@ -456,8 +456,41 @@ invented by the keeper.
     775 passed, 6 skipped, 0 failed — F-02 baseline
     764 + 11 new. Ruff: no new findings (the 5 in
     voice/backends.py are pre-existing on the baseline).
+- F-04 clean-up tool — banked this tick (see git log). Build:
+    src/runmal/diagnostics/cleanup.py (scan_cleanup /
+    clean_cleanup) + CLI `runmal cleanup` (dry-run by default;
+    --apply, --category, --allow-high-risk, --stale-backup-days
+    30 / --stale-staging-days 7, --json). Six categories, each
+    item carrying its risk + warning (ST-73): orphan character
+    assets (no character row at all), unreferenced character
+    files, chats of deleted characters (HIGH — soft-deleted or
+    dangling, message counts named; removal needs
+    allow-high-risk, one FK-on transaction, chat_summaries
+    deleted explicitly, memories untouched so the doctor's
+    dangling-source warning tells that story), stale backups
+    (never the newest of a kind), stale staging, and
+    unrecognized backup-dir files (NEVER removable). Removal
+    discipline pinned by tests: re-validation at delete time
+    (a character re-created between scan and apply saves its
+    directory), containment inside the data dir, symlinks
+    never followed/removed, and a missing/unreadable database
+    judges NO database category (filesystem categories still
+    scan). Doctor bug found by the scan and FIXED in-slice:
+    check_assets counted a directory orphaned unless its
+    character currently had an avatar — now every character
+    row owns its directory (soft-deleted included, S303
+    restore custody), only no-row directories are orphaned;
+    S804 suite stays green. Doc: docs/CLEANUP_TOOL_2026-10-31.md
+    + tests tests/test_f04_cleanup.py (14 tests). The delta
+    table gained its appended F-04 follow-on closing ST-73
+    (original verdict stands) and the clean-room log its F-04
+    entry (own tree only). Full suite re-run this tick on the
+    VM (sanitised proxy env): 789 passed, 6 skipped, 0 failed
+    — F-03 baseline 775 + 14 new. Ruff clean on all touched
+    files. THE PART I FOLLOW-ON BLOCK (F-01–F-04) IS NOW
+    COMPLETE — every NO-HOME row the P-014 gate homed is built.
 - IN PROGRESS: none (tick closing cleanly).
-- Next slice: F-04, the clean-up tool over runmal doctor
-  (gate follow-on block, last before P-015).
+- Next slice: P-015, character card v2 import with full field
+  fidelity (Part II — Cards & Content Interop, first slice).
 
-Last updated: 2026-10-30 23:51 EDT tick (F-03 banked)
+Last updated: 2026-10-31 00:31 EDT tick (F-04 banked)

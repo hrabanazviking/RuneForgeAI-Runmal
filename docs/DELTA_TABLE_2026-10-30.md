@@ -291,3 +291,23 @@ are closed by sovereign difference rather than by building.
   Parts VII–XIV validation limit (point 2) are the gate's
   explicit agenda. Nothing flagged here is closed by being
   flagged.
+
+## F-04 follow-on (2026-10-31) — ST-73 is built
+
+The P-014 gate homed this table's ST-73 row (clean-up tool,
+MISSING, no home) as follow-on **F-04**, and F-04 is now
+banked: `runmal cleanup` exists in this tree
+(`diagnostics/cleanup.py` over the S804 doctor), scanning six
+categories — orphan character assets, unreferenced character
+files, chats of deleted characters, stale backups,
+stale staging, and unrecognized backup-dir files — each item
+carrying its category's risk warning, with dry-run-by-default
+removal under re-validation, containment, and high-risk
+gating. The one deliberate shape difference from the mirror
+is recorded in the slice doc: Rúnmál's soft delete (S303)
+means a deleted character's assets are retained-for-restore,
+never orphans, and its chats are high-risk explicit removals.
+This table's original ST-73 verdict above is the historical
+record of the gap and is not rewritten; this note is the
+gap's closing entry. Full record:
+`docs/CLEANUP_TOOL_2026-10-31.md`.

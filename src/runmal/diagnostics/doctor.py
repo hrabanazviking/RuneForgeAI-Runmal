@@ -408,18 +408,21 @@ def check_assets(db_path: Path, base: Path) -> list[Finding]:
     conn = _connect_ro(db_path)
     try:
         try:
-            rows = conn.execute(
-                "SELECT id, avatar_asset FROM characters "
-                "WHERE avatar_asset IS NOT NULL AND avatar_asset != ''"
-            ).fetchall()
+            rows = conn.execute("SELECT id, avatar_asset FROM characters").fetchall()
         except sqlite3.Error:
             rows = []
     finally:
         conn.close()
     missing = []
-    known_ids = set()
+    # Every character row owns its asset directory — including a
+    # character with no avatar yet and a soft-deleted character
+    # whose assets are retained for restore (S303). Only a
+    # directory whose id has NO row at all is orphaned (F-04
+    # cleanup re-judges this precisely before removing anything).
+    known_ids = {character_id for character_id, _avatar in rows}
     for character_id, avatar in rows:
-        known_ids.add(character_id)
+        if not avatar:
+            continue
         if not (base / "assets" / "characters" / character_id / avatar).is_file():
             missing.append(f"{character_id}/{avatar}")
     if missing:

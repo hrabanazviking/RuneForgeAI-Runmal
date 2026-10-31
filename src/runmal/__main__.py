@@ -134,6 +134,40 @@ def build_parser() -> argparse.ArgumentParser:
         default=8098,
         help="App server port to probe (default: 8098)",
     )
+    cleanup = sub.add_parser(
+        "cleanup",
+        help="Scan for orphan/stale files and clean them, dry-run by default (F-04)",
+    )
+    cleanup.add_argument("--json", action="store_true", help="Print the report as JSON")
+    cleanup.add_argument(
+        "--apply",
+        action="store_true",
+        help="Actually remove the listed items (default: dry-run, nothing removed)",
+    )
+    cleanup.add_argument(
+        "--category",
+        action="append",
+        default=None,
+        dest="categories",
+        help="Restrict to this category (repeatable)",
+    )
+    cleanup.add_argument(
+        "--allow-high-risk",
+        action="store_true",
+        help="Also remove high-risk items (chats of deleted characters)",
+    )
+    cleanup.add_argument(
+        "--stale-backup-days",
+        type=int,
+        default=30,
+        help="Backups older than this many days are stale (default: 30)",
+    )
+    cleanup.add_argument(
+        "--stale-staging-days",
+        type=int,
+        default=7,
+        help="Staging entries older than this many days are stale (default: 7)",
+    )
     release = sub.add_parser("release", help="Release artifacts + gates (S806)")
     rsub = release.add_subparsers(dest="release_command")
     rsbom = rsub.add_parser("sbom", help="Print/write the SBOM (CycloneDX JSON)")
@@ -166,6 +200,8 @@ def main(argv: list[str] | None = None) -> int:
         return _run_archive(args)
     elif args.command == "doctor":
         return _run_doctor(args)
+    elif args.command == "cleanup":
+        return _run_cleanup(args)
     elif args.command == "release":
         return _run_release(args)
     return 0
@@ -392,6 +428,64 @@ def _run_release(args: argparse.Namespace) -> int:
         print(f"wrote {args.out}")
     else:
         print(text)
+    return 0
+
+
+def _run_cleanup(args: argparse.Namespace) -> int:
+    import json
+
+    from runmal.diagnostics.cleanup import CATEGORY_RISK, clean_cleanup, scan_cleanup
+
+    categories = set(args.categories) if args.categories else None
+    if categories is not None:
+        unknown = categories - set(CATEGORY_RISK)
+        if unknown:
+            print(
+                f"cleanup: unknown categories: {', '.join(sorted(unknown))} "
+                f"(known: {', '.join(sorted(CATEGORY_RISK))})",
+                file=sys.stderr,
+            )
+            return 2
+    report = scan_cleanup(
+        stale_backup_days=args.stale_backup_days,
+        stale_staging_days=args.stale_staging_days,
+    )
+    result = clean_cleanup(
+        report,
+        categories=categories,
+        apply=args.apply,
+        allow_high_risk=args.allow_high_risk,
+    )
+    if args.json:
+        print(
+            json.dumps(
+                {"scan": report.to_dict(), "result": result.to_dict()},
+                indent=2,
+            )
+        )
+        return 0
+    print(f"runmal cleanup — data dir {report.base_dir}")
+    for item in report.items:
+        print(f"[{item.risk}] {item.category}: {item.detail}")
+        if item.path:
+            print(f"       path: {item.path} ({item.size_bytes} bytes)")
+        print(f"       risk: {item.warning}")
+    for skipped in report.skipped:
+        print(f"[skip] {skipped['category']}: {skipped['reason']}")
+    if result.dry_run:
+        print(
+            f"dry run: {len(result.planned)} item(s) would be removed, "
+            f"{len(result.skipped)} skipped — nothing was deleted; "
+            "pass --apply to remove the planned items"
+        )
+    else:
+        print(
+            f"removed {len(result.removed)} item(s), "
+            f"{result.bytes_reclaimed} bytes reclaimed, "
+            f"{len(result.skipped)} skipped"
+        )
+        for skipped in result.skipped:
+            print(f"[not removed] {skipped['category']}: {skipped['reason']}")
     return 0
 
 
