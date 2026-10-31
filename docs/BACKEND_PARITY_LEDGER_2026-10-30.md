@@ -199,3 +199,20 @@ should carry it as DELIBERATELY-DIFFERENT for ST-44.
    per-modality profiles, and the FTS-degrading embeddings seam
    are Rúnmál-only strengths the mirrors do not name; parity
    work must not trade them away for breadth.
+
+## 8. F-01 follow-on (2026-10-30) — the generic adapter is built
+
+The P-014 gate homed this ledger's first recommendation as
+follow-on **F-01**, and F-01 is now banked: the generic
+OpenAI-compatible adapter exists in this tree
+(`backends/openai_compat.py`, `backend_key="openai"`, chat plus
+embeddings in `backends/embeddings.py`), is selectable in backend
+profiles (`CHAT_BACKENDS` / `EMBEDDING_BACKENDS` both gained
+`openai`), passes the shared contract suite against fixtures, and
+declares exactly the S208 `openai` sampler profile as its truth.
+The 14 WANTED-GENERIC rows in Tables A–C are therefore covered as
+*profiles on this one adapter* wherever the named service offers
+the compatible surface — the ledger's original verdicts above are
+the historical record of the gap and are not rewritten; this note
+is the gap's closing entry. The six UNWANTED verdicts stand
+unchanged. Full record: `docs/GENERIC_OPENAI_ADAPTER_2026-10-30.md`.

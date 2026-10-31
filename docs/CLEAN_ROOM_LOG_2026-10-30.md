@@ -296,3 +296,14 @@ source in §0(2) and appends its entry here:
   title only in the filed roadmap) is this log's eventual
   publisher: the matrix's provenance column is this log,
   published.
+
+### Part I follow-ons (F-01–F-04)
+
+- **F-01 (2026-10-30, own tree only):** no new external source
+  and no mirror reading. The generic OpenAI-compatible adapter
+  generalises the wire shape this tree already speaks (S303
+  OpenRouter and S701 Aesir adapters) under the sampler profile
+  the tree already declares (S208 `openai` in
+  `generation/compat.py`); its inputs are P-008's ledger, the
+  P-014 gate's homing, and P-009's wire lessons, all already
+  logged above. No live endpoint was called.

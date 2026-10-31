@@ -28,15 +28,17 @@ from runmal.backends.embeddings import (
     EmbeddingBackend,
     FakeEmbeddingBackend,
     OllamaEmbeddingBackend,
+    OpenAICompatibleEmbeddingBackend,
     UnavailableEmbeddingBackend,
 )
 from runmal.backends.fake import FakeChatBackend
 from runmal.backends.ollama import OllamaChatBackend
+from runmal.backends.openai_compat import OpenAICompatibleChatBackend
 from runmal.backends.openrouter import OpenRouterChatBackend
 from runmal.db.models import BackendProfile, SecretEntry
 
-CHAT_BACKENDS = ("fake", "ollama", "openrouter", "aesir")
-EMBEDDING_BACKENDS = ("", "fake", "ollama", "aesir")
+CHAT_BACKENDS = ("fake", "ollama", "openrouter", "aesir", "openai")
+EMBEDDING_BACKENDS = ("", "fake", "ollama", "aesir", "openai")
 
 
 def _bad(message: str) -> ValueError:
@@ -197,6 +199,16 @@ async def build_chat_backend(session: AsyncSession, profile: BackendProfile) -> 
             base_url=base_url or "http://127.0.0.1:8000/v1",
             api_key=secret,
         )
+    if profile.chat_backend == "openai":
+        try:
+            config = json.loads(profile.config_json or "{}")
+        except json.JSONDecodeError:
+            config = {}
+        base_url = config.get("base_url") if isinstance(config, dict) else None
+        kwargs = {"model": profile.chat_model or "gpt-4o-mini", "api_key": secret}
+        if base_url:
+            kwargs["base_url"] = base_url
+        return OpenAICompatibleChatBackend(**kwargs)
     return FakeChatBackend()
 
 
@@ -216,6 +228,17 @@ async def build_embedding_backend(
         if base_url:
             kwargs["base_url"] = base_url
         return AesirEmbeddingBackend(**kwargs)
+    if profile.embedding_backend == "openai":
+        secret = await resolve_secret(session, profile.user_id, profile.embedding_secret_ref)
+        try:
+            config = json.loads(profile.config_json or "{}")
+        except json.JSONDecodeError:
+            config = {}
+        base_url = config.get("base_url") if isinstance(config, dict) else None
+        kwargs = {"model": profile.embedding_model or "text-embedding-3-small", "api_key": secret}
+        if base_url:
+            kwargs["base_url"] = base_url
+        return OpenAICompatibleEmbeddingBackend(**kwargs)
     if profile.embedding_backend == "fake":
         return FakeEmbeddingBackend()
     return UnavailableEmbeddingBackend()

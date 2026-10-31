@@ -22,6 +22,8 @@ from runmal.backends.aesir import map_error as aesir_map_error
 from runmal.backends.errors import BackendError, BackendTimeout, BackendUnavailable
 from runmal.backends.models import HealthStatus
 from runmal.backends.ollama import map_status_error
+from runmal.backends.openai_compat import DEFAULT_BASE_URL as OPENAI_DEFAULT_BASE_URL
+from runmal.backends.openai_compat import map_error as openai_map_error
 
 
 @dataclass(frozen=True)
@@ -279,6 +281,77 @@ class AesirEmbeddingBackend(EmbeddingBackend):
             detail="aesir embeddings reachable"
             if ok
             else f"aesir embeddings HTTP {resp.status_code}",
+            latency_ms=latency,
+        )
+
+
+class OpenAICompatibleEmbeddingBackend(EmbeddingBackend):
+    """Embeddings via any OpenAI-compatible ``POST /embeddings`` (F-01).
+
+    The embeddings half of the generic adapter (P-008): independent of
+    the chat adapter (ADR-0001), profile-configured ``base_url`` +
+    model + optional secret reference. Every result carries provenance
+    {provider="openai", model, dims, version} (INV-019); failures raise
+    BackendError subclasses and callers degrade through
+    ``embed_or_fallback`` — never a crash, never a mixed space.
+    """
+
+    backend_key = "openai"
+
+    def __init__(
+        self,
+        base_url: str = OPENAI_DEFAULT_BASE_URL,
+        model: str = "text-embedding-3-small",
+        api_key: str | None = None,
+        client: httpx.AsyncClient | None = None,
+        transport: httpx.AsyncBaseTransport | None = None,
+        timeout_s: float = 60.0,
+    ):
+        self._model = model
+        headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
+        self._client = client or httpx.AsyncClient(
+            base_url=base_url.rstrip("/"), timeout=timeout_s, transport=transport, headers=headers
+        )
+
+    async def embed(self, texts: list[str]) -> EmbeddingResult:
+        try:
+            resp = await self._client.post(
+                "/embeddings", json={"model": self._model, "input": texts}
+            )
+        except httpx.ConnectError as exc:
+            raise BackendUnavailable("openai-compatible embeddings unreachable") from exc
+        except httpx.TimeoutException as exc:
+            raise BackendTimeout("openai-compatible embeddings request timed out") from exc
+        if resp.status_code >= 400:
+            raise openai_map_error(resp.status_code, resp.text)
+        entries = sorted(resp.json().get("data", []), key=lambda e: e.get("index", 0))
+        vectors = tuple(tuple(float(x) for x in e.get("embedding", [])) for e in entries)
+        dims = len(vectors[0]) if vectors else 0
+        return EmbeddingResult(
+            vectors=vectors,
+            provenance=EmbeddingProvenance(
+                provider="openai", model=self._model, dims=dims, version="1"
+            ),
+        )
+
+    def model_info(self) -> EmbeddingModelInfo:
+        return EmbeddingModelInfo(model_id=self._model, provider="openai", dims=0)
+
+    async def health_check(self) -> HealthStatus:
+        start = time.monotonic()
+        try:
+            resp = await self._client.get("/models")
+        except Exception as exc:  # health reports, never raises
+            return HealthStatus(
+                ok=False, detail=f"openai-compatible embeddings unreachable: {type(exc).__name__}"
+            )
+        latency = (time.monotonic() - start) * 1000
+        ok = resp.status_code < 400
+        return HealthStatus(
+            ok=ok,
+            detail="openai-compatible embeddings reachable"
+            if ok
+            else f"openai-compatible embeddings HTTP {resp.status_code}",
             latency_ms=latency,
         )
 

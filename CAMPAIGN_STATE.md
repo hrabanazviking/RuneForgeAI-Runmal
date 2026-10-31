@@ -352,8 +352,38 @@ invented by the keeper.
     0 failed — P-013 baseline 735 + 9 new.
     PART I (P-001–P-014) IS COMPLETE — a part completion,
     reportable to Volmarr under the keeper's reporting rule.
+- F-01 generic OpenAI-compatible adapter — banked this tick
+    (see git log). Build: src/runmal/backends/openai_compat.py
+    (OpenAICompatibleChatBackend, backend_key "openai" — the
+    S211 connection kind made real) + OpenAICompatibleEmbedding
+    Backend in backends/embeddings.py + profile wiring
+    (CHAT_BACKENDS / EMBEDDING_BACKENDS gained "openai",
+    config base_url honoured for both). Doc:
+    docs/GENERIC_OPENAI_ADAPTER_2026-10-30.md + fixtures
+    tests/fixtures/backends/openai_{chat,models,error}.* +
+    tests/test_f01_openai_compat.py (9 tests). Sampler truth is
+    exactly the S208 openai profile's set, pinned against
+    compat.py itself; unsupported canonical controls (top_k,
+    min_p, repetition_penalty, context_length) cleared with
+    warnings, never sent. Wire discipline from P-009: no
+    stream_options / usage toggle sent, 422 mapped, and a
+    stream ending with neither [DONE] nor a finish reason
+    raises instead of yielding a fabricated Done. P-008's
+    pinning tests updated deliberately (its own instruction)
+    and the ledger gained its §8 F-01 follow-on closing entry;
+    the 14 WANTED-GENERIC rows are covered as profiles on this
+    one adapter wherever the named service offers the
+    compatible surface — no live endpoint was called. Clean-
+    room log gained the F-01 entry (own tree only). Full suite
+    re-run this tick on the VM (sanitised proxy env):
+    753 passed, 6 skipped, 0 failed, 759 collected — P-014
+    baseline 744 + 9 new, collected delta verified against
+    HEAD (750 → 759).
 - IN PROGRESS: none (tick closing cleanly).
-- Next slice: F-01, the generic OpenAI-compatible chat
-  (+embeddings) adapter (gate follow-on block, before P-015).
+- Next slice: F-02, the Aesir binding repair (gate follow-on
+  block, before P-015; its completion also requires the owed
+  live smoke on purplelongship, which the keeper cannot run —
+  the code repair banks, NOT PROVEN LIVE stands until the
+  smoke runs).
 
-Last updated: 2026-10-30 23:30 EDT
+Last updated: 2026-10-30 23:31 EDT tick (F-01 banked)
