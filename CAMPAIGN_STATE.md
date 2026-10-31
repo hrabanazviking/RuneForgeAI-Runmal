@@ -201,8 +201,39 @@ invented by the keeper.
     Full suite re-run this tick on the VM (sanitised proxy
     env): 716 passed, 6 skipped, 0 failed — P-009 baseline
     711 + 5 new.
+- P-011 mobile reality check — banked this tick (see git log).
+    Doc: docs/MOBILE_REALITY_CHECK_2026-10-30.md + pinning tests
+    tests/test_p011_mobile_reality.py (6 tests). Decision record,
+    from the tree: the responsive web UI is real and pinned
+    (8 templated pages carry the viewport; S310 breakpoints
+    1024/720, 44px coarse-pointer targets, safe-area insets) but
+    there is NO PWA layer (no manifest, service worker,
+    theme-color, or icons anywhere in the web layer), the server
+    is loopback by law (127.0.0.1:8098 default, ADR-0003;
+    phone reach = explicit --host on a trusted network), and
+    voice is host audio only (no getUserMedia anywhere; the
+    /voice page polls host status). Decisions D1–D5: D1 client
+    is the browser everywhere — no native Android/iOS/Windows
+    apps (Voxta's Android companion is a thin client doing what
+    a browser tab already does; stores contradict sovereignty);
+    D2 PWA is the install shape as a named future slice, shell
+    only, never caching /api/v1 or the credential, with the
+    secure-context limit stated plainly (install + mic/camera
+    need localhost or HTTPS — plain-HTTP LAN gets neither);
+    D3 phone reach stays an explicit user act under ADR-0003,
+    remote access out of scope; D4 no on-phone server (phone is
+    a client; server hosts stay laptop/desktop/Pi); D5 mobile
+    voice/camera belong to Part VII via a browser-capture slice
+    whose precondition is D2's HTTPS gate — honest mobile claim
+    today is full text surface, voice stays on the host. Thin
+    spot recorded: server-inline /voice and /memories pages
+    carry no viewport. PWA shell slice + viewport repair flagged
+    NO HOME in Parts II–VI for P-014. No device was tested.
+    Full suite re-run this tick on the VM (sanitised proxy
+    env): 722 passed, 6 skipped, 0 failed — P-010 baseline
+    716 + 6 new.
 - IN PROGRESS: none (tick closing cleanly).
-- Next slice: P-011 mobile reality check (then P-012…P-014 in
+- Next slice: P-012 clean-room log (then P-013, P-014 in
   roadmap order).
 
-Last updated: 2026-10-30 22:52 EDT
+Last updated: 2026-10-30 23:02 EDT
