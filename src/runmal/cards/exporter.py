@@ -36,6 +36,7 @@ _KNOWN_FIELDS = (
     "alternate_greetings",
     "tags",
     "creator",
+    "character_version",
     "character_book",
     "extensions",
 )
@@ -61,15 +62,20 @@ def export_json(card: CharacterCard, spec_version: str = "2") -> bytes:
             f"supported export versions are {SUPPORTED_JSON_VERSIONS}; got {spec_version!r}",
         )
     known = _known_field_map(card)
+    raw_data = card.raw.get("data")
+    wrapped = isinstance(raw_data, dict)
     if spec_version == "3":
-        raw_data = card.raw.get("data")
-        if card.spec_version == "3" and isinstance(raw_data, dict):
+        if card.spec_version in ("2", "3") and wrapped:
+            # P-015: a wrapped v2 card converts up the same way a
+            # native v3 card round-trips — its data-level unknowns
+            # stay at the data level and its top-level unknowns
+            # stay at the top level; neither level is dropped.
             data_unknowns = {
                 k: copy.deepcopy(v) for k, v in raw_data.items() if k not in _KNOWN_FIELDS
             }
             obj: dict = _unknown_top_level(card)
         else:
-            # converting up from v1/v2: unknowns become data-level fields
+            # converting up from v1/flat v2: unknowns become data-level fields
             data_unknowns = {
                 k: copy.deepcopy(v)
                 for k, v in card.raw.items()
@@ -79,8 +85,25 @@ def export_json(card: CharacterCard, spec_version: str = "2") -> bytes:
         obj["spec"] = "chara_card_v3"
         obj["spec_version"] = "3.0"
         obj["data"] = {**data_unknowns, **known}
+    elif card.spec_version == "2" and wrapped:
+        # P-015: a wrapped v2 card exports in the envelope it
+        # arrived in — data-level unknowns verbatim inside `data`,
+        # top-level unknowns verbatim outside it, known fields
+        # overlaid from the normalized card at the data level.
+        obj = _unknown_top_level(card)
+        obj["spec"] = "chara_card_v2"
+        obj["spec_version"] = "2.0"
+        data_unknowns = {
+            k: copy.deepcopy(v) for k, v in raw_data.items() if k not in _KNOWN_FIELDS
+        }
+        obj["data"] = {**data_unknowns, **known}
     else:
         obj = _unknown_top_level(card)
+        if "data" in card.raw and not wrapped:
+            # A non-dict top-level `data` on a flat card is an
+            # unknown field, not an envelope — preserve it verbatim
+            # instead of letting the envelope key swallow it.
+            obj["data"] = copy.deepcopy(card.raw["data"])
         obj["spec"] = "chara_card_v2"
         obj["spec_version"] = "2.0"
         obj.update(known)

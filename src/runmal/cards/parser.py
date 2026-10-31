@@ -1,8 +1,9 @@
 """Character Card importers (S104).
 
 Supported inputs:
-- JSON: v1 (bare fields), v2 (`chara_card_v2`), v3 (`chara_card_v3`,
-  fields under `data`)
+- JSON: v1 (bare fields), v2 (`chara_card_v2` — fields under the
+  spec's `data` envelope, with the flat legacy shape accepted via
+  top-level fallback), v3 (`chara_card_v3`, fields under `data`)
 - PNG: `chara` / `ccv3` textual chunks (tEXt, zTXt), base64 JSON
 - CHARX: zip archive with `card.json` at root plus assets
 
@@ -75,15 +76,46 @@ def _as_dict(value: object) -> dict:
     return dict(value) if isinstance(value, dict) else {}
 
 
+def _field_source(obj: dict, spec_version: str) -> dict:
+    """Resolve where a card's fields live (P-015).
+
+    The public v2 spec wraps the fields in a ``data`` envelope
+    (``{spec, spec_version, data: {...}}``), and public card
+    readers resolve v2 fields from ``data`` with fallback to the
+    top level. Real files also circulate in the flat legacy shape
+    (fields at the top level, the shape Rúnmál's founding fixtures
+    carry). Both must import: for v1/v2 a dict ``data`` is the
+    primary source and any field it omits falls back to the
+    top-level value; a non-dict ``data`` is not an envelope and
+    the card is read flat (the value itself survives in ``raw``).
+    v3 keeps its founding rule: ``data`` is authoritative and
+    required.
+    """
+    envelope = obj.get("data")
+    if spec_version == "3":
+        if not isinstance(envelope, dict):
+            raise CardParseError(
+                CardErrorKind.NOT_A_CARD, "v3 card is missing its data object"
+            )
+        return envelope
+    if isinstance(envelope, dict):
+        merged = {
+            key: value
+            for key, value in obj.items()
+            if key not in ("spec", "spec_version", "data")
+        }
+        merged.update(envelope)
+        return merged
+    return obj
+
+
 def _normalize_card(
     obj: dict, source_format: str, assets: dict[str, bytes] | None = None
 ) -> CharacterCard:
     if not isinstance(obj, dict):
         raise CardParseError(CardErrorKind.NOT_A_CARD, "card JSON is not an object")
     spec_version = _detect_spec_version(obj)
-    data = obj.get("data") if spec_version == "3" else obj
-    if not isinstance(data, dict):
-        raise CardParseError(CardErrorKind.NOT_A_CARD, "v3 card is missing its data object")
+    data = _field_source(obj, spec_version)
     name = _as_str(data.get("name"))
     if not name:
         raise CardParseError(CardErrorKind.NOT_A_CARD, "card has no name")
@@ -100,6 +132,7 @@ def _normalize_card(
         alternate_greetings=_as_str_list(data.get("alternate_greetings")),
         tags=_as_str_list(data.get("tags")),
         creator=_as_str(data.get("creator")),
+        character_version=_as_str(data.get("character_version")),
         character_book=_as_dict(data.get("character_book")),
         extensions=_as_dict(data.get("extensions")),
         assets=dict(assets) if assets else {},

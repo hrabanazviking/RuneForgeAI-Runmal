@@ -334,3 +334,21 @@ source in §0(2) and appends its entry here:
   live endpoint was called and no installation was cleaned —
   all evidence is fixture installs under pytest temporary
   directories.
+
+### Part II (P-015–)
+
+- **P-015 (2026-10-31, public spec + own tree):** the v2
+  envelope shape and field set rest on the normative public
+  Character Card v2 spec already logged in §1 (founding
+  ledger), whose `data`-envelope structure the founding
+  importer had not implemented for v2. Read this tick as
+  corroboration only, flagged secondary per §0(3): public
+  v2 spec summaries and spec examples (charactercardconverter
+  guides, read via search results 2026-10-31) showing the
+  `{spec, spec_version, data}` envelope and the v2 field set
+  including `character_version`, and public card-reader
+  documentation of the data-first / top-level-fallback field
+  resolution for v2. No SillyTavern or Voxta source code was
+  read — neither project is the source of the card spec —
+  and no card file was downloaded; the slice's test cards
+  are authored fresh in the test module (P-005 discipline).

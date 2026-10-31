@@ -23,6 +23,7 @@ class CharacterCard:
     alternate_greetings: list[str] = field(default_factory=list)
     tags: list[str] = field(default_factory=list)
     creator: str = ""
+    character_version: str = ""
     character_book: dict = field(default_factory=dict)
     extensions: dict = field(default_factory=dict)
     assets: dict[str, bytes] = field(default_factory=dict)
