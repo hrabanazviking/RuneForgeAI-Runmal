@@ -175,8 +175,34 @@ invented by the keeper.
     ledger binds documents to documents and says so. Full suite
     re-run this tick on the VM (sanitised proxy env): 711 passed,
     6 skipped, 0 failed — P-008 baseline 705 + 6 new.
+- P-010 voice provider census — banked this tick (see git log).
+    Doc: docs/VOICE_PROVIDER_CENSUS_2026-10-30.md + pinning tests
+    tests/test_p010_voice_provider_census.py (5 tests). Mirror
+    side from official public docs only (ST's official TTS page
+    read in full 2026-10-30: 16 listed + OpenAI-compatible = 17;
+    Voxta names from P-003's attested sources). 23 distinct
+    providers judged (18 TTS + 5 STT): 10 WANTED-CONNECT,
+    4 WANTED-GENERIC, 2 FAIL-SHIP (Kokoro — eSpeak heart;
+    XTTS — CPML NC weights), 4 UNWANTED (Electron Hub, NovelAI,
+    Voxta Cloud ×TTS/STT — P-008 verdicts inherited), 2 REVERIFY
+    (Silero TTS papers unread — VAD's MIT papers clear nothing
+    else; WhisperLive), 1 DEPRECATED (Coqui-TTS, by ST itself),
+    0 HAVE / 0 PASS-SHIP (the zeroes are findings). ElevenLabs
+    is the only TTS provider both mirrors name. Key gap: ONE
+    generic OpenAI-compatible speech adapter covers all 4
+    WANTED-GENERIC rows — NO HOME in Parts II–VI, flagged for
+    P-014 kin to P-008's chat adapter. 2026 refresh: Voxtral
+    TTS (CC-BY-NC-4.0 weights) FAIL-SHIP pre-emptively
+    (secondary evidence, flagged). Honest flags: ST's STT list
+    and Voxta's full TTS catalogue are surveyed-but-not-
+    enumerated in official docs — not invented. Vice versa:
+    CosyVoice/Chatterbox named by neither mirror's official
+    docs; Rúnmál's STT registry is broader than mirrors'.
+    Full suite re-run this tick on the VM (sanitised proxy
+    env): 716 passed, 6 skipped, 0 failed — P-009 baseline
+    711 + 5 new.
 - IN PROGRESS: none (tick closing cleanly).
-- Next slice: P-010 voice provider census (then P-011…P-014 in
+- Next slice: P-011 mobile reality check (then P-012…P-014 in
   roadmap order).
 
-Last updated: 2026-10-30 22:47 EDT
+Last updated: 2026-10-30 22:52 EDT
