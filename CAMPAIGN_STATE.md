@@ -232,8 +232,42 @@ invented by the keeper.
     Full suite re-run this tick on the VM (sanitised proxy
     env): 722 passed, 6 skipped, 0 failed — P-010 baseline
     716 + 6 new.
+- P-012 clean-room log — banked this tick (see git log). Doc:
+    docs/CLEAN_ROOM_LOG_2026-10-30.md + pinning tests
+    tests/test_p012_clean_room_log.py (6 tests). The log is
+    opened as a living deliverable in the founding RESEARCH.md
+    pattern: §0 states the rule (behaviour studied, code never
+    read; allowed source classes in preference order;
+    secondary/unofficial sources never carry a row alone;
+    every future slice appends its entry before banking,
+    entries never rewritten); §1 summarises the founding
+    ledger's sources per area (card v2/v3 public specs, ST
+    public docs, Ollama/OpenRouter official docs, SQLite /
+    sqlite-vec, voice licence papers, stack/testing docs);
+    §2 gives every Part I slice P-001–P-011 its entry —
+    P-002's ST official docs (14 pages) + 1.13.0 notes in full
+    + 1.19 line, P-003's Voxta official site + 10 doc pages +
+    v1.11.0/v1.9.0/v1.9.3 notes, P-005's authored-fresh corpus
+    provenance, P-009's Aesir entry as a different class
+    (Volmarr's own engine, own-repo v1 matrix @ 1eed9706, no
+    mirror), P-010's official ST TTS page + founding licence
+    papers, and own-tree/no-new-reading entries for
+    P-001/P-004/P-006/P-007/P-008/P-011. Flagged uses are
+    recorded as flagged, never laundered: ST 1.19 secondary
+    corroboration (version note only, not rows), Voxta's
+    unofficial voxta.axailotl.ai on VX-15 only, Voxtral's
+    secondary HF-card reporting, roadmap-§1 rows as weakest
+    evidence. §3 carries six open-reading gaps forward
+    (ST STT enumeration, Voxta full TTS catalogue, Voxta
+    Assistant/Inspector, ST 1.19 full notes read directly,
+    Voxtral card read directly, Silero TTS / WhisperLive
+    REVERIFY papers); §4 states the log proves provenance,
+    not correctness, and licenses no copying. Full suite
+    re-run this tick on the VM (sanitised proxy env):
+    728 passed, 6 skipped, 0 failed — P-011 baseline
+    722 + 6 new.
 - IN PROGRESS: none (tick closing cleanly).
-- Next slice: P-012 clean-room log (then P-013, P-014 in
-  roadmap order).
+- Next slice: P-013 priority order ratified (then P-014,
+  the Part I gate, in roadmap order).
 
-Last updated: 2026-10-30 23:02 EDT
+Last updated: 2026-10-30 23:08 EDT
