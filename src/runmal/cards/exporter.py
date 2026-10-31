@@ -1,7 +1,9 @@
 """Character Card export (S105): deliberate supported JSON/PNG versions.
 
 Supported exports: JSON v2 (`chara_card_v2`), JSON v3 (`chara_card_v3`),
-PNG with a `chara` tEXt chunk (v2 JSON payload). CHARX export lives in
+PNG with a `chara` tEXt chunk (v2 JSON payload) — plus a `ccv3`
+chunk (v3 payload) when the card is v3, the dual-published shape
+the importer already prefers (P-017). CHARX export lives in
 archive.py (`export_charx`) — the v3 container format needs the archive
 writer, not just the JSON serializer.
 
@@ -128,11 +130,15 @@ def export_json(card: CharacterCard, spec_version: str = "2") -> bytes:
         obj["spec"] = "chara_card_v3"
         obj["spec_version"] = "3.0"
         obj["data"] = {**data_unknowns, **known, **_v3_field_map(card)}
-    elif card.spec_version == "2" and wrapped:
-        # P-015: a wrapped v2 card exports in the envelope it
-        # arrived in — data-level unknowns verbatim inside `data`,
+    elif wrapped:
+        # P-015: a wrapped card exports in the envelope it arrived
+        # in — data-level unknowns verbatim inside `data`,
         # top-level unknowns verbatim outside it, known fields
         # overlaid from the normalized card at the data level.
+        # P-017: this holds for a v3 card exported as v2 too —
+        # gating the branch on spec_version "2" sent v3 cards down
+        # the flat path below, which dropped their data-level
+        # unknowns (the P-005 corpus v3 card lost two).
         obj = _unknown_top_level(card)
         obj["spec"] = "chara_card_v2"
         obj["spec_version"] = "2.0"
@@ -166,11 +172,27 @@ def _png_chunk(ctype: bytes, data: bytes) -> bytes:
 
 
 def export_png(card: CharacterCard) -> bytes:
-    """Export the card as a PNG carrying the v2 JSON in a `chara` tEXt chunk."""
-    payload = b"chara\x00" + base64.b64encode(export_json(card, "2"))
+    """Export the card as a PNG carrying card JSON in tEXt chunks.
+
+    Every card gets a `chara` chunk (the v2 payload, readable by
+    the widest set of tools). A v3 card additionally gets a `ccv3`
+    chunk (the v3 payload) — the dual-published shape real cards
+    circulate in (P-005's corpus fixture), which Rúnmál's importer
+    already prefers, so a v3 card's PNG round trip stays v3
+    (P-017). Before P-017 the PNG export carried v2 only and a v3
+    card came back as v2.
+    """
+    text_chunks = [
+        _png_chunk(b"tEXt", b"chara\x00" + base64.b64encode(export_json(card, "2")))
+    ]
+    if card.spec_version == "3":
+        text_chunks.append(
+            _png_chunk(
+                b"tEXt", b"ccv3\x00" + base64.b64encode(export_json(card, "3"))
+            )
+        )
     signature = b"\x89PNG\r\n\x1a\n"
     ihdr = _png_chunk(b"IHDR", struct.pack(">IIBBBBB", 1, 1, 8, 2, 0, 0, 0))
-    text = _png_chunk(b"tEXt", payload)
     idat = _png_chunk(b"IDAT", zlib.compress(b"\x00\x00\x00\x00"))
     iend = _png_chunk(b"IEND", b"")
-    return signature + ihdr + text + idat + iend
+    return signature + ihdr + b"".join(text_chunks) + idat + iend

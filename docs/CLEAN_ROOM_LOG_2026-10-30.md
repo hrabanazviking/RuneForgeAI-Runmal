@@ -365,3 +365,11 @@ source in §0(2) and appends its entry here:
   the card spec — and no card file was downloaded; the
   slice's test cards are authored fresh in the test module
   (P-005 discipline).
+- **P-017 (2026-10-31, own tree only):** no new external
+  source and no mirror reading. The export round-trip matrix
+  runs entirely on P-005's authored corpus and Rúnmál's own
+  exporter/importer; the dual-published PNG shape it restores
+  for v3 cards (`chara` + `ccv3` chunks in one file) is the
+  shape P-005's own corpus fixture already carries, from the
+  public card specs logged in §1. No card file was
+  downloaded; no live endpoint was called.

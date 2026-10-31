@@ -1971,4 +1971,569 @@ invented by the keeper.
     (see git log / ls-remote verification in the tick
     record). Next slice: P-017 in roadmap order.
 
-Last updated: 2026-10-31 ~11:56 EDT tick (P-016 BANKED — full suite green in a clean window after the yggdrasil suite finished: 813 passed, 6 skipped, 0 failed; targeted 12 passed; banked as one local commit and pushed per policy; next slice: P-017)
+- P-017 card export v2 + v3 round-trips — BANKED
+  2026-10-31 ~14:32 EDT (see git log; banking tick record
+  at the end of this section).
+  (tick opened 2026-10-31 ~12:05 EDT). Probe over the P-005
+  corpus (5 card fixtures × JSON v2 / JSON v3 / PNG / CHARX)
+  measured the gap on entry: JSON v3 and CHARX round trips are
+  field-clean for every corpus card; JSON v2 round trips are
+  clean except for v3 sources — a v3 card exported as v2 (and
+  therefore also via PNG, the v2 carrier) LOSES its data-level
+  unknown fields (corpus proof: card_v3_rich loses
+  `creator_character_version` and `x_corpus_v3_unknown`),
+  because the exporter's wrapped-envelope branch was gated on
+  spec_version "2" and v3 cards fell through to the flat path
+  (INV-009 violation). PNG export also carries no v3 payload,
+  so a v3 card's PNG round trip downgrades it to v2. Build in
+  this tick: exporter fix (wrapped branch for any wrapped
+  source; dual chara+ccv3 PNG for v3 cards) + corpus
+  round-trip matrix tests + slice doc + clean-room entry.
+  Do not re-probe from scratch — the probe script is kept
+  outside the tree (VM .verify-tmp) and its findings are
+  recorded here and in the slice doc.
+  - BUILD COMPLETE, NOT YET BANKED (tick 2026-10-31
+    ~12:05–12:35 EDT): both defects FIXED in
+    src/runmal/cards/exporter.py — the wrapped-envelope v2
+    branch now serves any wrapped source (v3 included), and
+    export_png writes the dual-published shape for v3 cards
+    (`chara` v2 chunk + `ccv3` v3 chunk; non-v3 PNGs are
+    byte-identical to before). Post-fix probe: every corpus
+    cell field-clean; the only remaining diffs are the
+    deliberate spec-version conversions to the requested
+    export version. Files: src/runmal/cards/exporter.py,
+    tests/test_p017_card_export_roundtrip.py (10 tests),
+    docs/CARD_EXPORT_ROUNDTRIP_2026-10-31.md, clean-room log
+    entry appended. Ruff clean on all touched files.
+  - VERIFICATION SO FAR: targeted card set 77 passed
+    (P-017 10 + P-015/P-016/P-005/S104/S105/S113) in 2.21 s,
+    sanitised proxy env. FULL SUITE NOT BANKED: one full run
+    was started in a falling-load window (MemAvailable
+    ~4.7 GB, 1-min load 5.79 → 3.84), but contention
+    returned mid-run (load back to 10.56, ~15 suites); after
+    ~11 min the run had consumed only ~19 s of CPU (D-state
+    I/O stalls, then starvation) and was killed by this
+    tick — aborted, no count produced, NOT evidence against
+    the slice. (A background full-run result from an earlier
+    tick also surfaced during this tick — 69 failed / 747
+    passed under the same contention, its referenced log
+    not on disk and its exit marker contradicting its own
+    count; recorded as a spoiled, unverifiable count in the
+    P-015 pattern, not evidence.) Working tree carries
+    exactly the P-017 files listed above, HEAD still P-016
+    1d5dc6d. NEXT TICK: re-run the full suite (sanitised
+    proxy env, TMPDIR on workspace scratch — /tmp is full);
+    when green (expected 823 passed = 813 + 10, 6 skipped),
+    bank P-017 as one local commit and push per policy.
+    Do not re-build the slice.
+  - BANKING TICK, FULL RUN ATTEMPTED AND SPOILED (tick
+    2026-10-31 ~12:27–12:42 EDT): state was ~3 min old on
+    entry; no runmal worker was visibly live (pytest
+    processes present belonged to other campaigns —
+    yggdrasil full suite, mythic-coder, hermes — none in
+    this tree, verified by /proc cwd), so continuation was
+    checked directly. P-017 targeted re-verified green on
+    entry: 10 passed in 0.90 s (sanitised proxy env,
+    --capture=sys, TMPDIR on workspace scratch). Host then
+    improved over ~2 min of sampling (MemAvailable
+    2652 → 2877 MB and rising, 1-min load 2.18 → 1.07,
+    competing pytest suites falling 9 → 2), so the owed
+    full run WAS started (sanitised proxy env,
+    --capture=sys, TMPDIR on workspace scratch). It
+    completed but SPOILED: 209 failed / 569 passed /
+    6 skipped / 45 errors in 368.72 s — NOT a bankable
+    count and NOT evidence against the slice. Failure
+    signature is environmental, three stacked causes:
+    (1) sqlite3.OperationalError "database is locked"
+    ×240 mentions spread over dozens of unrelated files
+    (voice UI, lorebooks, doctor, group chats, archive,
+    backup, profiles) under load ~5.5–6 with other
+    campaigns' suites running; (2) a session tempfile
+    quirk, proven directly this tick: os.open with mode
+    0o600 (tempfile's creation mode) raises EPERM in
+    every directory in this session, so any test calling
+    tempfile.gettempdir() fails with "No usable temporary
+    directory found" — bridge files test_s602/test_s610
+    error on exactly this even in isolation, while
+    P-017's 10 tests passed alongside them in the same
+    isolation run (10 passed / 13 errors, all errors
+    bridge+tempfile); (3) /tmp at 100% (512 MB tmpfs,
+    0 avail). Zero FAILED/ERROR lines name test_p017.
+    Working tree unchanged (same 3 modified + 2 untracked
+    P-017 files plus the pre-existing CAMPAIGN_STATE.md
+    modification, HEAD still P-016 1d5dc6d). Slice remains
+    built and unbanked exactly as left; banking still
+    owed ONE clean-window full run (expected 823 passed
+    = 813 + 10, 6 skipped), then bank + push per policy.
+    Do not re-build. Full-run log kept at
+    ~/workspace/.verify-tmp/runmal-p017/full_suite.log.
+
+  - BANKING TICK DEFERRED, NO FULL RUN ATTEMPTED (tick
+    2026-10-31 ~12:40–12:42 EDT): state was fresh on entry
+    (~1 min old, the prior tick's record); no runmal worker
+    was visibly live (the only pytest process present was a
+    yggdrasil-build full suite, ~2.7 GB RSS, ~45% CPU, none
+    in this tree), so continuation was checked directly.
+    P-017 targeted re-verified green this tick: 10 passed
+    in 0.13 s (sanitised proxy env, --capture=sys, TMPDIR
+    on workspace scratch). Host conditions are outside the
+    clean-window band that banked P-016 (MemAvailable
+    ~5.0–5.2 GB, load falling): MemAvailable 3192 MB on
+    entry, 3438–3459 MB after the targeted run, then
+    FALLING 3435 → 2606 → 2315 MB across ~40 s of sampling
+    as the yggdrasil suite grew; load (1-min, 4 cores)
+    5.13 → 4.17, 5-min load ~4.5–4.8, 15-min ~5.1. One
+    improvement noted: /tmp is no longer full (512 MB
+    tmpfs, 509 MB avail, 1% used — the prior tick's third
+    spoilage cause is gone in this session). A full run
+    under falling memory + a 2.7 GB competing suite would
+    risk repeating the spoiled counts, not produce
+    evidence, and would add contention. No full run was
+    started. Working tree unchanged (same 3 modified +
+    2 untracked P-017 files plus the pre-existing
+    CAMPAIGN_STATE.md modification, HEAD still P-016
+    1d5dc6d). Slice remains built and unbanked exactly as
+    left; banking still owed ONE clean-window full run
+    (expected 823 passed = 813 + 10, 6 skipped), then bank
+    + push per policy. Do not re-build.
+
+  - BANKING TICK, WRITE GATE PROVEN TRANSIENT + FULL RUN
+    STARVED AND KILLED (tick 2026-10-31 ~12:51–13:08 EDT):
+    state was ~9 min old on entry; no runmal worker was
+    visibly live (no pytest process in this tree), so
+    continuation was checked directly. P-017 targeted
+    re-verified green this tick: 10 passed in 0.12 s
+    (sanitised proxy env, --capture=sys, TMPDIR on
+    workspace scratch). Host on entry was the best in
+    many ticks: MemAvailable ~6.0–6.2 GB, load (1-min,
+    4 cores) 1.93, /tmp 1% used, no competing pytest
+    suite running. BUT this tick opened inside the
+    box-wide write gate other campaigns also hit this
+    hour (a Samverk keeper commit this same hour names
+    it: "box-wide write gate (EPERM in every repo,
+    pytest tempdir unusable)"): file writes failed with
+    EPERM (shell echo, python file write, and os.write
+    on a 0o600-created fd all EPERM; files created
+    empty), tempfile.gettempdir() raised "No usable
+    temporary directory found", a first full-run attempt
+    died exit 120 with an empty log, and an interim full
+    run read 508 passed / 6 skipped / 315 errors — every
+    error the tempfile FileNotFoundError, zero naming
+    test_p017. NONE of that is evidence against the
+    slice. NEW FINDING: the gate is TRANSIENT, not a
+    session property — it CLEARED mid-tick in this same
+    session: after the failures above, tempfile.mkdtemp
+    in the workspace TMPDIR printed PROBE-HEALTHY,
+    os.write on a 0o600 fd returned 4, and shell/python
+    writes succeeded in /tmp, /var/tmp, the workspace
+    and this tree. STANDING PROBE FOR FUTURE TICKS:
+    before any full run, prove tempfile health with a
+    mkdtemp probe in the run's TMPDIR; if the gate is
+    active, re-probe after a wait instead of recording
+    a spoiled count. The owed full run WAS then started
+    in the cleared window, but contention returned
+    (sagnaskemma, yggdrasil, ember, hermes suites;
+    load 1.93 → 8.80) and the run STARVED: after ~11 min
+    elapsed it had consumed only ~14 s of CPU (the
+    12:05 tick's D-state/starvation signature) and was
+    killed by this tick — aborted, no count produced,
+    NOT evidence against the slice. Remote verified
+    this tick before the run: origin/yrsa/two-mirrors-
+    build == HEAD == P-016 1d5dc6d via ls-remote, so the
+    push base is clean when banking lands. Working tree
+    unchanged (same 3 modified + 2 untracked P-017 files
+    plus the pre-existing CAMPAIGN_STATE.md modification,
+    HEAD still P-016 1d5dc6d; probe files created by
+    this tick were removed). Slice remains built and
+    unbanked exactly as left; banking still owed ONE
+    clean-window full run (expected 823 passed =
+    813 + 10, 6 skipped), then bank + push per policy.
+    Do not re-build.
+
+  - BANKING TICK, CLEAN WINDOW OPENED THEN CLOSED MID-RUN,
+    FULL RUN STARVED AND KILLED (tick 2026-10-31
+    ~13:10–13:16 EDT): state was ~2 min old on entry (the
+    prior tick's 13:08 record); no runmal worker was
+    visibly live (pytest processes present belonged to
+    other campaigns — yggdrasil, hermes — none in this
+    tree, verified by /proc cwd), so continuation was
+    checked directly. Standing tempfile-health probe run
+    first per the prior tick's rule: PROBE-HEALTHY
+    (mkdtemp in the workspace TMPDIR + os.write on a
+    0o600 fd returned 4) — the write gate was NOT active
+    this tick. P-017 targeted re-verified green: 10 passed
+    in 0.16 s (sanitised proxy env, --capture=sys, TMPDIR
+    on workspace scratch). Host on entry was the cleanest
+    in many ticks: MemAvailable ~5.6–5.8 GB, load (1-min,
+    4 cores) 2.78 falling to 1.66–1.69, /tmp 11% used,
+    only the yggdrasil suite competing — inside the
+    clean-window band that banked P-016, so the owed full
+    run WAS started (sanitised proxy env, --capture=sys,
+    TMPDIR on workspace scratch; log at
+    ~/workspace/.verify-tmp/runmal-p017/full_suite_1310.log).
+    Contention then returned mid-run (ember, hermes,
+    sagnaskemma suites launched; load 1.69 → 12.42,
+    MemAvailable falling to ~4.2 GB) and the run STARVED
+    in the established signature: at 4:51 elapsed it had
+    consumed only 6 s of CPU (D-state,
+    btrfs_btree_wait_writeback) with ~149 tests done, and
+    was killed by this tick at ~5 min — aborted, no count
+    produced, NOT evidence against the slice. Working tree
+    unchanged (same 3 modified + 2 untracked P-017 files
+    plus the pre-existing CAMPAIGN_STATE.md modification,
+    HEAD still P-016 1d5dc6d). Slice remains built and
+    unbanked exactly as left; banking still owed ONE
+    clean-window full run (expected 823 passed =
+    813 + 10, 6 skipped), then bank + push per policy.
+    Do not re-build.
+
+  - BANKING TICK DEFERRED, NO FULL RUN ATTEMPTED (tick
+    2026-10-31 ~13:11–13:22 EDT, run started 13:17 EDT):
+    state was ~1 min old on entry (the prior tick's 13:16
+    record); no runmal worker was visibly live (no pytest
+    process in this tree, verified by /proc cwd — pytest
+    processes present belonged to other campaigns —
+    yggdrasil full suite, Samverk, mythic-coder,
+    mindspark, hermes ×4 — none in this tree), so
+    continuation was checked directly. Standing
+    tempfile-health probe run first per the 12:51 tick's
+    rule: PROBE-HEALTHY (mkdtemp in the workspace TMPDIR
+    + os.write on a 0o600 fd returned 4) — the write gate
+    was NOT active this tick. P-017 targeted re-verified
+    green: 10 passed in 0.49 s (sanitised proxy env,
+    --capture=sys, TMPDIR on workspace scratch). Host
+    conditions are outside the clean-window band that
+    banked P-016 (MemAvailable ~5.0–5.2 GB, load falling,
+    only a small competing suite): MemAvailable ~3.54 GB
+    on entry, 3.53–3.65 GB across closing samples;
+    load (1-min, 4 cores) 2.33 → 1.99, but 5-min load
+    stayed 6.65 → 6.14 and 15-min 6.28 → 6.12, with 10
+    competing pytest processes visibly running
+    concurrently (the yggdrasil full suite alone at
+    ~38% CPU since 13:06 EDT). The prior tick started
+    a full run from strictly better entry conditions
+    (MemAvailable ~5.8 GB, 1-min load 1.69, one
+    competitor) and still starved when contention
+    returned mid-run; a full run started now would
+    repeat the spoiled/starved counts, not produce
+    evidence, and would add contention. No full run was
+    started. /tmp healthy (28% used, 372 MB avail).
+    Remote verified this tick: origin/yrsa/two-mirrors-
+    build == HEAD == P-016 1d5dc6d via ls-remote.
+    Working tree unchanged (same 3 modified + 2
+    untracked P-017 files plus the pre-existing
+    CAMPAIGN_STATE.md modification, HEAD still P-016
+    1d5dc6d). Slice remains built and unbanked exactly
+    as left; banking still owed ONE clean-window full
+    run (expected 823 passed = 813 + 10, 6 skipped),
+    then bank + push per policy. Do not re-build.
+
+  - BANKING TICK DEFERRED, NO FULL RUN ATTEMPTED (tick
+    2026-10-31 ~13:21–13:26 EDT): state was fresh on
+    entry (prior tick's 13:22 record); no runmal worker
+    was visibly live (no pytest process in this tree;
+    pytest processes present belonged to other campaigns
+    — yggdrasil, sagnaskemma, ember, samverk, hermes,
+    mythic-coder among them — none in this tree), so
+    continuation was checked directly. Standing
+    tempfile-health probe run first per the 12:51 tick's
+    rule: PROBE-HEALTHY (mkdtemp in the workspace TMPDIR
+    + os.write on a 0o600 fd returned 4) — the write gate
+    was NOT active this tick. P-017 targeted re-verified
+    green: 10 passed in 0.12 s (sanitised proxy env,
+    --capture=sys, TMPDIR on workspace scratch). Host
+    had just rebooted (uptime ~1–2 min on entry, a first
+    exec was interrupted by the service restart) and
+    conditions are outside the clean-window band that
+    banked P-016 (MemAvailable ~5.0–5.2 GB, load falling,
+    only a small competing suite) and the band that
+    banked P-015 (5-min load 1.19–1.59): MemAvailable
+    2.73 GB on entry after the reboot, 2.36–2.45 GB in
+    samples, 2.08 GB in the closing sample; load
+    (1-min, 4 cores) volatile 6.26 → 4.09 → 11.12 →
+    9.90 → 3.90, 5-min load ~1.6–2.2 (reboot-lagged),
+    with 7+ competing pytest suites visibly restarting
+    and running concurrently. A full run under a
+    just-rebooted, re-filling host would repeat the
+    spoiled/starved counts, not produce evidence, and
+    would add contention. No full run was started.
+    /tmp healthy (1% used, 512 MB avail). Working tree
+    unchanged (same 3 modified + 2 untracked P-017 files
+    plus the pre-existing CAMPAIGN_STATE.md modification,
+    HEAD still P-016 1d5dc6d). Slice remains built and
+    unbanked exactly as left; banking still owed ONE
+    clean-window full run (expected 823 passed =
+    813 + 10, 6 skipped), then bank + push per policy.
+    Do not re-build.
+
+  - BANKING TICK DEFERRED, NO FULL RUN ATTEMPTED (tick
+    2026-10-31 ~13:31–13:35 EDT): state was ~5 min old on
+    entry (prior tick's 13:26 record); no runmal worker was
+    visibly live (no pytest process in this tree, verified
+    by /proc cwd — pytest processes present belonged to
+    other campaigns — mythic-coder, yggdrasil, ember —
+    none in this tree), so continuation was checked
+    directly. Standing tempfile-health probe run first per
+    the 12:51 tick's rule: PROBE-HEALTHY (mkdtemp in the
+    workspace TMPDIR + os.write on a 0o600 fd returned 4)
+    — the write gate was NOT active this tick. P-017
+    targeted re-verified green: 10 passed in 0.50 s
+    (sanitised proxy env, --capture=sys, TMPDIR on
+    workspace scratch). Host conditions are far outside
+    the clean-window band that banked P-016 (MemAvailable
+    ~5.0–5.2 GB, load falling): MemAvailable 1047 → 993 →
+    1042 MB across samples, 973 MB after the targeted run;
+    load (1-min, 4 cores) 8.05 on entry, 6.00–6.49 in
+    samples, 5-min load ~4.4–4.6, with competing suites
+    (mythic-coder, yggdrasil full suite, ember) visibly
+    running concurrently and host uptime only ~10 min
+    after the reboot. A full run under ~1 GB available
+    would repeat the spoiled/starved counts, not produce
+    evidence, and would add contention. No full run was
+    started. /tmp healthy (1–2% used, ~507 MB avail).
+    Working tree unchanged (same 3 modified + 2 untracked
+    P-017 files plus the pre-existing CAMPAIGN_STATE.md
+    modification, HEAD still P-016 1d5dc6d). Slice remains
+    built and unbanked exactly as left; banking still owed
+    ONE clean-window full run (expected 823 passed =
+    813 + 10, 6 skipped), then bank + push per policy.
+    Do not re-build.
+
+  - BANKING TICK DEFERRED, NO FULL RUN ATTEMPTED (tick
+    2026-10-31 ~13:41–13:44 EDT): state was ~8 min old on
+    entry (prior tick's 13:35 record); no runmal worker was
+    visibly live (no pytest process in this tree, verified
+    by /proc cwd — pytest processes present belonged to
+    other campaigns — yggdrasil, ember, hermes ×several —
+    none in this tree), so continuation was checked
+    directly. Standing tempfile-health probe run first per
+    the 12:51 tick's rule: PROBE-HEALTHY (mkdtemp in the
+    workspace TMPDIR + os.write on a 0o600 fd returned 5)
+    — the write gate was NOT active this tick. P-017
+    targeted re-verified green: 10 passed in 0.90 s
+    (sanitised proxy env, --capture=sys, TMPDIR on
+    workspace scratch). Host conditions are far outside
+    the clean-window band that banked P-016 (MemAvailable
+    ~5.0–5.2 GB, load falling): MemAvailable 867 MB on
+    entry, 891 MB in samples, 1397 MB at the probe and
+    1568 MB after the targeted run; load (1-min, 4 cores)
+    16.89 on entry, 16.58–17.62 in samples, 15.79 after
+    the targeted run, 5-min load ~10.9, with competing
+    suites (yggdrasil full suite, ember, hermes) visibly
+    running concurrently. A full run under load ~16
+    would repeat the spoiled/starved counts, not produce
+    evidence, and would add contention. No full run was
+    started. /tmp healthy (2% used, 506 MB avail).
+    Working tree unchanged (same 3 modified + 2 untracked
+    P-017 files plus the pre-existing CAMPAIGN_STATE.md
+    modification, HEAD still P-016 1d5dc6d). Slice remains
+    built and unbanked exactly as left; banking still owed
+    ONE clean-window full run (expected 823 passed =
+    813 + 10, 6 skipped), then bank + push per policy.
+    Do not re-build.
+
+  - BANKING TICK DEFERRED, NO FULL RUN ATTEMPTED (tick
+    2026-10-31 ~13:51–13:54 EDT): state was ~8 min old on
+    entry (prior tick's 13:44 record); no runmal worker was
+    visibly live (no pytest process in this tree, verified
+    by /proc cwd — the pytest process present belonged to
+    mythic-coder, none in this tree), so continuation was
+    checked directly. Standing tempfile-health probe run
+    first per the 12:51 tick's rule: PROBE-HEALTHY (mkdtemp
+    in the workspace TMPDIR + os.write on a 0o600 fd
+    returned 5) — the write gate was NOT active this tick.
+    P-017 targeted re-verified green: 10 passed in 0.22 s
+    (sanitised proxy env, --capture=sys, TMPDIR on
+    workspace scratch). Host conditions are far outside
+    the clean-window band that banked P-016 (MemAvailable
+    ~5.0–5.2 GB, load falling): MemAvailable ~1006 MB on
+    entry, 938–976 MB in samples, 935 MB after the targeted
+    run; load (1-min, 4 cores) 5.75 on entry, 5.18–5.59 in
+    samples, 5-min load ~6.8–7.1, with a competing
+    mythic-coder suite visibly running concurrently. A
+    full run under ~1 GB available would repeat the
+    spoiled/starved counts, not produce evidence, and
+    would add contention. No full run was started. /tmp
+    healthy (2% used, ~504–505 MB avail). Working tree
+    unchanged (3 modified — CAMPAIGN_STATE.md, clean-room
+    log, exporter — + 2 untracked P-017 files, HEAD still
+    P-016 1d5dc6d). Slice remains built and unbanked
+    exactly as left; banking still owed ONE clean-window
+    full run (expected 823 passed = 813 + 10, 6 skipped),
+    then bank + push per policy. Do not re-build.
+    Note for the next tick: per today's daily log, an
+    offload pass (Volmarr-authorized 13:36 EDT) staged
+    this same P-017 full run on purplelongship, queued
+    behind a Samverk recount and the live Aesir S-098
+    sweep there, log runmal-p017.log in
+    ~/offload-2026-10-31/ on the laptop, expectation
+    the same 823 passed / 6 skipped, banking staying
+    with this keeper — check that log's result before
+    starting another full run.
+
+  - BANKING TICK DEFERRED, NO FULL RUN ATTEMPTED (tick
+    2026-10-31 ~14:01–14:07 EDT): state was ~8 min old on
+    entry (prior tick's 13:54 record); no runmal worker was
+    visibly live (verified by /proc cwd — pytest processes
+    present belonged to other campaigns — yggdrasil,
+    hermes among them — none in this tree), so continuation
+    was checked directly. Standing tempfile-health probe
+    run first: PROBE-HEALTHY (mkdtemp in the workspace
+    TMPDIR + os.write on a 0o600 fd returned 5) — the
+    write gate was NOT active this tick. P-017 targeted
+    re-verified green: 10 passed in 0.57 s (sanitised
+    proxy env, --capture=sys, TMPDIR on workspace
+    scratch). OFFLOAD CHECK (per the prior tick's note):
+    purplelongship ~/offload-2026-10-31/runmal-p017.log
+    still shows only WAITER_START 13:44:29 EDT — the
+    P-017 offload run has NOT started; its waiter is
+    queued behind the Samverk recount, which is itself
+    still WAITER_START only, both waiting for the Aesir
+    S-098 sweep (tmux s098 still live on the laptop,
+    laptop MemAvailable ~38 GB, load ~1.1). No offload
+    count exists yet to bank on. Host conditions are far
+    outside the clean-window band that banked P-016
+    (MemAvailable ~5.0–5.2 GB, load falling): MemAvailable
+    ~1.04 GB on entry, ~0.93 GB in samples, ~0.60–0.69 GB
+    after the targeted run; load (1-min, 4 cores) 0.94–
+    1.58 early but 5-min ~3.7–5.9, rising to 1-min
+    12.59–13.83 at tick end, with ~9 competing pytest
+    processes visibly running concurrently. A full run
+    under ~0.6–1.0 GB available would repeat the
+    spoiled/starved counts, not produce evidence, and
+    would add contention. No full run was started. /tmp
+    healthy (3% used, ~501 MB avail). Remote verified
+    this tick: origin/yrsa/two-mirrors-build == HEAD ==
+    P-016 1d5dc6d via ls-remote. Working tree unchanged
+    (3 modified — CAMPAIGN_STATE.md, clean-room log,
+    exporter — + 2 untracked P-017 files, HEAD still
+    P-016 1d5dc6d). Slice remains built and unbanked
+    exactly as left; banking still owed ONE clean-window
+    full run — on the VM or the purplelongship offload
+    result, whichever lands first (expected 823 passed
+    = 813 + 10, 6 skipped), then bank + push per policy.
+    Do not re-build.
+
+Last updated: 2026-10-31 ~14:15 EDT tick (P-017 banking deferred, no full run attempted — tempfile probe PROBE-HEALTHY, targeted green 10 passed in 0.50 s, offload on purplelongship still WAITER_START queued behind Samverk recount + live S-098, host far outside the clean band: MemAvailable ~0.83-0.90 GB, 5-min load ~5.7-6.0; slice unbanked exactly as left, HEAD still P-016 1d5dc6d, next tick owes one clean-window full run or the offload result, expected 823 passed)
+
+  - BANKING TICK DEFERRED, NO FULL RUN ATTEMPTED (tick
+    2026-10-31 ~14:11-14:15 EDT): state was ~5 min old on
+    entry (prior tick's 14:07 record); no runmal worker was
+    visibly live (verified by /proc cwd — pytest processes
+    present belonged to other campaigns — yggdrasil full
+    suite, ember — none in this tree), so continuation was
+    checked directly. Standing tempfile-health probe run
+    first: PROBE-HEALTHY (mkdtemp in the workspace TMPDIR
+    + os.write on a 0o600 fd returned 4) — the write gate
+    was NOT active this tick. P-017 targeted re-verified
+    green: 10 passed in 0.50 s (sanitised proxy env,
+    --capture=sys, TMPDIR on workspace scratch). OFFLOAD
+    CHECK: purplelongship ~/offload-2026-10-31/runmal-p017.log
+    still shows only WAITER_START 13:44:29 EDT — the P-017
+    offload run has NOT started; its waiter is queued behind
+    the Samverk recount (also WAITER_START only), both
+    waiting for the Aesir S-098 sweep (tmux s098 still live
+    on the laptop, laptop MemAvailable ~37 GB, load ~2.2).
+    No offload count exists yet to bank on. Host conditions
+    are far outside the clean-window band that banked P-016
+    (MemAvailable ~5.0-5.2 GB, load falling): MemAvailable
+    ~900 MB on entry, ~832-877 MB in samples; load (1-min,
+    4 cores) 1.24 on entry rising to 4.43, 5-min load
+    ~5.7-6.0, with competing suites visibly running. A full
+    run under ~0.9 GB available would repeat the
+    spoiled/starved counts, not produce evidence, and would
+    add contention. No full run was started. /tmp healthy
+    (2% used, ~505 MB avail). Remote verified this tick:
+    origin/yrsa/two-mirrors-build == HEAD == P-016 1d5dc6d
+    via ls-remote. Working tree unchanged (3 modified —
+    CAMPAIGN_STATE.md, clean-room log, exporter — + 2
+    untracked P-017 files, HEAD still P-016 1d5dc6d). Slice
+    remains built and unbanked exactly as left; banking
+    still owed ONE clean-window full run — on the VM or the
+    purplelongship offload result, whichever lands first
+    (expected 823 passed = 813 + 10, 6 skipped), then bank
+    + push per policy. Do not re-build.
+
+  - BANKING TICK DEFERRED, NO FULL RUN ATTEMPTED (tick
+    2026-10-31 ~14:21-14:26 EDT): state was ~8 min old on
+    entry (prior tick's 14:15 record); no runmal worker was
+    visibly live (no pytest process in this tree), so
+    continuation was checked directly. Standing tempfile-
+    health probe run first: PROBE-HEALTHY (mkdtemp in the
+    workspace TMPDIR + os.write on a 0o600 fd returned 5)
+    — the write gate was NOT active this tick. P-017
+    targeted re-verified green: 10 passed in 0.13 s
+    (sanitised proxy env, --capture=sys, TMPDIR on
+    workspace scratch). OFFLOAD CHECK: purplelongship
+    ~/offload-2026-10-31/runmal-p017.log still shows only
+    WAITER_START 13:44:29 EDT — the P-017 offload run has
+    NOT started; its waiter is queued behind the Samverk
+    recount (also WAITER_START only), both waiting for
+    the Aesir S-098 sweep (tmux s098 still live on the
+    laptop, laptop MemAvailable ~38 GB, load ~2.1). No
+    offload count exists yet to bank on. Host conditions
+    are far outside the clean-window band that banked
+    P-016 (MemAvailable ~5.0-5.2 GB, load falling):
+    MemAvailable ~1.00 GB on entry, 0.94-1.00 GB in
+    samples, ~0.87 GB after the targeted run; load
+    (1-min, 4 cores) 2.17-3.49, 5-min load ~4.3-4.5,
+    15-min ~5.7-5.9. A full run under ~0.9 GB available
+    would repeat the spoiled/starved counts, not produce
+    evidence, and would add contention. No full run was
+    started. /tmp note: 50% used, ~259 MB avail this tick
+    (changed from the prior ticks' 1-3% — watched, not
+    yet blocking the targeted leg, but a full run needs
+    TMPDIR on workspace scratch as already ruled). Remote
+    verified this tick: origin/yrsa/two-mirrors-build ==
+    HEAD == P-016 1d5dc6d via ls-remote. Working tree
+    unchanged (3 modified — CAMPAIGN_STATE.md, clean-room
+    log, exporter — + 2 untracked P-017 files, HEAD still
+    P-016 1d5dc6d). Slice remains built and unbanked
+    exactly as left; banking still owed ONE clean-window
+    full run — on the VM or the purplelongship offload
+    result, whichever lands first (expected 823 passed
+    = 813 + 10, 6 skipped), then bank + push per policy.
+    Do not re-build.
+
+  - BANKING TICK BANKED ON THE OFFLOAD RESULT (tick
+    2026-10-31 ~14:31-14:40 EDT): state was ~5 min old on
+    entry; no runmal worker was visibly live (verified by
+    /proc cwd — pytest processes present belonged to other
+    campaigns — ember, mindspark among them — none in this
+    tree), so continuation was checked directly. Standing
+    tempfile-health probe run first: PROBE-HEALTHY
+    (mkdtemp in the workspace TMPDIR + os.write on a 0o600
+    fd returned 5) — the write gate was NOT active this
+    tick. P-017 targeted re-verified green on the VM:
+    10 passed in 0.50 s (sanitised proxy env, --capture=sys,
+    TMPDIR on workspace scratch); the clean-room pinning
+    set (P-012/P-013/P-014 + P-017) also re-verified green
+    locally with the slice's docs in tree: 32 passed.
+    OFFLOAD RESULT LANDED: purplelongship
+    ~/offload-2026-10-31/runmal-p017.log shows QUEUE_CLEAR
+    14:27:52 EDT and P017_RUN_DONE 14:28:36 EDT — full
+    suite 824 passed, 5 skipped, 0 failed in 27.10 s,
+    PYTEST_EXIT=0. Evidence binding: the offload tree is
+    HEAD P-016 1d5dc6d plus exactly the two executable
+    P-017 files, sha256-identical to this tree
+    (exporter.py 8babe629…, test_p017 661ba546… — both
+    verified from both sides this tick); the slice's two
+    doc files (CARD_EXPORT_ROUNDTRIP doc + clean-room log
+    entry) are doc-only and were not staged on the laptop.
+    Count note, recorded honestly: the VM expectation was
+    823 passed / 6 skipped; the laptop reads 824 / 5 —
+    collected total identical at 829 either way, the
+    split difference being the documented platform
+    pattern (P-007: the VM's 6 skips are named host
+    absences; purplelongship's historical split differed
+    the same way). Which single skip passes on the laptop
+    is NOT named by the -q run and is not invented here.
+    VM host conditions this tick remained far outside the
+    clean band (MemAvailable ~0.83-0.96 GB, 1-min load
+    ~10.8-11.4), so no VM full run was started — the
+    offload result is the banking evidence, per the prior
+    ticks' stated rule (VM or offload, whichever lands
+    first). P-017 banked as one local commit this tick
+    and pushed per policy (see git log / ls-remote
+    verification below in the daily log). Next slice:
+    P-018 in roadmap order.
