@@ -42,7 +42,7 @@ jobs:
         run: python -m runmal.launcher status
 
   windows-package:
-    name: Windows installer
+    name: Windows x64-compatible installer
     runs-on: windows-latest
     needs: launcher-tests
     steps:
@@ -72,6 +72,30 @@ jobs:
         run: |
           & .\dist\Runmal\Runmal.exe status
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Smoke frozen Windows server
+        shell: pwsh
+        run: |
+          $proc = Start-Process -FilePath .\dist\Runmal\Runmal.exe -ArgumentList "_serve","--port","18098" -PassThru
+          try {
+            $ready = $false
+            for ($i = 0; $i -lt 100; $i++) {
+              try {
+                $response = Invoke-RestMethod -Uri "http://127.0.0.1:18098/healthz" -TimeoutSec 1
+                if ($response.status -eq "ok") {
+                  $ready = $true
+                  break
+                }
+              } catch { }
+              Start-Sleep -Milliseconds 200
+            }
+            if (-not $ready) {
+              throw "Frozen Windows server failed its /healthz check."
+            }
+          } finally {
+            if (-not $proc.HasExited) {
+              Stop-Process -Id $proc.Id -Force
+            }
+          }
       - name: Install Inno Setup
         shell: pwsh
         run: choco install innosetup --no-progress -y
@@ -87,9 +111,21 @@ jobs:
           if-no-files-found: error
 
   macos-package:
-    name: macOS application
-    runs-on: macos-latest
+    name: macOS package (${{ matrix.label }})
+    runs-on: ${{ matrix.os }}
     needs: launcher-tests
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            label: Apple-Silicon
+            artifact: Runmal-macOS-Apple-Silicon-DMG
+            dmg: Runmal-macOS-Apple-Silicon.dmg
+          - os: macos-15-intel
+            label: Intel
+            artifact: Runmal-macOS-Intel-DMG
+            dmg: Runmal-macOS-Intel.dmg
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -109,22 +145,54 @@ jobs:
           src/runmal/launcher/frozen_entry.py
       - name: Smoke frozen macOS launcher
         run: dist/Runmal.app/Contents/MacOS/Runmal status
+      - name: Smoke frozen macOS server
+        shell: bash
+        run: |
+          set -euo pipefail
+          LOG="$RUNNER_TEMP/runmal-server.log"
+          dist/Runmal.app/Contents/MacOS/Runmal _serve --port 18098 >"$LOG" 2>&1 &
+          PID=$!
+          trap 'kill "$PID" 2>/dev/null || true' EXIT
+          READY=0
+          for _ in $(seq 1 100); do
+            if curl -fsS http://127.0.0.1:18098/healthz >/dev/null; then
+              READY=1
+              break
+            fi
+            sleep 0.2
+          done
+          if [[ "$READY" -ne 1 ]]; then
+            cat "$LOG"
+            exit 1
+          fi
       - name: Build DMG
         run: |
           mkdir -p artifacts dmg-root
           cp -R dist/Runmal.app dmg-root/Runmal.app
           ln -s /Applications dmg-root/Applications
-          hdiutil create -volname "Rúnmál" -srcfolder dmg-root -ov -format UDZO artifacts/Runmal-macOS.dmg
+          hdiutil create -volname "Rúnmál" -srcfolder dmg-root -ov -format UDZO "artifacts/${{ matrix.dmg }}"
       - uses: actions/upload-artifact@v4
         with:
-          name: Runmal-macOS-DMG
-          path: artifacts/Runmal-macOS.dmg
+          name: ${{ matrix.artifact }}
+          path: artifacts/${{ matrix.dmg }}
           if-no-files-found: error
 
   linux-package:
-    name: Linux DEB
-    runs-on: ubuntu-latest
+    name: Linux DEB (${{ matrix.arch }})
+    runs-on: ${{ matrix.os }}
     needs: launcher-tests
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            arch: amd64
+            artifact: Runmal-Linux-DEB-amd64
+            deb: runmal_0.1.0_amd64.deb
+          - os: ubuntu-24.04-arm
+            arch: arm64
+            artifact: Runmal-Linux-DEB-arm64
+            deb: runmal_0.1.0_arm64.deb
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -147,24 +215,44 @@ jobs:
           src/runmal/launcher/frozen_entry.py
       - name: Smoke frozen Linux launcher
         run: dist/runmal/runmal status
+      - name: Smoke frozen Linux server
+        shell: bash
+        run: |
+          set -euo pipefail
+          LOG="$RUNNER_TEMP/runmal-server.log"
+          dist/runmal/runmal _serve --port 18098 >"$LOG" 2>&1 &
+          PID=$!
+          trap 'kill "$PID" 2>/dev/null || true' EXIT
+          READY=0
+          for _ in $(seq 1 100); do
+            if curl -fsS http://127.0.0.1:18098/healthz >/dev/null; then
+              READY=1
+              break
+            fi
+            sleep 0.2
+          done
+          if [[ "$READY" -ne 1 ]]; then
+            cat "$LOG"
+            exit 1
+          fi
       - name: Build Debian package
         run: |
           mkdir -p package/DEBIAN package/opt/runmal package/usr/share/applications package/usr/share/icons/hicolor/512x512/apps artifacts
           cp -a dist/runmal/. package/opt/runmal/
           cp packaging/linux/runmal.desktop package/usr/share/applications/runmal.desktop
           cp docs/images/runmal-emblem.png package/usr/share/icons/hicolor/512x512/apps/runmal.png
-          cat > package/DEBIAN/control <<'EOF'
+          cat > package/DEBIAN/control <<EOF
           Package: runmal
           Version: 0.1.0
           Section: utils
           Priority: optional
-          Architecture: amd64
+          Architecture: ${{ matrix.arch }}
           Maintainer: Volmarr
           Description: Rúnmál sovereign local AI chat application
           EOF
-          dpkg-deb --build package artifacts/runmal_0.1.0_amd64.deb
+          dpkg-deb --build package "artifacts/${{ matrix.deb }}"
       - uses: actions/upload-artifact@v4
         with:
-          name: Runmal-Linux-DEB
-          path: artifacts/runmal_0.1.0_amd64.deb
+          name: ${{ matrix.artifact }}
+          path: artifacts/${{ matrix.deb }}
           if-no-files-found: error
