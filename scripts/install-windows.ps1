@@ -36,8 +36,17 @@ function Install-PrivatePython {
     Write-Step "Installing Rúnmál's private Python runtime"
     New-Item -ItemType Directory -Force -Path $RuntimeRoot | Out-Null
 
+    # Rúnmál intentionally uses the x64 Python runtime on Windows ARM64 too.
+    # The current stable sqlite-vec release ships win_amd64 but no native
+    # win_arm64 wheel. Windows 11 ARM supports x64 application compatibility,
+    # which keeps the dependency set on the upstream stable package instead of
+    # silently substituting an unrelated third-party wheel.
     $arch = $env:PROCESSOR_ARCHITECTURE.ToUpperInvariant()
-    $suffix = if ($arch -eq "ARM64") { "arm64" } else { "amd64" }
+    $suffix = "amd64"
+    if ($arch -eq "ARM64") {
+        Write-Host "Windows ARM64 detected; using Rúnmál's x64-compatible runtime."
+    }
+
     $installer = Join-Path $TempRoot "python-installer.exe"
     $url = "https://www.python.org/ftp/python/$PythonVersion/python-$PythonVersion-$suffix.exe"
     Invoke-WebRequest -Uri $url -OutFile $installer -UseBasicParsing
