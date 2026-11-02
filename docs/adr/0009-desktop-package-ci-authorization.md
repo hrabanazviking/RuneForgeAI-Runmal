@@ -1,34 +1,47 @@
-# ADR-0009 — Hosted CI is authorized for the desktop distribution campaign
+# ADR-0009 — Hosted desktop-package CI authorization revoked
 
-**Status:** accepted by owner directive (2026-11-01)
+**Status:** superseded by owner directive (2026-11-01)
 
 ## Context
 
-Rúnmál's historical S805 record contains an owner ruling from 2026-10-13 that rejected the then-proposed GitHub-hosted Linux/Windows matrix. S805 was completed instead with the project-owned self-hosted matrix, and that historical acceptance record remains true.
+An earlier draft of the desktop-distribution campaign briefly authorized GitHub-hosted runners to build and test Windows, macOS, and Linux packages. That decision was made while trying to obtain native package coverage quickly.
 
-On 2026-11-01 Volmarr issued a newer and materially different directive: build the zero-technical-skills Rúnmál installer/launcher for Windows, macOS, Linux, and other practical desktop targets, with Windows 11 as the first field-test machine before the incoming Kubuntu Z13. Producing and verifying native packages across operating systems requires platform-native builders that the local forge does not currently contain.
+Volmarr subsequently issued an explicit owner directive: Rúnmál must not use GitHub Actions to build or produce these packages. The project will not depend on chargeable Microsoft-hosted CI for desktop distribution.
+
+This newer owner ruling supersedes the earlier authorization in this ADR.
 
 ## Decision
 
-GitHub-hosted runners are explicitly permitted for the post-roadmap **Distribution / Desktop UX campaign D001-D010** to:
+Hosted GitHub Actions runners are **not authorized** for Rúnmál desktop packaging or release builds.
 
-- run the launcher/auth acceptance suite on Windows, macOS, and Linux;
-- run the full Rúnmál regression suite on the Linux package branch gate;
-- build Windows installer, macOS application/DMG, and Linux package artifacts;
-- smoke-test frozen launcher executables;
-- expose those artifacts for owner field testing.
+Native desktop packages are built on project-owned or owner-controlled machines using local build scripts:
 
-This decision does **not** retroactively change S805, its self-hosted evidence, or ADR-0007. It supersedes the old no-hosted-CI restriction only where it would otherwise block the newer cross-platform desktop-distribution directive.
+- Windows: `scripts/build-windows-local.ps1`
+- Linux: `scripts/build-linux-local.sh`
+- macOS: `scripts/build-macos-local.sh`
+
+The native build must run on the target operating system and perform its own smoke tests before producing the distributable.
+
+Expected distributables are written into the repository root:
+
+- `Runmal-Setup.exe`
+- `runmal_<version>_amd64.deb`
+- `runmal_<version>_arm64.deb`
+- `Runmal-macOS-Apple-Silicon.dmg`
+- `Runmal-macOS-Intel.dmg`
+
+Project-owned self-hosted automation remains possible if Volmarr later chooses it, because that does not create a dependency on GitHub-hosted compute.
 
 ## Boundaries
 
-- Hosted CI is build/test infrastructure, not a runtime dependency.
-- Rúnmál remains local-first and does not gain telemetry or cloud runtime requirements.
-- No user chats, characters, credentials, memories, or other private Rúnmál state are uploaded to CI.
-- CI uses synthetic/test data only.
-- Release signing credentials, if added later, must be handled through repository secrets and must never be committed.
+- Rúnmál remains local-first and gains no cloud runtime dependency.
+- No user chats, characters, credentials, memories, or private state are sent to a hosted CI service for packaging.
+- Package verification must reflect a real native build, not merely the existence of packaging source files.
+- Release signing remains a separate concern and must never place signing secrets in the repository.
 - Owner field testing remains the final D010 acceptance gate.
 
 ## Consequence
 
-The repository may contain `.github/workflows/desktop-packages.yml` for this campaign even though the older S805 hosted-matrix approach remains recorded as abandoned in its own historical context.
+The desktop distribution feature must not contain an active `.github/workflows/desktop-packages.yml` workflow.
+
+Windows packages are built on Windows, macOS packages on Macs, and Linux packages on Linux. This requires access to the target platform, but keeps build sovereignty with the project owner and avoids hosted-runner billing or dependency.
