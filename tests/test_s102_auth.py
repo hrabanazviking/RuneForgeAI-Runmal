@@ -63,7 +63,11 @@ def test_secret_absent_from_logs(client, isolated_data_dir, caplog) -> None:
 
 def test_credential_file_is_owner_only(isolated_data_dir) -> None:
     get_or_create_credential()
-    mode = stat.S_IMODE(os.stat(data_dir() / CREDENTIAL_FILENAME).st_mode)
+    path = data_dir() / CREDENTIAL_FILENAME
+    assert path.is_file()
+    if os.name == "nt":
+        pytest.skip("Windows access control uses ACLs rather than POSIX mode bits")
+    mode = stat.S_IMODE(os.stat(path).st_mode)
     assert mode == 0o600
 
 

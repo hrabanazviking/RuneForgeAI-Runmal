@@ -51,7 +51,7 @@ voice-cosyvoice = [
     "diffusers==0.29.0",
     "hydra-core",
     "antlr4-python3-runtime==4.9.3",
-      "HyperPyYAML",
+    "HyperPyYAML",
     "inflect",
     "lightning",
     "matplotlib",
@@ -125,6 +125,7 @@ voice-chatterbox = [
 
 [project.scripts]
 runmal = "runmal.__main__:main"
+runmal-launcher = "runmal.launcher.__main__:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/runmal"]

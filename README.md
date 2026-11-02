@@ -47,6 +47,66 @@ It is the hearthstone of a sovereign AI ecosystem: the app whose voices will wal
 
 **Python** — the mother tongue of our kind. FastAPI, SQLite, clean seams, no cruft.
 
+## Install and use Rúnmál
+
+Rúnmál is designed so ordinary users do **not** need to install Python, use Git, open a terminal, copy authentication tokens, or know anything about localhost or web servers. Install the package for your operating system, click **Rúnmál**, and the launcher handles the machinery for you.
+
+### Windows 10 / 11
+
+1. Download `Runmal-Setup.exe` from the current Rúnmál release.
+2. Double-click the installer and follow the normal Windows installation steps.
+3. Leave **Create a desktop shortcut** enabled if you want one.
+4. Launch **Rúnmál** from the Start Menu or desktop shortcut.
+5. Rúnmál starts its local service automatically and opens the chat interface in your default browser.
+
+The installer also adds **Rúnmál Control Center**, where you can Start, Stop, Restart, open Rúnmál, run diagnostics, and optionally start Rúnmál automatically when you sign in.
+
+Development and test builds may trigger a Windows SmartScreen **Unknown publisher** warning until the project has a code-signing certificate.
+
+### macOS
+
+1. Download the Rúnmál `.dmg` for your Mac.
+2. Open it and move `Runmal.app` into **Applications**.
+3. Launch Rúnmál normally from Applications or Launchpad.
+4. The local service starts automatically and the chat interface opens in your default browser.
+
+Development and test builds may trigger Gatekeeper warnings until the project has Apple signing and notarization credentials.
+
+### Linux
+
+For Debian, Ubuntu, Kubuntu, and compatible distributions:
+
+1. Download the appropriate Rúnmál `.deb` package for your computer.
+2. Open it with your normal graphical software/package installer.
+3. Install Rúnmál.
+4. Launch **Rúnmál** from your desktop environment's application menu.
+5. The local service starts automatically and the chat interface opens in your default browser.
+
+Packages are built for AMD64 and ARM64 Linux systems. The launcher core is platform-neutral, so additional package formats can use the same application without creating a separate Rúnmál implementation.
+
+### What happens when you click Rúnmál?
+
+The launcher quietly checks whether Rúnmál is already running. If necessary, it starts the local server in the background, waits until it is ready, securely authenticates your browser with a short-lived one-use bootstrap, and opens `/chat`. The permanent local credential is never placed in the browser URL, and you do not have to copy or manage it yourself.
+
+If Rúnmál is already running, clicking the icon simply opens it instead of starting a duplicate server.
+
+### Rúnmál Control Center
+
+The Control Center provides a simple graphical place to:
+
+- **Open Rúnmál**
+- **Start** the local service
+- **Stop** the local service
+- **Restart** Rúnmál
+- **Show Diagnostics**
+- Enable or disable **Start Rúnmál automatically when I sign in**
+
+Autostart is optional and is not enabled unless you choose it.
+
+Your personal Rúnmál data is stored separately from the application itself, so ordinary application upgrades or uninstalling the program do not silently delete your chats, characters, lorebooks, memories, settings, voices, or backups.
+
+For detailed installation, diagnostics, source-install, and troubleshooting information, see [Desktop Installation and Launcher](docs/DESKTOP_INSTALLATION.md).
+
 ## Scrolls
 
 - [RESEARCH.md](docs/RESEARCH.md) — clean-room findings, sourced
