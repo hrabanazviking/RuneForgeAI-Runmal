@@ -1,18 +1,29 @@
 """FastAPI application shell.
 
-Public:  /healthz
-Protected (bearer local credential): /api/v1/*
+Public:  /healthz, /launcher/bootstrap
+Protected (bearer local credential or signed browser session): /api/v1/*
 """
 
 from __future__ import annotations
 
-from fastapi import Depends, FastAPI, HTTPException, status
+import hmac
+
+from fastapi import Depends, FastAPI, HTTPException, Query, Request, status
+from fastapi.responses import RedirectResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from runmal import __version__
-from runmal.auth import get_or_create_credential, verify_credential
+from runmal.auth import (
+    SESSION_COOKIE_NAME,
+    SESSION_TTL_SECONDS,
+    consume_bootstrap_nonce,
+    create_browser_session,
+    get_or_create_credential,
+    verify_browser_session,
+    verify_credential,
+)
 from runmal.backups.router import router as backups_router
 from runmal.bridge.router import admin_router as bridge_admin_router
 from runmal.bridge.router import router as bridge_router
@@ -35,18 +46,46 @@ from runmal.web.router import _HERE as _WEB_DIR
 from runmal.web.router import router as web_router
 
 bearer_scheme = HTTPBearer(auto_error=False)
+_UNSAFE_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
+
+
+def _same_origin(request: Request) -> bool:
+    """Return True only when an unsafe browser request names this exact origin."""
+    origin = request.headers.get("origin", "")
+    host = request.headers.get("host", "")
+    if not origin or not host:
+        return False
+    expected = f"{request.url.scheme}://{host}"
+    return hmac.compare_digest(origin.rstrip("/").lower(), expected.rstrip("/").lower())
 
 
 def require_local_auth(
+    request: Request,
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
 ) -> None:
+    """Accept the original bearer credential or a signed browser session.
+
+    Bearer clients retain the original API contract. Cookie-authenticated browser
+    requests get an additional same-origin check for state-changing methods.
+    """
     expected = get_or_create_credential()
     presented = credentials.credentials if credentials else ""
-    if not verify_credential(presented, expected):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Missing or invalid local credential",
-        )
+    if verify_credential(presented, expected):
+        return
+
+    browser_session = request.cookies.get(SESSION_COOKIE_NAME, "")
+    if verify_browser_session(browser_session):
+        if request.method.upper() in _UNSAFE_METHODS and not _same_origin(request):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Invalid browser origin",
+            )
+        return
+
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Missing or invalid local credential",
+    )
 
 
 def default_session_factory() -> async_sessionmaker[AsyncSession]:
@@ -63,6 +102,32 @@ def create_app(
     @app.get("/healthz")
     def healthz() -> dict[str, str]:
         return {"status": "ok", "version": __version__}
+
+    @app.get("/launcher/bootstrap")
+    def launcher_bootstrap(
+        request: Request,
+        nonce: str = Query(min_length=32, max_length=256),
+    ) -> RedirectResponse:
+        """Exchange a one-use launcher nonce for an HttpOnly browser session."""
+        if not consume_bootstrap_nonce(nonce):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Invalid or expired launcher bootstrap",
+            )
+        response = RedirectResponse(url="/chat", status_code=status.HTTP_303_SEE_OTHER)
+        response.set_cookie(
+            key=SESSION_COOKIE_NAME,
+            value=create_browser_session(),
+            max_age=SESSION_TTL_SECONDS,
+            httponly=True,
+            secure=request.url.scheme == "https",
+            samesite="strict",
+            path="/",
+        )
+        response.headers["Cache-Control"] = "no-store"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Referrer-Policy"] = "no-referrer"
+        return response
 
     @app.get("/api/v1/status", dependencies=[Depends(require_local_auth)])
     def api_status() -> dict[str, str]:
@@ -138,8 +203,7 @@ def create_app(
     # Bridge-facing API: authenticated by scoped bridge tokens only,
     # never by the local credential (S601, INV-029).
     app.include_router(bridge_router, prefix="/api/v1")
-    # Browser UI: public page (no secrets in it; loopback bind is the boundary
-    # per ADR-0003). All /api/v1/* calls from the page stay bearer-gated.
+    # Browser UI pages contain no permanent secret. API calls remain auth-gated.
     app.include_router(web_router)
     app.mount("/static", StaticFiles(directory=_WEB_DIR / "static"), name="static")
     return app
