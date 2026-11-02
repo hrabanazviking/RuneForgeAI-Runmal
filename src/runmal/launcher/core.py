@@ -82,7 +82,7 @@ def _read_state() -> dict[str, Any] | None:
             "port": int(payload["port"]),
             "started_at": int(payload.get("started_at", 0)),
         }
-    except (OSError, ValueError, KeyError, TypeError, json.JSONDecodeError):
+    except (OSError, ValueError, KeyError, TypeError):
         path.unlink(missing_ok=True)
         return None
 
@@ -99,7 +99,7 @@ def _health(port: int, *, timeout: float = 0.75) -> bool:
                 return False
             payload = json.loads(response.read().decode("utf-8"))
             return payload.get("status") == "ok"
-    except (OSError, ValueError, urllib.error.URLError, json.JSONDecodeError):
+    except (OSError, ValueError, urllib.error.URLError):
         return False
 
 
