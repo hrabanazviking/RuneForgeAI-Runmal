@@ -11,6 +11,28 @@ Rúnmál must behave like an ordinary desktop application. A nontechnical user s
 
 The command-line interface remains available for expert users. It is no longer the front door.
 
+## Distribution rule
+
+Native desktop packages are built on project-owned or owner-controlled machines. Hosted GitHub Actions runners are not used for Rúnmál packaging or release builds.
+
+The local builders are:
+
+- Windows: `scripts/build-windows-local.ps1`
+- Linux: `scripts/build-linux-local.sh`
+- macOS: `scripts/build-macos-local.sh`
+
+Each local builder performs the native package build and smoke tests on that operating system, then writes the finished distributable into the repository root so it can be committed or published directly.
+
+Expected root outputs:
+
+- Windows: `Runmal-Setup.exe`
+- Linux AMD64: `runmal_<version>_amd64.deb`
+- Linux ARM64: `runmal_<version>_arm64.deb`
+- macOS Apple Silicon: `Runmal-macOS-Apple-Silicon.dmg`
+- macOS Intel: `Runmal-macOS-Intel.dmg`
+
+A package is not considered verified merely because source code for a package recipe exists. The actual native package must be built and smoke-tested on its target platform.
+
 ## Supported desktop targets
 
 The launcher core is intentionally platform-neutral and standard-library-first.
@@ -18,7 +40,7 @@ The launcher core is intentionally platform-neutral and standard-library-first.
 | Platform | Friendly package | Bootstrap/source installer | Desktop integration |
 | --- | --- | --- | --- |
 | Windows 10/11 | `Runmal-Setup.exe` | PowerShell bootstrap | Start Menu + optional Desktop shortcut |
-| macOS Intel / Apple Silicon | `Runmal.dmg` / `.app` | shell bootstrap | Applications bundle |
+| macOS Intel / Apple Silicon | `.dmg` / `.app` | shell bootstrap | Applications bundle |
 | Linux | `.deb` first; portable bundle thereafter | shell bootstrap | freedesktop application menu entry |
 | Other Python 3.12+ POSIX systems | source install | manual/bootstrap-compatible | launcher CLI; native package may vary |
 
@@ -111,17 +133,19 @@ Keep readable platform bootstrap scripts for repair, development, unsupported ar
 
 They must create an isolated Rúnmál environment and desktop entry rather than polluting arbitrary system Python environments.
 
-### D007 - Prebuilt packages
+### D007 - Native locally built packages
 
-CI produces self-contained artifacts so ordinary users do not need Python installed:
+Ordinary users should receive self-contained native packages so they do not need Python installed:
 
 - Windows installer executable;
 - macOS application/DMG;
 - Linux `.deb` initially.
 
+These packages are produced by the local native build scripts on owner-controlled machines, not by hosted GitHub Actions runners.
+
 Additional Linux package formats and architectures can be added without changing launcher behavior.
 
-Unsigned CI artifacts are development/test builds. Public releases should be code-signed/notarized when project signing credentials become available.
+Unsigned development/test packages may trigger Windows SmartScreen or macOS Gatekeeper. Public releases should be code-signed/notarized when project signing credentials become available.
 
 ### D008 - Update-safe layout
 
@@ -129,7 +153,7 @@ Application code and personal data stay separate. Updates must never silently re
 
 The existing `RUNMAL_DATA_DIR` contract remains authoritative. This campaign does not migrate the user data directory simply to make paths look more native.
 
-### D009 - Tests and platform CI
+### D009 - Tests and native platform verification
 
 Acceptance coverage must include:
 
@@ -141,7 +165,11 @@ Acceptance coverage must include:
 - launcher detects an already-running server;
 - launcher bootstrap URL contains only the disposable nonce;
 - stale launcher state does not cause arbitrary process termination;
-- Windows, macOS, and Linux package builds execute in CI.
+- Windows package is built and smoke-tested on Windows;
+- macOS packages are built and smoke-tested on their target Mac architecture;
+- Linux packages are built and smoke-tested on their target Linux architecture.
+
+Project-owned self-hosted test hardware may automate these checks in the future. Hosted GitHub Actions runners are not part of the packaging contract.
 
 ### D010 - Human acceptance test
 
