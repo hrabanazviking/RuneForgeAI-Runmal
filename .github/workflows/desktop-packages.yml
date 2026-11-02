@@ -62,8 +62,16 @@ jobs:
           pyinstaller --noconfirm --clean --onedir --windowed
           --name Runmal
           --icon build/runmal.ico
+          --hidden-import tkinter
+          --hidden-import tkinter.messagebox
+          --hidden-import tkinter.scrolledtext
           --collect-all runmal
           src/runmal/launcher/frozen_entry.py
+      - name: Smoke frozen Windows launcher
+        shell: pwsh
+        run: |
+          & .\dist\Runmal\Runmal.exe status
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Install Inno Setup
         shell: pwsh
         run: choco install innosetup --no-progress -y
@@ -94,8 +102,13 @@ jobs:
           pyinstaller --noconfirm --clean --windowed
           --name Runmal
           --icon docs/images/runmal-emblem.png
+          --hidden-import tkinter
+          --hidden-import tkinter.messagebox
+          --hidden-import tkinter.scrolledtext
           --collect-all runmal
           src/runmal/launcher/frozen_entry.py
+      - name: Smoke frozen macOS launcher
+        run: dist/Runmal.app/Contents/MacOS/Runmal status
       - name: Build DMG
         run: |
           mkdir -p artifacts dmg-root
@@ -127,8 +140,13 @@ jobs:
         run: >-
           pyinstaller --noconfirm --clean --onedir
           --name runmal
+          --hidden-import tkinter
+          --hidden-import tkinter.messagebox
+          --hidden-import tkinter.scrolledtext
           --collect-all runmal
           src/runmal/launcher/frozen_entry.py
+      - name: Smoke frozen Linux launcher
+        run: dist/runmal/runmal status
       - name: Build Debian package
         run: |
           mkdir -p package/DEBIAN package/opt/runmal package/usr/share/applications package/usr/share/icons/hicolor/512x512/apps artifacts
