@@ -112,6 +112,30 @@ def _port_open(port: int) -> bool:
 def _pid_exists(pid: int) -> bool:
     if pid <= 0:
         return False
+    if os.name == "nt":
+        # os.kill(pid, 0) is not a reliable existence probe on Windows.
+        # Query the process handle without taking terminate rights instead.
+        import ctypes
+        from ctypes import wintypes
+
+        process_query_limited_information = 0x1000
+        still_active = 259
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        handle = kernel32.OpenProcess(
+            process_query_limited_information,
+            False,
+            wintypes.DWORD(pid),
+        )
+        if not handle:
+            return False
+        try:
+            exit_code = wintypes.DWORD()
+            if not kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)):
+                return False
+            return exit_code.value == still_active
+        finally:
+            kernel32.CloseHandle(handle)
+
     try:
         os.kill(pid, 0)
     except ProcessLookupError:
@@ -119,9 +143,6 @@ def _pid_exists(pid: int) -> bool:
     except PermissionError:
         return True
     except OSError:
-        # Windows may reject signal 0 in some Python/runtime combinations.
-        if os.name == "nt":
-            return True
         return False
     return True
 

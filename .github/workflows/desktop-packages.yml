@@ -4,7 +4,7 @@ on:
   pull_request:
     paths:
       - "src/runmal/**"
-      - "tests/test_launcher_*.py"
+      - "tests/**"
       - "pyproject.toml"
       - "packaging/**"
       - "scripts/install-*.sh"
@@ -32,6 +32,12 @@ jobs:
         run: python -m pip install -e ".[dev]"
       - name: Run launcher and auth acceptance tests
         run: python -m pytest -q tests/test_s102_auth.py tests/test_launcher_auth.py tests/test_launcher_core.py
+      - name: Run complete regression suite on Linux
+        if: matrix.os == 'ubuntu-latest'
+        run: python -m pytest -q
+      - name: Lint launcher/security changes on Linux
+        if: matrix.os == 'ubuntu-latest'
+        run: python -m ruff check src/runmal/launcher src/runmal/auth.py src/runmal/app.py tests/test_launcher_auth.py tests/test_launcher_core.py
       - name: Smoke launcher CLI
         run: python -m runmal.launcher status
 
