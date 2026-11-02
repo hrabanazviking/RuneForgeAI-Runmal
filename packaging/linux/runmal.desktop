@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Name=Rúnmál
+Comment=Sovereign local AI chat app
+Exec=/opt/runmal/runmal open
+Icon=runmal
+Terminal=false
+Categories=Utility;Education;
+StartupNotify=true
+Actions=ControlCenter;
+
+[Desktop Action ControlCenter]
+Name=Rúnmál Control Center
+Exec=/opt/runmal/runmal control

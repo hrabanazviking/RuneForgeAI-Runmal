@@ -1,0 +1,146 @@
+name: Desktop launcher and packages
+
+on:
+  pull_request:
+    paths:
+      - "src/runmal/**"
+      - "tests/test_launcher_*.py"
+      - "pyproject.toml"
+      - "packaging/**"
+      - "scripts/install-*.sh"
+      - "scripts/install-*.ps1"
+      - ".github/workflows/desktop-packages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  launcher-tests:
+    name: Launcher tests (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install test environment
+        run: python -m pip install -e ".[dev]"
+      - name: Run launcher and auth acceptance tests
+        run: python -m pytest -q tests/test_s102_auth.py tests/test_launcher_auth.py tests/test_launcher_core.py
+      - name: Smoke launcher CLI
+        run: python -m runmal.launcher status
+
+  windows-package:
+    name: Windows installer
+    runs-on: windows-latest
+    needs: launcher-tests
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install app and build tools
+        run: python -m pip install -e . pyinstaller pillow
+      - name: Build Windows icon
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force build | Out-Null
+          python -c "from PIL import Image; im=Image.open('docs/images/runmal-emblem.png').convert('RGBA'); im.save('build/runmal.ico', sizes=[(16,16),(32,32),(48,48),(64,64),(128,128),(256,256)])"
+      - name: Build standalone application
+        run: >-
+          pyinstaller --noconfirm --clean --onedir --windowed
+          --name Runmal
+          --icon build/runmal.ico
+          --collect-all runmal
+          src/runmal/launcher/frozen_entry.py
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --no-progress -y
+      - name: Build Windows Setup executable
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force artifacts | Out-Null
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" /DMyAppVersion=0.1.0 packaging\windows\runmal.iss
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Runmal-Windows-Setup
+          path: artifacts/Runmal-Setup.exe
+          if-no-files-found: error
+
+  macos-package:
+    name: macOS application
+    runs-on: macos-latest
+    needs: launcher-tests
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install app and build tools
+        run: python -m pip install -e . pyinstaller pillow
+      - name: Build application bundle
+        run: >-
+          pyinstaller --noconfirm --clean --windowed
+          --name Runmal
+          --icon docs/images/runmal-emblem.png
+          --collect-all runmal
+          src/runmal/launcher/frozen_entry.py
+      - name: Build DMG
+        run: |
+          mkdir -p artifacts dmg-root
+          cp -R dist/Runmal.app dmg-root/Runmal.app
+          ln -s /Applications dmg-root/Applications
+          hdiutil create -volname "Rúnmál" -srcfolder dmg-root -ov -format UDZO artifacts/Runmal-macOS.dmg
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Runmal-macOS-DMG
+          path: artifacts/Runmal-macOS.dmg
+          if-no-files-found: error
+
+  linux-package:
+    name: Linux DEB
+    runs-on: ubuntu-latest
+    needs: launcher-tests
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install desktop runtime libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-tk
+      - name: Install app and build tools
+        run: python -m pip install -e . pyinstaller
+      - name: Build standalone application
+        run: >-
+          pyinstaller --noconfirm --clean --onedir
+          --name runmal
+          --collect-all runmal
+          src/runmal/launcher/frozen_entry.py
+      - name: Build Debian package
+        run: |
+          mkdir -p package/DEBIAN package/opt/runmal package/usr/share/applications package/usr/share/icons/hicolor/512x512/apps artifacts
+          cp -a dist/runmal/. package/opt/runmal/
+          cp packaging/linux/runmal.desktop package/usr/share/applications/runmal.desktop
+          cp docs/images/runmal-emblem.png package/usr/share/icons/hicolor/512x512/apps/runmal.png
+          cat > package/DEBIAN/control <<'EOF'
+          Package: runmal
+          Version: 0.1.0
+          Section: utils
+          Priority: optional
+          Architecture: amd64
+          Maintainer: Volmarr
+          Description: Rúnmál sovereign local AI chat application
+          EOF
+          dpkg-deb --build package artifacts/runmal_0.1.0_amd64.deb
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Runmal-Linux-DEB
+          path: artifacts/runmal_0.1.0_amd64.deb
+          if-no-files-found: error
