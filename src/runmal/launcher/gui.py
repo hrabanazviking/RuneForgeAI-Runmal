@@ -53,9 +53,12 @@ def run_control_center(port: int = core.DEFAULT_PORT) -> None:
             try:
                 action()
             except Exception as exc:
+                message = str(exc)
                 root.after(
                     0,
-                    lambda: messagebox.showerror("Rúnmál", str(exc), parent=root),
+                    lambda message=message: messagebox.showerror(
+                        "Rúnmál", message, parent=root
+                    ),
                 )
             else:
                 if success:
