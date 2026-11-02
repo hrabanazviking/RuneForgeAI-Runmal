@@ -65,6 +65,8 @@ jobs:
           --hidden-import tkinter
           --hidden-import tkinter.messagebox
           --hidden-import tkinter.scrolledtext
+          --hidden-import aiosqlite
+          --collect-all sqlite_vec
           --collect-all runmal
           src/runmal/launcher/frozen_entry.py
       - name: Smoke frozen Windows launcher
@@ -141,6 +143,8 @@ jobs:
           --hidden-import tkinter
           --hidden-import tkinter.messagebox
           --hidden-import tkinter.scrolledtext
+          --hidden-import aiosqlite
+          --collect-all sqlite_vec
           --collect-all runmal
           src/runmal/launcher/frozen_entry.py
       - name: Smoke frozen macOS launcher
@@ -211,6 +215,8 @@ jobs:
           --hidden-import tkinter
           --hidden-import tkinter.messagebox
           --hidden-import tkinter.scrolledtext
+          --hidden-import aiosqlite
+          --collect-all sqlite_vec
           --collect-all runmal
           src/runmal/launcher/frozen_entry.py
       - name: Smoke frozen Linux launcher
