@@ -2537,3 +2537,566 @@ Last updated: 2026-10-31 ~14:15 EDT tick (P-017 banking deferred, no full run at
     and pushed per policy (see git log / ls-remote
     verification below in the daily log). Next slice:
     P-018 in roadmap order.
+
+- P-018 persona interop — BUILD COMPLETE, NOT YET BANKED
+  (tick 2026-10-31 ~14:41-14:55 EDT). Build:
+  src/runmal/persona/interop.py (UserPersona, parse_persona,
+  export_persona, persona_description_slot, PersonaParseError)
+  + exports in src/runmal/persona/__init__.py (S110 assembly
+  untouched) + tests tests/test_p018_persona_interop.py
+  (12 tests) + doc docs/PERSONA_INTEROP_2026-10-31.md +
+  clean-room log entry appended. Measured gap on entry: no
+  user-persona file importer existed at all (P-005 pinned the
+  corpus fixture as P-018's home) and ST-09 positions/depth
+  were MISSING per P-004. Built per census ST-08/ST-09:
+  canonical positions disabled / in_prompt / authors_note_top
+  / authors_note_bottom / in_chat, in-chat depth + role made
+  real against S205/S206 slots, legacy numeric `position`
+  preserved verbatim with no semantics claimed, unknowns
+  survive via raw (INV-009), depth/role never fabricated,
+  export a fixed point. VERIFICATION: targeted set
+  (P-018 + S110 + P-005) 36 passed (12+9+15, collected
+  verified) in sanitised proxy env, --capture=sys, TMPDIR
+  on workspace scratch; ruff clean on all touched files.
+  FULL SUITE NOT RUN: host far outside the clean-window
+  band that banked P-016/P-017 (MemAvailable ~1.5 GB vs
+  ~5 GB, 1-min load ~15, 7 competing pytest processes).
+  A full run would produce a spoiled count, not evidence.
+  NEXT TICK: one clean-window full run (expected on VM
+  835 passed = 823 + 12 new, 6 skipped, 841 collected;
+  purplelongship split pattern 836/5), then bank P-018 as
+  one commit + push per policy (fetch + remote-diff first,
+  ls-remote verify). Do not re-build the slice. Working
+  tree: 2 modified (persona/__init__.py, clean-room log)
+  + 3 untracked P-018 files, plus this CAMPAIGN_STATE.md
+  record; HEAD still P-017 a7f43cf.
+
+  - BANKING TICK DEFERRED, NO FULL RUN ATTEMPTED (tick
+    2026-10-31 ~14:51-14:54 EDT): state was ~2 min old on
+    entry (prior tick's P-018 build record); no runmal
+    worker was visibly live (verified by /proc cwd —
+    pytest processes present belonged to other campaigns
+    — yggdrasil, sagnaskemma — none in this tree), so
+    continuation was checked directly. Standing tempfile-
+    health probe run first: PROBE-HEALTHY (mkdtemp in the
+    workspace TMPDIR + os.write on a 0o600 fd returned 5)
+    — the write gate was NOT active this tick. P-018
+    targeted re-verified green: 12 passed in 0.49 s
+    (sanitised proxy env, --capture=sys, TMPDIR on
+    workspace scratch). Host conditions remain far
+    outside the clean-window band that banked P-016/P-017
+    (MemAvailable ~5.0-5.2 GB, load falling): MemAvailable
+    ~1.84 GB on entry, 1.75-1.78 GB across samples;
+    load (1-min, 4 cores) 6.12 on entry, 4.23 -> 3.97 in
+    samples, but 5-min load stayed 8.99 -> 8.19, with
+    competing yggdrasil + sagnaskemma suites visibly
+    running concurrently. A full run under these
+    conditions would repeat the spoiled counts, not
+    produce evidence, and would add contention. No full
+    run was started. /tmp healthy (3% used, 502 MB avail).
+    Remote verified this tick: origin/yrsa/two-mirrors-
+    build == HEAD == P-017 a7f43cf via ls-remote. Working
+    tree unchanged (2 modified — persona/__init__.py,
+    clean-room log — + 3 untracked P-018 files, plus this
+    CAMPAIGN_STATE.md record, HEAD still P-017 a7f43cf).
+    Slice remains built and unbanked exactly as left;
+    banking still owed ONE clean-window full run
+    (expected on VM 835 passed = 823 + 12, 6 skipped,
+    841 collected; purplelongship split pattern 836/5),
+    then bank + push per policy. Do not re-build.
+
+  - BANKING TICK DEFERRED, NO FULL RUN ATTEMPTED (tick
+    2026-10-31 ~15:01-15:05 EDT): state was ~8 min old on
+    entry (prior tick's 14:54 record); no runmal worker was
+    visibly live (verified by /proc cwd — pytest processes
+    present belonged to other campaigns — yggdrasil full
+    suite, hermes — none in this tree), so continuation was
+    checked directly. Standing tempfile-health probe run
+    first: PROBE-HEALTHY (mkdtemp in the workspace TMPDIR +
+    os.write on a 0o600 fd returned 5) — the write gate was
+    NOT active this tick. P-018 targeted re-verified green:
+    12 passed in 1.20 s (sanitised proxy env, --capture=sys,
+    TMPDIR on workspace scratch). Host conditions remain far
+    outside the clean-window band that banked P-016/P-017
+    (MemAvailable ~5.0-5.2 GB, load falling): MemAvailable
+    ~1.02-1.08 GB on entry across samples, falling to
+    ~0.61 GB after the targeted run; load (1-min, 4 cores)
+    2.47-2.59 in samples rising to 4.42, 5-min load
+    ~5.9-6.0, 15-min ~7.1, with competing yggdrasil +
+    hermes suites visibly running concurrently. A full run
+    under ~0.6-1.0 GB available would repeat the spoiled
+    counts, not produce evidence, and would add contention.
+    No full run was started. /tmp healthy (3% used, 501 MB
+    avail). Remote verified this tick: origin/yrsa/two-
+    mirrors-build == HEAD == P-017 a7f43cf via ls-remote.
+    Working tree unchanged (2 modified — persona/__init__.py,
+    clean-room log — + 3 untracked P-018 files, plus this
+    CAMPAIGN_STATE.md record, HEAD still P-017 a7f43cf).
+    Slice remains built and unbanked exactly as left;
+    banking still owed ONE clean-window full run
+    (expected on VM 835 passed = 823 + 12, 6 skipped,
+    841 collected; purplelongship split pattern 836/5),
+    then bank + push per policy. Do not re-build.
+  - BANKING TICK DEFERRED, NO FULL RUN ATTEMPTED (tick
+    2026-10-31 ~15:11-15:15 EDT): state was ~8 min old on
+    entry (prior tick's 15:05 record); no runmal worker was
+    visibly live (verified by /proc cwd — pytest processes
+    present belonged to other campaigns — yggdrasil,
+    sagnaskemma, ember, hermes, mythic-coder — none in this
+    tree), so continuation was checked directly. Standing
+    tempfile-health probe run first: PROBE-HEALTHY (mkdtemp
+    in the workspace TMPDIR + os.write on a 0o600 fd
+    returned 5) — the write gate was NOT active this tick.
+    P-018 targeted re-verified green: 12 passed in 0.82 s
+    (sanitised proxy env, --capture=sys, TMPDIR on
+    workspace scratch). Host conditions remain far
+    outside the clean-window band that banked P-016/P-017
+    (MemAvailable ~5.0-5.2 GB, load falling): MemAvailable
+    ~1.07 GB on entry, then 0.69-0.76 GB across samples,
+    ~0.78 GB after the targeted run; load (1-min, 4 cores)
+    13.78 on entry, rising to 17.89-18.08, 5-min load
+    ~9.0 rising to ~11.9, with competing suites visibly
+    running concurrently. A full run under ~0.7-1.0 GB
+    available would repeat the spoiled counts, not
+    produce evidence, and would add contention. No full
+    run was started. /tmp note: 27% used, 376 MB avail
+    this tick (changed from the prior ticks' 3% — watched,
+    not yet blocking the targeted leg). Remote verified
+    this tick: origin/yrsa/two-mirrors-build == HEAD ==
+    P-017 a7f43cf via ls-remote. Working tree unchanged
+    (2 modified — persona/__init__.py, clean-room log —
+    + 3 untracked P-018 files, plus this CAMPAIGN_STATE.md
+    record, HEAD still P-017 a7f43cf). Slice remains built
+    and unbanked exactly as left; banking still owed ONE
+    clean-window full run (expected on VM 835 passed =
+    823 + 12, 6 skipped, 841 collected; purplelongship
+    split pattern 836/5), then bank + push per policy.
+    Do not re-build.
+  - BANKING TICK DEFERRED, NO FULL RUN ATTEMPTED (tick
+    2026-10-31 ~15:21-15:25 EDT): state was ~7 min old on
+    entry (prior tick's 15:15 record); no runmal worker was
+    visibly live (verified by /proc cwd — no pytest process
+    in this tree; pytest processes present belonged to other
+    campaigns — hermes, mythic-coder — none in this tree), so
+    continuation was checked directly. Standing tempfile-
+    health probe run first: PROBE-HEALTHY (mkdtemp in the
+    workspace TMPDIR + os.write on a 0o600 fd returned 5)
+    — the write gate was NOT active this tick. P-018
+    targeted re-verified green: 12 passed in 0.20 s
+    (sanitised proxy env, --capture=sys, TMPDIR on
+    workspace scratch). Host conditions remain far outside
+    the clean-window band that banked P-016/P-017
+    (MemAvailable ~5.0-5.2 GB, load falling): on entry
+    MemAvailable ~1.65-1.79 GB, load (1-min, 4 cores)
+    ~13.1-13.5, 5-min ~10.5-10.7; the VM then rebooted
+    mid-tick (~19:22 UTC, uptime 1 min at 15:24 EDT), and
+    post-reboot samples read MemAvailable ~2.16-2.22 GB,
+    load 1-min ~6.6-7.0 / 5-min ~2.07, with competing
+    mythic-coder + hermes suites visibly running
+    concurrently. Even post-reboot ~2.2 GB is well short
+    of the ~5 GB clean band. A full run under these
+    conditions would repeat the spoiled counts, not
+    produce evidence, and would add contention. No full
+    run was started. /tmp: 27% used, 375 MB avail pre-
+    reboot; 1% used, 512 MB avail post-reboot. Remote
+    verified this tick: origin/yrsa/two-mirrors-build ==
+    HEAD == P-017 a7f43cf via ls-remote. Working tree
+    unchanged (3 modified — CAMPAIGN_STATE.md, clean-room
+    log, persona/__init__.py — + 3 untracked P-018 files,
+    HEAD still P-017 a7f43cf). Slice remains built and
+    unbanked exactly as left; banking still owed ONE
+    clean-window full run (expected on VM 835 passed =
+    823 + 12, 6 skipped, 841 collected; purplelongship
+    split pattern 836/5), then bank + push per policy.
+    Do not re-build.
+  - BANKING TICK DEFERRED, NO FULL RUN ATTEMPTED (tick
+    2026-10-31 ~15:31-15:34 EDT): state was ~7 min old on
+    entry (prior tick's 15:25 record); no runmal worker was
+    visibly live (verified by /proc cwd — pytest processes
+    present belonged to other campaigns — yggdrasil,
+    mythic-coder, hermes — none in this tree), so
+    continuation was checked directly. Standing tempfile-
+    health probe run first: PROBE-HEALTHY (mkdtemp in the
+    workspace TMPDIR + os.write on a 0o600 fd returned 5)
+    — the write gate was NOT active this tick. P-018
+    targeted re-verified green: 12 passed in 1.50 s
+    (sanitised proxy env, --capture=sys, TMPDIR on
+    workspace scratch). Host conditions remain far outside
+    the clean-window band that banked P-016/P-017
+    (MemAvailable ~5.0-5.2 GB, load falling): MemAvailable
+    ~520 MB on entry, ~505 MB in samples, ~363 MB after
+    the targeted run; load (1-min, 4 cores) 14.63 on entry,
+    15.11 -> 15.65 in samples, 5-min load ~8.2-9.4, with
+    competing yggdrasil + mythic-coder + hermes suites
+    visibly running concurrently. A full run under
+    ~0.36-0.52 GB available would repeat the spoiled
+    counts, not produce evidence, and would add contention.
+    No full run was started. /tmp healthy (1% used, 509 MB
+    avail). Remote verified this tick: origin/yrsa/two-
+    mirrors-build == HEAD == P-017 a7f43cf via ls-remote.
+    Working tree unchanged (3 modified — CAMPAIGN_STATE.md,
+    clean-room log, persona/__init__.py — + 3 untracked
+    P-018 files, HEAD still P-017 a7f43cf). Slice remains
+    built and unbanked exactly as left; banking still owed
+    ONE clean-window full run (expected on VM 835 passed =
+    823 + 12, 6 skipped, 841 collected; purplelongship
+    split pattern 836/5), then bank + push per policy.
+    Do not re-build.
+  - BANKING TICK DEFERRED, NO FULL RUN ATTEMPTED (tick
+    2026-10-31 ~15:41-15:45 EDT): state was ~7 min old on
+    entry (prior tick's 15:34 record); no runmal worker was
+    visibly live (verified by /proc cwd — pytest processes
+    present belonged to other campaigns — yggdrasil,
+    sagnaskemma, mythic-coder, mindspark — none in this
+    tree), so continuation was checked directly. Standing
+    tempfile-health probe run first: PROBE-HEALTHY
+    (mkdtemp in the workspace TMPDIR + os.write on a 0o600
+    fd returned 5) — the write gate was NOT active this
+    tick. P-018 targeted re-verified green: 12 passed in
+    0.72 s (sanitised proxy env, --capture=sys, TMPDIR on
+    workspace scratch). Host conditions remain far outside
+    the clean-window band that banked P-016/P-017
+    (MemAvailable ~5.0-5.2 GB, load falling): MemAvailable
+    ~634-678 MB on entry, ~612 MB in samples, ~1.19-1.20 GB
+    after the targeted run; load (1-min, 4 cores) 11.04
+    -> 11.60 on entry, 9.53 after the targeted run, 5-min
+    load ~8.5-8.8, with competing suites visibly running
+    concurrently. A full run under ~0.6-1.2 GB available
+    would repeat the spoiled counts, not produce evidence,
+    and would add contention. No full run was started.
+    /tmp healthy (11% used, 459 MB avail). Remote verified
+    this tick: origin/yrsa/two-mirrors-build == HEAD ==
+    P-017 a7f43cf via ls-remote. Working tree unchanged
+    (3 modified — CAMPAIGN_STATE.md, clean-room log,
+    persona/__init__.py — + 3 untracked P-018 files, HEAD
+    still P-017 a7f43cf). Slice remains built and unbanked
+    exactly as left; banking still owed ONE clean-window
+    full run (expected on VM 835 passed = 823 + 12,
+    6 skipped, 841 collected; purplelongship split pattern
+    836/5), then bank + push per policy. Do not re-build.
+  - BANKING TICK DEFERRED, NO FULL RUN ATTEMPTED (tick
+    2026-10-31 ~15:51-15:54 EDT): state was ~7 min old on
+    entry (prior tick's 15:45 record); no runmal worker was
+    visibly live (verified by /proc cwd — pytest processes
+    present belonged to other campaigns — sagnaskemma,
+    mythic-coder — none in this tree), so continuation was
+    checked directly. Standing tempfile-health probe run
+    first: PROBE-HEALTHY (mkdtemp in the workspace TMPDIR
+    + os.write on a 0o600 fd returned 5) — the write gate
+    was NOT active this tick. P-018 targeted re-verified
+    green: 12 passed in 0.79 s (sanitised proxy env,
+    --capture=sys, TMPDIR on workspace scratch). Host
+    conditions remain far outside the clean-window band
+    that banked P-016/P-017 (MemAvailable ~5.0-5.2 GB, load
+    falling): MemAvailable ~689 MB on entry, ~886-966 MB
+    in samples, ~558 MB after the targeted run; load
+    (1-min, 4 cores) 5.79 on entry, 7.28 in samples, 5.95
+    after the targeted run, 5-min load ~7.7-8.0, with
+    competing suites visibly running concurrently. A full
+    run under ~0.6-1.0 GB available would repeat the
+    spoiled counts, not produce evidence, and would add
+    contention. No full run was started. /tmp healthy
+    (1% used, 508 MB avail). Remote verified this tick:
+    origin/yrsa/two-mirrors-build == HEAD == P-017
+    a7f43cf via ls-remote. Working tree unchanged
+    (3 modified — CAMPAIGN_STATE.md, clean-room log,
+    persona/__init__.py — + 3 untracked P-018 files, HEAD
+    still P-017 a7f43cf). Slice remains built and unbanked
+    exactly as left; banking still owed ONE clean-window
+    full run (expected on VM 835 passed = 823 + 12,
+    6 skipped, 841 collected; purplelongship split pattern
+    836/5), then bank + push per policy. Do not re-build.
+  - BANKING TICK DEFERRED, NO FULL RUN ATTEMPTED (tick
+    2026-10-31 ~16:01-16:05 EDT): state was ~7 min old on
+    entry (prior tick's 15:54 record); no runmal worker was
+    visibly live (verified by /proc cwd — pytest processes
+    present belonged to other campaigns — sagnaskemma,
+    yggdrasil, hermes, mindspark, ember — none in this
+    tree), so continuation was checked directly. Standing
+    tempfile-health probe run first: PROBE-HEALTHY
+    (mkdtemp in the workspace TMPDIR + os.write on a 0o600
+    fd returned 5) — the write gate was NOT active this
+    tick. P-018 targeted re-verified green: 12 passed in
+    0.83 s (sanitised proxy env, --capture=sys, TMPDIR on
+    workspace scratch). Host conditions remain far outside
+    the clean-window band that banked P-016/P-017
+    (MemAvailable ~5.0-5.2 GB, load falling): MemAvailable
+    ~552 MB on entry, ~616-715 MB in samples, ~697 MB
+    after the targeted run; load (1-min, 4 cores) 2.88 on
+    entry, 2.60-2.83 in samples, 3.60 after the targeted
+    run, but 5-min load stayed ~6.1-6.3 and 15-min
+    ~6.7-6.8, with competing suites visibly running
+    concurrently. A full run under ~0.6-0.7 GB available
+    would repeat the spoiled counts, not produce evidence,
+    and would add contention. No full run was started.
+    /tmp healthy (2% used, 505 MB avail). Remote verified
+    this tick: origin/yrsa/two-mirrors-build == HEAD ==
+    P-017 a7f43cf via ls-remote. Working tree unchanged
+    (3 modified — CAMPAIGN_STATE.md, clean-room log,
+    persona/__init__.py — + 3 untracked P-018 files, HEAD
+    still P-017 a7f43cf). Slice remains built and unbanked
+    exactly as left; banking still owed ONE clean-window
+    full run (expected on VM 835 passed = 823 + 12,
+    6 skipped, 841 collected; purplelongship split pattern
+    836/5), then bank + push per policy. Do not re-build.
+  - BANKING TICK DEFERRED, NO FULL RUN ATTEMPTED (tick
+    2026-10-31 ~16:11-16:15 EDT): state was ~7 min old on
+    entry (prior tick's 16:05 record); no runmal worker was
+    visibly live (verified by /proc cwd — pytest processes
+    present belonged to other campaigns — ember,
+    mythic-coder — none in this tree), so continuation was
+    checked directly. Standing tempfile-health probe run
+    first: PROBE-HEALTHY (mkdtemp in the workspace TMPDIR +
+    os.write on a 0o600 fd returned 5) — the write gate was
+    NOT active this tick. P-018 targeted re-verified green:
+    12 passed in 0.24 s (sanitised proxy env, --capture=sys,
+    TMPDIR on workspace scratch). Host conditions remain far
+    outside the clean-window band that banked P-016/P-017
+    (MemAvailable ~5.0-5.2 GB, load falling): MemAvailable
+    ~571 MB on entry, ~593 MB after the targeted run; load
+    (1-min, 4 cores) 3.52 on entry, 5.03 after the targeted
+    run, 5-min load ~6.1-6.2, 15-min ~7.1, with competing
+    suites visibly running concurrently. A full run under
+    ~0.6 GB available would repeat the spoiled counts, not
+    produce evidence, and would add contention. No full
+    run was started. /tmp healthy (2% used, 504 MB avail).
+    Remote verified this tick: origin/yrsa/two-mirrors-build
+    == HEAD == P-017 a7f43cf via ls-remote. Working tree
+    unchanged (3 modified — CAMPAIGN_STATE.md, clean-room
+    log, persona/__init__.py — + 3 untracked P-018 files,
+    HEAD still P-017 a7f43cf). Slice remains built and
+    unbanked exactly as left; banking still owed ONE
+    clean-window full run (expected on VM 835 passed =
+    823 + 12, 6 skipped, 841 collected; purplelongship
+    split pattern 836/5), then bank + push per policy.
+    Do not re-build.
+  - BANKING TICK DEFERRED, NO FULL RUN ATTEMPTED (tick
+    2026-10-31 ~16:21-16:25 EDT): state was ~8 min old on
+    entry (prior tick's 16:15 record); no runmal worker was
+    visibly live (verified by /proc cwd — pytest processes
+    present belonged to other campaigns — hermes,
+    sagnaskemma — none in this tree), so continuation was
+    checked directly. Standing tempfile-health probe run
+    first: PROBE-HEALTHY (mkdtemp in the workspace TMPDIR +
+    os.write on a 0o600 fd returned 5) — the write gate was
+    NOT active this tick. P-018 targeted re-verified green:
+    12 passed in 0.81 s (sanitised proxy env, --capture=sys,
+    TMPDIR on workspace scratch). Host conditions remain far
+    outside the clean-window band that banked P-016/P-017
+    (MemAvailable ~5.0-5.2 GB, load falling): MemAvailable
+    ~447 MB on entry, ~472-610 MB in samples, ~325 MB at
+    probe time, ~1.07 GB after the targeted run, ~847 MB
+    at tick end; load (1-min, 4 cores) 9.17 on entry,
+    rising to 12.27-13.06, 5-min load ~5.8-7.8, with
+    competing hermes + sagnaskemma suites visibly running
+    concurrently. A full run under ~0.3-1.1 GB available
+    would repeat the spoiled counts, not produce evidence,
+    and would add contention. No full run was started.
+    /tmp healthy (3% used, 502 MB avail). Remote verified
+    this tick: origin/yrsa/two-mirrors-build == HEAD ==
+    P-017 a7f43cf via ls-remote. Working tree unchanged
+    (3 modified — CAMPAIGN_STATE.md, clean-room log,
+    persona/__init__.py — + 3 untracked P-018 files, HEAD
+    still P-017 a7f43cf). Slice remains built and unbanked
+    exactly as left; banking still owed ONE clean-window
+    full run (expected on VM 835 passed = 823 + 12,
+    6 skipped, 841 collected; purplelongship split pattern
+    836/5), then bank + push per policy. Do not re-build.
+  - BANKING TICK DEFERRED, NO FULL RUN ATTEMPTED (tick
+    2026-10-31 ~16:31-16:36 EDT): state was ~7 min old on
+    entry (prior tick's 16:25 record); no runmal worker was
+    visibly live (verified by /proc cwd — the pytest
+    process present belonged to sagnaskemma-build, none in
+    this tree), so continuation was checked directly.
+    Standing tempfile-health probe run first: PROBE-HEALTHY
+    (mkdtemp in the workspace TMPDIR + os.write on a 0o600
+    fd returned 5) — the write gate was NOT active this
+    tick. P-018 targeted re-verified green: 12 passed in
+    0.18 s (sanitised proxy env, --capture=sys, TMPDIR on
+    workspace scratch). Host conditions remain far outside
+    the clean-window band that banked P-016/P-017
+    (MemAvailable ~5.0-5.2 GB, load falling): MemAvailable
+    ~743 MB on entry, ~709 -> ~667 MB across the targeted
+    run, ~645 MB at tick end; load (1-min, 4 cores) 6.90
+    on entry, 6.00 after the probe, 5.82 at tick end, with
+    5-min load ~6.1-6.4 and 15-min ~6.4-6.5, and a competing
+    sagnaskemma suite visibly running concurrently. A full
+    run under ~0.65-0.74 GB available would repeat the
+    spoiled counts, not produce evidence, and would add
+    contention. No full run was started. /tmp healthy
+    (3% used, 500 MB avail). Remote verified this tick:
+    origin/yrsa/two-mirrors-build == HEAD == P-017
+    a7f43cf via ls-remote. Working tree unchanged
+    (3 modified — CAMPAIGN_STATE.md, clean-room log,
+    persona/__init__.py — + 3 untracked P-018 files, HEAD
+    still P-017 a7f43cf). Slice remains built and unbanked
+    exactly as left; banking still owed ONE clean-window
+    full run (expected on VM 835 passed = 823 + 12,
+    6 skipped, 841 collected; purplelongship split pattern
+    836/5), then bank + push per policy. Do not re-build.
+  - BANKING TICK DEFERRED, NO FULL RUN ATTEMPTED (tick
+    2026-10-31 ~16:41-16:44 EDT): state was ~8 min old on
+    entry (prior tick's 16:36 record); no runmal worker was
+    visibly live (verified by /proc cwd — pytest processes
+    present belonged to other campaigns — yggdrasil,
+    ember — none in this tree), so continuation was
+    checked directly. Standing tempfile-health probe run
+    first: PROBE-HEALTHY (mkdtemp in the workspace TMPDIR
+    + os.write on a 0o600 fd returned 5) — the write gate
+    was NOT active this tick. P-018 targeted re-verified
+    green: 12 passed in 0.79 s (sanitised proxy env,
+    --capture=sys, TMPDIR on workspace scratch). Host
+    conditions remain far outside the clean-window band
+    that banked P-016/P-017 (MemAvailable ~5.0-5.2 GB,
+    load falling): MemAvailable ~489 MB on entry, ~316 MB
+    at probe time, ~604 MB after the targeted run; load
+    (1-min, 4 cores) 3.49-3.79 on entry, 3.10 after the
+    targeted run, but 5-min load stayed ~4.5-4.9 and
+    15-min ~5.5-5.6, with competing yggdrasil + ember
+    suites visibly running concurrently. A full run under
+    ~0.3-0.6 GB available would repeat the spoiled
+    counts, not produce evidence, and would add
+    contention. No full run was started. /tmp healthy
+    (3% used, 500 MB avail). Remote verified this tick:
+    origin/yrsa/two-mirrors-build == HEAD == P-017
+    a7f43cf via ls-remote. Working tree unchanged
+    (3 modified — CAMPAIGN_STATE.md, clean-room log,
+    persona/__init__.py — + 3 untracked P-018 files, HEAD
+    still P-017 a7f43cf). Slice remains built and
+    unbanked exactly as left; banking still owed ONE
+    clean-window full run (expected on VM 835 passed =
+    823 + 12, 6 skipped, 841 collected; purplelongship
+    split pattern 836/5), then bank + push per policy.
+    Do not re-build.
+  - BANKING TICK DEFERRED, NO FULL RUN ATTEMPTED (tick
+    2026-10-31 ~16:51-16:56 EDT): state was ~8 min old on
+    entry (prior tick's 16:44 record); no runmal worker was
+    visibly live (verified by /proc cwd — pytest processes
+    present belonged to other campaigns — yggdrasil,
+    sagnaskemma, mindspark, mythic-coder, hermes — none in
+    this tree), so continuation was checked directly.
+    Standing tempfile-health probe run first: PROBE-HEALTHY
+    (mkdtemp in the workspace TMPDIR + os.write on a 0o600
+    fd returned 5) — the write gate was NOT active this
+    tick. P-018 targeted re-verified green: 12 passed in
+    1.19 s (sanitised proxy env, --capture=sys, TMPDIR on
+    workspace scratch). Host conditions remain far outside
+    the clean-window band that banked P-016/P-017
+    (MemAvailable ~5.0-5.2 GB, load falling): MemAvailable
+    ~529 MB on entry, falling to ~261-385 MB across the
+    targeted run, ~448 MB at tick end; load (1-min, 4 cores)
+    0.95 on entry, 0.51 at tick end, but 5-min load stayed
+    ~3.5-4.2 and 15-min ~4.8-5.2, with competing suites
+    visibly running concurrently. A full run under
+    ~0.3-0.5 GB available would repeat the spoiled counts,
+    not produce evidence, and would add contention. No full
+    run was started. /tmp healthy (3% used, 501 MB avail).
+    Remote verified this tick: origin/yrsa/two-mirrors-build
+    == HEAD == P-017 a7f43cf via ls-remote. Working tree
+    unchanged (3 modified — CAMPAIGN_STATE.md, clean-room
+    log, persona/__init__.py — + 3 untracked P-018 files,
+    HEAD still P-017 a7f43cf). Slice remains built and
+    unbanked exactly as left; banking still owed ONE
+    clean-window full run (expected on VM 835 passed =
+    823 + 12, 6 skipped, 841 collected; purplelongship split
+    pattern 836/5), then bank + push per policy.
+    Do not re-build.
+  - BANKING TICK DEFERRED, NO FULL RUN ATTEMPTED (tick
+    2026-10-31 ~17:01-17:05 EDT): state was ~8 min old on
+    entry (prior tick's 16:56 record); no runmal worker was
+    visibly live (verified by /proc cwd — pytest processes
+    present belonged to other campaigns — yggdrasil,
+    sagnaskemma, mythic-coder, ember, hermes — none in
+    this tree), so continuation was checked directly.
+    Standing tempfile-health probe run first: PROBE-HEALTHY
+    (mkdtemp in the workspace TMPDIR + os.write on a 0o600
+    fd returned 5) — the write gate was NOT active this
+    tick. P-018 targeted re-verified green: 12 passed in
+    0.98 s (sanitised proxy env, --capture=sys, TMPDIR on
+    workspace scratch). Host conditions remain far outside
+    the clean-window band that banked P-016/P-017
+    (MemAvailable ~5.0-5.2 GB, load falling): MemAvailable
+    ~1.06 GB on entry, ~0.93 GB at probe time, ~1.09 ->
+    ~0.97 -> ~1.12 GB across post-run samples, ~1.08 GB
+    at tick close; load (1-min, 4 cores) volatile
+    0.42 -> 4.04 -> 8.56 -> 9.76 -> 12.54 -> 12.66 across
+    samples, spiking to 13.39 at tick close, with 5-min
+    load ~4.7-8.6 and 15-min ~5.7-7.0, and competing suites visibly running
+    concurrently. A full run under ~0.9-1.1 GB available
+    would repeat the spoiled counts, not produce evidence,
+    and would add contention. No full run was started.
+    /tmp healthy (3% used, 499 MB avail). Remote verified
+    this tick: origin/yrsa/two-mirrors-build == HEAD ==
+    P-017 a7f43cf via ls-remote. Working tree unchanged
+    (3 modified — CAMPAIGN_STATE.md, clean-room log,
+    persona/__init__.py — + 3 untracked P-018 files, HEAD
+    still P-017 a7f43cf). Slice remains built and unbanked
+    exactly as left; banking still owed ONE clean-window
+    full run (expected on VM 835 passed = 823 + 12,
+    6 skipped, 841 collected; purplelongship split pattern
+    836/5), then bank + push per policy. Do not re-build.
+  - BANKING TICK DEFERRED, NO FULL RUN ATTEMPTED (tick
+    2026-10-31 ~17:11-17:16 EDT): state was ~6 min old on
+    entry (prior tick's 17:05 record); no runmal worker was
+    visibly live (verified by /proc cwd — no pytest process
+    in this tree), so continuation was checked directly.
+    Standing tempfile-health probe run first: PROBE-HEALTHY
+    (mkdtemp in the workspace TMPDIR + os.write on a 0o600
+    fd returned 5) — the write gate was NOT active this
+    tick. P-018 targeted re-verified green: 12 passed in
+    0.31 s (sanitised proxy env, --capture=sys, TMPDIR on
+    workspace scratch). Host conditions remain far outside
+    the clean-window band that banked P-016/P-017
+    (MemAvailable ~5.0-5.2 GB, load falling): MemAvailable
+    ~0.90-1.03 GB on entry and across probe/targeted
+    samples, ~0.86 GB after the targeted run, rising to
+    ~1.43 GB at tick end; load (1-min, 4 cores) 4.88-5.86
+    across samples, 5-min load ~5.65-5.85, 15-min
+    ~6.34-6.43. A full run under ~0.9-1.4 GB available
+    would repeat the spoiled counts, not produce evidence,
+    and would add contention. No full run was started.
+    /tmp healthy (3% used, 498-499 MB avail). Remote
+    verified this tick: origin/yrsa/two-mirrors-build ==
+    HEAD == P-017 a7f43cf via ls-remote. Working tree
+    unchanged (3 modified — CAMPAIGN_STATE.md, clean-room
+    log, persona/__init__.py — + 3 untracked P-018 files,
+    HEAD still P-017 a7f43cf). Slice remains built and
+    unbanked exactly as left; banking still owed ONE
+    clean-window full run (expected on VM 835 passed =
+    823 + 12, 6 skipped, 841 collected; purplelongship
+    split pattern 836/5), then bank + push per policy.
+    Do not re-build.
+  - BANKED (tick 2026-10-31 ~17:21-17:32 EDT): state was
+    ~6 min old on entry (prior tick's 17:16 record); no
+    runmal worker was visibly live (verified by /proc cwd
+    — pytest processes present belonged to other campaigns
+    — yggdrasil, ember, sagnaskemma, hermes — none in this
+    tree), so continuation was checked directly. Standing
+    tempfile-health probe run first: PROBE-HEALTHY
+    (mkdtemp in the workspace TMPDIR + os.write on a 0o600
+    fd returned 5) — the write gate was NOT active this
+    tick. P-018 targeted re-verified green: 12 passed in
+    0.32 s (sanitised proxy env, --capture=sys, TMPDIR on
+    workspace scratch). Host conditions on entry were in
+    the spoiled band (load 19.65, MemAvailable ~680 MB)
+    but improved sharply across the tick (MemAvailable
+    climbing ~0.5 -> ~4.4 GB over repeated samples, load
+    falling; the pid/uptime evidence suggests a host
+    restart mid-tick, recorded as observed, not explained
+    further). At the full-run decision point conditions
+    stood at MemAvailable ~4.65 GB with load
+    3.70/3.49/2.87 and only ember + sagnaskemma suites
+    competing — near the clean-window band that banked
+    P-016/P-017 and far above every deferred tick's
+    ~0.3-1.4 GB, so the owed full run was started.
+    FULL SUITE GREEN ON THE VM (sanitised proxy env,
+    --capture=sys, TMPDIR on workspace scratch):
+    835 passed, 6 skipped, 0 failed in 150.65 s —
+    exactly the expected count (P-017 baseline 823 + 12
+    new, 841 collected). Ruff clean on all touched files.
+    P-018 banked as one local commit this tick and
+    pushed per policy (git fetch + remote-diff first —
+    remote == HEAD == P-017 a7f43cf, no divergence;
+    ls-remote verification after the push recorded in
+    the daily log). Next slice: P-019 lorebook file
+    interop, in roadmap order.
