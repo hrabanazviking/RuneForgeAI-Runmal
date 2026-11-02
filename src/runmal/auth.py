@@ -94,7 +94,7 @@ def consume_bootstrap_nonce(nonce: str, *, now: float | None = None) -> bool:
         payload = json.loads(path.read_text(encoding="utf-8"))
         digest = str(payload["digest"])
         expires_at = int(payload["expires_at"])
-    except (OSError, ValueError, KeyError, TypeError, json.JSONDecodeError):
+    except (OSError, ValueError, KeyError, TypeError):
         path.unlink(missing_ok=True)
         return False
 
