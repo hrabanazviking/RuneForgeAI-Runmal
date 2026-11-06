@@ -3343,3 +3343,23 @@ Last updated: 2026-10-31 ~14:15 EDT tick (P-017 banking deferred, no full run at
     depth above the hard cap 5 now clamped, one-shot
     iterables materialised, duplicate entry ids fire once).
     Next in roadmap order: P-032 (team-02, in flight).
+  - BANKED P-032 (keeper tick 2026-11-06 ~13:20 EST): selective
+    logic - AND/NOT/any-all key logic per lorebook entry, the
+    full truth table tested - team-02 commit bc26f74 merged
+    (no-ff) into yrsa/two-mirrors-build as 7604b17 and pushed;
+    ls-remote verified 7604b17a38360173e1214b8a56cac6087f75bc4e.
+    Evidence (team-02 worktree hidden_files/P032_EVIDENCE.md
+    and logs): battery 187/187, neighbours 221, full suite
+    1430 passed / 4 skipped / 0 failed on its base. Merge
+    conflicts in scan.py and the clean-room log resolved
+    keeping BOTH slices work (additive fields composed; both
+    log entries kept); combined batteries at the merged tree
+    (s202 + P-031 + P-032) 258 passed; forge confirmation
+    suite 1480 passed / 4 skipped / 0 failed (= 1293 + 187,
+    exact); s503 did not fire. Migration 0024 (lorebook
+    selective_logic) STANDS as numbered - P-031 took no
+    migration, so head is now 0024. The pinned dropped sets
+    in the P-005/P-019/P-030 tests shrank 23 to 22 by
+    deliberate pin edits now that selectiveLogic is modelled
+    on both file legs; no assertion weakened. Next in
+    roadmap order: P-033 (team-03, timed effects).
