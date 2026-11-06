@@ -537,8 +537,8 @@ def test_scan_from_orm_with_selective_logic_passthrough():
 # --------------------------------------------------- (d) service / API
 
 
-def test_migration_head_is_0024():
-    assert MIGRATIONS[-1][0] == "0024"
+def test_migration_head_is_0025():
+    assert MIGRATIONS[-1][0] == "0025"
 
 
 def test_migration_0024_column_exists(tmp_path):
