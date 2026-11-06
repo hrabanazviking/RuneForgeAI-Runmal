@@ -3251,3 +3251,26 @@ Last updated: 2026-10-31 ~14:15 EDT tick (P-017 banking deferred, no full run at
     WAVE 1 COMPLETE: P-019 through P-027 all banked in
     roadmap order. Next in roadmap order: P-028 (Part II
     continues), then P-029, then P-030 (Part II gate).
+  - BANKED P-028 (keeper tick 2026-11-06 ~11:02 EST): the
+    .runmal archive grows — team-01 commit 3d328a4 merged
+    (no-ff) into yrsa/two-mirrors-build as 827e80e and pushed;
+    ls-remote verified 827e80ef763c70dd8a930f40f1b940cc7c329cbc.
+    Evidence (team-01 worktree hidden_files/ logs): battery
+    10/10, neighbours 268, full suite 1174 passed / 4 skipped /
+    0 failed. Forge confirmation suite at the merged tree:
+    1174 passed / 4 skipped / 0 failed (= 1164 + 10, exact).
+    Cards, lorebooks and presets already rode the archive as
+    canonical rows; the gap closed is the P-024 library
+    organisation (character_tags + character_organisation),
+    now emitted as character_library bundles under the same
+    per-member SHA-256 manifest discipline and restored with
+    count verification. No migration (head stays 0022);
+    FORMAT_VERSION stays 1. Discovered bug fixed in-slice:
+    export-restore-export was not byte-stable for any member
+    kind (tz-aware UTC vs naive SQLite datetimes); _encode
+    now states a naive datetime UTC explicitly. Carried
+    limitations in the slice doc: new archives rejected by
+    pre-P-028 builds as unknown member kind; scenarios have
+    no DB table until Part IX; chat_events and thumbnail
+    bytes excluded (derived or regenerable).
+    Next in roadmap order: P-029 (team-02, in flight).
