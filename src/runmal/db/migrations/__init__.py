@@ -38,6 +38,7 @@ from runmal.db.migrations import (
     m0028_lorebook_probability,
     m0029_lorebook_scan_windows,
     m0030_lorebook_placement,
+    m0031_character_book_binding,
 )
 
 MIGRATIONS: list[tuple[str, str, object]] = [
@@ -186,5 +187,10 @@ MIGRATIONS: list[tuple[str, str, object]] = [
         m0030_lorebook_placement.REVISION,
         m0030_lorebook_placement.DESCRIPTION,
         m0030_lorebook_placement,
+    ),
+    (
+        m0031_character_book_binding.REVISION,
+        m0031_character_book_binding.DESCRIPTION,
+        m0031_character_book_binding,
     ),
 ]

@@ -278,8 +278,8 @@ def test_migration_head_is_0030_provisional_p038() -> None:
     # 0029 is P-037's (scan depth & context windows), banked first;
     # 0030 stands as numbered. Merged sequence composed at banking.
     revisions = [m[0] for m in MIGRATIONS]
-    assert revisions[-1] == "0030"
-    assert revisions[-5:] == ["0026", "0027", "0028", "0029", "0030"]
+    assert revisions[-1] == "0031"
+    assert revisions[-6:] == ["0026", "0027", "0028", "0029", "0030", "0031"]
 
 
 def test_migration_0030_columns_on_fresh_db(tmp_path) -> None:
