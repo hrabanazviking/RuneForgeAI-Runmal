@@ -39,6 +39,8 @@ class EntryCreate(BaseModel):
     probability: int = Field(default=100, ge=0, le=100)
     priority: int = 100
     position: str = "before_char"
+    depth: int | None = Field(default=None, ge=0)
+    role: str = "system"
     enabled: bool = True
     constant: bool = False
     vectorised: bool = False
@@ -60,6 +62,8 @@ class EntryUpdate(BaseModel):
     probability: int | None = Field(default=None, ge=0, le=100)
     priority: int | None = None
     position: str | None = None
+    depth: int | None = Field(default=None, ge=0)
+    role: str | None = None
     enabled: bool | None = None
     constant: bool | None = None
     vectorised: bool | None = None
@@ -259,6 +263,8 @@ async def create_entry(
             probability=body.probability,
             priority=body.priority,
             position=body.position,
+            depth=body.depth,
+            role=body.role,
             enabled=body.enabled,
             constant=body.constant,
             vectorised=body.vectorised,

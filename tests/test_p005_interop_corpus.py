@@ -127,13 +127,13 @@ def test_dual_chunk_png_prefers_ccv3_payload() -> None:
 # importer still drops. Part III slices (selective logic P-032,
 # timed effects P-033, depth P-038, probability P-036)
 # own most of these; a slice that lands one must remove it here.
-# Probability + useProbability landed in P-036 (mapped below).
+# Probability + useProbability landed in P-036 (mapped below);
+# depth + role landed in P-038 (mapped below).
 WORLDINFO_DROPPED_TODAY = {
     "automationId",
     "characterFilter",
     "decorators",
     "delayUntilRecursion",
-    "depth",
     "displayIndex",
     "excludeRecursion",
     "groupOverride",
@@ -141,7 +141,6 @@ WORLDINFO_DROPPED_TODAY = {
     "ignoreBudget",
     "outletName",
     "preventRecursion",
-    "role",
     "scanDepth",
     "selective",
     "triggers",
@@ -167,6 +166,8 @@ WORLDINFO_MAPPED_SOURCE_FIELDS = {
     "sticky",
     "cooldown",
     "delay",
+    "depth",
+    "role",
 }
 
 
@@ -188,9 +189,10 @@ def test_worldinfo_full_mapped_fields_and_pinned_losses() -> None:
         2,
         1,
     )
-    # position 4 (at-depth in the mirror) collapses to before_char
-    # today — pinned loss, P-038 owns the real mapping
-    assert gale["position"] == "before_char"
+    # position 4 (at-depth in the mirror) maps to at_depth since
+    # P-038, with its companions: depth 4, role code 0 -> system.
+    assert gale["position"] == "at_depth"
+    assert gale["depth"] == 4 and gale["role"] == "system"
     # P-036: probability mapped (percent); Harbour Law's explicit
     # useProbability=false folds to the effective percent 100.
     assert gale["probability"] == 80

@@ -21,10 +21,20 @@ from runmal.lorebooks.groups import (
     normalise_inclusion_group,
 )
 from runmal.lorebooks.logic import check_selective_logic, normalise_selective_logic
-from runmal.lorebooks.states import activation_kind_for
-from runmal.lorebooks.rng import check_probability, normalise_probability
 
-VALID_POSITIONS = frozenset({"before_char", "after_char"})
+# Position vocabulary is owned by runmal.lorebooks.placement (P-038),
+# which admits at_depth alongside before_char / after_char; the name
+# stays importable here for existing callers.
+from runmal.lorebooks.placement import (
+    VALID_POSITIONS,  # noqa: E402,F401
+    check_depth,
+    check_position,
+    check_role,
+    normalise_depth,
+    normalise_role,
+)
+from runmal.lorebooks.rng import check_probability, normalise_probability
+from runmal.lorebooks.states import activation_kind_for
 
 
 def _now() -> datetime:
@@ -55,10 +65,9 @@ def _check_prompts(name: str, value: int) -> int:
     return value
 
 
-def _check_position(position: str) -> str:
-    if position not in VALID_POSITIONS:
-        raise ValueError(f"invalid position: {position!r} (valid: {sorted(VALID_POSITIONS)})")
-    return position
+# Backwards-compatible alias: transfer.py calls service._check_position;
+# the strict checker itself lives in placement (P-038).
+_check_position = check_position
 
 
 def lorebook_to_dict(book: Lorebook, entry_count: int = 0) -> dict:
@@ -87,6 +96,8 @@ def entry_to_dict(entry: LoreEntry) -> dict:
         "probability": normalise_probability(getattr(entry, "probability", None)),
         "priority": entry.priority,
         "position": entry.position,
+        "depth": normalise_depth(getattr(entry, "depth", None)),
+        "role": normalise_role(getattr(entry, "role", None)),
         "enabled": bool(entry.enabled),
         "constant": bool(entry.constant),
         "vectorised": bool(getattr(entry, "vectorised", False)),
@@ -215,6 +226,8 @@ async def create_entry(
     probability: int = 100,
     priority: int = 100,
     position: str = "before_char",
+    depth: int | None = None,
+    role: str = "system",
     enabled: bool = True,
     constant: bool = False,
     vectorised: bool = False,
@@ -239,6 +252,8 @@ async def create_entry(
         probability=check_probability(probability),
         priority=priority,
         position=_check_position(position),
+        depth=check_depth(depth),
+        role=check_role(role),
         enabled=enabled,
         constant=constant,
         vectorised=bool(vectorised),
@@ -300,6 +315,10 @@ async def update_entry(
         entry.priority = int(fields["priority"])
     if "position" in fields:
         entry.position = _check_position(fields["position"])
+    if "depth" in fields:
+        entry.depth = check_depth(fields["depth"])
+    if "role" in fields:
+        entry.role = check_role(fields["role"])
     for flag in ("enabled", "constant", "vectorised", "case_sensitive", "whole_word"):
         if flag in fields:
             setattr(entry, flag, bool(fields[flag]))

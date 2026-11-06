@@ -191,9 +191,9 @@ def test_activation_kind_for_truth_table(constant, vectorised, expected):
 # -------------------------------------------------------------- migration
 
 
-def test_migration_head_is_0028_and_sequence_tail():
-    assert MIGRATIONS[-1][0] == "0028"
-    assert [m[0] for m in MIGRATIONS[-4:]] == ["0025", "0026", "0027", "0028"]
+def test_migration_head_is_0030_and_sequence_tail():
+    assert MIGRATIONS[-1][0] == "0030"
+    assert [m[0] for m in MIGRATIONS[-5:]] == ["0025", "0026", "0027", "0028", "0030"]
 
 
 def test_fresh_database_has_vectorised_column(tmp_path):

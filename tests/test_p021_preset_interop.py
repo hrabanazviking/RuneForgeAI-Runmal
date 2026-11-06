@@ -665,9 +665,9 @@ def test_s208_ollama_filter_on_imported_bag() -> None:
 # --- migration (0019) + portable archive ------------------------------------
 
 
-def test_head_revision_is_0028_p036() -> None:
-    # Head pin: moved by P-036's provisional 0028 (0027 reserved for P-035).
-    assert MIGRATIONS[-1][0] == "0028"
+def test_head_revision_is_0030_p038() -> None:
+    # Head pin: moved by P-038's provisional 0030 (0029 reserved for P-037).
+    assert MIGRATIONS[-1][0] == "0030"
 
 
 def test_0016_fixture_migrates_to_head_with_interop_defaults(
