@@ -1,4 +1,4 @@
-"""Bulk library import (P-022): whole-folder card + lorebook import."""
+"""Bulk library import (P-022) and library organisation (P-024)."""
 
 from runmal.library.models import (
     BulkEntry,
@@ -9,6 +9,17 @@ from runmal.library.models import (
     RepairCode,
     RepairNote,
     SkippedEntry,
+)
+from runmal.library.organise import (
+    add_tags,
+    get_organisation,
+    list_library,
+    list_tags,
+    normalise_tag,
+    normalise_tags,
+    remove_tag,
+    set_favourite,
+    set_tags,
 )
 from runmal.library.service import (
     MAX_DEPTH,
@@ -30,6 +41,15 @@ __all__ = [
     "RepairCode",
     "RepairNote",
     "SkippedEntry",
+    "add_tags",
+    "get_organisation",
+    "list_library",
+    "list_tags",
+    "normalise_tag",
+    "normalise_tags",
+    "remove_tag",
+    "set_favourite",
+    "set_tags",
     "import_library_folder",
     "import_library_uploads",
 ]

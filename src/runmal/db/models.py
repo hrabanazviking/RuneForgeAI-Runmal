@@ -496,3 +496,42 @@ class CharacterAsset(Base):
         String(40), nullable=False, default="not_applicable"
     )
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
+
+
+class CharacterOrganisation(Base):
+    """Per-user library organisation for one character (P-024).
+
+    One row per character: the owning user's favourite flag and when
+    it last changed. Absence of a row means not a favourite.
+    """
+
+    __tablename__ = "character_organisation"
+
+    character_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("characters.id", ondelete="CASCADE"), primary_key=True
+    )
+    user_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    is_favourite: Mapped[bool] = mapped_column(nullable=False, default=False)
+    updated_at: Mapped[datetime | None] = mapped_column(nullable=True, default=None)
+
+
+class CharacterTag(Base):
+    """One user-applied tag on a character (P-024).
+
+    ``tag`` is the display form; ``tag_key`` is its normalised lookup
+    form and, with the character, the primary key - so the same tag
+    cannot be applied twice to one character.
+    """
+
+    __tablename__ = "character_tags"
+
+    character_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("characters.id", ondelete="CASCADE"), primary_key=True
+    )
+    tag_key: Mapped[str] = mapped_column(String(80), primary_key=True)
+    user_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    tag: Mapped[str] = mapped_column(String(80), nullable=False)

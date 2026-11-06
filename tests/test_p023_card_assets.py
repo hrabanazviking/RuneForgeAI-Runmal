@@ -197,12 +197,13 @@ EXPECTED_ASSET_COLUMNS = {
 }
 
 
-def test_migration_head_is_0020(tmp_path):
+def test_migration_0020_present_and_applied(tmp_path):
     db_path = tmp_path / "m.db"
     applied = migrate_to_head(db_path)
-    assert MIGRATIONS[-1][0] == "0020"
-    assert applied[-1] == "0020"
-    assert current_revision(db_path) == "0020"
+    assert "0020" in [m[0] for m in MIGRATIONS]
+    assert "0020" in applied
+    assert applied[-1] == "0021"
+    assert current_revision(db_path) == "0021"
 
 
 def test_character_assets_table_exists_with_contracted_columns(tmp_path):

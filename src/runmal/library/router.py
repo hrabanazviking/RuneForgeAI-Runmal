@@ -1,4 +1,10 @@
-"""Bulk library import REST API (P-022).
+"""Bulk library import REST API (P-022) and library organisation (P-024).
+
+P-024 adds: ``GET /library/cards``, ``GET /library/tags``,
+``GET /library/cards/{character_id}/organisation``,
+``PUT/POST /library/cards/{character_id}/tags``,
+``DELETE /library/cards/{character_id}/tags/{tag}`` and
+``PUT /library/cards/{character_id}/favourite``.
 
 One route: ``POST /library/imports`` (mounted at ``/api/v1`` by the
 app factory, behind the local bearer credential like every other
@@ -21,10 +27,20 @@ success: HTTP 200 with the bulk report as JSON.
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.db.deps import get_owner_id, get_session
+from runmal.library.organise import (
+    add_tags,
+    get_organisation,
+    list_library,
+    list_tags,
+    remove_tag,
+    set_favourite,
+    set_tags,
+)
 
 try:  # The library package re-exports the service contract (P-022).
     from runmal.library import import_library_uploads
@@ -181,3 +197,122 @@ async def import_library(
     else:
         payload = _empty_report_payload(dry_run=is_dry_run)
     return _merge_skipped(payload, skipped)
+
+
+class TagsUpdate(BaseModel):
+    tags: list[str]
+
+
+class FavouriteUpdate(BaseModel):
+    is_favourite: bool
+
+
+_VALID_SORTS = {"name", "name_desc", "newest", "oldest", "favourites_first"}
+_VALID_TAG_MODES = {"any", "all"}
+
+
+@router.get("/library/cards")
+async def list_library_cards(
+    q: str | None = None,
+    tag: list[str] | None = Query(default=None),
+    tag_mode: str = "any",
+    favourites_only: bool = False,
+    sort: str = "name",
+    limit: int = 50,
+    offset: int = 0,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    if sort not in _VALID_SORTS:
+        raise HTTPException(status_code=422, detail=f"invalid sort: {sort!r}")
+    if tag_mode not in _VALID_TAG_MODES:
+        raise HTTPException(status_code=422, detail=f"invalid tag_mode: {tag_mode!r}")
+    return await list_library(
+        session,
+        user_id,
+        q=q,
+        tags=tag,
+        tag_mode=tag_mode,
+        favourites_only=favourites_only,
+        sort=sort,
+        limit=limit,
+        offset=offset,
+    )
+
+
+@router.get("/library/tags")
+async def get_library_tags(
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    return {"tags": await list_tags(session, user_id)}
+
+
+@router.get("/library/cards/{character_id}/organisation")
+async def get_card_organisation(
+    character_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    result = await get_organisation(session, user_id, character_id)
+    if result is None:
+        raise HTTPException(status_code=404, detail="character not found")
+    return result
+
+
+@router.put("/library/cards/{character_id}/tags")
+async def put_card_tags(
+    character_id: str,
+    body: TagsUpdate,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    try:
+        result = await set_tags(session, user_id, character_id, body.tags)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if result is None:
+        raise HTTPException(status_code=404, detail="character not found")
+    return result
+
+
+@router.post("/library/cards/{character_id}/tags")
+async def post_card_tags(
+    character_id: str,
+    body: TagsUpdate,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    try:
+        result = await add_tags(session, user_id, character_id, body.tags)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if result is None:
+        raise HTTPException(status_code=404, detail="character not found")
+    return result
+
+
+@router.delete("/library/cards/{character_id}/tags/{tag}")
+async def delete_card_tag(
+    character_id: str,
+    tag: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    result = await remove_tag(session, user_id, character_id, tag)
+    if result is None:
+        raise HTTPException(status_code=404, detail="character not found")
+    return result
+
+
+@router.put("/library/cards/{character_id}/favourite")
+async def put_card_favourite(
+    character_id: str,
+    body: FavouriteUpdate,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    result = await set_favourite(session, user_id, character_id, body.is_favourite)
+    if result is None:
+        raise HTTPException(status_code=404, detail="character not found")
+    return result
