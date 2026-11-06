@@ -436,3 +436,14 @@ source in §0(2) and appends its entry here:
   No SillyTavern or Voxta source code was read and no file
   was downloaded; the slice's test entries are authored fresh
   in the test module (P-005 discipline).
+- **P-033 (2026-11-06, own tree only):** no new external
+  source and no mirror reading. Timed effects persistence
+  (sticky/cooldown/delay counters surviving across a chat's
+  life) is built from Rúnmál's own S203 activation semantics,
+  the separate-modelling note in `docs/DATA_MODEL.md` (runtime
+  activation state modelled separately from the canonical
+  entry definition), and the public world-info behaviour
+  already recorded in P-002's census. No SillyTavern or Voxta
+  source code was read and no file was downloaded; the
+  slice's test entries are authored fresh in the test module
+  (P-005 discipline).

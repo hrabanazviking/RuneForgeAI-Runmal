@@ -374,6 +374,29 @@ class ChatSummary(Base):
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
 
 
+class ChatLoreEntryState(Base):
+    """Runtime timed-effect counters for one lore entry in one chat
+    (P-033). Separate from the canonical LoreEntry definition per
+    DATA_MODEL.md: the entry row holds sticky/cooldown/delay CONFIG;
+    this row holds the live counters. Absence of a row means the
+    default (all-zero, unarmed) state."""
+
+    __tablename__ = "chat_lore_entry_states"
+
+    chat_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("chats.id", ondelete="CASCADE"), primary_key=True
+    )
+    entry_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("lore_entries.id", ondelete="CASCADE"),
+        primary_key=True, index=True,
+    )
+    sticky_remaining: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    cooldown_remaining: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    delay_remaining: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    delay_armed: Mapped[bool] = mapped_column(nullable=False, default=False)
+    updated_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
+
+
 class BridgeCredential(Base):
     """Per-bridge scoped credential (S601, BRIDGE_PROTOCOL §2).
 
