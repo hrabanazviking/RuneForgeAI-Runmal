@@ -383,3 +383,16 @@ source in §0(2) and appends its entry here:
   own prompt-composer slots (S205/S206). No persona file
   was downloaded; the slice's test personas are authored
   fresh in the test module (P-005 discipline).
+- **P-020 (2026-10-31, own tree only):** no new external
+  source and no mirror reading. The chat-file shape (ST-shaped
+  JSONL: metadata header line, then one message object per line
+  with `mes` / `swipes` / `swipe_id` / `swipe_info` / `extra` /
+  `send_date`, plus branch-linkage keys in `chat_metadata`)
+  implements the shape exactly as P-002's census already
+  recorded it from SillyTavern's official public documentation,
+  in the form P-005's authored corpus fixture
+  (`chat_st.jsonl`) already carries, plus public JSONL format
+  documentation. The native document shape is Runmal's own
+  S111 export. No SillyTavern or Voxta source code was read
+  and no chat file was downloaded; the slice's test chats are
+  authored fresh in the test modules (P-005 discipline).
