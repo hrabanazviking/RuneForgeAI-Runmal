@@ -3521,3 +3521,26 @@ Last updated: 2026-10-31 ~14:15 EDT tick (P-017 banking deferred, no full run at
     into inspect_prompt's loop is P-040's surface. Next in
     roadmap order: P-040 (team-01, global + persona + chat
     lore scopes).
+  - P-040 BANKED 2026-11-06 ~18:15 EST: global + persona +
+    chat lore scopes - layered world -> character ->
+    persona -> chat with per-scope budgets - team-01
+    commit e74755d merged (no-ff, clean) into
+    yrsa/two-mirrors-build as 0a9c484 and pushed;
+    ls-remote verified
+    0a9c484366e28ea1b5e153e3fa4c7aef9ba0a70c.
+    Evidence (team-01 worktree hidden_files/P040_EVIDENCE.md
+    and logs): battery 37/37, neighbours 842, full suite
+    1978 passed / 4 skipped / 0 failed on its base. Forge
+    confirmation suite at the merged tree: 1978 passed /
+    4 skipped / 0 failed (= 1941 + 37, exact); s503 did
+    not fire. Migration 0032 (lorebook_scopes) STANDS as
+    numbered; head is now 0032. One stale negative-index
+    migration pin in the battery's first full run was
+    healed in-slice ([-7] -> [-8]); not a code defect.
+    Design note: the persona layer refines the character
+    layer (a chat's persona IS its character in Runmal);
+    the roadmap's world -> character -> chat order is
+    preserved. P-039's carried item is closed in part:
+    inspect_prompt now wires scoped layers including the
+    bound character book via the character layer. Next in
+    roadmap order: P-041 (team-02, vectorised lore).
