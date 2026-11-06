@@ -383,3 +383,12 @@ source in §0(2) and appends its entry here:
   own prompt-composer slots (S205/S206). No persona file
   was downloaded; the slice's test personas are authored
   fresh in the test module (P-005 discipline).
+- **P-021 (2026-10-31, own tree only):** no new external
+  source and no mirror reading. The preset interop shapes
+  implement ST-34 exactly as P-002's census already recorded
+  it from SillyTavern's official public documentation (logged
+  in §2 above), in the shapes P-005's authored corpus
+  fixtures already carry; the stored carriage rides Rúnmál's
+  own S207 preset system and migration chain. No preset file
+  was downloaded; the slice's extra test presets are authored
+  inline in the test module (P-005 discipline).
