@@ -14,6 +14,7 @@ from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.db.models import Lorebook, LoreEntry
+from runmal.lorebooks.logic import check_selective_logic, normalise_selective_logic
 
 VALID_POSITIONS = frozenset({"before_char", "after_char"})
 
@@ -72,6 +73,7 @@ def entry_to_dict(entry: LoreEntry) -> dict:
         "content": entry.content,
         "keys": _decode_keys(entry.keys_json),
         "secondary_keys": _decode_keys(entry.secondary_keys_json),
+        "selective_logic": normalise_selective_logic(getattr(entry, "selective_logic", None)),
         "priority": entry.priority,
         "position": entry.position,
         "enabled": bool(entry.enabled),
@@ -192,6 +194,7 @@ async def create_entry(
     content: str = "",
     keys: list[str] | None = None,
     secondary_keys: list[str] | None = None,
+    selective_logic: str = "and_any",
     priority: int = 100,
     position: str = "before_char",
     enabled: bool = True,
@@ -211,6 +214,7 @@ async def create_entry(
         content=content,
         keys_json=_encode_keys(keys),
         secondary_keys_json=_encode_keys(secondary_keys),
+        selective_logic=check_selective_logic(selective_logic),
         priority=priority,
         position=_check_position(position),
         enabled=enabled,
@@ -261,6 +265,8 @@ async def update_entry(
         entry.keys_json = _encode_keys(fields["keys"])
     if "secondary_keys" in fields:
         entry.secondary_keys_json = _encode_keys(fields["secondary_keys"])
+    if "selective_logic" in fields:
+        entry.selective_logic = check_selective_logic(fields["selective_logic"])
     if "priority" in fields:
         entry.priority = int(fields["priority"])
     if "position" in fields:

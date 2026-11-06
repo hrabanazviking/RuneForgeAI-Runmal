@@ -27,14 +27,14 @@ def read_json(name: str) -> dict:
     return json.loads((CORPUS / name).read_text(encoding="utf-8"))
 
 
-# The 23 fields P-005 pinned as dropped by the DB-path importer.
+# The 22 fields P-005 pinned as dropped by the DB-path importer.
 # P-019 preserves all of them at file level: depth/role as
-# first-class at-depth data, the other 21 verbatim in `extra`.
+# first-class at-depth data, the other 20 verbatim in `extra`.
 P005_DROPPED = {
     "automationId", "characterFilter", "decorators", "delayUntilRecursion",
     "depth", "displayIndex", "excludeRecursion", "group", "groupOverride",
     "groupWeight", "id", "ignoreBudget", "outletName", "preventRecursion",
-    "probability", "role", "scanDepth", "selective", "selectiveLogic",
+    "probability", "role", "scanDepth", "selective",
     "triggers", "useGroupScoring", "useProbability", "vectorized",
 }
 
@@ -59,7 +59,8 @@ def test_p005_dropped_fields_are_preserved_as_data() -> None:
     assert gale.depth == 4 and gale.role == 0  # at-depth companions, first-class
     assert set(gale.extra) == P005_DROPPED - {"depth", "role"}
     assert gale.extra["group"] == "weather" and gale.extra["groupWeight"] == 75
-    assert gale.extra["probability"] == 80 and gale.extra["selectiveLogic"] == 1
+    assert gale.extra["probability"] == 80
+    assert gale.selective_logic == "not_all"
     assert gale.extra["characterFilter"]["names"][0].startswith("Sigríðr")
     assert gale.extra["scanDepth"] is None  # explicit null preserved, not dropped
 

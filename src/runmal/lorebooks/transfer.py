@@ -12,11 +12,13 @@ Export is Rúnmál's native shape. Import accepts two shapes:
    comment->name, order->priority, disable->not enabled,
    position 0->before_char / 1->after_char (anything else -> before_char),
    caseSensitive->case_sensitive, matchWholeWords->whole_word,
-   sticky/cooldown/delay -> sticky/cooldown/delay_prompts (P-005).
+   sticky/cooldown/delay -> sticky/cooldown/delay_prompts (P-005),
+   selectiveLogic->selective_logic (P-032, codes per
+   runmal.lorebooks.logic).
    Numeric fields coerce tolerantly: explicit nulls and numeric
    strings in real files mean the default / the number, never a
-   crash (P-005). Fields with no Rúnmál home yet (selectiveLogic,
-   probability, recursion flags, groups, depth…) are still dropped;
+   crash (P-005). Fields with no Rúnmál home yet (probability,
+   recursion flags, groups, depth…) are still dropped;
    the P-005 corpus test pins that set exactly.
 """
 
@@ -26,6 +28,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.db.models import Lorebook, LoreEntry
 from runmal.lorebooks import service
+from runmal.lorebooks.logic import normalise_selective_logic, selective_logic_from_code
 from runmal.safety import SafetyError, validate_json_tree
 
 
@@ -44,6 +47,7 @@ def export_book(book: dict, entries: list[dict]) -> dict:
                 "content": e["content"],
                 "keys": e["keys"],
                 "secondary_keys": e["secondary_keys"],
+                "selective_logic": normalise_selective_logic(e.get("selective_logic")),
                 "priority": e["priority"],
                 "position": e["position"],
                 "enabled": e["enabled"],
@@ -87,6 +91,7 @@ def _native_entry(raw: dict) -> dict:
         "content": str(raw.get("content", "")),
         "keys": list(raw.get("keys") or []),
         "secondary_keys": list(raw.get("secondary_keys") or []),
+        "selective_logic": normalise_selective_logic(raw.get("selective_logic")),
         "priority": _as_int(raw.get("priority"), 100),
         "position": str(raw.get("position", "before_char")),
         "enabled": bool(raw.get("enabled", True)),
@@ -115,6 +120,7 @@ def _worldinfo_entry(raw: dict) -> dict:
         "content": str(raw.get("content", "")),
         "keys": [str(k) for k in keys],
         "secondary_keys": [str(k) for k in secondary],
+        "selective_logic": selective_logic_from_code(raw.get("selectiveLogic")),
         "priority": _as_int(raw.get("order"), 100),
         "position": position,
         "enabled": not bool(raw.get("disable", False)),
@@ -221,6 +227,7 @@ def validate_parsed_book(book_fields: dict, entry_fields: list[dict]) -> list[di
                 "secondary_keys_json": service._encode_keys(
                     fields.get("secondary_keys")
                 ),
+                "selective_logic": normalise_selective_logic(fields.get("selective_logic")),
                 "priority": fields["priority"],
                 "position": service._check_position(
                     fields.get("position", "before_char")

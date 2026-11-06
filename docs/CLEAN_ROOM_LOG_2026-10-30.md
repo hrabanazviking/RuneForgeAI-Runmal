@@ -422,3 +422,17 @@ source in §0(2) and appends its entry here:
 - **P-028 (2026-11-06, own tree only):** no new external source and no mirror reading. The `.runmal` archive growth (cards/lorebooks/presets carried with the existing per-member SHA-256 checksum discipline, plus the P-024 library organisation that was missing) is built entirely from Rúnmál's own roadmap line, its own S801/S802 portable archive and restore code, and the in-repo P-019/P-021/P-024 slice documents. No SillyTavern or Voxta source code was read and no files were downloaded; the slice's test library is authored fresh in the test module (P-005 discipline).
 - **P-029 (2026-11-06, own tree only):** no new external source and no mirror reading. Provenance on import (a per-character record of where a card came from and when, so creator credit survives in Runmal) rests on Runmal's own P-022 bulk-import report facts and P-025 stored-form identity, plus the public Character Card v2/v3 creator-field shapes already logged in §1/§2 above (via the P-015/P-016 entries), implemented over Runmal's own character funnel, library import and migration chain. No SillyTavern or Voxta source code was read and no card file was downloaded; the slice's test cards are authored fresh in the test module (P-005 discipline).
 - **P-031 (2026-11-06, own tree only):** no new external source and no mirror reading. Recursive lorebook scanning (entries triggering entries, with depth limits and cycle safety, token budget enforced) is built entirely from Runmal's own roadmap line and its own S202 keyword scan, S203 activation and S204 budget pipeline, plus the public world-info behaviour already recorded in P-002's census. No SillyTavern or Voxta source code was read and no files were downloaded; the slice's test entries are authored fresh in the test module (P-005 discipline).
+- **P-032 (2026-11-06, own tree only):** no new external
+  source and no mirror reading. Selective logic (the four
+  public modes AND ANY / AND ALL / NOT ANY / NOT ALL combined
+  with an entry's primary keys, with the world-info
+  `selectiveLogic` integer codes 0/1/2/3 in that documented
+  order) implements ST-16 exactly as P-002's census already
+  recorded it from SillyTavern's official public documentation
+  (logged in §2 above), in the shape P-005's authored corpus
+  fixture already carries (`selectiveLogic` 0 and 1); the
+  truth table, the empty-secondary rule, and the code mapping
+  are built over Rúnmál's own S202 scanner and S201 store.
+  No SillyTavern or Voxta source code was read and no file
+  was downloaded; the slice's test entries are authored fresh
+  in the test module (P-005 discipline).
