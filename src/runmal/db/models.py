@@ -46,6 +46,7 @@ class Character(Base):
     version_no: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     lineage_id: Mapped[str | None] = mapped_column(String(36), nullable=True, default=None)
     content_hash: Mapped[str] = mapped_column(String(64), nullable=False, default="")
+    provenance_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
 
 
 class Chat(Base):
