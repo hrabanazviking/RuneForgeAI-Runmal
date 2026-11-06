@@ -27,13 +27,14 @@ def read_json(name: str) -> dict:
     return json.loads((CORPUS / name).read_text(encoding="utf-8"))
 
 
-# The 22 fields P-005 pinned as dropped by the DB-path importer.
-# P-019 preserves all of them at file level: depth/role as
-# first-class at-depth data, the other 20 verbatim in `extra`.
+# The 20 fields P-005 pinned as dropped by the DB-path importer
+# (group/groupWeight were promoted to first-class fields by
+# P-034). P-019 preserves all of them at file level: depth/role
+# as first-class at-depth data, the other 18 verbatim in `extra`.
 P005_DROPPED = {
     "automationId", "characterFilter", "decorators", "delayUntilRecursion",
-    "depth", "displayIndex", "excludeRecursion", "group", "groupOverride",
-    "groupWeight", "id", "ignoreBudget", "outletName", "preventRecursion",
+    "depth", "displayIndex", "excludeRecursion", "groupOverride",
+    "id", "ignoreBudget", "outletName", "preventRecursion",
     "probability", "role", "scanDepth", "selective",
     "triggers", "useGroupScoring", "useProbability", "vectorized",
 }
@@ -58,7 +59,8 @@ def test_p005_dropped_fields_are_preserved_as_data() -> None:
     gale = book.entries[0]
     assert gale.depth == 4 and gale.role == 0  # at-depth companions, first-class
     assert set(gale.extra) == P005_DROPPED - {"depth", "role"}
-    assert gale.extra["group"] == "weather" and gale.extra["groupWeight"] == 75
+    assert gale.inclusion_group == "weather" and gale.group_weight == 75  # P-034 first-class
+    assert "group" not in gale.extra and "groupWeight" not in gale.extra
     assert gale.extra["probability"] == 80
     assert gale.selective_logic == "not_all"
     assert gale.extra["characterFilter"]["names"][0].startswith("Sigríðr")

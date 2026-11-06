@@ -205,17 +205,17 @@ async def only_character_dict(factory, user_id) -> dict:
 # ---------------------------------------------------------------- migration
 
 
-def test_migration_head_is_0024_provisional() -> None:
-    """Head pin: the head moved with P-032's provisional 0024; the
-    keeper may renumber that migration at banking if P-031 takes
-    0024 first, in which case this pin moves with it."""
-    assert MIGRATIONS[-1][0] == "0024"
+def test_migration_head_is_0026_provisional() -> None:
+    """Head pin: the head moved with P-034's provisional 0026
+    (0025 reserved for P-033); the keeper may renumber at banking,
+    in which case this pin moves with it."""
+    assert MIGRATIONS[-1][0] == "0026"
 
 
 def test_migration_0023_column_exists(tmp_path) -> None:
     db_path = tmp_path / "m.db"
     migrate_to_head(db_path)
-    assert current_revision(db_path) == "0024"
+    assert current_revision(db_path) == "0026"
     conn = sqlite3.connect(db_path)
     try:
         columns = {

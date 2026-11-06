@@ -25,7 +25,7 @@ Preservation discipline (INV-009, the P-018 persona pattern):
   export starts from ``raw`` and overlays the normalized known
   fields, so unknown-but-valid fields survive verbatim.
 - The per-entry fields Part III owns (probability, recursion
-  flags, groups, scan depth, filters,
+  flags, scan depth, filters,
   triggers, decorators, budget and outlet fields, source ``id`` /
   ``displayIndex``) are carried in ``extra`` as data, never
   interpreted here and never dropped.
@@ -36,6 +36,12 @@ Preservation discipline (INV-009, the P-018 persona pattern):
   verbatim in ``position_code`` with the native position left at
   ``before_char`` and no semantics claimed — the code hands back
   unchanged on export.
+- Inclusion groups (P-034): world-info ``group`` /
+  ``groupWeight`` are first-class fields (promoted out of
+  ``extra``), mapped to native ``inclusion_group`` /
+  ``group_weight``; ``groupOverride`` / ``useGroupScoring`` stay
+  preserved-as-data in ``extra``, uninterpreted (deterministic
+  resolution is Rúnmál's semantics; see lorebooks/groups.py).
 - At-depth companions ``depth`` / ``role`` are preserved as data
   (``depth`` tolerantly coerced, ``role`` verbatim — its code
   table is Part III's to define); neither is fabricated when
@@ -55,6 +61,11 @@ import copy
 import json
 from dataclasses import dataclass, field
 
+from runmal.lorebooks.groups import (
+    DEFAULT_GROUP_WEIGHT,
+    normalise_group_weight,
+    normalise_inclusion_group,
+)
 from runmal.lorebooks.logic import (
     DEFAULT_SELECTIVE_LOGIC,
     normalise_selective_logic,
@@ -76,6 +87,8 @@ WORLDINFO_MAPPED_FIELDS = frozenset(
         "key",
         "keysecondary",
         "selectiveLogic",
+        "group",
+        "groupWeight",
         "constant",
         "disable",
         "order",
@@ -98,6 +111,8 @@ NATIVE_MAPPED_FIELDS = frozenset(
         "keys",
         "secondary_keys",
         "selective_logic",
+        "inclusion_group",
+        "group_weight",
         "priority",
         "position",
         "enabled",
@@ -157,6 +172,8 @@ class WorldInfoEntry:
     keys: list[str] = field(default_factory=list)
     secondary_keys: list[str] = field(default_factory=list)
     selective_logic: str = "and_any"
+    inclusion_group: str = ""
+    group_weight: int = DEFAULT_GROUP_WEIGHT
     priority: int = 100
     position: str = "before_char"
     position_code: int | None = None
@@ -182,6 +199,8 @@ class WorldInfoEntry:
             "keys": list(self.keys),
             "secondary_keys": list(self.secondary_keys),
             "selective_logic": self.selective_logic,
+            "inclusion_group": self.inclusion_group,
+            "group_weight": self.group_weight,
             "priority": self.priority,
             "position": self.position,
             "enabled": self.enabled,
@@ -230,6 +249,8 @@ def _entry_from_worldinfo(raw: dict, uid: str | None) -> WorldInfoEntry:
         keys=_as_str_list(raw.get("key")),
         secondary_keys=_as_str_list(raw.get("keysecondary")),
         selective_logic=selective_logic_from_code(raw.get("selectiveLogic")),
+        inclusion_group=normalise_inclusion_group(raw.get("group")),
+        group_weight=normalise_group_weight(raw.get("groupWeight")),
         priority=_as_int(raw.get("order"), 100),
         position=POSITION_FROM_CODE.get(code, "before_char"),
         position_code=code,
@@ -262,6 +283,8 @@ def _entry_from_native(raw: dict) -> WorldInfoEntry:
         keys=_as_str_list(raw.get("keys")),
         secondary_keys=_as_str_list(raw.get("secondary_keys")),
         selective_logic=normalise_selective_logic(raw.get("selective_logic")),
+        inclusion_group=normalise_inclusion_group(raw.get("inclusion_group")),
+        group_weight=normalise_group_weight(raw.get("group_weight")),
         priority=_as_int(raw.get("priority"), 100),
         position=position,
         position_code=CODE_FROM_POSITION.get(position),
@@ -407,6 +430,13 @@ def _export_worldinfo_entry(entry: WorldInfoEntry) -> dict:
         obj["role"] = copy.deepcopy(entry.role)
     if "selectiveLogic" in obj or entry.selective_logic != DEFAULT_SELECTIVE_LOGIC:
         obj["selectiveLogic"] = worldinfo_code(entry.selective_logic)
+    # Inclusion groups (P-034): same no-fabrication rule -- write
+    # the world-info spellings only when the source file carried
+    # them or the values differ from the defaults.
+    if "group" in obj or entry.inclusion_group:
+        obj["group"] = entry.inclusion_group
+    if "groupWeight" in obj or entry.group_weight != DEFAULT_GROUP_WEIGHT:
+        obj["groupWeight"] = entry.group_weight
     # Part III fields and unknowns ride back verbatim.
     for key, value in entry.extra.items():
         obj[key] = copy.deepcopy(value)

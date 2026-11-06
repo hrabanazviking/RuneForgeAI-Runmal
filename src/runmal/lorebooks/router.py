@@ -34,6 +34,8 @@ class EntryCreate(BaseModel):
     keys: list[str] = Field(default_factory=list)
     secondary_keys: list[str] = Field(default_factory=list)
     selective_logic: str = "and_any"
+    inclusion_group: str = ""
+    group_weight: int = Field(default=100, ge=0)
     priority: int = 100
     position: str = "before_char"
     enabled: bool = True
@@ -51,6 +53,8 @@ class EntryUpdate(BaseModel):
     keys: list[str] | None = None
     secondary_keys: list[str] | None = None
     selective_logic: str | None = None
+    inclusion_group: str | None = None
+    group_weight: int | None = Field(default=None, ge=0)
     priority: int | None = None
     position: str | None = None
     enabled: bool | None = None
@@ -242,6 +246,8 @@ async def create_entry(
             keys=body.keys,
             secondary_keys=body.secondary_keys,
             selective_logic=body.selective_logic,
+            inclusion_group=body.inclusion_group,
+            group_weight=body.group_weight,
             priority=body.priority,
             position=body.position,
             enabled=body.enabled,

@@ -436,3 +436,18 @@ source in §0(2) and appends its entry here:
   No SillyTavern or Voxta source code was read and no file
   was downloaded; the slice's test entries are authored fresh
   in the test module (P-005 discipline).
+- **P-034 (2026-11-06, own tree only):** no new external
+  source and no mirror reading. Inclusion groups (mutually
+  exclusive entries resolved by weight/priority,
+  deterministically) are built entirely from Rúnmál's own
+  roadmap line and its own S202/S203/S204 lorebook pipeline,
+  over the public world-info field names (`group`,
+  `groupWeight`, `groupOverride`, `useGroupScoring`) exactly
+  as P-005's authored corpus fixture already carries them
+  (the Gale-Bell entry: `weather` / 75); the deterministic
+  resolution semantics (weight, then priority, then entry
+  id; no random draw) are Rúnmál's own design for the
+  roadmap line, not a reproduction of any mirror behaviour.
+  No SillyTavern or Voxta source code was read and no file
+  was downloaded; the slice's test entries are authored fresh
+  in the test module (P-005 discipline).

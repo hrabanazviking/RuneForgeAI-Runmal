@@ -14,6 +14,12 @@ from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.db.models import Lorebook, LoreEntry
+from runmal.lorebooks.groups import (
+    check_group_weight,
+    check_inclusion_group,
+    normalise_group_weight,
+    normalise_inclusion_group,
+)
 from runmal.lorebooks.logic import check_selective_logic, normalise_selective_logic
 
 VALID_POSITIONS = frozenset({"before_char", "after_char"})
@@ -74,6 +80,8 @@ def entry_to_dict(entry: LoreEntry) -> dict:
         "keys": _decode_keys(entry.keys_json),
         "secondary_keys": _decode_keys(entry.secondary_keys_json),
         "selective_logic": normalise_selective_logic(getattr(entry, "selective_logic", None)),
+        "inclusion_group": normalise_inclusion_group(getattr(entry, "inclusion_group", None)),
+        "group_weight": normalise_group_weight(getattr(entry, "group_weight", None)),
         "priority": entry.priority,
         "position": entry.position,
         "enabled": bool(entry.enabled),
@@ -195,6 +203,8 @@ async def create_entry(
     keys: list[str] | None = None,
     secondary_keys: list[str] | None = None,
     selective_logic: str = "and_any",
+    inclusion_group: str = "",
+    group_weight: int = 100,
     priority: int = 100,
     position: str = "before_char",
     enabled: bool = True,
@@ -215,6 +225,8 @@ async def create_entry(
         keys_json=_encode_keys(keys),
         secondary_keys_json=_encode_keys(secondary_keys),
         selective_logic=check_selective_logic(selective_logic),
+        inclusion_group=check_inclusion_group(inclusion_group),
+        group_weight=check_group_weight(group_weight),
         priority=priority,
         position=_check_position(position),
         enabled=enabled,
@@ -267,6 +279,10 @@ async def update_entry(
         entry.secondary_keys_json = _encode_keys(fields["secondary_keys"])
     if "selective_logic" in fields:
         entry.selective_logic = check_selective_logic(fields["selective_logic"])
+    if "inclusion_group" in fields:
+        entry.inclusion_group = check_inclusion_group(fields["inclusion_group"])
+    if "group_weight" in fields:
+        entry.group_weight = check_group_weight(fields["group_weight"])
     if "priority" in fields:
         entry.priority = int(fields["priority"])
     if "position" in fields:
