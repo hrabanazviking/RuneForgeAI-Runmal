@@ -12,6 +12,7 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from runmal import __version__
+from runmal.assets.router import router as assets_router
 from runmal.auth import get_or_create_credential, verify_credential
 from runmal.backups.router import router as backups_router
 from runmal.bridge.router import admin_router as bridge_admin_router
@@ -71,6 +72,11 @@ def create_app(
 
     app.include_router(
         characters_router,
+        prefix="/api/v1",
+        dependencies=[Depends(require_local_auth)],
+    )
+    app.include_router(
+        assets_router,
         prefix="/api/v1",
         dependencies=[Depends(require_local_auth)],
     )

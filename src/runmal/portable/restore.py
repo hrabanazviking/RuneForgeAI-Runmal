@@ -29,6 +29,7 @@ from runmal.db.migrate import migrate_to_head
 from runmal.db.models import (
     BackendProfile,
     Character,
+    CharacterAsset,
     CharacterVoiceProfile,
     Chat,
     ConnectionProfile,
@@ -99,6 +100,7 @@ def _row(model, payload: dict):
 _STEPS = (
     ("users", "users", (("self", User),)),
     ("characters", "characters", (("self", Character),)),
+    ("character_assets", "character_assets", (("self", CharacterAsset),)),
     ("lorebooks", "lorebooks", (("lorebook", Lorebook), ("entries", LoreEntry))),
     ("presets", "presets", (("self", SamplingPreset),)),
     ("profiles", "backend_profiles", (("self", BackendProfile),)),
@@ -197,6 +199,7 @@ async def import_archive(archive_path: str | Path, staging_root: str | Path) -> 
         table_for = {
             "users": "users",
             "characters": "characters",
+            "character_assets": "character_assets",
             "chats": "chats",
             "messages": "messages",
             "lorebooks": "lorebooks",

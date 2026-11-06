@@ -405,3 +405,15 @@ source in §0(2) and appends its entry here:
   own S207 preset system and migration chain. No preset file
   was downloaded; the slice's extra test presets are authored
   inline in the test module (P-005 discipline).
+- **P-023 (2026-11-06, own tree only):** no new external
+  source and no mirror reading. Card thumbnails & assets
+  implement the v3 `assets` descriptor shapes exactly as
+  P-002's census and the public Character Card v3 spec
+  already logged them (§1/§2 above, via P-016's entry), over
+  Rúnmál's own S106 character storage and S113 CHARX asset
+  handling; image inspection is stdlib header parsing of the
+  public PNG/JPEG/GIF/WebP formats and the thumbnailer is an
+  own-tree PNG codec. No SillyTavern or Voxta source code was
+  read and no asset file was downloaded; the slice's test
+  images are authored fresh in the test module (P-005
+  discipline).

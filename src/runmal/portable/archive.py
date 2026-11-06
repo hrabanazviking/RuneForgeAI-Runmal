@@ -49,6 +49,7 @@ from runmal.db.migrations import MIGRATIONS
 from runmal.db.models import (
     BackendProfile,
     Character,
+    CharacterAsset,
     CharacterVoiceProfile,
     Chat,
     ConnectionProfile,
@@ -153,6 +154,30 @@ async def _collect_members(
                 warnings.append(
                     f"asset missing on disk, skipped: character {character.id} "
                     f"avatar {character.avatar_asset!r}"
+                )
+
+    asset_rows = list(
+        await session.scalars(
+            select(CharacterAsset)
+            .where(CharacterAsset.user_id == user_id)
+            .order_by(CharacterAsset.id)
+        )
+    )
+    counts["character_assets"] = len(asset_rows)
+    for row in asset_rows:
+        put(f"character_assets/{row.id}.json", row_to_dict(row))
+        if row.storage_relpath:
+            asset_path = (
+                base / "assets" / "characters" / row.character_id / row.storage_relpath
+            )
+            arcname = f"assets/characters/{row.character_id}/{row.storage_relpath}"
+            if asset_path.is_file():
+                members[arcname] = asset_path.read_bytes()
+                counts["assets"] = counts.get("assets", 0) + 1
+            else:
+                warnings.append(
+                    f"asset missing on disk, skipped: character {row.character_id} "
+                    f"asset {row.id}"
                 )
 
     voice_profiles = list(
@@ -348,6 +373,7 @@ def _check_member_name(name: str) -> None:
 _MEMBER_SHAPES = {
     "users": ("id",),
     "characters": ("id",),
+    "character_assets": ("id",),
     "voice_profiles": ("character_id",),
     "presets": ("id",),
     "profiles": ("id",),

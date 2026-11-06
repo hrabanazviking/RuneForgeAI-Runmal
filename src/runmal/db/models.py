@@ -460,3 +460,39 @@ class CharacterVoiceProfile(Base):
     language: Mapped[str] = mapped_column(String(20), nullable=False, default="en-us")
     params_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
     updated_at: Mapped[str] = mapped_column(String(40), nullable=False, default="")
+
+
+class CharacterAsset(Base):
+    """One asset belonging to a character (P-023): card art,
+    expression, background, embedded image or pack. Provenance +
+    sniffed image facts + relative storage paths; the bytes live on
+    disk, never in the row."""
+
+    __tablename__ = "character_assets"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_new_id)
+    character_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("characters.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    user_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    kind: Mapped[str] = mapped_column(String(40), nullable=False, default="embedded")
+    name: Mapped[str] = mapped_column(String(200), nullable=False, default="")
+    source_type: Mapped[str] = mapped_column(String(40), nullable=False, default="")
+    source_uri: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    source_ext: Mapped[str] = mapped_column(String(20), nullable=False, default="")
+    status: Mapped[str] = mapped_column(String(40), nullable=False, default="stored")
+    detail: Mapped[str] = mapped_column(String(200), nullable=False, default="")
+    format: Mapped[str] = mapped_column(String(20), nullable=False, default="")
+    media_type: Mapped[str] = mapped_column(String(100), nullable=False, default="")
+    width: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    height: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    byte_size: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    sha256: Mapped[str] = mapped_column(String(64), nullable=False, default="")
+    storage_relpath: Mapped[str | None] = mapped_column(String(300), nullable=True)
+    thumbnail_relpath: Mapped[str | None] = mapped_column(String(300), nullable=True)
+    thumbnail_status: Mapped[str] = mapped_column(
+        String(40), nullable=False, default="not_applicable"
+    )
+    created_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
