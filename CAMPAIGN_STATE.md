@@ -3424,3 +3424,28 @@ Last updated: 2026-10-31 ~14:15 EDT tick (P-017 banking deferred, no full run at
     world-info selective bool rides verbatim in extra.
     Next in roadmap order: P-036 (team-03, probability &
     RNG honesty; built, held for this banking).
+  - BANKED P-036 (keeper tick 2026-11-06 ~15:55 EST): probability
+    & RNG honesty - seeded, inspectable rolls recorded per
+    entry - team-03 commit 8029f74 merged (no-ff) into
+    yrsa/two-mirrors-build as a3c4a0a and pushed; ls-remote
+    verified a3c4a0a99f6e9e52474d3707ed00ed3c22010beb.
+    Evidence (team-03 worktree hidden_files/P036_EVIDENCE.md
+    and logs): battery 30/30, neighbours 770, full suite
+    1636 passed / 4 skipped / 0 failed on its base. Forge
+    confirmation suite at the merged tree: 1695 passed /
+    4 skipped / 0 failed (= 1665 + 30, exact); s503 did not
+    fire. Migration 0028 (lorebook probability) STANDS as
+    numbered - P-035 took the reserved 0027 banking first,
+    so no renumber was needed; head is now 0028. Merge
+    conflicts (migration registry, interop/preview/router/
+    service/transfer, clean-room log, head pins) resolved
+    keeping BOTH slices' work: chain 0026 -> 0027 -> 0028
+    composed, revision lists unioned in s103/s107,
+    dropped-field pins healed to the merged truth (17
+    fields; vectorized by P-035 and the probability pair
+    by P-036 both mapped), no assertion weakened. Combined
+    batteries at the merged tree 287 passed. Carried:
+    useProbability is not a stored column - the DB store
+    carries the effective percent; the flag survives at
+    the file layer only. Next in roadmap order: P-037
+    (team-01, scan depth & context windows).
