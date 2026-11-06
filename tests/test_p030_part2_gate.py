@@ -24,7 +24,7 @@ fixtures: 5 cards, 3 lorebooks, 2 presets, 1 chat, 1 persona):
   Part II — its leg is file-model only, deliberately.
 - the only allowed losses are the pinned ones, each named and
   exact in this module: (a) lorebook DB-path dropped field set
-  (23 world-info fields, P-005) and position code 4 collapsing
+  (22 world-info fields, P-005) and position code 4 collapsing
   to before_char at the DB layer (P-038 owns the real mapping),
   plus the native at_depth entry the DB layer cannot hold yet;
   (b) the chat live-projection loss report (P-020), pinned as an
@@ -342,9 +342,9 @@ async def test_cards_store_provenance_carried_but_not_exported(tmp_path) -> None
 
 # --- 4. lorebooks, file leg (full clean, P-019's contract) -----------------
 
-# The 23 fields P-005 pinned as dropped by the DB-path importer.
+# The 22 fields P-005 pinned as dropped by the DB-path importer.
 # The file layer preserves all of them as data: depth/role as
-# first-class at-depth companions, the other 21 verbatim in extra.
+# first-class at-depth companions, the other 20 verbatim in extra.
 WORLDINFO_DROPPED_TODAY = frozenset(
     {
         "automationId",
@@ -365,14 +365,13 @@ WORLDINFO_DROPPED_TODAY = frozenset(
         "role",
         "scanDepth",
         "selective",
-        "selectiveLogic",
         "triggers",
         "useGroupScoring",
         "useProbability",
         "vectorized",
     }
 )
-assert len(WORLDINFO_DROPPED_TODAY) == 23
+assert len(WORLDINFO_DROPPED_TODAY) == 22
 
 # Source fields the DB-path transfer layer maps (P-005's set).
 WORLDINFO_TRANSFER_MAPPED_SOURCE = frozenset(
@@ -381,6 +380,7 @@ WORLDINFO_TRANSFER_MAPPED_SOURCE = frozenset(
         "content",
         "key",
         "keysecondary",
+        "selectiveLogic",
         "constant",
         "disable",
         "order",
@@ -398,6 +398,7 @@ MAPPED_ENTRY_KEYS = (
     "content",
     "keys",
     "secondary_keys",
+    "selective_logic",
     "priority",
     "enabled",
     "constant",
@@ -460,7 +461,7 @@ def test_lorebooks_file_leg_dropped_fields_survive_as_data() -> None:
     gale = book.entries[0]
     assert set(gale.extra) == WORLDINFO_DROPPED_TODAY - {"depth", "role"}
     assert gale.depth == 4 and gale.role == 0
-    assert gale.extra["selectiveLogic"] == 1
+    assert gale.selective_logic == "not_all"
     assert gale.extra["scanDepth"] is None  # explicit null kept, not dropped
 
 
@@ -559,7 +560,7 @@ async def test_lorebooks_store_leg_worldinfo_mapped_only_clean(tmp_path) -> None
         ), name
         for entry in exported["entries"]:
             assert set(entry) == {
-                "name", "content", "keys", "secondary_keys", "priority",
+                "name", "content", "keys", "secondary_keys", "selective_logic", "priority",
                 "position", "enabled", "constant", "case_sensitive",
                 "whole_word", "sticky_prompts", "cooldown_prompts",
                 "delay_prompts",
@@ -577,12 +578,12 @@ async def test_lorebooks_store_leg_worldinfo_mapped_only_clean(tmp_path) -> None
 
 def test_lorebooks_store_leg_dropped_set_is_pinned_exactly() -> None:
     # PINNED LOSS (a), field half: source keys minus the transfer-
-    # mapped set EQUALS the named 23-field frozenset. A future
+    # mapped set EQUALS the named 22-field frozenset. A future
     # slice that shrinks this loss must edit this pin deliberately.
     source = read_json("lorebook_worldinfo_full.json")
     dropped = set(source["entries"]["0"]) - WORLDINFO_TRANSFER_MAPPED_SOURCE
     assert dropped == WORLDINFO_DROPPED_TODAY
-    assert len(dropped) == 23
+    assert len(dropped) == 22
 
 
 async def test_lorebooks_store_leg_native_at_depth_pinned_limitation(

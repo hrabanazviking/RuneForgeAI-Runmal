@@ -31,6 +31,7 @@ from runmal.db.migrations import (
     m0021_library_organisation,
     m0022_character_versions,
     m0023_character_provenance,
+    m0024_lorebook_selective_logic,
 )
 
 MIGRATIONS: list[tuple[str, str, object]] = [
@@ -144,5 +145,10 @@ MIGRATIONS: list[tuple[str, str, object]] = [
         m0023_character_provenance.REVISION,
         m0023_character_provenance.DESCRIPTION,
         m0023_character_provenance,
+    ),
+    (
+        m0024_lorebook_selective_logic.REVISION,
+        m0024_lorebook_selective_logic.DESCRIPTION,
+        m0024_lorebook_selective_logic,
     ),
 ]

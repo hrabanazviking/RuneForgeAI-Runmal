@@ -137,6 +137,7 @@ class LoreEntry(Base):
     content: Mapped[str] = mapped_column(Text, nullable=False, default="")
     keys_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
     secondary_keys_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
+    selective_logic: Mapped[str] = mapped_column(String(20), nullable=False, default="and_any")
     priority: Mapped[int] = mapped_column(nullable=False, default=100)
     position: Mapped[str] = mapped_column(String(40), nullable=False, default="before_char")
     enabled: Mapped[bool] = mapped_column(nullable=False, default=True)

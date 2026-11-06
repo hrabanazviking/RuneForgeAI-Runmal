@@ -24,8 +24,8 @@ Preservation discipline (INV-009, the P-018 persona pattern):
 - Every entry keeps its complete original mapping in ``raw``;
   export starts from ``raw`` and overlays the normalized known
   fields, so unknown-but-valid fields survive verbatim.
-- The per-entry fields Part III owns (selective logic,
-  probability, recursion flags, groups, scan depth, filters,
+- The per-entry fields Part III owns (probability, recursion
+  flags, groups, scan depth, filters,
   triggers, decorators, budget and outlet fields, source ``id`` /
   ``displayIndex``) are carried in ``extra`` as data, never
   interpreted here and never dropped.
@@ -55,6 +55,12 @@ import copy
 import json
 from dataclasses import dataclass, field
 
+from runmal.lorebooks.logic import (
+    DEFAULT_SELECTIVE_LOGIC,
+    normalise_selective_logic,
+    selective_logic_from_code,
+    worldinfo_code,
+)
 from runmal.lorebooks.transfer import _as_int
 from runmal.safety import SafetyError, safe_json_loads
 
@@ -69,6 +75,7 @@ WORLDINFO_MAPPED_FIELDS = frozenset(
         "content",
         "key",
         "keysecondary",
+        "selectiveLogic",
         "constant",
         "disable",
         "order",
@@ -90,6 +97,7 @@ NATIVE_MAPPED_FIELDS = frozenset(
         "content",
         "keys",
         "secondary_keys",
+        "selective_logic",
         "priority",
         "position",
         "enabled",
@@ -148,6 +156,7 @@ class WorldInfoEntry:
     content: str = ""
     keys: list[str] = field(default_factory=list)
     secondary_keys: list[str] = field(default_factory=list)
+    selective_logic: str = "and_any"
     priority: int = 100
     position: str = "before_char"
     position_code: int | None = None
@@ -172,6 +181,7 @@ class WorldInfoEntry:
             "content": self.content,
             "keys": list(self.keys),
             "secondary_keys": list(self.secondary_keys),
+            "selective_logic": self.selective_logic,
             "priority": self.priority,
             "position": self.position,
             "enabled": self.enabled,
@@ -219,6 +229,7 @@ def _entry_from_worldinfo(raw: dict, uid: str | None) -> WorldInfoEntry:
         content=_as_str(raw.get("content")),
         keys=_as_str_list(raw.get("key")),
         secondary_keys=_as_str_list(raw.get("keysecondary")),
+        selective_logic=selective_logic_from_code(raw.get("selectiveLogic")),
         priority=_as_int(raw.get("order"), 100),
         position=POSITION_FROM_CODE.get(code, "before_char"),
         position_code=code,
@@ -250,6 +261,7 @@ def _entry_from_native(raw: dict) -> WorldInfoEntry:
         content=_as_str(raw.get("content")),
         keys=_as_str_list(raw.get("keys")),
         secondary_keys=_as_str_list(raw.get("secondary_keys")),
+        selective_logic=normalise_selective_logic(raw.get("selective_logic")),
         priority=_as_int(raw.get("priority"), 100),
         position=position,
         position_code=CODE_FROM_POSITION.get(position),
@@ -393,6 +405,8 @@ def _export_worldinfo_entry(entry: WorldInfoEntry) -> dict:
         obj["depth"] = entry.depth
     if entry.role is not None:
         obj["role"] = copy.deepcopy(entry.role)
+    if "selectiveLogic" in obj or entry.selective_logic != DEFAULT_SELECTIVE_LOGIC:
+        obj["selectiveLogic"] = worldinfo_code(entry.selective_logic)
     # Part III fields and unknowns ride back verbatim.
     for key, value in entry.extra.items():
         obj[key] = copy.deepcopy(value)

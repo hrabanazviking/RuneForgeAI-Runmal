@@ -22,6 +22,12 @@ Semantics (normative for the lorebook pipeline):
 - ``case_sensitive``: entry flag; matching is case-insensitive otherwise.
 - ``scan_depth``: only the last ``scan_depth`` message texts are scanned.
   A key appearing only in older messages does not trigger.
+- ``selective_logic``: secondary keys gate the primary hit by the
+  entry's mode -- ``and_any`` (the default: at least one secondary
+  matches), ``and_all`` (every secondary matches), ``not_any`` (no
+  secondary matches), or ``not_all`` (at least one secondary does not
+  match). With no usable secondary keys, the mode is not applied and
+  a primary match alone suffices, in every mode.
 
 Hits are returned in the input entry order (callers pass entries in
 priority order; see S204 for budget/priority resolution). Matching is fully
@@ -32,6 +38,8 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+
+from runmal.lorebooks.logic import normalise_selective_logic, secondary_gate
 
 
 @dataclass(frozen=True)
@@ -45,6 +53,7 @@ class ScanEntry:
     secondary_keys: tuple[str, ...] = ()
     whole_word: bool = True
     case_sensitive: bool = False
+    selective_logic: str = "and_any"
 
     @classmethod
     def from_orm(cls, entry) -> "ScanEntry":
@@ -68,6 +77,9 @@ class ScanEntry:
             secondary_keys=_decode(entry.secondary_keys_json),
             whole_word=bool(entry.whole_word),
             case_sensitive=bool(entry.case_sensitive),
+            selective_logic=normalise_selective_logic(
+                getattr(entry, "selective_logic", None)
+            ),
         )
 
 
@@ -80,6 +92,7 @@ class ScanHit:
     matched_secondary: tuple[str, ...] = ()
     # 0-based indices into the FULL message list passed to scan_entries.
     message_indices: tuple[int, ...] = ()
+    selective_logic: str = "and_any"
 
 
 def _usable(keys: tuple[str, ...]) -> list[str]:
@@ -145,8 +158,12 @@ def scan_entries(
             matched_s, idx_s = _match_keys(
                 secondaries, window, offset, entry.whole_word, entry.case_sensitive
             )
-            if not matched_s:
-                continue  # primary hit, but no secondary: no trigger
+            if not secondary_gate(
+                entry.selective_logic,
+                secondary_count=len(secondaries),
+                matched_count=len(matched_s),
+            ):
+                continue
         else:
             matched_s, idx_s = (), ()
         hits.append(
@@ -155,6 +172,7 @@ def scan_entries(
                 matched_primary=matched_p,
                 matched_secondary=matched_s,
                 message_indices=tuple(sorted(set(idx_p) | set(idx_s))),
+                selective_logic=entry.selective_logic,
             )
         )
     return hits
