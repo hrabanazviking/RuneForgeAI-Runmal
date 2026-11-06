@@ -3124,3 +3124,16 @@ Last updated: 2026-10-31 ~14:15 EDT tick (P-017 banking deferred, no full run at
     (contention timing contract, shared laptop); solo re-run
     4/4 green. Next in roadmap order: P-021 (team-03, in
     flight), P-022 (team-04, in flight).
+  - BANKED P-021 (keeper tick 2026-11-06 ~07:55 EST): preset
+    interop — team-03 commit 14b0930 merged (no-ff) into
+    yrsa/two-mirrors-build as 08021ea and pushed. One merge
+    conflict, docs/CLEAN_ROOM_LOG_2026-10-30.md, resolved by
+    keeping BOTH the P-020 and P-021 entries (roadmap order);
+    the interop manifest auto-merged. Evidence (team-03
+    worktree hidden_files/ logs): battery 50/50, neighbours 77,
+    full suite 887 passed / 4 skipped / 0 failed. Forge
+    confirmation suite at the merged tree: 956 passed / 4
+    skipped / 0 failed. Noted as intended behaviour, not a
+    defect: S208 compat drops min_p/context_length on the
+    Ollama path (pinned by the battery + S306 manifest test).
+    Next in roadmap order: P-022 (team-04, in flight).
