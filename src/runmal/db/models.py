@@ -138,6 +138,10 @@ class LoreEntry(Base):
     keys_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
     secondary_keys_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
     selective_logic: Mapped[str] = mapped_column(String(20), nullable=False, default="and_any")
+    # Inclusion groups (P-034): one group label ('' = ungrouped) +
+    # the weight that ranks the entry inside its group.
+    inclusion_group: Mapped[str] = mapped_column(String(200), nullable=False, default="")
+    group_weight: Mapped[int] = mapped_column(nullable=False, default=100)
     priority: Mapped[int] = mapped_column(nullable=False, default=100)
     position: Mapped[str] = mapped_column(String(40), nullable=False, default="before_char")
     enabled: Mapped[bool] = mapped_column(nullable=False, default=True)

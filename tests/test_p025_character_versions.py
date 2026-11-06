@@ -118,13 +118,13 @@ def post_card(client, card, name=None, expect=None):
 
 
 def test_migration_head_is_0023() -> None:
-    assert MIGRATIONS[-1][0] == "0025"
+    assert MIGRATIONS[-1][0] == "0026"
 
 
 def test_migration_0022_columns_and_indexes(tmp_path) -> None:
     db_path = tmp_path / "m.db"
     migrate_to_head(db_path)
-    assert current_revision(db_path) == "0025"
+    assert current_revision(db_path) == "0026"
     conn = sqlite3.connect(db_path)
     try:
         columns = {

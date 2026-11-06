@@ -26,7 +26,7 @@ def make_client(tmp_path, monkeypatch):
     monkeypatch.setenv("RUNMAL_DATA_DIR", str(tmp_path))
     db_path = tmp_path / "test.db"
     applied = migrate_to_head(db_path)
-    assert applied[-1] == "0025"  # P-033 chat lore entry states migration is the head
+    assert applied[-1] == "0026"  # lore inclusion-groups migration (P-034, provisional) is the head; 0025 is reserved for P-033
     engine = create_db_engine(db_path)
     client = TestClient(create_app(create_session_factory(engine)))
     token = get_or_create_credential()

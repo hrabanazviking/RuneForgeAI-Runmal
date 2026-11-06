@@ -537,8 +537,10 @@ def test_scan_from_orm_with_selective_logic_passthrough():
 # --------------------------------------------------- (d) service / API
 
 
-def test_migration_head_is_0025():
-    assert MIGRATIONS[-1][0] == "0025"
+def test_migration_head_is_0024():
+    # Head pin moved by P-034's provisional 0026 (0025 reserved
+    # for P-033); 0024 remains the selective-logic migration.
+    assert MIGRATIONS[-1][0] == "0026"
 
 
 def test_migration_0024_column_exists(tmp_path):

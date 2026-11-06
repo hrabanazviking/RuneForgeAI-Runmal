@@ -8,6 +8,20 @@ per entry, whether it would be injected and why, so the editor's preview
 can never drift from the server activation engine: it *is* the engine,
 called with the book's rows.
 
+Inclusion groups (P-034): grouped entries that lose their group
+show as ``group_excluded`` -- a status of their own, NOT the
+budget pass's ``discarded`` (whose ``discard_reason`` vocabulary
+is S204's alone: ``over_budget`` / ``probability_skip``). Their
+row keeps the ``via`` they fired with, carries
+``group_winner_id`` (who won their group), and their
+``discard_reason`` stays None. Every row also reports
+``inclusion_group`` and ``group_weight``. When any contested
+group resolved, the result gains ``inclusion_group_winners``
+(group label -> winner entry id). The prompt inspector maps any
+non-included status to its trace reason generically, so
+group-excluded entries surface there as ``group_excluded`` with
+no inspector change.
+
 Opt-in recursive mode (P-031): with ``recursive_scan=True`` the
 preview uses recursive scanning -- keys found in a fired entry's
 own content can fire further entries -- and the result gains
@@ -21,6 +35,7 @@ silently untriggered.
 from __future__ import annotations
 
 from runmal.lorebooks.activation import ActivatableEntry, activate
+from runmal.lorebooks.groups import normalise_group_weight, normalise_inclusion_group
 from runmal.lorebooks.budget import BudgetCandidate, resolve_budget
 from runmal.lorebooks.scan import (
     MAX_RECURSIVE_SCAN_DEPTH,
@@ -47,7 +62,8 @@ def preview_activation(
     entry plus totals. Row ``status`` is one of ``included`` (activated and
     inside budget), ``discarded`` (activated but dropped by the budget pass,
     with ``discard_reason``), ``not_triggered`` (enabled but not activated
-    this tick), or ``disabled``.
+    this tick), ``group_excluded`` (activated but lost its
+    inclusion group, P-034), or ``disabled``.
     """
     if scan_depth < 1:
         raise ValueError("scan_depth must be >= 1")
@@ -80,6 +96,8 @@ def preview_activation(
         hit_by_id = {h.entry_id: h for h in hits}
         result = activate(act_view, set(hit_by_id))
     act_by_id = {a.entry_id: a for a in result.activations}
+    group_loser_by_id = {row.entry_id: row for row in result.group_losers}
+    group_suppressed_by_id = {a.entry_id: a for a in result.group_suppressed}
 
     candidates = [
         BudgetCandidate(
@@ -108,6 +126,13 @@ def preview_activation(
             "content": None,
             "tokens": None,
             "discard_reason": None,
+            "inclusion_group": normalise_inclusion_group(
+                getattr(entry, "inclusion_group", None)
+            ),
+            "group_weight": normalise_group_weight(
+                getattr(entry, "group_weight", None)
+            ),
+            "group_winner_id": None,
         }
         hit = hit_by_id.get(entry_id)
         if hit is not None:
@@ -116,6 +141,14 @@ def preview_activation(
         activation = act_by_id.get(entry_id)
         if not entry.enabled:
             row["status"] = "disabled"
+        elif entry_id in group_loser_by_id:
+            loser = group_loser_by_id[entry_id]
+            suppressed = group_suppressed_by_id.get(entry_id)
+            row["status"] = "group_excluded"
+            row["group_winner_id"] = loser.winner_id
+            if suppressed is not None:
+                row["via"] = suppressed.via
+                row["depth"] = suppressed.depth
         elif activation is None:
             row["status"] = "not_triggered"
         else:
@@ -138,6 +171,10 @@ def preview_activation(
         "tokens_used": budget.tokens_used,
         "entries": rows,
     }
+    if group_loser_by_id:
+        preview["inclusion_group_winners"] = {
+            row.inclusion_group: row.winner_id for row in result.group_losers
+        }
     if recursive_scan:
         assert recursive_result is not None
         preview["recursive_scan"] = True

@@ -33,6 +33,7 @@ from runmal.db.migrations import (
     m0023_character_provenance,
     m0024_lorebook_selective_logic,
     m0025_chat_lore_entry_states,
+    m0026_lorebook_inclusion_groups,
 )
 
 MIGRATIONS: list[tuple[str, str, object]] = [
@@ -156,5 +157,10 @@ MIGRATIONS: list[tuple[str, str, object]] = [
         m0025_chat_lore_entry_states.REVISION,
         m0025_chat_lore_entry_states.DESCRIPTION,
         m0025_chat_lore_entry_states,
+    ),
+    (
+        m0026_lorebook_inclusion_groups.REVISION,
+        m0026_lorebook_inclusion_groups.DESCRIPTION,
+        m0026_lorebook_inclusion_groups,
     ),
 ]

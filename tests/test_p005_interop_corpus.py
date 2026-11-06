@@ -125,7 +125,7 @@ def test_dual_chunk_png_prefers_ccv3_payload() -> None:
 
 # Source fields of lorebook_worldinfo_full.json entry 0 that today's
 # importer still drops. Part III slices (selective logic P-032,
-# timed effects P-033, groups P-034, depth P-038, probability P-036)
+# timed effects P-033, depth P-038, probability P-036)
 # own most of these; a slice that lands one must remove it here.
 WORLDINFO_DROPPED_TODAY = {
     "automationId",
@@ -135,9 +135,7 @@ WORLDINFO_DROPPED_TODAY = {
     "depth",
     "displayIndex",
     "excludeRecursion",
-    "group",
     "groupOverride",
-    "groupWeight",
     "id",
     "ignoreBudget",
     "outletName",
@@ -157,6 +155,8 @@ WORLDINFO_MAPPED_SOURCE_FIELDS = {
     "key",
     "keysecondary",
     "selectiveLogic",
+    "group",
+    "groupWeight",
     "constant",
     "disable",
     "order",
