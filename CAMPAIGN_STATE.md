@@ -3113,3 +3113,14 @@ Last updated: 2026-10-31 ~14:15 EDT tick (P-017 banking deferred, no full run at
     preservation only; the API/DB path drops unknown fields until
     a Part III storage-deepening slice — must close before
     end-to-end preservation is claimed.
+  - BANKED P-020 (keeper tick 2026-11-06 ~07:38 EST): chat file
+    interop — team-02 commit b71ba98 merged (no-ff) into
+    yrsa/two-mirrors-build as 5b89d63 and pushed; ls-remote
+    verified 5b89d632d92e3f627fe2906ad729b4a89453533b. Evidence
+    (team-02 worktree hidden_files/ logs): battery 56/56,
+    neighbours 74/74, full suite 892 passed / 4 skipped / 1
+    failed — the same single failure, test_s503_stt.py::
+    test_real_faster_whisper_meets_predeclared_contract
+    (contention timing contract, shared laptop); solo re-run
+    4/4 green. Next in roadmap order: P-021 (team-03, in
+    flight), P-022 (team-04, in flight).
