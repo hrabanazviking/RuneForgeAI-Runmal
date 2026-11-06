@@ -42,6 +42,13 @@ Preservation discipline (INV-009, the P-018 persona pattern):
   ``group_weight``; ``groupOverride`` / ``useGroupScoring`` stay
   preserved-as-data in ``extra``, uninterpreted (deterministic
   resolution is Rúnmál's semantics; see lorebooks/groups.py).
+- Probability (P-036): world-info ``probability`` (integer
+  percent) / ``useProbability`` are first-class fields (promoted
+  out of ``extra``), mapped to native ``probability`` /
+  ``use_probability``; the tolerant percent normaliser is
+  lorebooks/rng.py's. The DB store carries only the effective
+  percent (see transfer.py); this file layer carries both
+  fields losslessly.
 - At-depth companions ``depth`` / ``role`` are preserved as data
   (``depth`` tolerantly coerced, ``role`` verbatim — its code
   table is Part III's to define); neither is fabricated when
@@ -66,6 +73,7 @@ from runmal.lorebooks.groups import (
     normalise_group_weight,
     normalise_inclusion_group,
 )
+from runmal.lorebooks.rng import DEFAULT_PROBABILITY, normalise_probability
 from runmal.lorebooks.logic import (
     DEFAULT_SELECTIVE_LOGIC,
     normalise_selective_logic,
@@ -89,6 +97,8 @@ WORLDINFO_MAPPED_FIELDS = frozenset(
         "selectiveLogic",
         "group",
         "groupWeight",
+        "probability",
+        "useProbability",
         "constant",
         "vectorized",
         "disable",
@@ -114,6 +124,8 @@ NATIVE_MAPPED_FIELDS = frozenset(
         "selective_logic",
         "inclusion_group",
         "group_weight",
+        "probability",
+        "use_probability",
         "priority",
         "position",
         "enabled",
@@ -177,6 +189,8 @@ class WorldInfoEntry:
     selective_logic: str = "and_any"
     inclusion_group: str = ""
     group_weight: int = DEFAULT_GROUP_WEIGHT
+    probability: int = DEFAULT_PROBABILITY
+    use_probability: bool = True
     priority: int = 100
     position: str = "before_char"
     position_code: int | None = None
@@ -205,6 +219,8 @@ class WorldInfoEntry:
             "selective_logic": self.selective_logic,
             "inclusion_group": self.inclusion_group,
             "group_weight": self.group_weight,
+            "probability": self.probability,
+            "use_probability": self.use_probability,
             "priority": self.priority,
             "position": self.position,
             "enabled": self.enabled,
@@ -256,6 +272,10 @@ def _entry_from_worldinfo(raw: dict, uid: str | None) -> WorldInfoEntry:
         selective_logic=selective_logic_from_code(raw.get("selectiveLogic")),
         inclusion_group=normalise_inclusion_group(raw.get("group")),
         group_weight=normalise_group_weight(raw.get("groupWeight")),
+        probability=normalise_probability(raw.get("probability")),
+        use_probability=(
+            True if raw.get("useProbability") is None else bool(raw.get("useProbability"))
+        ),
         priority=_as_int(raw.get("order"), 100),
         position=POSITION_FROM_CODE.get(code, "before_char"),
         position_code=code,
@@ -291,6 +311,8 @@ def _entry_from_native(raw: dict) -> WorldInfoEntry:
         selective_logic=normalise_selective_logic(raw.get("selective_logic")),
         inclusion_group=normalise_inclusion_group(raw.get("inclusion_group")),
         group_weight=normalise_group_weight(raw.get("group_weight")),
+        probability=normalise_probability(raw.get("probability")),
+        use_probability=bool(raw.get("use_probability", True)),
         priority=_as_int(raw.get("priority"), 100),
         position=position,
         position_code=CODE_FROM_POSITION.get(position),
@@ -449,6 +471,11 @@ def _export_worldinfo_entry(entry: WorldInfoEntry) -> dict:
     # entry carries the vectorised flag.
     if "vectorized" in obj or entry.vectorised:
         obj["vectorized"] = entry.vectorised
+    # Probability (P-036): same no-fabrication rule.
+    if "probability" in obj or entry.probability != DEFAULT_PROBABILITY:
+        obj["probability"] = entry.probability
+    if "useProbability" in obj or not entry.use_probability:
+        obj["useProbability"] = entry.use_probability
     # Part III fields and unknowns ride back verbatim.
     for key, value in entry.extra.items():
         obj[key] = copy.deepcopy(value)

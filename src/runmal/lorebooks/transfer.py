@@ -20,10 +20,15 @@ Export is Rúnmál's native shape. Import accepts two shapes:
    vectorized->vectorised (P-035; the native spelling is
    vectorised, and legacy native files may spell it
    "vectorized" - accepted as alias on the native leg).
+   probability->probability (P-036, integer percent per
+   runmal.lorebooks.rng; an explicit useProbability=false folds
+   to 100 -- the gate is off -- because the store carries the
+   effective percent, not the flag; the file layer in
+   interop.py preserves the flag itself verbatim).
    Numeric fields coerce tolerantly: explicit nulls and numeric
    strings in real files mean the default / the number, never a
-   crash (P-005). Fields with no Rúnmál home yet (probability,
-   recursion flags, groupOverride/useGroupScoring, depth…) are
+   crash (P-005). Fields with no Rúnmál home yet (recursion
+   flags, groupOverride/useGroupScoring, depth…) are
    still dropped;
    the P-005 corpus test pins that set exactly.
 """
@@ -36,6 +41,7 @@ from runmal.db.models import Lorebook, LoreEntry
 from runmal.lorebooks import service
 from runmal.lorebooks.groups import normalise_group_weight, normalise_inclusion_group
 from runmal.lorebooks.logic import normalise_selective_logic, selective_logic_from_code
+from runmal.lorebooks.rng import DEFAULT_PROBABILITY, normalise_probability
 from runmal.safety import SafetyError, validate_json_tree
 
 
@@ -57,6 +63,7 @@ def export_book(book: dict, entries: list[dict]) -> dict:
                 "selective_logic": normalise_selective_logic(e.get("selective_logic")),
                 "inclusion_group": normalise_inclusion_group(e.get("inclusion_group")),
                 "group_weight": normalise_group_weight(e.get("group_weight")),
+                "probability": normalise_probability(e.get("probability")),
                 "priority": e["priority"],
                 "position": e["position"],
                 "enabled": e["enabled"],
@@ -104,6 +111,7 @@ def _native_entry(raw: dict) -> dict:
         "selective_logic": normalise_selective_logic(raw.get("selective_logic")),
         "inclusion_group": normalise_inclusion_group(raw.get("inclusion_group")),
         "group_weight": normalise_group_weight(raw.get("group_weight")),
+        "probability": normalise_probability(raw.get("probability")),
         "priority": _as_int(raw.get("priority"), 100),
         "position": str(raw.get("position", "before_char")),
         "enabled": bool(raw.get("enabled", True)),
@@ -136,6 +144,15 @@ def _worldinfo_entry(raw: dict) -> dict:
         "selective_logic": selective_logic_from_code(raw.get("selectiveLogic")),
         "inclusion_group": normalise_inclusion_group(raw.get("group")),
         "group_weight": normalise_group_weight(raw.get("groupWeight")),
+        # P-036: probability is an integer percent; an explicit
+        # useProbability=false means the gate is off, which the
+        # store expresses as the effective percent 100.
+        "probability": (
+            DEFAULT_PROBABILITY
+            if raw.get("useProbability") is not None
+            and not bool(raw.get("useProbability"))
+            else normalise_probability(raw.get("probability"))
+        ),
         "priority": _as_int(raw.get("order"), 100),
         "position": position,
         "enabled": not bool(raw.get("disable", False)),
@@ -246,6 +263,7 @@ def validate_parsed_book(book_fields: dict, entry_fields: list[dict]) -> list[di
                 "selective_logic": normalise_selective_logic(fields.get("selective_logic")),
                 "inclusion_group": normalise_inclusion_group(fields.get("inclusion_group")),
                 "group_weight": normalise_group_weight(fields.get("group_weight")),
+                "probability": normalise_probability(fields.get("probability")),
                 "priority": fields["priority"],
                 "position": service._check_position(
                     fields.get("position", "before_char")

@@ -27,17 +27,17 @@ def read_json(name: str) -> dict:
     return json.loads((CORPUS / name).read_text(encoding="utf-8"))
 
 
-# The 19 fields P-005 pinned as dropped by the DB-path importer
+# The 17 fields P-005 pinned as dropped by the DB-path importer
 # (group/groupWeight were promoted to first-class fields by
-# P-034, vectorized by P-035). P-019 preserves all of them at
-# file level: depth/role as first-class at-depth data, the
-# other 17 verbatim in `extra`.
+# P-034, vectorized by P-035; probability/useProbability by
+# P-036). P-019 preserves all of them at file level: depth/role
+# as first-class at-depth data, the other 15 verbatim in `extra`.
 P005_DROPPED = {
     "automationId", "characterFilter", "decorators", "delayUntilRecursion",
     "depth", "displayIndex", "excludeRecursion", "groupOverride",
     "id", "ignoreBudget", "outletName", "preventRecursion",
-    "probability", "role", "scanDepth", "selective",
-    "triggers", "useGroupScoring", "useProbability",
+    "role", "scanDepth", "selective",
+    "triggers", "useGroupScoring",
 }
 
 
@@ -62,7 +62,10 @@ def test_p005_dropped_fields_are_preserved_as_data() -> None:
     assert set(gale.extra) == P005_DROPPED - {"depth", "role"}
     assert gale.inclusion_group == "weather" and gale.group_weight == 75  # P-034 first-class
     assert "group" not in gale.extra and "groupWeight" not in gale.extra
-    assert gale.extra["probability"] == 80
+    assert gale.probability == 80 and gale.use_probability is True  # P-036 first-class
+    assert "probability" not in gale.extra and "useProbability" not in gale.extra
+    harbour = book.entries[1]
+    assert harbour.probability == 100 and harbour.use_probability is False
     assert gale.selective_logic == "not_all"
     assert gale.extra["characterFilter"]["names"][0].startswith("Sigríðr")
     assert gale.extra["scanDepth"] is None  # explicit null preserved, not dropped
