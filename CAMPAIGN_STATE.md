@@ -3403,3 +3403,24 @@ Last updated: 2026-10-31 ~14:15 EDT tick (P-017 banking deferred, no full run at
     reserved 0025 banking first, so no renumber was needed;
     head is now 0026. Next in roadmap order: P-035
     (team-02, entry states).
+  - BANKED P-035 (keeper tick 2026-11-06 ~15:25 EST): entry
+    states - constant, selective, vectorised, the three
+    activation kinds, one engine - team-02 commit 52a13b5
+    merged (no-ff) into yrsa/two-mirrors-build as df0832c
+    and pushed; ls-remote verified
+    df0832c97df00edc4a77ba869969514f54740643.
+    Evidence (team-02 worktree hidden_files/P035_EVIDENCE.md
+    and logs): battery 59/59, neighbours 562, full suite
+    1665 passed / 4 skipped / 0 failed on its base. Forge
+    confirmation suite at the merged tree: 1665 passed /
+    4 skipped / 0 failed (= 1606 + 59, exact); s503 did not
+    fire. Migration 0027 (lore_entries.vectorised) STANDS
+    as numbered - head is now 0027. Kind is derived, never
+    stored (constant > vectorised > selective). Two defects
+    fixed in-slice (derived activation_kind key leaking
+    into world-info exports; duplicate vectorised column
+    block). Carried: vectorised entries dormant in live
+    paths until P-041 wires the embedding matcher;
+    world-info selective bool rides verbatim in extra.
+    Next in roadmap order: P-036 (team-03, probability &
+    RNG honesty; built, held for this banking).
