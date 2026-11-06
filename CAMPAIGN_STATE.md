@@ -3167,3 +3167,25 @@ Last updated: 2026-10-31 ~14:15 EDT tick (P-017 banking deferred, no full run at
     (no image library in core deps), no per-character aggregate
     size cap, update_character does not re-ingest assets.
     Next in roadmap order: P-024 (team-06, built, held).
+  - BANKED P-024 (keeper tick 2026-11-06 ~09:05 EST): tags,
+    favourites, and library organisation — team-06 commit
+    ca0dce0 merged (no-ff) into yrsa/two-mirrors-build as
+    1ae96e4 and pushed; ls-remote verified
+    1ae96e434cd9e6355cc48badb464aa132c627a12. Evidence
+    (team-06 worktree hidden_files/ logs): battery 26/26
+    (incl. the 300-card scale test), neighbours 84, full
+    suite 1007 passed / 4 skipped / 0 failed. Forge
+    confirmation suite at the merged tree: 1050 passed / 4
+    skipped / 0 failed (= 1024 + 26, exact); combined
+    P-023+P-024 batteries 69/69. BANKING RENUMBER: both
+    Wave 1 teams numbered their migration 0020 from the
+    same base; P-023 banked first so its 0020 stands, and
+    the P-024 migration was renumbered 0020 to 0021 inside
+    this merge (file, registry, head pins in 9 test files,
+    slice doc and clean-room log noted). Conflicts resolved:
+    migrations registry (both kept, 0020 then 0021), models
+    (both class sets kept), clean-room log (both entries
+    kept), head-pin tests (single 0021 assertions).
+    Carried limitations in the slice doc: cards only (no
+    lorebook tagging), no UI or collections/folders.
+    Next in roadmap order: P-025 (team-07).
