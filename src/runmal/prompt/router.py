@@ -19,6 +19,8 @@ router = APIRouter(tags=["debug"])
 
 class InspectRequest(BaseModel):
     character_id: str | None = None
+    chat_id: str | None = None
+    persona_character_id: str | None = None
     lorebook_ids: list[str] = Field(default_factory=list)
     messages: list[str] = Field(default_factory=list)
     context_limit: int = Field(default=4096, ge=64)
@@ -35,6 +37,8 @@ async def prompt_inspect(
         session,
         owner_id,
         character_id=body.character_id,
+        chat_id=body.chat_id,
+        persona_character_id=body.persona_character_id,
         lorebook_ids=body.lorebook_ids,
         messages=body.messages,
         context_limit=body.context_limit,

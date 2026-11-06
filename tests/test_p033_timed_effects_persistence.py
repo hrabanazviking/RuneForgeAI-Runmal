@@ -296,18 +296,18 @@ def test_migration_head_is_0025():
     # 0025 stands as numbered; head moved to 0028 when P-036
     # landed after this slice (0027 reserved for P-035), then
     # to 0029 when P-037 landed, then to 0030 when P-038 landed.
-    assert MIGRATIONS[-7][0] == "0025"
-    assert MIGRATIONS[-1][0] == "0031"
+    assert MIGRATIONS[-8][0] == "0025"
+    assert MIGRATIONS[-1][0] == "0032"
 
 
 def test_migration_0025_reaches_head_and_idempotent(tmp_path):
     db_path = tmp_path / "m.db"
     applied = migrate_to_head(db_path)
-    assert applied[-6:] == ["0026", "0027", "0028", "0029", "0030", "0031"]
-    assert current_revision(db_path) == "0031"
+    assert applied[-7:] == ["0026", "0027", "0028", "0029", "0030", "0031", "0032"]
+    assert current_revision(db_path) == "0032"
     # Forward-only runner: a second pass applies nothing new.
     assert migrate_to_head(db_path) == []
-    assert current_revision(db_path) == "0031"
+    assert current_revision(db_path) == "0032"
 
 
 def test_migration_0025_table_shape(tmp_path):
