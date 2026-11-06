@@ -121,7 +121,7 @@
     },
     {
       "bytes": 789,
-      "expectation": "no chat importer exists yet (P-020 is its home); corpus test pins JSONL well-formedness: metadata header line, swipe arrays present as data",
+      "expectation": "imports via parse_chat_jsonl (P-020 is its home); corpus test pins the pinned header/message values and a field-clean round trip via export_chat_jsonl, with the live-projection losses named by loss_report",
       "file": "chat_st.jsonl",
       "kind": "chat",
       "sha256": "158895f6d195789bd8215953dc176d2ff634eaf5a764854b775ad2e71108425b",
