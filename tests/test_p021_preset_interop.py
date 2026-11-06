@@ -666,7 +666,7 @@ def test_s208_ollama_filter_on_imported_bag() -> None:
 
 
 def test_head_revision_is_0023() -> None:
-    assert MIGRATIONS[-1][0] == "0026"
+    assert MIGRATIONS[-1][0] == "0027"
 
 
 def test_0016_fixture_migrates_to_head_with_interop_defaults(

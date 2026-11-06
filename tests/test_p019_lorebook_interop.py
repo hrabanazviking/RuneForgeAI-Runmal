@@ -27,16 +27,17 @@ def read_json(name: str) -> dict:
     return json.loads((CORPUS / name).read_text(encoding="utf-8"))
 
 
-# The 20 fields P-005 pinned as dropped by the DB-path importer
+# The 19 fields P-005 pinned as dropped by the DB-path importer
 # (group/groupWeight were promoted to first-class fields by
-# P-034). P-019 preserves all of them at file level: depth/role
-# as first-class at-depth data, the other 18 verbatim in `extra`.
+# P-034, vectorized by P-035). P-019 preserves all of them at
+# file level: depth/role as first-class at-depth data, the
+# other 17 verbatim in `extra`.
 P005_DROPPED = {
     "automationId", "characterFilter", "decorators", "delayUntilRecursion",
     "depth", "displayIndex", "excludeRecursion", "groupOverride",
     "id", "ignoreBudget", "outletName", "preventRecursion",
     "probability", "role", "scanDepth", "selective",
-    "triggers", "useGroupScoring", "useProbability", "vectorized",
+    "triggers", "useGroupScoring", "useProbability",
 }
 
 

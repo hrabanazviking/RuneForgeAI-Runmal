@@ -40,6 +40,7 @@ class EntryCreate(BaseModel):
     position: str = "before_char"
     enabled: bool = True
     constant: bool = False
+    vectorised: bool = False
     case_sensitive: bool = False
     whole_word: bool = True
     sticky_prompts: int = Field(default=0, ge=0)
@@ -59,6 +60,7 @@ class EntryUpdate(BaseModel):
     position: str | None = None
     enabled: bool | None = None
     constant: bool | None = None
+    vectorised: bool | None = None
     case_sensitive: bool | None = None
     whole_word: bool | None = None
     sticky_prompts: int | None = Field(default=None, ge=0)
@@ -71,6 +73,7 @@ class PreviewRequest(BaseModel):
     scan_depth: int | None = Field(default=None, ge=1)
     token_budget: int | None = Field(default=None, ge=1)
     seed: int | None = None
+    vector_hit_ids: list[str] = Field(default_factory=list)
 
 
 def _service_error(exc: ValueError) -> HTTPException:
@@ -171,7 +174,8 @@ async def preview_lorebook(
     token_budget = body.token_budget if body.token_budget is not None else book.token_budget
     try:
         result = preview_activation(
-            entries, body.messages, scan_depth, token_budget, seed=body.seed
+            entries, body.messages, scan_depth, token_budget, seed=body.seed,
+            vector_hit_ids=set(body.vector_hit_ids) if body.vector_hit_ids else None,
         )
     except ValueError as exc:
         raise _service_error(exc) from exc
@@ -252,6 +256,7 @@ async def create_entry(
             position=body.position,
             enabled=body.enabled,
             constant=body.constant,
+            vectorised=body.vectorised,
             case_sensitive=body.case_sensitive,
             whole_word=body.whole_word,
             sticky_prompts=body.sticky_prompts,

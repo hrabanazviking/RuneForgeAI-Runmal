@@ -629,9 +629,11 @@ def test_api_preview_reports_group_exclusion(tmp_path, monkeypatch):
 def test_migration_head_is_0026_provisional():
     # 0025 was reserved for P-033 and P-033 took it, banking first;
     # 0026 stands as numbered (no renumber needed at banking).
-    assert MIGRATIONS[-1][0] == "0026"
-    assert MIGRATIONS[-2][0] == "0025"
-    assert MIGRATIONS[-3][0] == "0024"
+    # Head has since moved to P-035's provisional 0027.
+    assert MIGRATIONS[-1][0] == "0027"
+    assert MIGRATIONS[-2][0] == "0026"
+    assert MIGRATIONS[-3][0] == "0025"
+    assert MIGRATIONS[-4][0] == "0024"
 
 
 def test_migration_0026_columns_exist_and_default(tmp_path):
@@ -685,7 +687,7 @@ def test_old_database_upgrades_in_place_preserving_entries(tmp_path):
     finally:
         conn.close()
     applied = migrate_to_head(db_path)
-    assert applied == ["0025", "0026"]
+    assert applied == ["0025", "0026", "0027"]
     conn = sqlite3.connect(db_path)
     try:
         row = conn.execute(

@@ -294,19 +294,20 @@ def test_is_default_state_truth_table(state, expected):
 
 def test_migration_head_is_0025():
     # 0025 stands as numbered; head moved to 0026 when P-034
-    # banked after this slice (keeper merge heal, P-021 precedent).
-    assert MIGRATIONS[-2][0] == "0025"
-    assert MIGRATIONS[-1][0] == "0026"
+    # banked after this slice, then to 0027 with P-035 (keeper
+    # merge heal, P-021 precedent).
+    assert MIGRATIONS[-3][0] == "0025"
+    assert MIGRATIONS[-1][0] == "0027"
 
 
 def test_migration_0025_reaches_head_and_idempotent(tmp_path):
     db_path = tmp_path / "m.db"
     applied = migrate_to_head(db_path)
-    assert applied[-2:] == ["0025", "0026"]
-    assert current_revision(db_path) == "0026"
+    assert applied[-3:] == ["0025", "0026", "0027"]
+    assert current_revision(db_path) == "0027"
     # Forward-only runner: a second pass applies nothing new.
     assert migrate_to_head(db_path) == []
-    assert current_revision(db_path) == "0026"
+    assert current_revision(db_path) == "0027"
 
 
 def test_migration_0025_table_shape(tmp_path):

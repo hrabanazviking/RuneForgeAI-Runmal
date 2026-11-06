@@ -77,6 +77,11 @@ from runmal.lorebooks.groups import (
     normalise_inclusion_group,
     resolve_inclusion_groups,
 )
+from runmal.lorebooks.states import (
+    KIND_VECTORISED,
+    activation_kind_for,
+    normalise_vectorised,
+)
 
 MAX_RECURSION_DEPTH = 5
 
@@ -100,6 +105,7 @@ class ActivatableEntry:
     content: str = ""
     enabled: bool = True
     constant: bool = False
+    vectorised: bool = False
     sticky_prompts: int = 0
     cooldown_prompts: int = 0
     delay_prompts: int = 0
@@ -119,6 +125,11 @@ class ActivatableEntry:
         if isinstance(self.priority, bool) or not isinstance(self.priority, int):
             raise ValueError("priority must be an integer")
 
+    @property
+    def activation_kind(self) -> str:
+        """The entry's single derived activation kind (P-035)."""
+        return activation_kind_for(self.constant, self.vectorised)
+
     @classmethod
     def from_orm(cls, entry) -> "ActivatableEntry":
         return cls(
@@ -127,6 +138,7 @@ class ActivatableEntry:
             content=str(entry.content or ""),
             enabled=bool(entry.enabled),
             constant=bool(entry.constant),
+            vectorised=normalise_vectorised(getattr(entry, "vectorised", None)),
             sticky_prompts=int(entry.sticky_prompts or 0),
             cooldown_prompts=int(entry.cooldown_prompts or 0),
             delay_prompts=int(entry.delay_prompts or 0),
@@ -156,7 +168,7 @@ class EntryState:
 class ResolvedActivation:
     entry_id: str
     content: str  # with {{lore:...}} references expanded
-    via: str  # "constant" | "key" | "sticky" | "delay" | "reference" | "recursive"
+    via: str  # "constant" | "key" | "sticky" | "delay" | "reference" | "recursive" | "vector"
     depth: int  # recursion depth; 0 = directly activated
 
 
@@ -181,6 +193,7 @@ def _arm_post(state: EntryState, entry: ActivatableEntry) -> None:
 def _tick_entry(
     entry: ActivatableEntry,
     key_hit: bool,
+    vector_hit: bool,
     states: dict[str, EntryState],
 ) -> str | None:
     """Process one entry for one tick. Returns the via-tag or None."""
@@ -201,13 +214,18 @@ def _tick_entry(
             _arm_post(state, entry)
             return "delay"
         return None
-    if key_hit:
+    # Trigger dispatch on the derived kind (P-035): a vectorised
+    # entry fires only from a vector hit, a selective entry only
+    # from a key hit -- the two hit kinds never cross.
+    is_vectorised = entry.activation_kind == KIND_VECTORISED
+    triggered = vector_hit if is_vectorised else key_hit
+    if triggered:
         if entry.delay_prompts > 0:
             state.delay_armed = True
             state.delay_remaining = entry.delay_prompts
             return None
         _arm_post(state, entry)
-        return "key"
+        return "vector" if is_vectorised else "key"
     if state.sticky_remaining > 0:
         state.sticky_remaining -= 1
         return "sticky"
@@ -254,6 +272,7 @@ def activate(
     *,
     recursive_hit_ids: set[str] | None = None,
     hit_depths: dict[str, int] | None = None,
+    vector_hit_ids: set[str] | None = None,
 ) -> ActivationResult:
     """Run one activation tick.
 
@@ -267,6 +286,19 @@ def activate(
     ``hit_depths`` is consulted only for entries actually relabelled
     "recursive", so other firings always report depth 0.
     Absent/None = pre-P-031 behaviour, unchanged.
+
+    ``vector_hit_ids``: entry ids hit by vector matching this tick
+    (P-035; the embedding matcher itself is P-041).
+    Absent/None = no vector hits.
+
+    Entry states (P-035): one engine dispatches on the derived
+    kind (``activation_kind``: constant / selective / vectorised);
+    timing knobs apply identically to key and vector triggers (a
+    vector hit during cooldown is suppressed, a vector hit on a
+    delay entry arms the delay and later fires via="delay" --
+    trigger provenance is not carried across ticks, the recursive
+    precedent); inclusion groups apply to vector activations like
+    every via kind.
 
     Inclusion groups (P-034) need no extra arguments: they ride on
     the entries themselves (``inclusion_group`` / ``group_weight`` /
@@ -284,7 +316,12 @@ def activate(
 
     direct: list[tuple[ActivatableEntry, str]] = []
     for entry in entries:
-        via = _tick_entry(entry, entry.id in hit_ids, states)
+        via = _tick_entry(
+            entry,
+            entry.id in hit_ids,
+            entry.id in (vector_hit_ids or set()),
+            states,
+        )
         if (
             via == "key"
             and recursive_hit_ids is not None

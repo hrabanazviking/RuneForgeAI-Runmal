@@ -250,6 +250,7 @@ async def run_activation_tick(
     *,
     recursive_hit_ids: set[str] | None = None,
     hit_depths: dict[str, int] | None = None,
+    vector_hit_ids: set[str] | None = None,
 ) -> ActivationResult | None:
     """Run one activation tick for a real chat, persisting the counters.
 
@@ -259,7 +260,9 @@ async def run_activation_tick(
     strictly after ``activate()`` returns, in a single commit. If
     ``activate()`` raises, nothing is saved: a tick is atomic. Hit
     computation stays outside; ``hit_ids`` (plus the P-031 recursive
-    passthroughs) are given. Returns ``None`` -- persisting nothing --
+    passthroughs) are given.
+    ``vector_hit_ids`` (P-035) passes through to ``activate()``.
+    Returns ``None`` -- persisting nothing --
     when the chat or the book is missing or not owned.
     """
     if await get_chat(session, user_id, chat_id) is None:
@@ -278,6 +281,7 @@ async def run_activation_tick(
         states,
         recursive_hit_ids=recursive_hit_ids,
         hit_depths=hit_depths,
+        vector_hit_ids=vector_hit_ids,
     )
     await save_entry_states(session, user_id, chat_id, result.states, entry_ids=entry_ids)
     return result

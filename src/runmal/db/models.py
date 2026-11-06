@@ -146,6 +146,8 @@ class LoreEntry(Base):
     position: Mapped[str] = mapped_column(String(40), nullable=False, default="before_char")
     enabled: Mapped[bool] = mapped_column(nullable=False, default=True)
     constant: Mapped[bool] = mapped_column(nullable=False, default=False)
+    # Entry states (P-035): vectorised kind flag; the kind itself is derived (runmal.lorebooks.states), never stored.
+    vectorised: Mapped[bool] = mapped_column(nullable=False, default=False)
     case_sensitive: Mapped[bool] = mapped_column(nullable=False, default=False)
     whole_word: Mapped[bool] = mapped_column(nullable=False, default=True)
     sticky_prompts: Mapped[int] = mapped_column(nullable=False, default=0)

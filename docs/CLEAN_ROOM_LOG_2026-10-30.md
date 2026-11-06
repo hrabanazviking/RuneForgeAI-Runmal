@@ -462,3 +462,23 @@ source in §0(2) and appends its entry here:
   No SillyTavern or Voxta source code was read and no file
   was downloaded; the slice's test entries are authored fresh
   in the test module (P-005 discipline).
+- **P-035 (2026-11-06, own tree only):** no new external
+  source and no mirror reading. Entry states (the three
+  activation kinds -- constant, selective, vectorised --
+  served by one activation engine) are built entirely from
+  Runmal's own roadmap line and its own S202/S203/S204
+  lorebook pipeline, over the public entry-strategy behaviour
+  already recorded in P-002's census (ST-17: constant =
+  always inserted, keyword-triggered, or vectorised =
+  inserted by embedding similarity subject to all other
+  checks) and the public world-info field name
+  ('vectorized') exactly as P-005's authored corpus fixture
+  already carries it (the Harbour Law entry: constant and
+  vectorized both true; the Gale-Bell entry: vectorized
+  false). The kind derivation and precedence (constant >
+  vectorised > selective), the via='vector' dispatch, and
+  the caller-supplied vector-hit seam (the embedding matcher
+  itself is P-041's road) are Runmal's own design for the
+  roadmap line. No SillyTavern or Voxta source code was read
+  and no file was downloaded; the slice's test entries are
+  authored fresh in the test module (P-005 discipline).

@@ -30,12 +30,19 @@ is unchanged. The scan's token budget bounds recursive expansion;
 final inclusion is still decided by the budget/priority pass, so a
 directly-hit entry over budget shows as discarded, never as
 silently untriggered.
+
+Entry states (P-035): vector-fired rows honestly report
+``matched_primary`` / ``matched_secondary`` empty (no keyword
+matched) with ``via="vector"``; the caller supplies
+``vector_hit_ids`` (the embedding matcher is P-041). Every row
+also reports ``vectorised`` and the derived ``activation_kind``.
 """
 
 from __future__ import annotations
 
 from runmal.lorebooks.activation import ActivatableEntry, activate
 from runmal.lorebooks.groups import normalise_group_weight, normalise_inclusion_group
+from runmal.lorebooks.states import activation_kind_for, normalise_vectorised
 from runmal.lorebooks.budget import BudgetCandidate, resolve_budget
 from runmal.lorebooks.scan import (
     MAX_RECURSIVE_SCAN_DEPTH,
@@ -54,6 +61,7 @@ def preview_activation(
     *,
     recursive_scan: bool = False,
     max_recursion_depth: int = MAX_RECURSIVE_SCAN_DEPTH,
+    vector_hit_ids: set[str] | None = None,
 ) -> dict:
     """Preview one activation tick for ``entries`` (ORM rows, service order).
 
@@ -64,6 +72,12 @@ def preview_activation(
     with ``discard_reason``), ``not_triggered`` (enabled but not activated
     this tick), ``group_excluded`` (activated but lost its
     inclusion group, P-034), or ``disabled``.
+
+    ``vector_hit_ids`` (P-035): ids of vectorised entries hit by
+    vector matching, supplied by the caller (the embedding matcher
+    is P-041). Vector-fired rows honestly report
+    ``matched_primary`` / ``matched_secondary`` empty (no keyword
+    matched), with ``via="vector"``.
     """
     if scan_depth < 1:
         raise ValueError("scan_depth must be >= 1")
@@ -90,11 +104,14 @@ def preview_activation(
             set(hit_by_id),
             recursive_hit_ids={h.entry_id for h in hits if h.depth > 0},
             hit_depths={h.entry_id: h.depth for h in hits if h.depth > 0},
+            vector_hit_ids=vector_hit_ids,
         )
     else:
         hits = scan_entries(scan_view, list(messages), scan_depth)
         hit_by_id = {h.entry_id: h for h in hits}
-        result = activate(act_view, set(hit_by_id))
+        result = activate(
+            act_view, set(hit_by_id), vector_hit_ids=vector_hit_ids
+        )
     act_by_id = {a.entry_id: a for a in result.activations}
     group_loser_by_id = {row.entry_id: row for row in result.group_losers}
     group_suppressed_by_id = {a.entry_id: a for a in result.group_suppressed}
@@ -114,11 +131,14 @@ def preview_activation(
     rows: list[dict] = []
     for entry in entries:
         entry_id = str(entry.id)
+        vectorised = normalise_vectorised(getattr(entry, "vectorised", None))
         row: dict = {
             "entry_id": entry_id,
             "name": str(entry.name or ""),
             "enabled": bool(entry.enabled),
             "constant": bool(entry.constant),
+            "vectorised": vectorised,
+            "activation_kind": activation_kind_for(bool(entry.constant), vectorised),
             "matched_primary": [],
             "matched_secondary": [],
             "via": None,

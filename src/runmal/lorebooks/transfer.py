@@ -16,7 +16,10 @@ Export is Rúnmál's native shape. Import accepts two shapes:
    selectiveLogic->selective_logic (P-032, codes per
    runmal.lorebooks.logic), group->inclusion_group and
    groupWeight->group_weight (P-034, tolerant coercions per
-   runmal.lorebooks.groups; the group string is ONE label).
+   runmal.lorebooks.groups; the group string is ONE label),
+   vectorized->vectorised (P-035; the native spelling is
+   vectorised, and legacy native files may spell it
+   "vectorized" - accepted as alias on the native leg).
    Numeric fields coerce tolerantly: explicit nulls and numeric
    strings in real files mean the default / the number, never a
    crash (P-005). Fields with no Rúnmál home yet (probability,
@@ -58,6 +61,7 @@ def export_book(book: dict, entries: list[dict]) -> dict:
                 "position": e["position"],
                 "enabled": e["enabled"],
                 "constant": e["constant"],
+                "vectorised": bool(e.get("vectorised", False)),
                 "case_sensitive": e["case_sensitive"],
                 "whole_word": e["whole_word"],
                 "sticky_prompts": e["sticky_prompts"],
@@ -104,6 +108,7 @@ def _native_entry(raw: dict) -> dict:
         "position": str(raw.get("position", "before_char")),
         "enabled": bool(raw.get("enabled", True)),
         "constant": bool(raw.get("constant", False)),
+        "vectorised": bool(raw.get("vectorised", raw.get("vectorized", False))),
         "case_sensitive": bool(raw.get("case_sensitive", False)),
         "whole_word": bool(raw.get("whole_word", True)),
         "sticky_prompts": _as_int(raw.get("sticky_prompts"), 0),
@@ -135,6 +140,7 @@ def _worldinfo_entry(raw: dict) -> dict:
         "position": position,
         "enabled": not bool(raw.get("disable", False)),
         "constant": bool(raw.get("constant", False)),
+        "vectorised": bool(raw.get("vectorized", False)),
         "case_sensitive": bool(raw.get("caseSensitive", False)),
         # P-005: honour the source's whole-word flag instead of
         # silently forcing it on; absent means the mirror default.
@@ -246,6 +252,7 @@ def validate_parsed_book(book_fields: dict, entry_fields: list[dict]) -> list[di
                 ),
                 "enabled": bool(fields.get("enabled", True)),
                 "constant": bool(fields.get("constant", False)),
+                "vectorised": bool(fields.get("vectorised", False)),
                 "case_sensitive": bool(fields.get("case_sensitive", False)),
                 "whole_word": bool(fields.get("whole_word", True)),
                 "sticky_prompts": service._check_prompts(
