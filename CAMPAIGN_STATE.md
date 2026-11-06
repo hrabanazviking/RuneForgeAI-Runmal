@@ -3449,3 +3449,21 @@ Last updated: 2026-10-31 ~14:15 EDT tick (P-017 banking deferred, no full run at
     carries the effective percent; the flag survives at
     the file layer only. Next in roadmap order: P-037
     (team-01, scan depth & context windows).
+  - BANKED P-037 (keeper tick 2026-11-06 ~16:40 EST): scan depth
+    & context windows - per-book scan settings (messages-deep,
+    whole-chat, external context) as data - team-01 commit
+    851adf4 merged (no-ff) into yrsa/two-mirrors-build as
+    fb87008 and pushed; ls-remote verified
+    fb87008b31c4e984120720e1c8e5b44f03b54549.
+    Evidence (team-01 worktree hidden_files/P037_EVIDENCE.md
+    and logs): battery 47/47, neighbours 832, full suite
+    1742 passed / 4 skipped / 0 failed on its base. Forge
+    confirmation suite at the merged tree: 1742 passed /
+    4 skipped / 0 failed (= 1695 + 47, exact); s503 did not
+    fire. Migration 0029 (lorebook scan windows) STANDS as
+    numbered; head is now 0029. Carried: per-entry scanDepth
+    stays preserved-as-data (dropped set unchanged at 17);
+    a future slice may claim the per-entry override. Next
+    in roadmap order: P-038 (team-02, position & depth
+    control - gate finding F1's road; relaunched this tick
+    from the cancelled lead's intact uncommitted work).
