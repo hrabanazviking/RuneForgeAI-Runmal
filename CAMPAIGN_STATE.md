@@ -3230,3 +3230,24 @@ Last updated: 2026-10-31 ~14:15 EDT tick (P-017 banking deferred, no full run at
     unmappable machinery round-trips Voxta to Voxta only;
     bootstrap string-block exports in list form.
     Next in roadmap order: P-027 (team-09, built, held).
+  - BANKED P-027 (keeper tick 2026-11-06 ~10:24 EST): content
+    safety rails — team-09 commit 55fccc7 merged (no-ff) into
+    yrsa/two-mirrors-build as c377311 and pushed; ls-remote
+    verified below with the record push. Evidence (team-09
+    worktree hidden_files/P027_EVIDENCE.md): battery 36/36,
+    neighbours 327, JS renderer tests ALL PASS, full suite
+    1086 passed / 4 skipped / 0 failed on its base. Forge
+    confirmation suite at the merged tree: 1164 passed / 4
+    skipped / 0 failed (= 1128 + 36, exact). Imported content
+    is data, never code: a new safety package bounds PNG zTXt
+    decompression, JSON depth and duplicate keys, CHARX and
+    archive members, and upload body sizes across the card,
+    lorebook, preset, persona, chat, and portable importers.
+    No migration (head stays 0022). Carried limitations in
+    the slice doc: duplicate-key refusal is guaranteed on
+    file parsers (dict-body routes get depth validation
+    only); fields whose purpose is prompt text remain prompt
+    text (rails police privilege, not wording).
+    WAVE 1 COMPLETE: P-019 through P-027 all banked in
+    roadmap order. Next in roadmap order: P-028 (Part II
+    continues), then P-029, then P-030 (Part II gate).
