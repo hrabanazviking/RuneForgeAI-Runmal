@@ -3137,3 +3137,19 @@ Last updated: 2026-10-31 ~14:15 EDT tick (P-017 banking deferred, no full run at
     defect: S208 compat drops min_p/context_length on the
     Ollama path (pinned by the battery + S306 manifest test).
     Next in roadmap order: P-022 (team-04, in flight).
+  - BANKED P-022 (keeper tick 2026-11-06 ~08:05 EST): bulk
+    library import — team-04 commit 9385ee1 merged (no-ff,
+    clean) into yrsa/two-mirrors-build as efc6b8f and pushed.
+    Evidence (team-04 worktree hidden_files/ logs): battery
+    25/25, neighbours 105, full suite 862 passed / 4 skipped /
+    0 failed. Forge confirmation suite at the merged tree:
+    981 passed / 4 skipped / 0 failed. The slice's review fixed
+    real defects in-slice (chat .jsonl honestly refused as
+    unsupported_kind, HTTP dry_run typo fail-closed at 400,
+    report totals recomputed from entries, oversize refused
+    from stat before reading, content-first parse-name seam).
+    Carried limitations recorded in the slice doc (duplicate
+    hashing on normalised stored form — byte provenance is
+    P-029; card asset bytes noted but not persisted — P-023).
+    Wave 1 remaining: P-023..P-027 (teams 05-09, muster next
+    ticks). Next in roadmap order: P-023 (team-05).
