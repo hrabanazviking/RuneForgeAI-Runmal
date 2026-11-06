@@ -21,6 +21,7 @@ from runmal.lorebooks.groups import (
     normalise_inclusion_group,
 )
 from runmal.lorebooks.logic import check_selective_logic, normalise_selective_logic
+from runmal.lorebooks.states import activation_kind_for
 
 VALID_POSITIONS = frozenset({"before_char", "after_char"})
 
@@ -86,6 +87,10 @@ def entry_to_dict(entry: LoreEntry) -> dict:
         "position": entry.position,
         "enabled": bool(entry.enabled),
         "constant": bool(entry.constant),
+        "vectorised": bool(getattr(entry, "vectorised", False)),
+        "activation_kind": activation_kind_for(
+            bool(entry.constant), bool(getattr(entry, "vectorised", False))
+        ),
         "case_sensitive": bool(entry.case_sensitive),
         "whole_word": bool(entry.whole_word),
         "sticky_prompts": int(entry.sticky_prompts),
@@ -209,6 +214,7 @@ async def create_entry(
     position: str = "before_char",
     enabled: bool = True,
     constant: bool = False,
+    vectorised: bool = False,
     case_sensitive: bool = False,
     whole_word: bool = True,
     sticky_prompts: int = 0,
@@ -231,6 +237,7 @@ async def create_entry(
         position=_check_position(position),
         enabled=enabled,
         constant=constant,
+        vectorised=bool(vectorised),
         case_sensitive=case_sensitive,
         whole_word=whole_word,
         sticky_prompts=_check_prompts("sticky_prompts", sticky_prompts),
@@ -287,7 +294,7 @@ async def update_entry(
         entry.priority = int(fields["priority"])
     if "position" in fields:
         entry.position = _check_position(fields["position"])
-    for flag in ("enabled", "constant", "case_sensitive", "whole_word"):
+    for flag in ("enabled", "constant", "vectorised", "case_sensitive", "whole_word"):
         if flag in fields:
             setattr(entry, flag, bool(fields[flag]))
     for knob in ("sticky_prompts", "cooldown_prompts", "delay_prompts"):

@@ -90,6 +90,7 @@ WORLDINFO_MAPPED_FIELDS = frozenset(
         "group",
         "groupWeight",
         "constant",
+        "vectorized",
         "disable",
         "order",
         "position",
@@ -117,6 +118,8 @@ NATIVE_MAPPED_FIELDS = frozenset(
         "position",
         "enabled",
         "constant",
+        "vectorised",
+        "vectorized",
         "case_sensitive",
         "whole_word",
         "sticky_prompts",
@@ -179,6 +182,7 @@ class WorldInfoEntry:
     position_code: int | None = None
     enabled: bool = True
     constant: bool = False
+    vectorised: bool = False
     case_sensitive: bool = False
     whole_word: bool = True
     sticky_prompts: int = 0
@@ -205,6 +209,7 @@ class WorldInfoEntry:
             "position": self.position,
             "enabled": self.enabled,
             "constant": self.constant,
+            "vectorised": self.vectorised,
             "case_sensitive": self.case_sensitive,
             "whole_word": self.whole_word,
             "sticky_prompts": self.sticky_prompts,
@@ -256,6 +261,7 @@ def _entry_from_worldinfo(raw: dict, uid: str | None) -> WorldInfoEntry:
         position_code=code,
         enabled=not bool(raw.get("disable", False)),
         constant=bool(raw.get("constant", False)),
+        vectorised=bool(raw.get("vectorized", False)),
         case_sensitive=bool(raw.get("caseSensitive", False)),
         whole_word=True if whole_word is None else bool(whole_word),
         sticky_prompts=_as_int(raw.get("sticky"), 0),
@@ -290,6 +296,7 @@ def _entry_from_native(raw: dict) -> WorldInfoEntry:
         position_code=CODE_FROM_POSITION.get(position),
         enabled=bool(raw.get("enabled", True)),
         constant=bool(raw.get("constant", False)),
+        vectorised=bool(raw.get("vectorised", raw.get("vectorized", False))),
         case_sensitive=bool(raw.get("case_sensitive", False)),
         whole_word=bool(raw.get("whole_word", True)),
         sticky_prompts=_as_int(raw.get("sticky_prompts"), 0),
@@ -437,6 +444,11 @@ def _export_worldinfo_entry(entry: WorldInfoEntry) -> dict:
         obj["group"] = entry.inclusion_group
     if "groupWeight" in obj or entry.group_weight != DEFAULT_GROUP_WEIGHT:
         obj["groupWeight"] = entry.group_weight
+    # Entry states (P-035): same no-fabrication rule -- write the
+    # world-info spelling only when the source carried it or the
+    # entry carries the vectorised flag.
+    if "vectorized" in obj or entry.vectorised:
+        obj["vectorized"] = entry.vectorised
     # Part III fields and unknowns ride back verbatim.
     for key, value in entry.extra.items():
         obj[key] = copy.deepcopy(value)
@@ -487,7 +499,7 @@ def worldinfo_from_native(book: dict, entries: list[dict]) -> dict:
     """
     # API dicts carry DB bookkeeping (ids, timestamps) that is not
     # file content; it must not leak into the exported file.
-    bookkeeping = {"id", "lorebook_id", "created_at", "updated_at"}
+    bookkeeping = {"id", "lorebook_id", "created_at", "updated_at", "activation_kind"}
     file = LorebookFile(
         name=_as_str(book.get("name")) or "Imported lorebook",
         description=_as_str(book.get("description")),

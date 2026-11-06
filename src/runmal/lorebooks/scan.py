@@ -9,6 +9,9 @@ Semantics (normative for the lorebook pipeline):
 - ``constant`` entries are NOT handled here; they belong to S203
   (activation semantics). The scanner skips them so S203 can layer
   constant/selective/sticky/cooldown/delay/recursion on top of these hits.
+- ``vectorised`` entries (P-035) are NOT keyword-scanned either;
+  the scanner skips them too. Their hits arrive from vector
+  matching (the embedding matcher is P-041), never from keys.
 - An entry with no usable primary keys never triggers via scanning.
   A "usable" key is a non-empty, non-whitespace string.
 - Primary keys: the entry is a candidate when ANY primary key matches.
@@ -57,8 +60,9 @@ in the single parent content that triggers it (round 0 may satisfy
 them from different messages inside the scan window) -- that is what
 keeps ``triggered_by`` attribution to one parent honest.
 ``budget_exhausted`` reports that the budget stopped, or would stop,
-expansion. Disabled and constant entries are skipped in every round,
-exactly as in the plain scan.
+expansion. Disabled, constant and vectorised entries are skipped in
+every round, exactly as in the plain scan (recursive rounds inherit
+the skip because they call ``scan_entries``).
 """
 
 from __future__ import annotations
@@ -67,6 +71,7 @@ import re
 from dataclasses import dataclass
 
 from runmal.lorebooks.logic import normalise_selective_logic, secondary_gate
+from runmal.lorebooks.states import normalise_vectorised
 from runmal.tokens import estimate_tokens
 
 #: Hard cap on recursive-scan rounds (mirrors activation.MAX_RECURSION_DEPTH).
@@ -80,6 +85,7 @@ class ScanEntry:
     id: str
     enabled: bool = True
     constant: bool = False
+    vectorised: bool = False
     keys: tuple[str, ...] = ()
     secondary_keys: tuple[str, ...] = ()
     whole_word: bool = True
@@ -105,6 +111,7 @@ class ScanEntry:
             id=str(entry.id),
             enabled=bool(entry.enabled),
             constant=bool(entry.constant),
+            vectorised=normalise_vectorised(getattr(entry, "vectorised", False)),
             keys=_decode(entry.keys_json),
             secondary_keys=_decode(entry.secondary_keys_json),
             whole_word=bool(entry.whole_word),
@@ -168,7 +175,12 @@ def scan_entries(
     messages: list[str],
     scan_depth: int,
 ) -> list[ScanHit]:
-    """Scan the last ``scan_depth`` messages; return hits in entry order."""
+    """Scan the last ``scan_depth`` messages; return hits in entry order.
+
+    Constant and vectorised entries are skipped: vectorised entries
+    are not keyword-scanned (P-035); their hits arrive from vector
+    matching (P-041).
+    """
     if scan_depth < 1:
         raise ValueError("scan_depth must be >= 1")
     if not messages or not entries:
@@ -178,7 +190,7 @@ def scan_entries(
 
     hits: list[ScanHit] = []
     for entry in entries:
-        if not entry.enabled or entry.constant:
+        if not entry.enabled or entry.constant or entry.vectorised:
             continue
         primaries = _usable(entry.keys)
         if not primaries:

@@ -342,10 +342,11 @@ async def test_cards_store_provenance_carried_but_not_exported(tmp_path) -> None
 
 # --- 4. lorebooks, file leg (full clean, P-019's contract) -----------------
 
-# The 20 fields P-005 pinned as dropped by the DB-path importer
+# The 19 fields P-005 pinned as dropped by the DB-path importer
 # (group/groupWeight were promoted to first-class fields by
-# P-034). The file layer preserves all of them as data: depth/role
-# as first-class at-depth companions, the other 18 verbatim in extra.
+# P-034, vectorized by P-035). The file layer preserves all of
+# them as data: depth/role as first-class at-depth companions,
+# the other 17 verbatim in extra.
 WORLDINFO_DROPPED_TODAY = frozenset(
     {
         "automationId",
@@ -367,10 +368,9 @@ WORLDINFO_DROPPED_TODAY = frozenset(
         "triggers",
         "useGroupScoring",
         "useProbability",
-        "vectorized",
     }
 )
-assert len(WORLDINFO_DROPPED_TODAY) == 20  # group/groupWeight landed in P-034
+assert len(WORLDINFO_DROPPED_TODAY) == 19  # group/groupWeight landed in P-034, vectorized in P-035
 
 # Source fields the DB-path transfer layer maps (P-005's set).
 WORLDINFO_TRANSFER_MAPPED_SOURCE = frozenset(
@@ -383,6 +383,7 @@ WORLDINFO_TRANSFER_MAPPED_SOURCE = frozenset(
         "group",
         "groupWeight",
         "constant",
+        "vectorized",
         "disable",
         "order",
         "position",
@@ -405,6 +406,7 @@ MAPPED_ENTRY_KEYS = (
     "priority",
     "enabled",
     "constant",
+    "vectorised",
     "case_sensitive",
     "whole_word",
     "sticky_prompts",
@@ -564,7 +566,7 @@ async def test_lorebooks_store_leg_worldinfo_mapped_only_clean(tmp_path) -> None
         for entry in exported["entries"]:
             assert set(entry) == {
                 "name", "content", "keys", "secondary_keys", "selective_logic", "inclusion_group", "group_weight", "priority",
-                "position", "enabled", "constant", "case_sensitive",
+                "position", "enabled", "constant", "vectorised", "case_sensitive",
                 "whole_word", "sticky_prompts", "cooldown_prompts",
                 "delay_prompts",
             }, name
@@ -581,12 +583,12 @@ async def test_lorebooks_store_leg_worldinfo_mapped_only_clean(tmp_path) -> None
 
 def test_lorebooks_store_leg_dropped_set_is_pinned_exactly() -> None:
     # PINNED LOSS (a), field half: source keys minus the transfer-
-    # mapped set EQUALS the named 20-field frozenset. A future
+    # mapped set EQUALS the named 19-field frozenset. A future
     # slice that shrinks this loss must edit this pin deliberately.
     source = read_json("lorebook_worldinfo_full.json")
     dropped = set(source["entries"]["0"]) - WORLDINFO_TRANSFER_MAPPED_SOURCE
     assert dropped == WORLDINFO_DROPPED_TODAY
-    assert len(dropped) == 20
+    assert len(dropped) == 19
 
 
 async def test_lorebooks_store_leg_native_at_depth_pinned_limitation(

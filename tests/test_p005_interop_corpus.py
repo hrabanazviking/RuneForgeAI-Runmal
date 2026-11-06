@@ -147,7 +147,6 @@ WORLDINFO_DROPPED_TODAY = {
     "triggers",
     "useGroupScoring",
     "useProbability",
-    "vectorized",
 }
 WORLDINFO_MAPPED_SOURCE_FIELDS = {
     "comment",
@@ -158,6 +157,7 @@ WORLDINFO_MAPPED_SOURCE_FIELDS = {
     "group",
     "groupWeight",
     "constant",
+    "vectorized",
     "disable",
     "order",
     "position",
