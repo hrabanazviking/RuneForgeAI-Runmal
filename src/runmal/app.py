@@ -30,6 +30,7 @@ from runmal.memory.router import memories_browser_page
 from runmal.memory.router import router as memories_router
 from runmal.presets.router import router as presets_router
 from runmal.prompt.router import router as prompt_router
+from runmal.scenarios.router import router as scenarios_router
 from runmal.tools.router import router as tools_router
 from runmal.voice.router import router as voice_router
 from runmal.voice.router import voice_page
@@ -97,6 +98,11 @@ def create_app(
     )
     app.include_router(
         presets_router,
+        prefix="/api/v1",
+        dependencies=[Depends(require_local_auth)],
+    )
+    app.include_router(
+        scenarios_router,
         prefix="/api/v1",
         dependencies=[Depends(require_local_auth)],
     )
