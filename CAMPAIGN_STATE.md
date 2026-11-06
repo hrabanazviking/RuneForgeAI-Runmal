@@ -3544,3 +3544,34 @@ Last updated: 2026-10-31 ~14:15 EDT tick (P-017 banking deferred, no full run at
     inspect_prompt now wires scoped layers including the
     bound character book via the character layer. Next in
     roadmap order: P-041 (team-02, vectorised lore).
+  - P-041 BANKED 2026-11-06 ~18:25 EST: vectorised lore -
+    embedding-matched entries for large books on the
+    founding RAG stack, with keyword fallback - team-02
+    commit 80f91ff merged (no-ff, clean) into
+    yrsa/two-mirrors-build as 657cae0, merge-heal 061075f,
+    and pushed; ls-remote verified
+    061075f74179f4540b74c990891956ef4bbfd764.
+    Evidence (team-02 worktree hidden_files/P041_EVIDENCE.md
+    and logs): battery 42/42, neighbours 892, full suite
+    1983 passed / 4 skipped / 0 failed on its base. Forge
+    confirmation suite at the merged tree: 2020 passed /
+    4 skipped / 0 failed (= 1978 + 42, exact); s503 did
+    not fire. NO migration taken by P-041; head stays
+    0032 (P-040's). Merge heal: the battery's head pin
+    (0031, true on its base) was updated to the merged
+    truth 0032 - P-041 took no migration, the pin still
+    asserts the exact head, no assertion weakened.
+    P-035's carried debt is CLOSED: vectorised entries
+    are live in preview, the lorebook preview endpoint,
+    the prompt inspector and run_activation_tick, with
+    keyword fallback labelled as fallback, never as a
+    vector hit. Bug fixed in-slice: P-039's character-book
+    normaliser dropped vectorized (entries materialised
+    as selective); binding now carries it through.
+    Carried: the built-in local provider is
+    lexical-semantic, not neural (a configured S311
+    profile gets true semantics through the same
+    matcher); entry vectors recomputed per tick (stored
+    cache is P-046's); fallback is whole-tick by design;
+    Aesir embeddings remain unserved (P-009 D3). Next in
+    roadmap order: P-042 (team-03, lorebook editor depth).
