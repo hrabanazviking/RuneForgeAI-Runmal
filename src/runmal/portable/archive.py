@@ -65,8 +65,12 @@ from runmal.db.models import (
     SecretEntry,
     User,
 )
+from runmal.safety import SafetyError, audit_zip_members
 
 FORMAT_NAME = "runmal-archive"
+MAX_ARCHIVE_MEMBERS = 100_000
+MAX_ARCHIVE_MEMBER_BYTES = 64 * 1024 * 1024
+MAX_ARCHIVE_TOTAL_BYTES = 512 * 1024 * 1024
 FORMAT_VERSION = 1
 ARCHIVE_SUFFIX = ".runmal"
 MANIFEST_NAME = "manifest.json"
@@ -405,6 +409,15 @@ def validate_archive(path: str | Path) -> dict:
             raise ArchiveError("duplicate member names in archive")
         for name in names:
             _check_member_name(name)
+        try:
+            audit_zip_members(
+                zf.infolist(),
+                max_members=MAX_ARCHIVE_MEMBERS,
+                max_member_bytes=MAX_ARCHIVE_MEMBER_BYTES,
+                max_total_bytes=MAX_ARCHIVE_TOTAL_BYTES,
+            )
+        except SafetyError as exc:
+            raise ArchiveError(str(exc)) from exc
         if MANIFEST_NAME not in names:
             raise ArchiveError("manifest.json missing")
         try:

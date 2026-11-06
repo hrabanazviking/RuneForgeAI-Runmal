@@ -56,6 +56,9 @@ import json
 from dataclasses import dataclass, field
 
 from runmal.lorebooks.transfer import _as_int
+from runmal.safety import SafetyError, safe_json_loads
+
+MAX_LOREBOOK_BYTES = 32 * 1024 * 1024
 
 #: World-info fields this slice maps to Rúnmál's native entry
 #: fields (the P-005 mapped set, plus the at-depth companions).
@@ -270,6 +273,10 @@ def _entry_from_native(raw: dict) -> WorldInfoEntry:
 def parse_lorebook_file(data: bytes | str | dict) -> LorebookFile:
     """Parse a world-info or native lorebook file, whole."""
     if isinstance(data, (bytes, bytearray)):
+        if len(data) > MAX_LOREBOOK_BYTES:
+            raise LorebookParseError(
+                f"lorebook file is {len(data)} bytes, exceeding limit of {MAX_LOREBOOK_BYTES} bytes"
+            )
         try:
             text = bytes(data).decode("utf-8")
         except UnicodeDecodeError as exc:
@@ -277,9 +284,9 @@ def parse_lorebook_file(data: bytes | str | dict) -> LorebookFile:
         data = text
     if isinstance(data, str):
         try:
-            data = json.loads(data)
-        except json.JSONDecodeError as exc:
-            raise LorebookParseError(f"lorebook file is not valid JSON: {exc}") from exc
+            data = safe_json_loads(data, limit=MAX_LOREBOOK_BYTES)
+        except SafetyError as exc:
+            raise LorebookParseError(str(exc)) from exc
     if not isinstance(data, dict):
         raise LorebookParseError("lorebook file must be a JSON object")
     raw_entries = data.get("entries")

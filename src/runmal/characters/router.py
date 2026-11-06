@@ -11,6 +11,7 @@ from runmal.cards import CardParseError
 from runmal.characters import service
 from runmal.characters.service import UnsafeFilenameError, character_to_dict
 from runmal.db.deps import get_owner_id, get_session
+from runmal.safety import SafetyError, read_upload_capped
 
 router = APIRouter(tags=["characters"])
 
@@ -177,8 +178,10 @@ async def upload_avatar(
     session: AsyncSession = Depends(get_session),
 ):
     try:
-        data = await file.read()
+        data = await read_upload_capped(file, service.MAX_AVATAR_BYTES)
         stored = await service.set_avatar(session, user_id, character_id, file.filename or "", data)
+    except SafetyError as exc:
+        raise HTTPException(status_code=413, detail=str(exc)) from exc
     except KeyError:
         raise HTTPException(status_code=404, detail="character not found") from None
     except UnsafeFilenameError as exc:

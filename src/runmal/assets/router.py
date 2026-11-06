@@ -9,8 +9,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.assets import service
 from runmal.assets.models import asset_to_dict
+from runmal.cards.parser import MAX_ASSET_BYTES
 from runmal.characters.service import UnsafeFilenameError
 from runmal.db.deps import get_owner_id, get_session
+from runmal.safety import SafetyError, read_upload_capped
 
 router = APIRouter(tags=["characters"])
 
@@ -96,7 +98,7 @@ async def upload_asset(
     session: AsyncSession = Depends(get_session),
 ):
     try:
-        data = await file.read()
+        data = await read_upload_capped(file, MAX_ASSET_BYTES)
         row = await service.add_asset(
             session,
             user_id,
@@ -106,6 +108,8 @@ async def upload_asset(
             filename=file.filename or "",
             data=data,
         )
+    except SafetyError as exc:
+        raise HTTPException(status_code=413, detail=str(exc)) from exc
     except KeyError:
         raise HTTPException(status_code=404, detail="character not found") from None
     except UnsafeFilenameError as exc:

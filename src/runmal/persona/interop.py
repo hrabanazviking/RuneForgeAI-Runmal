@@ -24,6 +24,9 @@ import json
 from dataclasses import dataclass, field
 
 from runmal.prompt.slots import VALID_ROLES, make_slot
+from runmal.safety import SafetyError, safe_json_loads
+
+MAX_PERSONA_BYTES = 8 * 1024 * 1024
 
 #: Canonical description positions (ST-09, in Rúnmál's words).
 DESCRIPTION_POSITIONS = (
@@ -153,6 +156,10 @@ class UserPersona:
 def parse_persona(data: bytes | str | dict) -> UserPersona:
     """Parse an ST-shaped persona file (bytes, text, or mapping)."""
     if isinstance(data, (bytes, bytearray)):
+        if len(data) > MAX_PERSONA_BYTES:
+            raise PersonaParseError(
+                f"persona file is {len(data)} bytes, exceeding limit of {MAX_PERSONA_BYTES} bytes"
+            )
         try:
             text = bytes(data).decode("utf-8")
         except UnicodeDecodeError as exc:
@@ -160,9 +167,9 @@ def parse_persona(data: bytes | str | dict) -> UserPersona:
         data = text
     if isinstance(data, str):
         try:
-            data = json.loads(data)
-        except json.JSONDecodeError as exc:
-            raise PersonaParseError(f"persona file is not valid JSON: {exc}") from exc
+            data = safe_json_loads(data, limit=MAX_PERSONA_BYTES)
+        except SafetyError as exc:
+            raise PersonaParseError(str(exc)) from exc
     if not isinstance(data, dict):
         raise PersonaParseError("persona file must be a JSON object")
     name = _as_str(data.get("name")).strip()
