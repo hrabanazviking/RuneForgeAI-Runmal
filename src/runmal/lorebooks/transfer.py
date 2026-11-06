@@ -24,7 +24,7 @@ from __future__ import annotations
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from runmal.db.models import Lorebook
+from runmal.db.models import Lorebook, LoreEntry
 from runmal.lorebooks import service
 
 
@@ -182,3 +182,107 @@ async def import_book(
     for fields in entry_fields:
         await service.create_entry(session, user_id, book.id, **fields)
     return book
+
+
+def validate_parsed_book(book_fields: dict, entry_fields: list[dict]) -> list[dict]:
+    """Validate a parsed book + entries without writing anything.
+
+    Mirrors ``service.create_lorebook`` / ``service.create_entry``
+    checks and returns the prepared entry rows (keys encoded, position
+    and timing knobs checked). Raises ValueError on the first problem.
+    Used by the transactional import (pre-validation before any
+    write) and by bulk import's dry run, so a dry run's verdicts match
+    a real run's.
+    """
+    if not book_fields.get("name"):
+        raise ValueError("lorebook name must not be empty")
+    scan_depth = book_fields.get("scan_depth", 4)
+    token_budget = book_fields.get("token_budget")
+    if isinstance(scan_depth, bool) or not isinstance(scan_depth, int) or scan_depth < 1:
+        raise ValueError("scan_depth must be >= 1")
+    if token_budget is not None and (
+        isinstance(token_budget, bool)
+        or not isinstance(token_budget, int)
+        or token_budget < 1
+    ):
+        raise ValueError("token_budget must be >= 1")
+    prepared: list[dict] = []
+    for fields in entry_fields:
+        prepared.append(
+            {
+                "name": fields["name"],
+                "content": fields["content"],
+                "keys_json": service._encode_keys(fields.get("keys")),
+                "secondary_keys_json": service._encode_keys(
+                    fields.get("secondary_keys")
+                ),
+                "priority": fields["priority"],
+                "position": service._check_position(
+                    fields.get("position", "before_char")
+                ),
+                "enabled": bool(fields.get("enabled", True)),
+                "constant": bool(fields.get("constant", False)),
+                "case_sensitive": bool(fields.get("case_sensitive", False)),
+                "whole_word": bool(fields.get("whole_word", True)),
+                "sticky_prompts": service._check_prompts(
+                    "sticky_prompts", fields.get("sticky_prompts", 0)
+                ),
+                "cooldown_prompts": service._check_prompts(
+                    "cooldown_prompts", fields.get("cooldown_prompts", 0)
+                ),
+                "delay_prompts": service._check_prompts(
+                    "delay_prompts", fields.get("delay_prompts", 0)
+                ),
+            }
+        )
+    return prepared
+
+
+async def import_book_transactional(
+    session: AsyncSession, user_id: str, data: dict, *, commit: bool = True
+) -> Lorebook:
+    """Create a lorebook + entries as ONE transaction (P-022).
+
+    Unlike :func:`import_book` - which loops the committing service
+    helpers and can leave a partial book behind - this variant
+    pre-validates the whole parsed book (every entry's keys, position,
+    and timing knobs, mirroring ``service.create_entry``'s checks)
+    BEFORE any row is written, then writes book + entries with flush
+    only inside a savepoint and commits once. Any failure rolls the
+    savepoint (and, for a committing call, the transaction) back, so
+    a failed book leaves nothing behind.
+    """
+    book_fields, entry_fields = parse_import(data)
+    # Pre-validate the whole book (fields + every entry) before any write.
+    prepared = validate_parsed_book(book_fields, entry_fields)
+    name = book_fields["name"]
+    description = book_fields.get("description", "")
+    scan_depth = book_fields.get("scan_depth", 4)
+    token_budget = book_fields.get("token_budget")
+    try:
+        async with session.begin_nested():
+            book = Lorebook(
+                user_id=user_id,
+                name=name,
+                description=description,
+                scan_depth=scan_depth,
+                token_budget=token_budget,
+            )
+            session.add(book)
+            await session.flush()
+            for row in prepared:
+                session.add(LoreEntry(lorebook_id=book.id, user_id=user_id, **row))
+            await session.flush()
+    except Exception:
+        if commit:
+            await session.rollback()
+        raise
+    if commit:
+        await session.commit()
+    return book
+
+
+# Aliases: the transactional parsed-import variant under its other
+# natural names, so callers are not coupled to one spelling.
+import_book_atomic = import_book_transactional
+import_parsed_book = import_book_transactional
