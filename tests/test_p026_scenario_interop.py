@@ -539,11 +539,11 @@ def test_api_requires_auth(tmp_path, monkeypatch) -> None:
 
 
 def test_head_revision_is_0028_p036() -> None:
-    assert MIGRATIONS[-1][0] == "0028"
+    assert MIGRATIONS[-1][0] == "0031"
 
 
 def test_migrated_temp_db_head_is_0028_p036(tmp_path) -> None:
     db_path = tmp_path / "migrated.db"
     migrate_to_head(db_path)
-    assert current_revision(db_path) == "0028"
+    assert current_revision(db_path) == "0031"
     assert current_revision(db_path) == MIGRATIONS[-1][0]

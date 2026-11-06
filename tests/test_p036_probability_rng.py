@@ -430,9 +430,10 @@ def test_api_preview_seed_and_context_reproduce(tmp_path, monkeypatch):
 def test_migration_head_is_0028_provisional():
     # 0027 is reserved for P-035 (entry states, concurrent, banks
     # first); the merged sequence runs 0026 -> 0027 -> 0028.
-    assert MIGRATIONS[-1][0] == "0028"
-    assert MIGRATIONS[-2][0] == "0027"
-    assert MIGRATIONS[-3][0] == "0026"
+    assert MIGRATIONS[-1][0] == "0031"
+    assert MIGRATIONS[-2][0] == "0028"
+    assert MIGRATIONS[-3][0] == "0027"
+    assert MIGRATIONS[-4][0] == "0026"
 
 
 def test_migration_0028_column_exists_and_defaults(tmp_path):
@@ -478,7 +479,7 @@ def test_old_database_upgrades_in_place_preserving_entries(tmp_path):
     finally:
         conn.close()
     applied = migrate_to_head(db_path)
-    assert applied == ["0027", "0028"]
+    assert applied == ["0027", "0028", "0031"]
     conn = sqlite3.connect(db_path)
     try:
         row = conn.execute(

@@ -160,6 +160,25 @@ class LoreEntry(Base):
     updated_at: Mapped[datetime | None] = mapped_column(nullable=True, default=None)
 
 
+class CharacterBookBinding(Base):
+    """Character-book binding (P-039): one character bound to one lorebook,
+    with the precedence that orders the character book against other
+    lore sources."""
+
+    __tablename__ = "character_book_bindings"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_new_id)
+    character_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("characters.id", ondelete="CASCADE"), nullable=False, unique=True, index=True
+    )
+    lorebook_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("lorebooks.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    precedence: Mapped[str] = mapped_column(String(40), nullable=False, default="character_first")
+    created_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
+    updated_at: Mapped[datetime | None] = mapped_column(nullable=True, default=None)
+
+
 class SamplingPreset(Base):
     """Sampling preset (S207): named canonical parameter bag + template ref."""
 

@@ -137,6 +137,32 @@ def _resolve_provenance(card, provenance, *, digest, source_bytes):
     )
 
 
+async def _get_binding_row(binding_module, session, user_id, character_id):
+    """Fetch a character's lorebook binding row via lorebooks.binding.
+
+    Uses ``get_binding_row`` when the binding module exposes it,
+    else the ownership-scoped ``get_binding``; the call arity is
+    matched to the getter's signature (with/without ``user_id``).
+    Returns None when the module exposes no getter.
+    """
+    import inspect
+
+    fn = getattr(binding_module, "get_binding_row", None) or getattr(
+        binding_module, "get_binding", None
+    )
+    if fn is None:
+        return None
+    positional = [
+        param
+        for param in inspect.signature(fn).parameters.values()
+        if param.kind
+        in (param.POSITIONAL_ONLY, param.POSITIONAL_OR_KEYWORD)
+    ]
+    if len(positional) >= 3:
+        return await fn(session, user_id, character_id)
+    return await fn(session, character_id)
+
+
 async def create_character_from_card(
     session: AsyncSession,
     user_id: str,
@@ -209,6 +235,29 @@ async def create_character_from_card(
     await session.flush()
     if lineage_id is None:
         character.lineage_id = character.id
+    # P-039: an embedded character_book travels as a real bound
+    # lorebook. Materialise it (flush-only) alongside the character.
+    # A malformed embedded book never refuses an otherwise-valid
+    # card -- the asset discipline below: expunge any partial
+    # binding/book/entry rows the failed attempt staged in
+    # session.new and continue without a binding. card_json still
+    # carries the book verbatim either way.
+    _pre_book_new = {id(obj) for obj in session.new}
+    try:
+        from runmal.lorebooks import binding as _book_binding
+
+        if _book_binding.character_book_entries(card.character_book):
+            await _book_binding.materialise_character_book(
+                session, user_id, character, card.character_book
+            )
+    except Exception:
+        for obj in list(session.new):
+            if id(obj) not in _pre_book_new and type(obj).__name__ in (
+                "CharacterBookBinding",
+                "Lorebook",
+                "LoreEntry",
+            ):
+                session.expunge(obj)
     try:
         await ingest_card_assets(
             session,
@@ -304,6 +353,33 @@ async def duplicate_character(
             src_dir, character_asset_dir(clone.id), dirs_exist_ok=True
         )
     await clone_character_assets(session, source.id, clone.id)
+    # P-039: the clone gets its OWN materialised copy of the
+    # source's bound book -- never a shared lorebook, or edits to
+    # one character's book would silently rewrite the other's.
+    # Serialise the source binding to its travelling dict, then
+    # materialise a fresh lorebook + fresh entries + a fresh
+    # binding for the clone at the same precedence. A copy never
+    # fails over its book link.
+    try:
+        from runmal.lorebooks import binding as _book_binding
+
+        src_binding = await _get_binding_row(
+            _book_binding, session, user_id, source.id
+        )
+        if src_binding is not None:
+            book_dict = await _book_binding.serialise_bound_book(
+                session, src_binding
+            )
+            if isinstance(book_dict, dict):
+                await _book_binding.materialise_character_book(
+                    session,
+                    user_id,
+                    clone,
+                    book_dict,
+                    precedence=getattr(src_binding, "precedence", None),
+                )
+    except Exception:
+        pass
     await session.commit()
     return clone
 

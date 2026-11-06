@@ -496,3 +496,18 @@ source in §0(2) and appends its entry here:
   No SillyTavern or Voxta source code was read and no file
   was downloaded; the slice's test entries are authored
   fresh in the test module (P-005 discipline).
+- **P-039 (2026-11-06, own tree only):** no new external
+  source and no mirror reading. Character-book binding
+  (a card's own lorebook travels with it and merges with
+  the world's by declared precedence) is built from the
+  card `character_book` field exactly as Rúnmál's own
+  P-015/P-016 public-spec import work and P-005's authored
+  corpus already record it, and from the world-info entry
+  field set P-019 recorded from public documentation.
+  The binding store, the three declared precedence modes
+  and the deterministic name-collision merge with shadowed
+  provenance are Rúnmál's own design for the roadmap line,
+  not a reproduction of any mirror behaviour. No
+  SillyTavern or Voxta source code was read and no file
+  was downloaded; the slice's test entries are authored
+  fresh in the test module (P-005 discipline).
