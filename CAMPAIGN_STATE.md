@@ -3378,3 +3378,28 @@ Last updated: 2026-10-31 ~14:15 EDT tick (P-017 banking deferred, no full run at
     no assertion weakened. F1 remains P-038's road. Next in
     roadmap order: P-034 (team-01, inclusion groups; built,
     held for this banking).
+  - BANKED P-034 (keeper tick 2026-11-06 ~14:55 EST): inclusion
+    groups - mutually exclusive lorebook entries resolved by
+    weight/priority, deterministically - team-01 commit
+    f4badf3 merged (no-ff) into yrsa/two-mirrors-build as
+    81d490d and pushed; ls-remote verified
+    81d490dcaaf098fe016e76ec2e685cb9e9fd0810.
+    Evidence (team-01 worktree hidden_files/P034_EVIDENCE.md
+    and logs): battery 57/57 (incl. determinism proof over
+    all 720 permutations), neighbours 442, full suite 1537
+    passed / 4 skipped / 0 failed on its base. Merge
+    conflicts (migration registry, head pins in 13 test
+    files, clean-room log) resolved keeping BOTH slices'
+    work: chain 0024 -> 0025 -> 0026 composed, revision
+    lists unioned; four battery head pins healed at the
+    merge to the merged truth (P-021/P-023 precedent, no
+    assertion weakened). Combined batteries at the merged
+    tree 179 passed; forge confirmation suite 1605 passed /
+    4 skipped / 1 failed (= 1549 + 57, exact) - the single
+    failure is test_s503_stt.py's timing contract, solo
+    re-run 4/4 green, classified contention on the shared
+    laptop, not a defect. Migration 0026 (lorebook
+    inclusion groups) STANDS as numbered - P-033 took the
+    reserved 0025 banking first, so no renumber was needed;
+    head is now 0026. Next in roadmap order: P-035
+    (team-02, entry states).
