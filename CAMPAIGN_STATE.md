@@ -3153,3 +3153,17 @@ Last updated: 2026-10-31 ~14:15 EDT tick (P-017 banking deferred, no full run at
     P-029; card asset bytes noted but not persisted — P-023).
     Wave 1 remaining: P-023..P-027 (teams 05-09, muster next
     ticks). Next in roadmap order: P-023 (team-05).
+  - BANKED P-023 (keeper tick 2026-11-06 ~08:52 EST): card
+    thumbnails and assets — team-05 commit f59483e merged
+    (no-ff) into yrsa/two-mirrors-build as 2875cf0 and pushed;
+    ls-remote verified 2875cf0cf976270205de47d46d5b3517cb4ceed1.
+    Evidence (team-05 worktree hidden_files/ logs): battery
+    43/43, neighbours 122, full suite 1024 passed / 4 skipped /
+    0 failed. Forge confirmation suite at the merged tree:
+    1024 passed / 4 skipped / 0 failed (= 981 + 43, exact).
+    Asset bytes are now persisted per character (migration
+    0020 character_assets), closing the P-022 limitation.
+    Carried limitations in the slice doc: thumbnails PNG-only
+    (no image library in core deps), no per-character aggregate
+    size cap, update_character does not re-ingest assets.
+    Next in roadmap order: P-024 (team-06, built, held).
