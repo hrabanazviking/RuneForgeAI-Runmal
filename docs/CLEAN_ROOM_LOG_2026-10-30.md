@@ -462,3 +462,17 @@ source in §0(2) and appends its entry here:
   No SillyTavern or Voxta source code was read and no file
   was downloaded; the slice's test entries are authored fresh
   in the test module (P-005 discipline).
+- **P-036 (2026-11-06, own tree only):** no new external
+  source and no mirror reading. Probability & RNG honesty
+  (probabilistic entries use a seeded, inspectable roll)
+  is built entirely from Rúnmál's own roadmap line and its
+  own S204 budget pipeline, over the public world-info
+  field names (`probability`, `useProbability`) exactly as
+  P-005's authored corpus fixture already carries them
+  (the Gale-Bell entry: 80 / true); the roll derivation
+  (SHA-256 over seed/context/entry-id, algorithm-versioned,
+  recorded per entry) is Rúnmál's own design for the
+  roadmap line, not a reproduction of any mirror behaviour.
+  No SillyTavern or Voxta source code was read and no file
+  was downloaded; the slice's test entries are authored
+  fresh in the test module (P-005 discipline).

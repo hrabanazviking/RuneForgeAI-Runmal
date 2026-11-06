@@ -36,6 +36,7 @@ class EntryCreate(BaseModel):
     selective_logic: str = "and_any"
     inclusion_group: str = ""
     group_weight: int = Field(default=100, ge=0)
+    probability: int = Field(default=100, ge=0, le=100)
     priority: int = 100
     position: str = "before_char"
     enabled: bool = True
@@ -55,6 +56,7 @@ class EntryUpdate(BaseModel):
     selective_logic: str | None = None
     inclusion_group: str | None = None
     group_weight: int | None = Field(default=None, ge=0)
+    probability: int | None = Field(default=None, ge=0, le=100)
     priority: int | None = None
     position: str | None = None
     enabled: bool | None = None
@@ -71,6 +73,7 @@ class PreviewRequest(BaseModel):
     scan_depth: int | None = Field(default=None, ge=1)
     token_budget: int | None = Field(default=None, ge=1)
     seed: int | None = None
+    roll_context: str = ""
 
 
 def _service_error(exc: ValueError) -> HTTPException:
@@ -171,7 +174,8 @@ async def preview_lorebook(
     token_budget = body.token_budget if body.token_budget is not None else book.token_budget
     try:
         result = preview_activation(
-            entries, body.messages, scan_depth, token_budget, seed=body.seed
+            entries, body.messages, scan_depth, token_budget, seed=body.seed,
+            roll_context=body.roll_context,
         )
     except ValueError as exc:
         raise _service_error(exc) from exc
@@ -248,6 +252,7 @@ async def create_entry(
             selective_logic=body.selective_logic,
             inclusion_group=body.inclusion_group,
             group_weight=body.group_weight,
+            probability=body.probability,
             priority=body.priority,
             position=body.position,
             enabled=body.enabled,

@@ -127,6 +127,7 @@ def test_dual_chunk_png_prefers_ccv3_payload() -> None:
 # importer still drops. Part III slices (selective logic P-032,
 # timed effects P-033, depth P-038, probability P-036)
 # own most of these; a slice that lands one must remove it here.
+# Probability + useProbability landed in P-036 (mapped below).
 WORLDINFO_DROPPED_TODAY = {
     "automationId",
     "characterFilter",
@@ -140,13 +141,11 @@ WORLDINFO_DROPPED_TODAY = {
     "ignoreBudget",
     "outletName",
     "preventRecursion",
-    "probability",
     "role",
     "scanDepth",
     "selective",
     "triggers",
     "useGroupScoring",
-    "useProbability",
     "vectorized",
 }
 WORLDINFO_MAPPED_SOURCE_FIELDS = {
@@ -157,6 +156,8 @@ WORLDINFO_MAPPED_SOURCE_FIELDS = {
     "selectiveLogic",
     "group",
     "groupWeight",
+    "probability",
+    "useProbability",
     "constant",
     "disable",
     "order",
@@ -190,6 +191,10 @@ def test_worldinfo_full_mapped_fields_and_pinned_losses() -> None:
     # position 4 (at-depth in the mirror) collapses to before_char
     # today — pinned loss, P-038 owns the real mapping
     assert gale["position"] == "before_char"
+    # P-036: probability mapped (percent); Harbour Law's explicit
+    # useProbability=false folds to the effective percent 100.
+    assert gale["probability"] == 80
+    assert entries[1]["probability"] == 100
     dropped = set(source["entries"]["0"]) - WORLDINFO_MAPPED_SOURCE_FIELDS
     assert dropped == WORLDINFO_DROPPED_TODAY
 

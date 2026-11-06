@@ -142,6 +142,9 @@ class LoreEntry(Base):
     # the weight that ranks the entry inside its group.
     inclusion_group: Mapped[str] = mapped_column(String(200), nullable=False, default="")
     group_weight: Mapped[int] = mapped_column(nullable=False, default=100)
+    # Probability (P-036): integer percent 0..100; 100 = gate off.
+    # The seeded, inspectable roll lives in lorebooks/rng.py.
+    probability: Mapped[int] = mapped_column(nullable=False, default=100)
     priority: Mapped[int] = mapped_column(nullable=False, default=100)
     position: Mapped[str] = mapped_column(String(40), nullable=False, default="before_char")
     enabled: Mapped[bool] = mapped_column(nullable=False, default=True)

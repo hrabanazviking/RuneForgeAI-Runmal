@@ -22,6 +22,20 @@ non-included status to its trace reason generically, so
 group-excluded entries surface there as ``group_excluded`` with
 no inspector change.
 
+Probability & RNG honesty (P-036): candidates finally carry the
+stored entry probability (percent -> fraction), so the preview
+gate is live -- pre-P-036 the preview built candidates with the
+default probability 1.0 and the gate never fired here. Every
+gated entry's row reports ``probability`` (percent) and
+``probability_roll`` (the inspectable roll record: seed,
+context, roll value, passed, seeded) or None when ungated; the
+result reports ``seed``, ``roll_context`` and
+``probability_rolls`` (every gated roll this tick, in budget
+processing order). With the same seed + roll_context the
+preview reproduces roll-for-roll; with ``seed=None`` the rolls
+are recorded with ``seeded: False`` -- inspectable after the
+fact, honestly not reproducible.
+
 Opt-in recursive mode (P-031): with ``recursive_scan=True`` the
 preview uses recursive scanning -- keys found in a fired entry's
 own content can fire further entries -- and the result gains
@@ -36,6 +50,7 @@ from __future__ import annotations
 
 from runmal.lorebooks.activation import ActivatableEntry, activate
 from runmal.lorebooks.groups import normalise_group_weight, normalise_inclusion_group
+from runmal.lorebooks.rng import normalise_probability
 from runmal.lorebooks.budget import BudgetCandidate, resolve_budget
 from runmal.lorebooks.scan import (
     MAX_RECURSIVE_SCAN_DEPTH,
@@ -52,6 +67,7 @@ def preview_activation(
     token_budget: int | None,
     seed: int | None = None,
     *,
+    roll_context: str = "",
     recursive_scan: bool = False,
     max_recursion_depth: int = MAX_RECURSIVE_SCAN_DEPTH,
 ) -> dict:
@@ -104,10 +120,15 @@ def preview_activation(
             entry_id=a.entry_id,
             content=a.content,
             priority=int(by_id[a.entry_id].priority or 0),
+            probability=normalise_probability(
+                getattr(by_id[a.entry_id], "probability", None)
+            )
+            / 100.0,
         )
         for a in result.activations
     ]
-    budget = resolve_budget(candidates, token_budget, seed=seed)
+    budget = resolve_budget(candidates, token_budget, seed=seed, context=roll_context)
+    roll_by_id = {r.entry_id: r for r in budget.rolls}
     included = {b.entry_id: b for b in budget.included}
     discarded = {d.entry_id: d for d in budget.discarded}
 
@@ -133,6 +154,8 @@ def preview_activation(
                 getattr(entry, "group_weight", None)
             ),
             "group_winner_id": None,
+            "probability": normalise_probability(getattr(entry, "probability", None)),
+            "probability_roll": None,
         }
         hit = hit_by_id.get(entry_id)
         if hit is not None:
@@ -155,6 +178,9 @@ def preview_activation(
             row["via"] = activation.via
             row["depth"] = activation.depth
             row["content"] = activation.content
+            roll = roll_by_id.get(entry_id)
+            if roll is not None:
+                row["probability_roll"] = roll.to_dict()
             if entry_id in included:
                 row["status"] = "included"
                 row["tokens"] = included[entry_id].tokens
@@ -169,8 +195,12 @@ def preview_activation(
         "scan_depth": scan_depth,
         "token_budget": token_budget,
         "tokens_used": budget.tokens_used,
+        "seed": seed,
+        "roll_context": roll_context,
         "entries": rows,
     }
+    if budget.rolls:
+        preview["probability_rolls"] = [r.to_dict() for r in budget.rolls]
     if group_loser_by_id:
         preview["inclusion_group_winners"] = {
             row.inclusion_group: row.winner_id for row in result.group_losers

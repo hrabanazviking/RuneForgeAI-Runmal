@@ -21,6 +21,7 @@ from runmal.lorebooks.groups import (
     normalise_inclusion_group,
 )
 from runmal.lorebooks.logic import check_selective_logic, normalise_selective_logic
+from runmal.lorebooks.rng import check_probability, normalise_probability
 
 VALID_POSITIONS = frozenset({"before_char", "after_char"})
 
@@ -82,6 +83,7 @@ def entry_to_dict(entry: LoreEntry) -> dict:
         "selective_logic": normalise_selective_logic(getattr(entry, "selective_logic", None)),
         "inclusion_group": normalise_inclusion_group(getattr(entry, "inclusion_group", None)),
         "group_weight": normalise_group_weight(getattr(entry, "group_weight", None)),
+        "probability": normalise_probability(getattr(entry, "probability", None)),
         "priority": entry.priority,
         "position": entry.position,
         "enabled": bool(entry.enabled),
@@ -205,6 +207,7 @@ async def create_entry(
     selective_logic: str = "and_any",
     inclusion_group: str = "",
     group_weight: int = 100,
+    probability: int = 100,
     priority: int = 100,
     position: str = "before_char",
     enabled: bool = True,
@@ -227,6 +230,7 @@ async def create_entry(
         selective_logic=check_selective_logic(selective_logic),
         inclusion_group=check_inclusion_group(inclusion_group),
         group_weight=check_group_weight(group_weight),
+        probability=check_probability(probability),
         priority=priority,
         position=_check_position(position),
         enabled=enabled,
@@ -283,6 +287,8 @@ async def update_entry(
         entry.inclusion_group = check_inclusion_group(fields["inclusion_group"])
     if "group_weight" in fields:
         entry.group_weight = check_group_weight(fields["group_weight"])
+    if "probability" in fields:
+        entry.probability = check_probability(fields["probability"])
     if "priority" in fields:
         entry.priority = int(fields["priority"])
     if "position" in fields:
