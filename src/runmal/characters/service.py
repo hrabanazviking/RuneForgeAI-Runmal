@@ -11,6 +11,11 @@ from pathlib import Path
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from runmal.assets.service import (
+    clone_character_assets,
+    ingest_card_assets,
+    purge_character_asset_files,
+)
 from runmal.auth import data_dir
 from runmal.cards import import_card
 from runmal.cards.exporter import export_json
@@ -70,13 +75,19 @@ async def create_character_from_card(
     *,
     name: str | None = None,
     commit: bool = True,
+    source_bytes: bytes | None = None,
 ) -> Character:
     """Create a Character from an already-parsed card (P-022).
 
     Stores ``export_json(card, "2")`` exactly as ``create_character``
-    does. Embedded asset bytes (``card.assets``, e.g. from a CHARX
-    archive) are NOT persisted here - asset storage is P-023's work.
-    With ``commit=False`` the row is only flushed, leaving the
+    does. The card's assets are persisted by P-023's
+    ``ingest_card_assets`` (declared descriptors, embedded CHARX
+    bytes, and - for a PNG card - the container bytes themselves
+    as card art, passed in as ``source_bytes``). Asset ingestion
+    failure never refuses an otherwise-valid card: on an unexpected
+    ingest error the character's asset files are purged and
+    creation continues (the P-022 discipline). With
+    ``commit=False`` the row is only flushed, leaving the
     transaction to the caller (bulk import's per-file atomicity).
     """
     character = Character(
@@ -86,6 +97,27 @@ async def create_character_from_card(
     )
     session.add(character)
     await session.flush()
+    try:
+        await ingest_card_assets(
+            session,
+            user_id,
+            character.id,
+            card,
+            source_bytes=source_bytes,
+            has_container_art=(
+                source_bytes is not None and card.source_format == "png"
+            ),
+        )
+    except Exception:
+        # Asset failure never refuses an otherwise-valid card; drop
+        # any partially written files and un-stage any asset rows
+        # the failed ingest added, then continue without them.
+        purge_character_asset_files(character.id)
+        for obj in list(session.new):
+            if type(obj).__name__ == "CharacterAsset" and (
+                getattr(obj, "character_id", None) == character.id
+            ):
+                session.expunge(obj)
     if commit:
         await session.commit()
     return character
@@ -142,6 +174,7 @@ async def duplicate_character(
         shutil.copytree(
             src_dir, character_asset_dir(clone.id), dirs_exist_ok=True
         )
+    await clone_character_assets(session, source.id, clone.id)
     await session.commit()
     return clone
 

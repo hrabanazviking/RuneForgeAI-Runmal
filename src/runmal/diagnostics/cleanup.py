@@ -69,8 +69,10 @@ CATEGORY_RISK: dict[str, tuple[str, str]] = {
     UNREFERENCED_CHARACTER_FILES: (
         "medium",
         "this file sits in a character's asset folder but is not "
-        "the avatar the database references; it may be an older "
-        "avatar or a hand-placed file, and deletion is permanent",
+        "referenced by the database - neither as the character's "
+        "avatar nor as a database-referenced asset file (character "
+        "asset storage or thumbnail); it may be an older avatar or "
+        "a hand-placed file, and deletion is permanent",
     ),
     CHATS_OF_DELETED_CHARACTERS: (
         "high",
@@ -222,7 +224,13 @@ def _age_days(now: datetime, ts: float) -> float:
 
 
 def _load_characters(db_path: Path) -> dict | None:
-    """{id: {avatar_asset, deleted_at}} or None when unjudgeable."""
+    """{id: {avatar_asset, deleted_at, referenced}} or None.
+
+    ``referenced`` is the set of relpaths (relative to the
+    character's asset directory) the database references for that
+    character: its avatar filename plus every ``storage_relpath``
+    and ``thumbnail_relpath`` from its ``character_assets`` rows.
+    """
     if not db_path.is_file():
         return None
     try:
@@ -231,13 +239,36 @@ def _load_characters(db_path: Path) -> dict | None:
             rows = conn.execute(
                 "SELECT id, avatar_asset, deleted_at FROM characters"
             ).fetchall()
+            characters = {
+                row[0]: {
+                    "avatar_asset": row[1],
+                    "deleted_at": row[2],
+                    "referenced": {row[1]} if row[1] else set(),
+                }
+                for row in rows
+            }
+            # The character_assets table may not exist on an old
+            # or broken DB; treat failure as "no asset rows" (the
+            # doctor's defensive pattern).
+            try:
+                asset_rows = conn.execute(
+                    "SELECT character_id, storage_relpath, "
+                    "thumbnail_relpath FROM character_assets"
+                ).fetchall()
+            except sqlite3.Error:
+                asset_rows = []
+            for character_id, storage_relpath, thumbnail_relpath in asset_rows:
+                entry = characters.get(character_id)
+                if entry is None:
+                    continue
+                for relpath in (storage_relpath, thumbnail_relpath):
+                    if relpath:
+                        entry["referenced"].add(relpath)
         finally:
             conn.close()
     except sqlite3.Error:
         return None
-    return {
-        row[0]: {"avatar_asset": row[1], "deleted_at": row[2]} for row in rows
-    }
+    return characters
 
 
 def _scan_assets(base: Path, characters: dict, report: CleanupReport) -> None:
@@ -278,18 +309,22 @@ def _scan_assets(base: Path, characters: dict, report: CleanupReport) -> None:
                 )
             )
             continue
-        referenced = character["avatar_asset"]
+        avatar = character["avatar_asset"]
+        referenced = set(character.get("referenced") or set())
+        if avatar:
+            referenced.add(avatar)
         for path in sorted(entry.rglob("*")):
             if path.is_symlink() or not path.is_file():
                 continue
             rel = path.relative_to(entry).as_posix()
-            if referenced and rel == referenced:
+            if rel in referenced:
                 continue
             report.items.append(
                 _item(
                     UNREFERENCED_CHARACTER_FILES,
-                    f"{entry.name}/{rel} is not the avatar the database "
-                    f"references for that character ({referenced or 'none'})",
+                    f"{entry.name}/{rel} is not referenced by the "
+                    f"database for that character (avatar: "
+                    f"{avatar or 'none'})",
                     path=str(path),
                     item_id=entry.name,
                     size_bytes=_tree_size(path),
@@ -484,12 +519,27 @@ def _revalidate_file_item(item: CleanupItem, report: CleanupReport, now: datetim
                 pass  # stray file under assets/characters: no owner to re-check
             elif character is None:
                 return "owning character vanished; re-scan before removing"
-            elif (
-                character["avatar_asset"]
-                and path.name == character["avatar_asset"]
-                and path.parent.name == item.item_id
-            ):
-                return "file is now the character's referenced avatar"
+            else:
+                referenced = set(character.get("referenced") or set())
+                if character["avatar_asset"]:
+                    referenced.add(character["avatar_asset"])
+                char_dir = (
+                    Path(report.base_dir)
+                    / "assets"
+                    / "characters"
+                    / item.item_id
+                )
+                try:
+                    rel = path.relative_to(char_dir).as_posix()
+                except ValueError:
+                    rel = None
+                if rel is not None and rel in referenced:
+                    if rel == character["avatar_asset"]:
+                        return "file is now the character's referenced avatar"
+                    return (
+                        "file is now a database-referenced asset "
+                        "for that character"
+                    )
     elif item.category == STALE_BACKUPS:
         kind = next(
             (k for k, pat in _BACKUP_PATTERNS.items() if pat.match(path.name)),

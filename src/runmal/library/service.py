@@ -24,6 +24,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from runmal.assets.service import build_asset_plan, purge_character_asset_files
 from runmal.cards import import_card
 from runmal.cards.errors import CardErrorKind, CardParseError
 from runmal.cards.exporter import export_json
@@ -328,6 +329,7 @@ async def _finish_card(
     filename: str,
     detected_format: str,
     repairs: list[RepairNote],
+    source_bytes: bytes | None = None,
 ) -> BulkEntry:
     entry.detected_kind = BulkKind.CARD
     entry.detected_format = detected_format
@@ -344,8 +346,15 @@ async def _finish_card(
         card.name = trimmed
     _sniff_repair(repairs, filename, detected_format)
     entry.repairs = repairs
-    if card.assets:
-        entry.notes.append(f"assets_deferred_p023:{len(card.assets)} assets")
+    plan_count = len(
+        build_asset_plan(
+            card,
+            has_container_art=(
+                source_bytes is not None and card.source_format == "png"
+            ),
+            source_bytes=source_bytes,
+        )
+    )
     digest = hashlib.sha256(export_json(card, "2")).hexdigest()
     if digest in batch.char_hashes:
         entry.duplicate_of = batch.char_hashes[digest]
@@ -365,22 +374,35 @@ async def _finish_card(
     if collision:
         entry.notes.append(f"name_collision:{collision}")
     if batch.dry_run:
+        if plan_count:
+            entry.notes.append(f"assets_would_store_p023:{plan_count}")
         entry.outcome = BulkOutcome.REPAIRED if repairs else BulkOutcome.ACCEPTED
         entry.created_name = card.name
         batch.batch_char_hashes[digest] = entry.relpath
         batch.batch_char_names.setdefault(card.name, entry.relpath)
         return entry
+    character = None
     try:
         character = await create_character_from_card(
-            batch.session, batch.user_id, card, commit=False
+            batch.session,
+            batch.user_id,
+            card,
+            commit=False,
+            source_bytes=source_bytes,
         )
         await batch.session.commit()
     except SQLAlchemyError as exc:
+        if character is not None:
+            purge_character_asset_files(character.id)
         await _safe_rollback(batch.session)
         return _refuse(entry, RefusalCode.STORAGE_ERROR, f"storage failed: {exc}")
     except Exception as exc:  # never leak a per-file failure
+        if character is not None:
+            purge_character_asset_files(character.id)
         await _safe_rollback(batch.session)
         return _refuse(entry, RefusalCode.STORAGE_ERROR, f"storage failed: {exc}")
+    if plan_count:
+        entry.notes.append(f"assets_stored_p023:{plan_count}")
     entry.outcome = BulkOutcome.REPAIRED if repairs else BulkOutcome.ACCEPTED
     entry.created_id = character.id
     entry.created_name = character.name
@@ -407,7 +429,15 @@ async def _import_card_bytes(
         if exc.kind == CardErrorKind.NOT_A_CARD and "no name" in str(exc).lower():
             return _refuse(entry, RefusalCode.MISSING_NAME, str(exc))
         return _refuse(entry, RefusalCode(exc.kind.value), str(exc))
-    return await _finish_card(batch, entry, card, filename, detected_format, repairs)
+    return await _finish_card(
+        batch,
+        entry,
+        card,
+        filename,
+        detected_format,
+        repairs,
+        source_bytes=data if detected_format == "png" else None,
+    )
 
 
 async def _import_lorebook(
