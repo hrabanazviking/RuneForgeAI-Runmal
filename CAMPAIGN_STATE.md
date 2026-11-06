@@ -3297,3 +3297,30 @@ Last updated: 2026-10-31 ~14:15 EDT tick (P-017 banking deferred, no full run at
     legacy rows stay null; lorebooks carry no provenance in
     this slice. Next in roadmap order: P-030 (Part II gate,
     team-03).
+  - BANKED P-030 (keeper tick 2026-11-06 ~12:13 EST): PART II
+    GATE PASSES — team-03 commit 6a6bee6 merged (no-ff, clean)
+    into yrsa/two-mirrors-build as 8cdc630 and pushed;
+    ls-remote verified 8cdc630c7a15c11b6c521148515c17837d264422.
+    Evidence (team-03 worktree hidden_files/P030_EVIDENCE.md +
+    logs): battery 55 passed, Part II neighbours 412 passed /
+    0 failed, team full suite 1243 passed / 4 skipped /
+    0 failed. Forge confirmation suite at the merged tree:
+    1243 passed / 4 skipped / 0 failed (= 1188 + 55, exact).
+    No migration (head stays 0023). The gate proves the P-005
+    corpus round-trips clean per type and a fresh-authored
+    19-file stranger library imports whole through the bulk
+    path with an exactly reconciling honest report, then
+    survives the .runmal archive with counts + provenance
+    intact. No defects fixed in-slice; no assertion weakened.
+    Carried findings (gate doc section 5): F1 a native
+    lorebook carrying at_depth entries cannot enter the DB
+    store (import_book_transactional raises ValueError) and
+    the lorebook DB store drops the 23 world-info fields —
+    Part III debt, at-depth carriage is P-038; F2 bulk
+    classifier takes a Voxta scenario with description/
+    scenario fields as a v1 card; F3 chat refusal reason-text
+    asymmetry (cosmetic); F4 P-005 manifest prose stale
+    (left untouched to protect hash pins); F5 provenance is
+    character-only, API path sha null by design.
+    PART II (P-015..P-030) IS COMPLETE. Next: Part III
+    (Lorebook Depth, P-031..P-048) in roadmap order.
