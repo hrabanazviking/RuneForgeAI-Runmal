@@ -43,9 +43,11 @@ from runmal.library.organise import (
 )
 
 try:  # The library package re-exports the service contract (P-022).
-    from runmal.library import import_library_uploads
+    from runmal.library import MAX_TOTAL_BYTES, import_library_uploads
 except ImportError:  # pragma: no cover - fallback if re-export lags
-    from runmal.library.service import import_library_uploads
+    from runmal.library.service import MAX_TOTAL_BYTES, import_library_uploads
+
+from runmal.safety import SafetyError, read_upload_capped
 
 router = APIRouter(tags=["library"])
 
@@ -190,7 +192,11 @@ async def import_library(
         if safe_name is None:
             skipped.append(_skipped_entry(upload.filename, reason or "unsafe filename"))
             continue
-        uploads.append((safe_name, await upload.read()))
+        try:
+            data = await read_upload_capped(upload, MAX_TOTAL_BYTES)
+        except SafetyError as exc:
+            raise HTTPException(status_code=413, detail=str(exc)) from exc
+        uploads.append((safe_name, data))
     if uploads:
         report = await import_library_uploads(session, user_id, uploads, dry_run=is_dry_run)
         payload = report.to_dict()

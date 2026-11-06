@@ -20,6 +20,7 @@ import json
 from dataclasses import dataclass, field
 
 from runmal.presets.service import validate_params
+from runmal.safety import SafetyError, safe_json_loads
 
 MAX_PRESET_BYTES = 8 * 1024 * 1024
 SOURCE_NATIVE = "native"
@@ -283,9 +284,9 @@ def parse_preset(data: bytes | str | dict) -> ImportedPreset:
         if len(data.encode("utf-8")) > MAX_PRESET_BYTES:
             raise PresetParseError("preset file exceeds 8 MiB")
         try:
-            obj = json.loads(data)
-        except json.JSONDecodeError as exc:
-            raise PresetParseError("preset file is not valid JSON") from exc
+            obj = safe_json_loads(data, limit=MAX_PRESET_BYTES)
+        except SafetyError as exc:
+            raise PresetParseError(str(exc)) from exc
         if not isinstance(obj, dict):
             raise PresetParseError("preset file must be a JSON object")
         return _parse_object(obj)

@@ -174,9 +174,15 @@ async def import_archive(archive_path: str | Path, staging_root: str | Path) -> 
                             json.dumps(voice), encoding="utf-8"
                         )
             asset_count = 0
+            resolved_root = root.resolve()
             for name in names:
                 if name.startswith("assets/"):
                     target = root / name
+                    # Defense in depth: the validator already rejects
+                    # escapes, but never trust a name check alone before
+                    # touching the filesystem.
+                    if not target.resolve().is_relative_to(resolved_root):
+                        raise ArchiveError(f"unsafe archive name: {name!r}")
                     target.parent.mkdir(parents=True, exist_ok=True)
                     target.write_bytes(zf.read(name))
                     asset_count += 1

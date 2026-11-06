@@ -20,6 +20,7 @@ import copy
 import json
 from datetime import UTC, datetime
 
+from runmal.safety import SafetyError, safe_json_loads
 from .filemodels import (
     EXTRA_NOT_OBJECT,
     HEADER_MISSING,
@@ -391,13 +392,13 @@ def _parse_jsonl_text(text: str, bom_stripped: bool, *, strict: bool) -> ImportR
             )
             continue
         try:
-            obj = json.loads(line)
-        except json.JSONDecodeError as exc:
+            obj = safe_json_loads(line, limit=MAX_LINE_BYTES)
+        except SafetyError as exc:
             report.issues.append(
                 LineIssue(
                     line_no=line_no,
                     kind=INVALID_JSON,
-                    detail=f"invalid JSON: {exc.msg}",
+                    detail=str(exc),
                     excerpt=line[:80],
                 )
             )
@@ -543,8 +544,8 @@ def parse_chat_file(data: bytes | str, *, strict: bool = False) -> ImportResult:
     whole: object = None
     whole_parsed = True
     try:
-        whole = json.loads(text)
-    except json.JSONDecodeError:
+        whole = safe_json_loads(text, limit=MAX_CHAT_BYTES)
+    except SafetyError:
         whole_parsed = False
     if whole_parsed and isinstance(whole, dict):
         if whole.get("format") == _NATIVE_FORMAT:

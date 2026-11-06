@@ -26,6 +26,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.db.models import Lorebook, LoreEntry
 from runmal.lorebooks import service
+from runmal.safety import SafetyError, validate_json_tree
 
 
 def export_book(book: dict, entries: list[dict]) -> dict:
@@ -134,6 +135,10 @@ def parse_import(data: dict) -> tuple[dict, list[dict]]:
     """Parse either import shape into (book fields, entry field dicts)."""
     if not isinstance(data, dict):
         raise ValueError("lorebook import must be a JSON object")
+    try:
+        validate_json_tree(data)
+    except SafetyError as exc:
+        raise ValueError(str(exc)) from exc
     raw_entries = data.get("entries")
     if raw_entries is None:
         raise ValueError("lorebook import has no 'entries'")
