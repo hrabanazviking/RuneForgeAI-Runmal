@@ -26,12 +26,44 @@ Semantics (normative for the lorebook pipeline):
 Hits are returned in the input entry order (callers pass entries in
 priority order; see S204 for budget/priority resolution). Matching is fully
 deterministic: same inputs always produce the same hits.
+
+Recursive scanning (``scan_entries_recursive``) extends the plain scan
+breadth-first: round 0 is exactly ``scan_entries`` over the chat
+messages, and each later round scans the *content* of the entries
+admitted in the previous round as if it were a fresh message, so an
+entry whose content mentions another entry's key pulls that entry in
+too. A single global seen set spans every round, so an entry fires at
+most once per call no matter how many parents (or cycles) reference
+it -- that seen set is the cycle-safety proof: even mutually recursive
+entries (A mentions B, B mentions A) terminate, because the second
+encounter of any entry is always skipped. Recursion is bounded by ``MAX_RECURSIVE_SCAN_DEPTH`` and, optionally,
+by a token budget. Round-0 (direct) hits are always admitted and
+their content cost is counted in ``tokens_used`` -- in the pipeline
+the budget/priority pass (S204) makes the final inclusion call on
+direct hits. The budget bounds *expansion*: a recursive candidate
+that does not fit the remaining budget is skipped (and never scanned
+later) while smaller later candidates may still be admitted, and once
+admitted content meets or exceeds the budget no further rounds run.
+Within a round, candidates are considered in input (priority) order,
+not in order of mention. One deliberate narrowing vs. round 0: in a
+recursive round an entry's primary AND secondary keys must co-occur
+in the single parent content that triggers it (round 0 may satisfy
+them from different messages inside the scan window) -- that is what
+keeps ``triggered_by`` attribution to one parent honest.
+``budget_exhausted`` reports that the budget stopped, or would stop,
+expansion. Disabled and constant entries are skipped in every round,
+exactly as in the plain scan.
 """
 
 from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+
+from runmal.tokens import estimate_tokens
+
+#: Hard cap on recursive-scan rounds (mirrors activation.MAX_RECURSION_DEPTH).
+MAX_RECURSIVE_SCAN_DEPTH = 5
 
 
 @dataclass(frozen=True)
@@ -45,6 +77,7 @@ class ScanEntry:
     secondary_keys: tuple[str, ...] = ()
     whole_word: bool = True
     case_sensitive: bool = False
+    content: str = ""
 
     @classmethod
     def from_orm(cls, entry) -> "ScanEntry":
@@ -68,6 +101,7 @@ class ScanEntry:
             secondary_keys=_decode(entry.secondary_keys_json),
             whole_word=bool(entry.whole_word),
             case_sensitive=bool(entry.case_sensitive),
+            content=str(getattr(entry, "content", "") or ""),
         )
 
 
@@ -80,6 +114,8 @@ class ScanHit:
     matched_secondary: tuple[str, ...] = ()
     # 0-based indices into the FULL message list passed to scan_entries.
     message_indices: tuple[int, ...] = ()
+    depth: int = 0
+    triggered_by: str | None = None
 
 
 def _usable(keys: tuple[str, ...]) -> list[str]:
@@ -158,3 +194,132 @@ def scan_entries(
             )
         )
     return hits
+
+
+@dataclass(frozen=True)
+class RecursiveScanResult:
+    """Outcome of :func:`scan_entries_recursive`."""
+
+    hits: tuple[ScanHit, ...]
+    tokens_used: int
+    budget_exhausted: bool
+    depth_reached: int
+
+
+def scan_entries_recursive(
+    entries,
+    messages,
+    scan_depth,
+    *,
+    max_recursion_depth=MAX_RECURSIVE_SCAN_DEPTH,
+    token_budget=None,
+) -> RecursiveScanResult:
+    """Recursively scan entries, following keyword links in entry content.
+
+    Round 0 is :func:`scan_entries` over ``messages``; later rounds scan
+    each admitted entry's ``content`` for further entries' keys (BFS,
+    deterministic admission order). An entry fires at most once per call
+    (global seen set), which makes reference cycles terminate. See the
+    module docstring for the full semantics.
+    """
+    if (
+        isinstance(max_recursion_depth, bool)
+        or not isinstance(max_recursion_depth, int)
+        or max_recursion_depth < 0
+    ):
+        raise ValueError("max_recursion_depth must be an int >= 0")
+    if token_budget is not None and (
+        isinstance(token_budget, bool)
+        or not isinstance(token_budget, int)
+        or token_budget < 1
+    ):
+        raise ValueError("token_budget must be None or an int >= 1")
+
+    entries = list(entries)
+    if max_recursion_depth > MAX_RECURSIVE_SCAN_DEPTH:
+        max_recursion_depth = MAX_RECURSIVE_SCAN_DEPTH
+
+    entry_by_id: dict[str, ScanEntry] = {}
+    for _entry in entries:
+        entry_by_id.setdefault(_entry.id, _entry)
+
+    admitted: list[ScanHit] = []
+    seen: set[str] = set()
+    tokens_used = 0
+    budget_exhausted = False
+
+    round0_hits = scan_entries(entries, messages, scan_depth)
+    frontier: list[ScanEntry] = []
+    for hit in round0_hits:
+        if hit.entry_id in seen:
+            continue  # duplicate id rows: an entry fires at most once
+        target = entry_by_id.get(hit.entry_id)
+        content = target.content if target is not None else ""
+        admitted.append(
+            ScanHit(
+                entry_id=hit.entry_id,
+                matched_primary=hit.matched_primary,
+                matched_secondary=hit.matched_secondary,
+                message_indices=hit.message_indices,
+                depth=0,
+                triggered_by=None,
+            )
+        )
+        seen.add(hit.entry_id)
+        tokens_used += estimate_tokens(content)
+        if target is not None:
+            frontier.append(target)
+
+    if token_budget is not None and tokens_used >= token_budget:
+        budget_exhausted = True
+
+    if max_recursion_depth == 0 or not admitted:
+        return RecursiveScanResult(
+            hits=tuple(admitted),
+            tokens_used=tokens_used,
+            budget_exhausted=budget_exhausted,
+            depth_reached=0,
+        )
+
+    for depth in range(1, max_recursion_depth + 1):
+        if token_budget is not None and tokens_used >= token_budget:
+            budget_exhausted = True
+            break
+        next_frontier: list[ScanEntry] = []
+        for parent in frontier:
+            if not parent.content:
+                continue
+            for hit in scan_entries(entries, [parent.content], 1):
+                if hit.entry_id in seen:
+                    continue
+                seen.add(hit.entry_id)
+                target = entry_by_id.get(hit.entry_id)
+                target_content = target.content if target is not None else ""
+                cost = estimate_tokens(target_content)
+                if token_budget is not None and cost > token_budget - tokens_used:
+                    budget_exhausted = True
+                    continue
+                admitted.append(
+                    ScanHit(
+                        entry_id=hit.entry_id,
+                        matched_primary=hit.matched_primary,
+                        matched_secondary=hit.matched_secondary,
+                        message_indices=(),
+                        depth=depth,
+                        triggered_by=parent.id,
+                    )
+                )
+                tokens_used += cost
+                if target is not None:
+                    next_frontier.append(target)
+        if not next_frontier:
+            break
+        frontier = next_frontier
+
+    depth_reached = max((h.depth for h in admitted), default=0)
+    return RecursiveScanResult(
+        hits=tuple(admitted),
+        tokens_used=tokens_used,
+        budget_exhausted=budget_exhausted,
+        depth_reached=depth_reached,
+    )

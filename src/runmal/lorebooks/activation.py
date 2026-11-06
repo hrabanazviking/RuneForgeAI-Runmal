@@ -37,6 +37,14 @@ re-enter an entry already on the resolution path is left as literal text.
 ``MAX_RECURSION_DEPTH`` (5) is a hard cap; deeper references are left
 literal. Unknown names are left literal. Referenced entries must be enabled;
 they activate with ``via="reference"`` regardless of keys or timing knobs.
+
+Recursive scanning (P-031): entries hit by P-031 recursive scanning
+(their key found in another fired entry's content) activate
+via="recursive" at their discovery depth when they fire immediately
+on that hit. Timing knobs still apply first: a recursive hit on a
+delay-configured entry only arms the delay (the entry later fires
+via="delay" -- recursive provenance is not carried across ticks),
+and a hit landing during cooldown is suppressed like any key hit.
 """
 
 from __future__ import annotations
@@ -103,7 +111,7 @@ class EntryState:
 class ResolvedActivation:
     entry_id: str
     content: str  # with {{lore:...}} references expanded
-    via: str  # "constant" | "key" | "sticky" | "delay" | "reference"
+    via: str  # "constant" | "key" | "sticky" | "delay" | "reference" | "recursive"
     depth: int  # recursion depth; 0 = directly activated
 
 
@@ -193,12 +201,22 @@ def activate(
     entries: list[ActivatableEntry],
     hit_ids: set[str],
     states: dict[str, EntryState] | None = None,
+    *,
+    recursive_hit_ids: set[str] | None = None,
+    hit_depths: dict[str, int] | None = None,
 ) -> ActivationResult:
     """Run one activation tick.
 
     ``entries``: candidate entries in deterministic (priority) order.
     ``hit_ids``: entry ids with keyword hits this tick (from S202).
     ``states``: runtime counters, mutated in place and returned.
+    ``recursive_hit_ids`` / ``hit_depths``: P-031 recursive-scan hits;
+    a plain key firing for such an entry is relabelled "recursive"
+    and reported at its discovery depth. Supply the two together
+    (``recursive_hit_ids`` a subset of ``hit_ids``, depths > 0);
+    ``hit_depths`` is consulted only for entries actually relabelled
+    "recursive", so other firings always report depth 0.
+    Absent/None = pre-P-031 behaviour, unchanged.
     """
     states = {} if states is None else states
     by_id = {e.id: e for e in entries}
@@ -210,6 +228,12 @@ def activate(
     direct: list[tuple[ActivatableEntry, str]] = []
     for entry in entries:
         via = _tick_entry(entry, entry.id in hit_ids, states)
+        if (
+            via == "key"
+            and recursive_hit_ids is not None
+            and entry.id in recursive_hit_ids
+        ):
+            via = "recursive"
         if via is not None:
             direct.append((entry, via))
 
@@ -217,9 +241,16 @@ def activate(
     seen: set[str] = set()
     for entry, via in direct:
         text, referred = _resolve_content(entry, by_name, (entry.id,), 0)
+        depth = 0
+        if (
+            via == "recursive"
+            and hit_depths is not None
+            and entry.id in recursive_hit_ids
+        ):
+            depth = hit_depths.get(entry.id, 0)
         activations.append(
             ResolvedActivation(
-                entry_id=entry.id, content=text, via=via, depth=0
+                entry_id=entry.id, content=text, via=via, depth=depth
             )
         )
         seen.add(entry.id)

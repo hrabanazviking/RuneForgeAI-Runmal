@@ -7,13 +7,27 @@ state (one tick, no sticky/cooldown/delay carryover). The result explains,
 per entry, whether it would be injected and why, so the editor's preview
 can never drift from the server activation engine: it *is* the engine,
 called with the book's rows.
+
+Opt-in recursive mode (P-031): with ``recursive_scan=True`` the
+preview uses recursive scanning -- keys found in a fired entry's
+own content can fire further entries -- and the result gains
+recursion metadata. The default (``recursive_scan=False``) path
+is unchanged. The scan's token budget bounds recursive expansion;
+final inclusion is still decided by the budget/priority pass, so a
+directly-hit entry over budget shows as discarded, never as
+silently untriggered.
 """
 
 from __future__ import annotations
 
 from runmal.lorebooks.activation import ActivatableEntry, activate
 from runmal.lorebooks.budget import BudgetCandidate, resolve_budget
-from runmal.lorebooks.scan import ScanEntry, scan_entries
+from runmal.lorebooks.scan import (
+    MAX_RECURSIVE_SCAN_DEPTH,
+    ScanEntry,
+    scan_entries,
+    scan_entries_recursive,
+)
 
 
 def preview_activation(
@@ -22,6 +36,9 @@ def preview_activation(
     scan_depth: int,
     token_budget: int | None,
     seed: int | None = None,
+    *,
+    recursive_scan: bool = False,
+    max_recursion_depth: int = MAX_RECURSIVE_SCAN_DEPTH,
 ) -> dict:
     """Preview one activation tick for ``entries`` (ORM rows, service order).
 
@@ -41,10 +58,27 @@ def preview_activation(
     act_view = [ActivatableEntry.from_orm(e) for e in entries]
     by_id = {str(e.id): e for e in entries}
 
-    hits = scan_entries(scan_view, list(messages), scan_depth)
-    hit_by_id = {h.entry_id: h for h in hits}
-
-    result = activate(act_view, set(hit_by_id))
+    recursive_result = None
+    if recursive_scan:
+        recursive_result = scan_entries_recursive(
+            scan_view,
+            list(messages),
+            scan_depth,
+            max_recursion_depth=max_recursion_depth,
+            token_budget=token_budget,
+        )
+        hits = recursive_result.hits
+        hit_by_id = {h.entry_id: h for h in hits}
+        result = activate(
+            act_view,
+            set(hit_by_id),
+            recursive_hit_ids={h.entry_id for h in hits if h.depth > 0},
+            hit_depths={h.entry_id: h.depth for h in hits if h.depth > 0},
+        )
+    else:
+        hits = scan_entries(scan_view, list(messages), scan_depth)
+        hit_by_id = {h.entry_id: h for h in hits}
+        result = activate(act_view, set(hit_by_id))
     act_by_id = {a.entry_id: a for a in result.activations}
 
     candidates = [
@@ -98,9 +132,16 @@ def preview_activation(
                 row["discard_reason"] = dropped.reason
         rows.append(row)
 
-    return {
+    preview: dict = {
         "scan_depth": scan_depth,
         "token_budget": token_budget,
         "tokens_used": budget.tokens_used,
         "entries": rows,
     }
+    if recursive_scan:
+        assert recursive_result is not None
+        preview["recursive_scan"] = True
+        preview["max_recursion_depth"] = max_recursion_depth
+        preview["recursion_depth_reached"] = recursive_result.depth_reached
+        preview["recursion_budget_exhausted"] = recursive_result.budget_exhausted
+    return preview
