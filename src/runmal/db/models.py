@@ -43,6 +43,9 @@ class Character(Base):
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
     # Soft delete (S303): trashed characters are hidden but recoverable.
     deleted_at: Mapped[datetime | None] = mapped_column(nullable=True, default=None)
+    version_no: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    lineage_id: Mapped[str | None] = mapped_column(String(36), nullable=True, default=None)
+    content_hash: Mapped[str] = mapped_column(String(64), nullable=False, default="")
 
 
 class Chat(Base):

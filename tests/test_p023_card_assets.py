@@ -202,8 +202,8 @@ def test_migration_0020_present_and_applied(tmp_path):
     applied = migrate_to_head(db_path)
     assert "0020" in [m[0] for m in MIGRATIONS]
     assert "0020" in applied
-    assert applied[-1] == "0021"
-    assert current_revision(db_path) == "0021"
+    assert applied[-1] == "0022"
+    assert current_revision(db_path) == "0022"
 
 
 def test_character_assets_table_exists_with_contracted_columns(tmp_path):

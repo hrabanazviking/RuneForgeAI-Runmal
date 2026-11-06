@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
-from fastapi.responses import Response
+from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.cards import CardParseError
-from runmal.characters import service
+from runmal.characters import service, versioning
 from runmal.characters.service import UnsafeFilenameError, character_to_dict
 from runmal.db.deps import get_owner_id, get_session
 
@@ -45,6 +45,11 @@ async def create_character(
         character = await service.create_character(session, user_id, body.card, body.name)
     except CardParseError as exc:
         raise HTTPException(status_code=422, detail=f"invalid card: {exc.kind}") from exc
+    if getattr(character, versioning.DUPLICATE_ATTR, False):
+        return JSONResponse(
+            status_code=200,
+            content={**character_to_dict(character), "duplicate_exact": True},
+        )
     return character_to_dict(character)
 
 
@@ -67,6 +72,36 @@ async def get_character(
     if character is None:
         raise HTTPException(status_code=404, detail="character not found")
     return character_to_dict(character)
+
+
+@router.get("/characters/{character_id}/versions")
+async def list_character_versions(
+    character_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    payload = await versioning.list_versions(session, user_id, character_id)
+    if payload is None:
+        raise HTTPException(status_code=404, detail="character not found")
+    return payload
+
+
+@router.get("/characters/{character_id}/versions/{version_no}")
+async def get_character_version(
+    character_id: str,
+    version_no: int,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    character = await service.get_character(session, user_id, character_id)
+    if character is None:
+        raise HTTPException(status_code=404, detail="character not found")
+    payload = await versioning.get_version(
+        session, user_id, character_id, version_no
+    )
+    if payload is None:
+        raise HTTPException(status_code=404, detail="version not found")
+    return payload
 
 
 @router.patch("/characters/{character_id}")

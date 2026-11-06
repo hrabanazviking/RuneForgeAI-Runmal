@@ -8,7 +8,7 @@ import shutil
 from datetime import UTC, datetime
 from pathlib import Path
 
-from sqlalchemy import delete, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.assets.service import (
@@ -20,6 +20,14 @@ from runmal.auth import data_dir
 from runmal.cards import import_card
 from runmal.cards.exporter import export_json
 from runmal.cards.models import CharacterCard
+from runmal.characters.versioning import (
+    DUPLICATE_ATTR,
+    content_hash_of,
+    effective_content_hash,
+    effective_lineage_id,
+    find_name_siblings,
+    lineage_max_version,
+)
 from runmal.db.models import Character
 
 MAX_AVATAR_BYTES = 16 * 1024 * 1024
@@ -65,6 +73,9 @@ def character_to_dict(character: Character) -> dict:
         "created_at": character.created_at.isoformat(),
         "has_avatar": bool(character.avatar_asset),
         "avatar_asset": character.avatar_asset,
+        "version_no": getattr(character, "version_no", None) or 1,
+        "lineage_id": effective_lineage_id(character),
+        "content_hash": effective_content_hash(character),
     }
 
 
@@ -89,14 +100,52 @@ async def create_character_from_card(
     creation continues (the P-022 discipline). With
     ``commit=False`` the row is only flushed, leaving the
     transaction to the caller (bulk import's per-file atomicity).
+
+    P-025: same-name cards are versioned, never silently
+    overwritten. The stored text's SHA-256 (the P-022 identity) is
+    compared live against every non-deleted same-name sibling: an
+    exact match returns that sibling unchanged, flagged with
+    ``DUPLICATE_ATTR`` so callers can tell it apart (no row is
+    added, no assets are ingested and nothing is committed on
+    that path). Otherwise the new row takes the next unused
+    ``version_no`` in the lineage (counting deleted rows, so a
+    number is never reused) and joins
+    the first sibling's lineage; a first-of-name row starts a new
+    lineage rooted at its own id. Row names stay unsuffixed:
+    versions are distinguished by ``version_no`` + ``lineage_id``
+    only. The digest is also stored in the ``content_hash`` column
+    as a creation-time index/cache; identity checks always
+    recompute it live (see ``versioning.effective_content_hash``).
     """
+    stored_text = export_json(card, "2").decode("utf-8")
+    digest = content_hash_of(stored_text)
+    effective_name = name or card.name
+    siblings = await find_name_siblings(session, user_id, effective_name)
+    for sib in siblings:
+        if effective_content_hash(sib) == digest:
+            setattr(sib, DUPLICATE_ATTR, True)
+            return sib
+    lineage_id = effective_lineage_id(siblings[0]) if siblings else None
+    if lineage_id is not None:
+        # Numbering counts every row the lineage has ever held,
+        # deleted rows included, so a version number is never
+        # reused after a soft delete (dedup above scans live
+        # siblings only).
+        version_no = await lineage_max_version(session, user_id, lineage_id) + 1
+    else:
+        version_no = 1
     character = Character(
         user_id=user_id,
-        name=name or card.name,
-        card_json=export_json(card, "2").decode("utf-8"),
+        name=effective_name,
+        card_json=stored_text,
+        version_no=version_no,
+        lineage_id=lineage_id,
+        content_hash=digest,
     )
     session.add(character)
     await session.flush()
+    if lineage_id is None:
+        character.lineage_id = character.id
     try:
         await ingest_card_assets(
             session,
