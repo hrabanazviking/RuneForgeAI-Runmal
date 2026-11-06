@@ -3100,3 +3100,16 @@ Last updated: 2026-10-31 ~14:15 EDT tick (P-017 banking deferred, no full run at
     ls-remote verification after the push recorded in
     the daily log). Next slice: P-019 lorebook file
     interop, in roadmap order.
+  - BANKED P-019 (keeper tick 2026-11-06 ~07:35 EST): lorebook file
+    interop — team-01 commit 7ae20f8 fast-forward merged into
+    yrsa/two-mirrors-build and pushed; ls-remote verified
+    7ae20f8bdbc01df8e1dcca904b86f1913d3dd8bd. Evidence (team-01
+    worktree hidden_files/ logs): battery 13/13, neighbours 95
+    passed, full suite 849 passed / 4 skipped / 1 failed — the one
+    failure is test_s503_stt.py::
+    test_real_faster_whisper_meets_predeclared_contract, the known
+    contention timing contract on the shared laptop; solo re-run
+    4/4 green. Carried limitation (in slice docs): file-layer
+    preservation only; the API/DB path drops unknown fields until
+    a Part III storage-deepening slice — must close before
+    end-to-end preservation is claimed.
