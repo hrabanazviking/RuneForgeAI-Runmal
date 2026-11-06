@@ -18,7 +18,7 @@ from pathlib import Path
 from runmal.cards import import_card
 from runmal.cards.exporter import export_json
 from runmal.lorebooks.transfer import parse_import
-from runmal.presets.service import validate_params
+from runmal.presets.interop import parse_preset
 
 CORPUS = Path(__file__).parent / "fixtures" / "interop"
 MANIFEST = json.loads((CORPUS / "manifest.json").read_text(encoding="utf-8"))
@@ -220,23 +220,48 @@ def test_native_rich_book_parses_fully() -> None:
 # --- presets ------------------------------------------------------------
 
 
-def test_st_textcompletion_preset_shape_and_param_bag_today() -> None:
-    preset = read_json("preset_st_textcompletion.json")
-    # The mirror's own key spellings ride through validate_params as
-    # opaque unknowns today; no canonical mapping exists yet (P-021).
-    bag = validate_params(
-        {k: preset[k] for k in ("temp", "top_p", "top_k", "min_p", "rep_pen", "tfs")}
-        | {"temperature": 0.8}
-    )
-    assert bag["temp"] == preset["temp"] and bag["rep_pen"] == preset["rep_pen"]
-    assert bag["min_p"] == preset["min_p"] and bag["tfs"] == preset["tfs"]
-    assert bag["temperature"] == 0.8
+def test_st_textcompletion_preset_imports_with_real_mapping() -> None:
+    parsed = parse_preset(read("preset_st_textcompletion.json"))
+    assert parsed.name == "Corpus Community Preset"
+    assert parsed.source_format == "st-text"
+    # P-021's real mapping: mirror spellings land in the canonical bag
+    assert parsed.params == {
+        "temperature": 0.9,
+        "top_p": 0.92,
+        "top_k": 40,
+        "min_p": 0.05,
+        "repetition_penalty": 1.08,
+        "frequency_penalty": 0,
+        "presence_penalty": 0,
+        "max_tokens": 350,
+        "context_length": 8192,
+    }
+    # seed -1 is the unset sentinel: absent from the bag, kept in raw
+    assert "seed" not in parsed.params and parsed.raw["seed"] == -1
+    # mirror-only sampler keys ride in raw carriage, never in the bag
+    assert parsed.raw["tfs"] == 0.95 and "tfs" not in parsed.params
+    assert parsed.raw["dry_base"] == 1.75 and "dry_base" not in parsed.params
 
 
-def test_st_chatcompletion_preset_structure_survives_json() -> None:
-    preset = read_json("preset_st_chatcompletion.json")
-    again = json.loads(json.dumps(preset))
-    assert [p["identifier"] for p in again["prompt_order"]] == [
+def test_st_chatcompletion_preset_imports_with_bag_and_carriage() -> None:
+    parsed = parse_preset(read("preset_st_chatcompletion.json"))
+    assert parsed.source_format == "st-chat"
+    assert parsed.name == "Imported preset"
+    assert parsed.params == {
+        "temperature": 0.85,
+        "top_p": 0.95,
+        "frequency_penalty": 0,
+        "presence_penalty": 0,
+        "max_tokens": 900,
+        "context_length": 128000,
+    }
+    assert [p["identifier"] for p in parsed.prompts] == [
+        "main",
+        "worldInfoBefore",
+        "jailbreak",
+    ]
+    assert parsed.prompts[0]["content"].startswith("You are an expert actor")
+    assert [e["identifier"] for e in parsed.prompt_order] == [
         "main",
         "worldInfoBefore",
         "personaDescription",
@@ -246,7 +271,13 @@ def test_st_chatcompletion_preset_structure_survives_json() -> None:
         "chatHistory",
         "jailbreak",
     ]
-    assert again["prompts"][0]["identifier"] == "main"
+    char_entry = next(
+        e for e in parsed.prompt_order if e["identifier"] == "charDescription"
+    )
+    assert char_entry["enabled"] is False
+    # carriage: backend/model keys ride in raw, never in the bag
+    assert parsed.raw["logit_bias"] == {} and "logit_bias" not in parsed.params
+    assert parsed.raw["model"] == "corpus-model"
 
 
 # --- chat + persona (formats whose importers land later) -----------------

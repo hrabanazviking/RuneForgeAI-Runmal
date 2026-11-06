@@ -158,6 +158,9 @@ class SamplingPreset(Base):
     name: Mapped[str] = mapped_column(String(200), nullable=False)
     params_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
     template_ref: Mapped[str] = mapped_column(String(200), nullable=False, default="")
+    # Preset interop carriage (P-021): origin format + lossless original.
+    source_format: Mapped[str] = mapped_column(String(40), nullable=False, default="native")
+    interop_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
     updated_at: Mapped[datetime | None] = mapped_column(nullable=True, default=None)
 
