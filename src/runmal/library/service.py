@@ -247,6 +247,8 @@ def _lorebook_hash(book_fields: dict, entry_fields: list[dict]) -> str:
             "description": book_fields.get("description", ""),
             "scan_depth": book_fields.get("scan_depth", 4),
             "token_budget": book_fields.get("token_budget"),
+            "scan_mode": book_fields.get("scan_mode", "depth"),
+            "scan_external_context": book_fields.get("scan_external_context", False),
         },
         entry_fields,
     )

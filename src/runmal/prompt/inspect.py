@@ -20,6 +20,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from runmal.characters import service as character_service
 from runmal.lorebooks import service as lore_service
 from runmal.lorebooks.preview import preview_activation
+from runmal.lorebooks.windows import ScanSettings
 from runmal.prompt.composer import compose
 from runmal.prompt.slots import Slot, make_slot
 from runmal.prompt.trace import TraceSlot, build_trace, trace_to_dict
@@ -66,15 +67,17 @@ async def inspect_prompt(
     ]
     extras: list[TraceSlot] = []
 
+    persona_text = ""
     if character_id is not None:
         character = await character_service.get_character(session, user_id, character_id)
         if character is None:
             return None
+        persona_text = _persona_text(character)
         slots.append(
             make_slot(
                 "persona",
                 "system",
-                _persona_text(character),
+                persona_text,
                 id=f"persona/{character.id}",
                 provenance=f"character:{character.name}",
             )
@@ -85,7 +88,19 @@ async def inspect_prompt(
         if book is None:
             return None
         entries = await lore_service.list_entries(session, user_id, book_id)
-        preview = preview_activation(entries, messages, book.scan_depth, book.token_budget)
+        book_settings = ScanSettings.from_book(book)
+        preview = preview_activation(
+            entries,
+            messages,
+            book_settings.scan_depth,
+            book.token_budget,
+            scan_mode=book_settings.scan_mode,
+            scan_external_context=book_settings.scan_external_context,
+            # P-037: the persona text is the external context this
+            # pipeline actually holds; a book only scans it when
+            # its own scan_external_context setting admits it.
+            external_context=[persona_text] if persona_text else [],
+        )
         for row in preview["entries"]:
             slot_id = f"lore/{row['entry_id']}"
             provenance = f"lorebook:{book.name}"

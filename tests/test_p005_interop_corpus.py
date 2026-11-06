@@ -216,6 +216,10 @@ def test_native_rich_book_parses_fully() -> None:
         "description": "Rúnmál native shape at full stretch (the S304 export shape).",
         "scan_depth": 5,
         "token_budget": 800,
+        # P-037: book scan settings ride the native leg; the rich
+        # fixture predates them and reads as the defaults.
+        "scan_mode": "depth",
+        "scan_external_context": False,
     }
     ferry = entries[0]
     assert ferry["sticky_prompts"] == 3 and ferry["whole_word"] is False

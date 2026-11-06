@@ -25,6 +25,17 @@ Semantics (normative for the lorebook pipeline):
 - ``case_sensitive``: entry flag; matching is case-insensitive otherwise.
 - ``scan_depth``: only the last ``scan_depth`` message texts are scanned.
   A key appearing only in older messages does not trigger.
+- Scan windows (P-037): ``scan_entries_windowed`` scans the window a
+  book's stored ``ScanSettings`` (runmal.lorebooks.windows) resolves:
+  ``depth`` mode is exactly the window above; ``whole_chat`` scans
+  every message; and when the book's ``scan_external_context`` is on,
+  caller-supplied external context texts form a second segment,
+  appended after the chat segment and not counted against the
+  depth. A hit records chat matches in ``message_indices`` (indices
+  into the FULL message list, as above) and external matches in
+  ``external_indices`` (indices into the external list), so where a
+  key fired is never ambiguous. Primary and secondary keys may be
+  satisfied across segments -- the window is one context.
 - ``selective_logic``: secondary keys gate the primary hit by the
   entry's mode -- ``and_any`` (the default: at least one secondary
   matches), ``and_all`` (every secondary matches), ``not_any`` (no
@@ -68,10 +79,11 @@ the skip because they call ``scan_entries``).
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from runmal.lorebooks.logic import normalise_selective_logic, secondary_gate
 from runmal.lorebooks.states import normalise_vectorised
+from runmal.lorebooks.windows import ScanSettings, build_scan_window
 from runmal.tokens import estimate_tokens
 
 #: Hard cap on recursive-scan rounds (mirrors activation.MAX_RECURSION_DEPTH).
@@ -135,6 +147,9 @@ class ScanHit:
     depth: int = 0
     triggered_by: str | None = None
     selective_logic: str = "and_any"
+    # P-037: indices into the caller's external-context list for
+    # matches in the window's external segment (() when none).
+    external_indices: tuple[int, ...] = ()
 
 
 def _usable(keys: tuple[str, ...]) -> list[str]:
@@ -170,6 +185,54 @@ def _match_keys(
     return tuple(matched), tuple(sorted(indices))
 
 
+def _scan_texts(
+    entries: list[ScanEntry],
+    texts: list[str],
+) -> list[ScanHit]:
+    """Scan ``texts`` as one window; hit indices are window positions.
+
+    The single matching core: scan_entries (depth window) and
+    scan_entries_windowed (P-037 settings window) both run it and
+    then translate positions into their own index spaces, so the
+    two paths can never drift in matching semantics.
+    """
+    hits: list[ScanHit] = []
+    for entry in entries:
+        if not entry.enabled or entry.constant or entry.vectorised:
+            continue
+        primaries = _usable(entry.keys)
+        if not primaries:
+            continue
+        matched_p, idx_p = _match_keys(
+            primaries, texts, 0, entry.whole_word, entry.case_sensitive
+        )
+        if not matched_p:
+            continue
+        secondaries = _usable(entry.secondary_keys)
+        if secondaries:
+            matched_s, idx_s = _match_keys(
+                secondaries, texts, 0, entry.whole_word, entry.case_sensitive
+            )
+            if not secondary_gate(
+                entry.selective_logic,
+                secondary_count=len(secondaries),
+                matched_count=len(matched_s),
+            ):
+                continue
+        else:
+            matched_s, idx_s = (), ()
+        hits.append(
+            ScanHit(
+                entry_id=entry.id,
+                matched_primary=matched_p,
+                matched_secondary=matched_s,
+                message_indices=tuple(sorted(set(idx_p) | set(idx_s))),
+                selective_logic=entry.selective_logic,
+            )
+        )
+    return hits
+
+
 def scan_entries(
     entries: list[ScanEntry],
     messages: list[str],
@@ -187,39 +250,52 @@ def scan_entries(
         return []
     window = messages[-scan_depth:]
     offset = len(messages) - len(window)
+    return [
+        replace(hit, message_indices=tuple(i + offset for i in hit.message_indices))
+        for hit in _scan_texts(entries, list(window))
+    ]
 
+
+def scan_entries_windowed(
+    entries: list[ScanEntry],
+    messages: list[str],
+    settings: ScanSettings,
+    external_context=(),
+) -> list[ScanHit]:
+    """Scan the window ``settings`` resolves (P-037).
+
+    Same matching semantics as :func:`scan_entries` (the shared
+    ``_scan_texts`` core), over the window built by
+    runmal.lorebooks.windows: the chat segment per the book's
+    scan mode plus, when enabled, the external segment. Chat
+    matches report indices into the FULL ``messages`` list;
+    external matches report ``external_indices`` into
+    ``external_context``. With depth settings and no external
+    segment this returns exactly what ``scan_entries`` returns
+    for the same depth.
+    """
+    if not entries:
+        return []
+    window = build_scan_window(settings, list(messages), external_context)
+    if not window.texts:
+        return []
     hits: list[ScanHit] = []
-    for entry in entries:
-        if not entry.enabled or entry.constant or entry.vectorised:
-            continue
-        primaries = _usable(entry.keys)
-        if not primaries:
-            continue
-        matched_p, idx_p = _match_keys(
-            primaries, window, offset, entry.whole_word, entry.case_sensitive
-        )
-        if not matched_p:
-            continue
-        secondaries = _usable(entry.secondary_keys)
-        if secondaries:
-            matched_s, idx_s = _match_keys(
-                secondaries, window, offset, entry.whole_word, entry.case_sensitive
-            )
-            if not secondary_gate(
-                entry.selective_logic,
-                secondary_count=len(secondaries),
-                matched_count=len(matched_s),
-            ):
-                continue
-        else:
-            matched_s, idx_s = (), ()
+    for hit in _scan_texts(entries, list(window.texts)):
+        chat_idx: set[int] = set()
+        ext_idx: set[int] = set()
+        for pos in hit.message_indices:
+            msg_i = window.message_indices[pos]
+            if msg_i is not None:
+                chat_idx.add(msg_i)
+            else:
+                ext_i = window.external_indices[pos]
+                assert ext_i is not None
+                ext_idx.add(ext_i)
         hits.append(
-            ScanHit(
-                entry_id=entry.id,
-                matched_primary=matched_p,
-                matched_secondary=matched_s,
-                message_indices=tuple(sorted(set(idx_p) | set(idx_s))),
-                selective_logic=entry.selective_logic,
+            replace(
+                hit,
+                message_indices=tuple(sorted(chat_idx)),
+                external_indices=tuple(sorted(ext_idx)),
             )
         )
     return hits
@@ -242,10 +318,16 @@ def scan_entries_recursive(
     *,
     max_recursion_depth=MAX_RECURSIVE_SCAN_DEPTH,
     token_budget=None,
+    settings: ScanSettings | None = None,
+    external_context=None,
 ) -> RecursiveScanResult:
     """Recursively scan entries, following keyword links in entry content.
 
-    Round 0 is :func:`scan_entries` over ``messages``; later rounds scan
+    Round 0 is :func:`scan_entries` over ``messages`` -- or, when
+    ``settings`` is given (P-037), :func:`scan_entries_windowed`
+    over the book's resolved window (``scan_depth`` is then the
+    fallback for callers that pass no settings, and the settings'
+    own depth governs); later rounds scan
     each admitted entry's ``content`` for further entries' keys (BFS,
     deterministic admission order). An entry fires at most once per call
     (global seen set), which makes reference cycles terminate. See the
@@ -277,7 +359,12 @@ def scan_entries_recursive(
     tokens_used = 0
     budget_exhausted = False
 
-    round0_hits = scan_entries(entries, messages, scan_depth)
+    if settings is not None:
+        round0_hits = scan_entries_windowed(
+            entries, messages, settings, external_context or ()
+        )
+    else:
+        round0_hits = scan_entries(entries, messages, scan_depth)
     frontier: list[ScanEntry] = []
     for hit in round0_hits:
         if hit.entry_id in seen:
@@ -292,6 +379,8 @@ def scan_entries_recursive(
                 message_indices=hit.message_indices,
                 depth=0,
                 triggered_by=None,
+                selective_logic=hit.selective_logic,
+                external_indices=hit.external_indices,
             )
         )
         seen.add(hit.entry_id)
@@ -336,6 +425,7 @@ def scan_entries_recursive(
                         message_indices=(),
                         depth=depth,
                         triggered_by=parent.id,
+                        selective_logic=hit.selective_logic,
                     )
                 )
                 tokens_used += cost

@@ -23,6 +23,13 @@ from runmal.lorebooks.groups import (
 from runmal.lorebooks.logic import check_selective_logic, normalise_selective_logic
 from runmal.lorebooks.states import activation_kind_for
 from runmal.lorebooks.rng import check_probability, normalise_probability
+from runmal.lorebooks.windows import (
+    check_scan_depth,
+    check_scan_external_context,
+    check_scan_mode,
+    normalise_scan_external_context,
+    normalise_scan_mode,
+)
 
 VALID_POSITIONS = frozenset({"before_char", "after_char"})
 
@@ -68,6 +75,10 @@ def lorebook_to_dict(book: Lorebook, entry_count: int = 0) -> dict:
         "description": book.description,
         "scan_depth": book.scan_depth,
         "token_budget": book.token_budget,
+        "scan_mode": normalise_scan_mode(getattr(book, "scan_mode", None)),
+        "scan_external_context": normalise_scan_external_context(
+            getattr(book, "scan_external_context", None)
+        ),
         "created_at": book.created_at.isoformat(),
         "entry_count": entry_count,
     }
@@ -128,11 +139,12 @@ async def create_lorebook(
     description: str = "",
     scan_depth: int = 4,
     token_budget: int | None = None,
+    scan_mode: str = "depth",
+    scan_external_context: bool = False,
 ) -> Lorebook:
     if not name:
         raise ValueError("lorebook name must not be empty")
-    if scan_depth < 1:
-        raise ValueError("scan_depth must be >= 1")
+    check_scan_depth(scan_depth)
     if token_budget is not None and token_budget < 1:
         raise ValueError("token_budget must be >= 1")
     book = Lorebook(
@@ -141,6 +153,8 @@ async def create_lorebook(
         description=description,
         scan_depth=scan_depth,
         token_budget=token_budget,
+        scan_mode=check_scan_mode(scan_mode),
+        scan_external_context=check_scan_external_context(scan_external_context),
     )
     session.add(book)
     await session.commit()
@@ -170,6 +184,8 @@ async def update_lorebook(
     description: str | None = None,
     scan_depth: int | None = None,
     token_budget: int | None = None,
+    scan_mode: str | None = None,
+    scan_external_context: bool | None = None,
 ) -> Lorebook | None:
     book = await _get_owned_book(session, user_id, book_id)
     if book is None:
@@ -181,13 +197,17 @@ async def update_lorebook(
     if description is not None:
         book.description = description
     if scan_depth is not None:
-        if scan_depth < 1:
-            raise ValueError("scan_depth must be >= 1")
-        book.scan_depth = scan_depth
+        book.scan_depth = check_scan_depth(scan_depth)
     if token_budget is not None:
         if token_budget < 1:
             raise ValueError("token_budget must be >= 1")
         book.token_budget = token_budget
+    if scan_mode is not None:
+        book.scan_mode = check_scan_mode(scan_mode)
+    if scan_external_context is not None:
+        book.scan_external_context = check_scan_external_context(
+            scan_external_context
+        )
     await session.commit()
     return book
 

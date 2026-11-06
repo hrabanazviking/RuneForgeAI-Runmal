@@ -10,6 +10,7 @@ from runmal.db.deps import get_owner_id, get_session
 from runmal.lorebooks import service, transfer
 from runmal.lorebooks.preview import preview_activation
 from runmal.lorebooks.service import entry_to_dict, lorebook_to_dict
+from runmal.lorebooks.windows import ScanSettings, check_scan_mode
 
 router = APIRouter(tags=["lorebooks"])
 
@@ -19,6 +20,8 @@ class LorebookCreate(BaseModel):
     description: str = ""
     scan_depth: int = Field(default=4, ge=1)
     token_budget: int | None = Field(default=None, ge=1)
+    scan_mode: str = "depth"
+    scan_external_context: bool = False
 
 
 class LorebookUpdate(BaseModel):
@@ -26,6 +29,8 @@ class LorebookUpdate(BaseModel):
     description: str | None = None
     scan_depth: int | None = Field(default=None, ge=1)
     token_budget: int | None = Field(default=None, ge=1)
+    scan_mode: str | None = None
+    scan_external_context: bool | None = None
 
 
 class EntryCreate(BaseModel):
@@ -77,6 +82,9 @@ class PreviewRequest(BaseModel):
     seed: int | None = None
     vector_hit_ids: list[str] = Field(default_factory=list)
     roll_context: str = ""
+    scan_mode: str | None = None
+    scan_external_context: bool | None = None
+    external_context: list[str] = Field(default_factory=list)
 
 
 def _service_error(exc: ValueError) -> HTTPException:
@@ -97,6 +105,8 @@ async def create_lorebook(
             body.description,
             body.scan_depth,
             body.token_budget,
+            scan_mode=body.scan_mode,
+            scan_external_context=body.scan_external_context,
         )
     except ValueError as exc:
         raise _service_error(exc) from exc
@@ -168,18 +178,33 @@ async def preview_lorebook(
     """Activation preview (roadmap S209): run the server scan/activation/
     budget pipeline over sample messages and report, per entry, whether it
     would be injected and why. Unset scan_depth/token_budget fall back to
-    the book's stored values."""
+    the book's stored values. Unset scan settings (P-037: scan_mode /
+    scan_external_context) likewise fall back to the book's stored
+    settings; external_context carries the caller's external texts."""
     book = await service.get_lorebook(session, user_id, book_id)
     if book is None:
         raise HTTPException(status_code=404, detail="lorebook not found")
     entries = await service.list_entries(session, user_id, book_id) or []
-    scan_depth = body.scan_depth if body.scan_depth is not None else book.scan_depth
+    book_settings = ScanSettings.from_book(book)
+    scan_depth = body.scan_depth if body.scan_depth is not None else book_settings.scan_depth
     token_budget = body.token_budget if body.token_budget is not None else book.token_budget
+    scan_mode = body.scan_mode if body.scan_mode is not None else book_settings.scan_mode
+    scan_external = (
+        body.scan_external_context
+        if body.scan_external_context is not None
+        else book_settings.scan_external_context
+    )
     try:
+        # Strict at the API boundary: a bad mode override is a 422,
+        # never a silent fall back to a different window.
+        check_scan_mode(scan_mode)
         result = preview_activation(
             entries, body.messages, scan_depth, token_budget, seed=body.seed,
             vector_hit_ids=set(body.vector_hit_ids) if body.vector_hit_ids else None,
             roll_context=body.roll_context,
+            scan_mode=scan_mode,
+            scan_external_context=scan_external,
+            external_context=body.external_context,
         )
     except ValueError as exc:
         raise _service_error(exc) from exc
@@ -218,6 +243,8 @@ async def update_lorebook(
             description=body.description,
             scan_depth=body.scan_depth,
             token_budget=body.token_budget,
+            scan_mode=body.scan_mode,
+            scan_external_context=body.scan_external_context,
         )
     except ValueError as exc:
         raise _service_error(exc) from exc

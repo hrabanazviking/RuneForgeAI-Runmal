@@ -20,6 +20,10 @@ Export is Rúnmál's native shape. Import accepts two shapes:
    vectorized->vectorised (P-035; the native spelling is
    vectorised, and legacy native files may spell it
    "vectorized" - accepted as alias on the native leg).
+   scan_mode / scan_external_context (P-037, native leg only:
+   the per-book scan window, per runmal.lorebooks.windows;
+   world-info book settings ride in originalData, preserved
+   verbatim by interop.py -- the P-019 discipline),
    probability->probability (P-036, integer percent per
    runmal.lorebooks.rng; an explicit useProbability=false folds
    to 100 -- the gate is off -- because the store carries the
@@ -42,6 +46,11 @@ from runmal.lorebooks import service
 from runmal.lorebooks.groups import normalise_group_weight, normalise_inclusion_group
 from runmal.lorebooks.logic import normalise_selective_logic, selective_logic_from_code
 from runmal.lorebooks.rng import DEFAULT_PROBABILITY, normalise_probability
+from runmal.lorebooks.windows import (
+    check_scan_mode,
+    normalise_scan_external_context,
+    normalise_scan_mode,
+)
 from runmal.safety import SafetyError, validate_json_tree
 
 
@@ -54,6 +63,10 @@ def export_book(book: dict, entries: list[dict]) -> dict:
         "description": book.get("description", ""),
         "scan_depth": book.get("scan_depth", 4),
         "token_budget": book.get("token_budget"),
+        "scan_mode": normalise_scan_mode(book.get("scan_mode")),
+        "scan_external_context": normalise_scan_external_context(
+            book.get("scan_external_context")
+        ),
         "entries": [
             {
                 "name": e["name"],
@@ -202,6 +215,10 @@ def parse_import(data: dict) -> tuple[dict, list[dict]]:
                 "description": str(data.get("description") or ""),
                 "scan_depth": _as_int(data.get("scan_depth"), 4),
                 "token_budget": data.get("token_budget"),
+                "scan_mode": normalise_scan_mode(data.get("scan_mode")),
+                "scan_external_context": normalise_scan_external_context(
+                    data.get("scan_external_context")
+                ),
             }
     else:
         raise ValueError("'entries' must be an object or a list")
@@ -222,6 +239,8 @@ async def import_book(
         description=book_fields.get("description", ""),
         scan_depth=book_fields.get("scan_depth", 4),
         token_budget=book_fields.get("token_budget"),
+        scan_mode=book_fields.get("scan_mode", "depth"),
+        scan_external_context=book_fields.get("scan_external_context", False),
     )
     for fields in entry_fields:
         await service.create_entry(session, user_id, book.id, **fields)
@@ -250,6 +269,13 @@ def validate_parsed_book(book_fields: dict, entry_fields: list[dict]) -> list[di
         or token_budget < 1
     ):
         raise ValueError("token_budget must be >= 1")
+    # Scan windows (P-037): mirror create_lorebook's strict checks.
+    if "scan_mode" in book_fields:
+        check_scan_mode(book_fields["scan_mode"])
+    if "scan_external_context" in book_fields and not isinstance(
+        book_fields["scan_external_context"], bool
+    ):
+        raise ValueError("scan_external_context must be a bool")
     prepared: list[dict] = []
     for fields in entry_fields:
         prepared.append(
@@ -308,6 +334,10 @@ async def import_book_transactional(
     description = book_fields.get("description", "")
     scan_depth = book_fields.get("scan_depth", 4)
     token_budget = book_fields.get("token_budget")
+    scan_mode = normalise_scan_mode(book_fields.get("scan_mode"))
+    scan_external_context = normalise_scan_external_context(
+        book_fields.get("scan_external_context")
+    )
     try:
         async with session.begin_nested():
             book = Lorebook(
@@ -316,6 +346,8 @@ async def import_book_transactional(
                 description=description,
                 scan_depth=scan_depth,
                 token_budget=token_budget,
+                scan_mode=scan_mode,
+                scan_external_context=scan_external_context,
             )
             session.add(book)
             await session.flush()

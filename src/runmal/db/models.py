@@ -117,6 +117,13 @@ class Lorebook(Base):
     description: Mapped[str] = mapped_column(Text, nullable=False, default="")
     scan_depth: Mapped[int] = mapped_column(nullable=False, default=4)
     token_budget: Mapped[int | None] = mapped_column(nullable=True, default=None)
+    # Scan windows (P-037): which context window the scanner sees, as
+    # data -- scan_mode is the windows.py vocabulary ('depth' scans the
+    # last scan_depth messages, 'whole_chat' scans them all) and
+    # scan_external_context admits caller-supplied external context
+    # into the window as its own segment.
+    scan_mode: Mapped[str] = mapped_column(String(20), nullable=False, default="depth")
+    scan_external_context: Mapped[bool] = mapped_column(nullable=False, default=False)
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
 
 

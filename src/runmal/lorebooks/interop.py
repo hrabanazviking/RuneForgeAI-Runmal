@@ -55,6 +55,14 @@ Preservation discipline (INV-009, the P-018 persona pattern):
   absent.
 - Book-level unknowns and the book's ``originalData`` mapping
   survive verbatim the same way.
+- Scan windows (P-037): the native shape carries the book's
+  ``scan_mode`` / ``scan_external_context`` first-class (with
+  ``scan_depth``); world-info book settings -- including the
+  ``originalData`` mapping that carries them -- ride verbatim
+  as data, exactly as ``scan_depth`` did before this slice.
+  The per-entry world-info ``scanDepth`` field likewise stays
+  preserved-as-data in ``extra``: P-037's settings are
+  per-book, and no per-entry semantics are claimed for it.
 
 No database schema changes: the interop model is a file model,
 like P-018's. The DB import path (`transfer.import_book`) keeps
@@ -74,6 +82,10 @@ from runmal.lorebooks.groups import (
     normalise_inclusion_group,
 )
 from runmal.lorebooks.rng import DEFAULT_PROBABILITY, normalise_probability
+from runmal.lorebooks.windows import (
+    normalise_scan_external_context,
+    normalise_scan_mode,
+)
 from runmal.lorebooks.logic import (
     DEFAULT_SELECTIVE_LOGIC,
     normalise_selective_logic,
@@ -243,6 +255,8 @@ class LorebookFile:
     description: str = ""
     scan_depth: int | None = None
     token_budget: int | None = None
+    scan_mode: str = "depth"
+    scan_external_context: bool = False
     original_data: dict | None = None
     extra: dict = field(default_factory=dict)
     raw: dict = field(default_factory=dict, compare=False)
@@ -255,6 +269,8 @@ class LorebookFile:
             book["description"] = self.description
             book["scan_depth"] = self.scan_depth if self.scan_depth is not None else 4
             book["token_budget"] = self.token_budget
+            book["scan_mode"] = self.scan_mode
+            book["scan_external_context"] = self.scan_external_context
         return book
 
 
@@ -389,6 +405,10 @@ def parse_lorebook_file(data: bytes | str | dict) -> LorebookFile:
             description=_as_str(data.get("description")),
             scan_depth=_as_int(data.get("scan_depth"), 4),
             token_budget=data.get("token_budget"),
+            scan_mode=normalise_scan_mode(data.get("scan_mode")),
+            scan_external_context=normalise_scan_external_context(
+                data.get("scan_external_context")
+            ),
             extra={
                 k: copy.deepcopy(v)
                 for k, v in data.items()
@@ -399,6 +419,8 @@ def parse_lorebook_file(data: bytes | str | dict) -> LorebookFile:
                     "description",
                     "scan_depth",
                     "token_budget",
+                    "scan_mode",
+                    "scan_external_context",
                     "format",
                     "version",
                 )
@@ -513,6 +535,8 @@ def export_native(book: LorebookFile) -> dict:
         "description": book.description,
         "scan_depth": book.scan_depth if book.scan_depth is not None else 4,
         "token_budget": book.token_budget,
+        "scan_mode": book.scan_mode,
+        "scan_external_context": book.scan_external_context,
         "entries": [e.native_fields() for e in book.entries],
     }
 
@@ -532,6 +556,10 @@ def worldinfo_from_native(book: dict, entries: list[dict]) -> dict:
         description=_as_str(book.get("description")),
         scan_depth=_as_int(book.get("scan_depth"), 4),
         token_budget=book.get("token_budget"),
+        scan_mode=normalise_scan_mode(book.get("scan_mode")),
+        scan_external_context=normalise_scan_external_context(
+            book.get("scan_external_context")
+        ),
         entries=[
             _entry_from_native({k: v for k, v in e.items() if k not in bookkeeping})
             for e in entries
