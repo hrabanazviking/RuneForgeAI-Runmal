@@ -93,6 +93,7 @@ from runmal.lorebooks.scan import (
 )
 from runmal.lorebooks.windows import ScanSettings, build_scan_window
 from runmal.lorebooks.states import activation_kind_for, normalise_vectorised
+from runmal.lorebooks.vector_match import match_vectorised_sync
 
 
 def preview_activation(
@@ -106,6 +107,10 @@ def preview_activation(
     recursive_scan: bool = False,
     max_recursion_depth: int = MAX_RECURSIVE_SCAN_DEPTH,
     vector_hit_ids: set[str] | None = None,
+    vector_match=None,
+    vector_embedder=None,
+    vector_threshold=None,
+    vector_max_entries=None,
     scan_mode: str | None = None,
     scan_external_context: bool | None = None,
     external_context: list[str] | None = None,
@@ -125,6 +130,21 @@ def preview_activation(
     is P-041). Vector-fired rows honestly report
     ``matched_primary`` / ``matched_secondary`` empty (no keyword
     matched), with ``via="vector"``.
+
+    Vectorised lore (P-041): the matcher is live here now. When
+    the caller supplies neither ``vector_hit_ids`` nor a computed
+    ``vector_match`` outcome, ``vector_embedder`` (a sync callable
+    taking a text list and returning an EmbeddingResult or vector
+    sequence -- ``LocalEmbeddingBackend.embed_sync`` is the
+    built-in) runs the matcher over this tick's window, honouring
+    ``vector_threshold`` / ``vector_max_entries``. Async callers
+    precompute the outcome with ``match_vectorised`` and pass it
+    as ``vector_match``. Either way the result gains a
+    ``vector_match`` summary (mode, degraded, fallback reason,
+    provenance, ranked scores, cap count) when the book holds
+    vectorised candidates, every row gains ``vector_score`` (the
+    candidate's cosine, or None), and keyword-fallback rows report
+    their real matched keys with ``via="vector_fallback"``.
     """
     if scan_depth < 1:
         raise ValueError("scan_depth must be >= 1")
@@ -141,6 +161,31 @@ def preview_activation(
     )
     external_texts = list(external_context or ())
     window = build_scan_window(settings, list(messages), external_texts)
+
+    # P-041: run the embedding matcher when nobody supplied hits.
+    # A caller-supplied vector_match outcome (async live paths)
+    # wins over the sync embedder; explicit vector_hit_ids (the
+    # P-035 seam) win over both and leave the summary absent,
+    # exactly the pre-P-041 shape.
+    vector_fallback_ids: set[str] | None = None
+    if vector_match is not None:
+        if vector_hit_ids is None:
+            vector_hit_ids = set(vector_match.hit_ids)
+        vector_fallback_ids = set(vector_match.fallback_ids)
+    elif vector_hit_ids is None and vector_embedder is not None:
+        vector_match = match_vectorised_sync(
+            entries,
+            list(messages),
+            vector_embedder,
+            threshold=vector_threshold,
+            max_entries=vector_max_entries,
+            settings=settings,
+            external_context=external_texts,
+        )
+        vector_hit_ids = set(vector_match.hit_ids)
+        vector_fallback_ids = set(vector_match.fallback_ids)
+    if vector_match is not None and not vector_match.candidates:
+        vector_match = None
 
     scan_view = [ScanEntry.from_orm(e) for e in entries]
     act_view = [ActivatableEntry.from_orm(e) for e in entries]
@@ -165,6 +210,7 @@ def preview_activation(
             recursive_hit_ids={h.entry_id for h in hits if h.depth > 0},
             hit_depths={h.entry_id: h.depth for h in hits if h.depth > 0},
             vector_hit_ids=vector_hit_ids,
+            vector_fallback_ids=vector_fallback_ids,
         )
     else:
         hits = scan_entries_windowed(
@@ -172,8 +218,18 @@ def preview_activation(
         )
         hit_by_id = {h.entry_id: h for h in hits}
         result = activate(
-            act_view, set(hit_by_id), vector_hit_ids=vector_hit_ids
+            act_view,
+            set(hit_by_id),
+            vector_hit_ids=vector_hit_ids,
+            vector_fallback_ids=vector_fallback_ids,
         )
+    if vector_match is not None:
+        # Keyword-fallback hits carry real matched keys; report
+        # them on the row like any keyword hit (the row's via
+        # stays "vector_fallback" -- the keys are provenance,
+        # not a disguise).
+        for fb_hit in vector_match.keyword_hits:
+            hit_by_id.setdefault(fb_hit.entry_id, fb_hit)
     act_by_id = {a.entry_id: a for a in result.activations}
     group_loser_by_id = {row.entry_id: row for row in result.group_losers}
     group_suppressed_by_id = {a.entry_id: a for a in result.group_suppressed}
@@ -213,6 +269,9 @@ def preview_activation(
             "activation_kind": activation_kind_for(bool(entry.constant), vectorised),
             "matched_primary": [],
             "matched_secondary": [],
+            "vector_score": (
+                vector_match.scores.get(entry_id) if vector_match is not None else None
+            ),
             "external_indices": [],
             "via": None,
             "depth": None,
@@ -278,6 +337,8 @@ def preview_activation(
         "roll_context": roll_context,
         "entries": rows,
     }
+    if vector_match is not None:
+        preview["vector_match"] = vector_match.to_dict()
     if budget.rolls:
         preview["probability_rolls"] = [r.to_dict() for r in budget.rolls]
     if group_loser_by_id:
