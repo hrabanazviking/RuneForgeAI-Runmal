@@ -3467,3 +3467,31 @@ Last updated: 2026-10-31 ~14:15 EDT tick (P-017 banking deferred, no full run at
     in roadmap order: P-038 (team-02, position & depth
     control - gate finding F1's road; relaunched this tick
     from the cancelled lead's intact uncommitted work).
+  - BANKED P-038 (keeper tick 2026-11-06 ~17:05 EST): position
+    & depth control - entries inject at declared positions/
+    depths in the prompt, gate finding F1 CLOSED (at_depth
+    entries now enter the DB store whole; transfer code 4 no
+    longer collapses to before_char) - team-02 commit b843095
+    merged (no-ff) into yrsa/two-mirrors-build as 670c989
+    and pushed; ls-remote verified
+    670c9891b383877edf4ed2754e4e547f907d02f4.
+    Evidence (team-02 worktree hidden_files/P038_EVIDENCE.md
+    and logs): battery 151/151, neighbours 1043, full suite
+    1846 passed / 4 skipped / 0 failed on its base. Forge
+    confirmation suite at the merged tree: 1901 passed /
+    4 skipped / 0 failed; s503 did not fire. Migration 0030
+    (lorebook placement) STANDS as numbered - P-037 took the
+    reserved 0029 banking first; head is now 0030. Merge
+    conflicts (migration registry, lorebooks interop/preview/
+    service, 17 head-pin test files) resolved keeping BOTH
+    slices' work: chain 0028 -> 0029 -> 0030 composed (the
+    registry union first fused the 0029/0030 triples into
+    one 6-tuple - split at merge, the P-036 defect class),
+    head pins healed at merge to the merged truth (exact
+    head/sequence pins updated to 0030, no assertion
+    weakened; combined batteries at the merged tree 906
+    passed). The slice was built by the relaunched team-02
+    lead continuing the cancelled lead's intact uncommitted
+    work - nothing restarted or discarded. Next in roadmap
+    order: P-039 (team-03, character-book binding; in
+    flight from base 1ef4ec6, provisional migration 0031).
