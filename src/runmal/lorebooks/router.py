@@ -122,6 +122,7 @@ async def import_lorebook(
 @router.get("/lorebooks/{book_id}/export")
 async def export_lorebook(
     book_id: str,
+    format: str = "native",
     user_id: str = Depends(get_owner_id),
     session: AsyncSession = Depends(get_session),
 ):
@@ -129,9 +130,19 @@ async def export_lorebook(
     if book is None:
         raise HTTPException(status_code=404, detail="lorebook not found")
     entries = await service.list_entries(session, user_id, book_id)
-    return transfer.export_book(
-        lorebook_to_dict(book, len(entries or [])),
-        [entry_to_dict(e) for e in entries or []],
+    book_dict = lorebook_to_dict(book, len(entries or []))
+    entry_dicts = [entry_to_dict(e) for e in entries or []]
+    if format == "native":
+        return transfer.export_book(book_dict, entry_dicts)
+    if format == "worldinfo":
+        # P-019: the ST world-info shape, from the natively-modelled
+        # fields only (the DB holds no Part III extras to hand back).
+        from runmal.lorebooks.interop import worldinfo_from_native
+
+        return worldinfo_from_native(book_dict, entry_dicts)
+    raise HTTPException(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        detail=f"unknown export format: {format!r} (valid: native, worldinfo)",
     )
 
 

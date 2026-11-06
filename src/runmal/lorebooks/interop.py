@@ -1,0 +1,451 @@
+"""Lorebook file interop (P-019).
+
+ST world-info JSON in/out: entries, keys, and settings preserved.
+Part III deepens *behaviour* (selective logic, probability,
+recursion, groups, at-depth placement); this slice is the file
+layer — nothing a world-info file carries is silently dropped on
+the way in, and the way back out hands it back.
+
+Two shapes are read:
+
+1. **World-info** — ``{"name": ..., "entries": {"<uid>": {...}}}``
+   (``entries`` may also be a list), the SillyTavern-style shape
+   `transfer.parse_import` already maps a subset of.
+2. **Native** — Rúnmál's own ``runmal-lorebook`` shape, as
+   `transfer.export_book` produces it.
+
+Clean-room basis: the world-info shape and field set are as
+recorded by P-005's authored corpus (fixtures authored fresh from
+public documentation) and P-002's census of SillyTavern's official
+public documentation (ST-15–ST-27). No mirror source code was read.
+
+Preservation discipline (INV-009, the P-018 persona pattern):
+
+- Every entry keeps its complete original mapping in ``raw``;
+  export starts from ``raw`` and overlays the normalized known
+  fields, so unknown-but-valid fields survive verbatim.
+- The per-entry fields Part III owns (selective logic,
+  probability, recursion flags, groups, scan depth, filters,
+  triggers, decorators, budget and outlet fields, source ``id`` /
+  ``displayIndex``) are carried in ``extra`` as data, never
+  interpreted here and never dropped.
+- Position codes attested in-tree are mapped as data:
+  0 -> ``before_char``, 1 -> ``after_char``, 4 -> ``at_depth``
+  (P-005's pinned at-depth code; the native shape already carries
+  ``at_depth`` as a position string). Any other code is preserved
+  verbatim in ``position_code`` with the native position left at
+  ``before_char`` and no semantics claimed — the code hands back
+  unchanged on export.
+- At-depth companions ``depth`` / ``role`` are preserved as data
+  (``depth`` tolerantly coerced, ``role`` verbatim — its code
+  table is Part III's to define); neither is fabricated when
+  absent.
+- Book-level unknowns and the book's ``originalData`` mapping
+  survive verbatim the same way.
+
+No database schema changes: the interop model is a file model,
+like P-018's. The DB import path (`transfer.import_book`) keeps
+storing the natively-modelled subset; the file round trip loses
+nothing.
+"""
+
+from __future__ import annotations
+
+import copy
+import json
+from dataclasses import dataclass, field
+
+from runmal.lorebooks.transfer import _as_int
+
+#: World-info fields this slice maps to Rúnmál's native entry
+#: fields (the P-005 mapped set, plus the at-depth companions).
+WORLDINFO_MAPPED_FIELDS = frozenset(
+    {
+        "comment",
+        "name",
+        "content",
+        "key",
+        "keysecondary",
+        "constant",
+        "disable",
+        "order",
+        "position",
+        "caseSensitive",
+        "matchWholeWords",
+        "sticky",
+        "cooldown",
+        "delay",
+        "depth",
+        "role",
+    }
+)
+
+#: Native entry fields mapped by this slice (the export_book set).
+NATIVE_MAPPED_FIELDS = frozenset(
+    {
+        "name",
+        "content",
+        "keys",
+        "secondary_keys",
+        "priority",
+        "position",
+        "enabled",
+        "constant",
+        "case_sensitive",
+        "whole_word",
+        "sticky_prompts",
+        "cooldown_prompts",
+        "delay_prompts",
+    }
+)
+
+#: Attested world-info position codes -> native position strings.
+POSITION_FROM_CODE = {0: "before_char", 1: "after_char", 4: "at_depth"}
+#: Native position strings -> world-info codes (reverse of the above).
+CODE_FROM_POSITION = {v: k for k, v in POSITION_FROM_CODE.items()}
+
+
+class LorebookParseError(ValueError):
+    """A lorebook file import failed for a clear, testable reason."""
+
+
+def _as_str(value: object) -> str:
+    return value if isinstance(value, str) else ""
+
+
+def _as_str_list(value: object) -> list[str]:
+    if isinstance(value, str):
+        return [value]
+    if isinstance(value, list):
+        return [str(k) for k in value]
+    return []
+
+
+def _position_code(value: object) -> int | None:
+    """Tolerant position code: null/absent/non-numeric -> None."""
+    if isinstance(value, bool) or value is None:
+        return None
+    if isinstance(value, int):
+        return value
+    if isinstance(value, float) and value.is_integer():
+        return int(value)
+    if isinstance(value, str):
+        try:
+            return int(value.strip())
+        except ValueError:
+            return None
+    return None
+
+
+@dataclass
+class WorldInfoEntry:
+    """One lorebook entry, as exchanged in lorebook files."""
+
+    name: str = ""
+    content: str = ""
+    keys: list[str] = field(default_factory=list)
+    secondary_keys: list[str] = field(default_factory=list)
+    priority: int = 100
+    position: str = "before_char"
+    position_code: int | None = None
+    enabled: bool = True
+    constant: bool = False
+    case_sensitive: bool = False
+    whole_word: bool = True
+    sticky_prompts: int = 0
+    cooldown_prompts: int = 0
+    delay_prompts: int = 0
+    depth: int | None = None
+    role: object = None
+    uid: str | None = None
+    extra: dict = field(default_factory=dict)
+    raw: dict = field(default_factory=dict, compare=False)
+    source: str = "worldinfo"
+
+    def native_fields(self) -> dict:
+        """The natively-modelled subset, in parse_import's shape."""
+        return {
+            "name": self.name,
+            "content": self.content,
+            "keys": list(self.keys),
+            "secondary_keys": list(self.secondary_keys),
+            "priority": self.priority,
+            "position": self.position,
+            "enabled": self.enabled,
+            "constant": self.constant,
+            "case_sensitive": self.case_sensitive,
+            "whole_word": self.whole_word,
+            "sticky_prompts": self.sticky_prompts,
+            "cooldown_prompts": self.cooldown_prompts,
+            "delay_prompts": self.delay_prompts,
+        }
+
+
+@dataclass
+class LorebookFile:
+    """A whole lorebook file: book settings + entries, whole."""
+
+    name: str
+    entries: list[WorldInfoEntry] = field(default_factory=list)
+    description: str = ""
+    scan_depth: int | None = None
+    token_budget: int | None = None
+    original_data: dict | None = None
+    extra: dict = field(default_factory=dict)
+    raw: dict = field(default_factory=dict, compare=False)
+    source_format: str = "worldinfo"
+
+    def native_book_fields(self) -> dict:
+        """Book fields in parse_import's shape (mapped subset)."""
+        book: dict = {"name": self.name}
+        if self.source_format == "native":
+            book["description"] = self.description
+            book["scan_depth"] = self.scan_depth if self.scan_depth is not None else 4
+            book["token_budget"] = self.token_budget
+        return book
+
+
+def _entry_from_worldinfo(raw: dict, uid: str | None) -> WorldInfoEntry:
+    if not isinstance(raw, dict):
+        raise LorebookParseError("world-info entry must be a JSON object")
+    code = _position_code(raw.get("position"))
+    whole_word = raw.get("matchWholeWords")
+    depth_raw = raw.get("depth")
+    return WorldInfoEntry(
+        name=_as_str(raw.get("comment") or raw.get("name") or ""),
+        content=_as_str(raw.get("content")),
+        keys=_as_str_list(raw.get("key")),
+        secondary_keys=_as_str_list(raw.get("keysecondary")),
+        priority=_as_int(raw.get("order"), 100),
+        position=POSITION_FROM_CODE.get(code, "before_char"),
+        position_code=code,
+        enabled=not bool(raw.get("disable", False)),
+        constant=bool(raw.get("constant", False)),
+        case_sensitive=bool(raw.get("caseSensitive", False)),
+        whole_word=True if whole_word is None else bool(whole_word),
+        sticky_prompts=_as_int(raw.get("sticky"), 0),
+        cooldown_prompts=_as_int(raw.get("cooldown"), 0),
+        delay_prompts=_as_int(raw.get("delay"), 0),
+        depth=None if depth_raw is None else _as_int(depth_raw, 0),
+        role=copy.deepcopy(raw.get("role")),
+        uid=uid,
+        extra={
+            k: copy.deepcopy(v)
+            for k, v in raw.items()
+            if k not in WORLDINFO_MAPPED_FIELDS
+        },
+        raw=copy.deepcopy(raw),
+    )
+
+
+def _entry_from_native(raw: dict) -> WorldInfoEntry:
+    if not isinstance(raw, dict):
+        raise LorebookParseError("native lorebook entry must be a JSON object")
+    position = _as_str(raw.get("position")) or "before_char"
+    return WorldInfoEntry(
+        name=_as_str(raw.get("name")),
+        content=_as_str(raw.get("content")),
+        keys=_as_str_list(raw.get("keys")),
+        secondary_keys=_as_str_list(raw.get("secondary_keys")),
+        priority=_as_int(raw.get("priority"), 100),
+        position=position,
+        position_code=CODE_FROM_POSITION.get(position),
+        enabled=bool(raw.get("enabled", True)),
+        constant=bool(raw.get("constant", False)),
+        case_sensitive=bool(raw.get("case_sensitive", False)),
+        whole_word=bool(raw.get("whole_word", True)),
+        sticky_prompts=_as_int(raw.get("sticky_prompts"), 0),
+        cooldown_prompts=_as_int(raw.get("cooldown_prompts"), 0),
+        delay_prompts=_as_int(raw.get("delay_prompts"), 0),
+        extra={
+            k: copy.deepcopy(v)
+            for k, v in raw.items()
+            if k not in NATIVE_MAPPED_FIELDS
+        },
+        raw=copy.deepcopy(raw),
+        source="native",
+    )
+
+
+def parse_lorebook_file(data: bytes | str | dict) -> LorebookFile:
+    """Parse a world-info or native lorebook file, whole."""
+    if isinstance(data, (bytes, bytearray)):
+        try:
+            text = bytes(data).decode("utf-8")
+        except UnicodeDecodeError as exc:
+            raise LorebookParseError(f"lorebook file is not UTF-8: {exc}") from exc
+        data = text
+    if isinstance(data, str):
+        try:
+            data = json.loads(data)
+        except json.JSONDecodeError as exc:
+            raise LorebookParseError(f"lorebook file is not valid JSON: {exc}") from exc
+    if not isinstance(data, dict):
+        raise LorebookParseError("lorebook file must be a JSON object")
+    raw_entries = data.get("entries")
+    if raw_entries is None:
+        raise LorebookParseError("lorebook file has no 'entries'")
+
+    if isinstance(raw_entries, dict):
+        ordered = [
+            (k, raw_entries[k])
+            for k in sorted(raw_entries, key=lambda k: (len(str(k)), str(k)))
+        ]
+        entries = [_entry_from_worldinfo(e, uid=str(k)) for k, e in ordered]
+        source_format = "worldinfo"
+    elif isinstance(raw_entries, list):
+        if raw_entries and isinstance(raw_entries[0], dict) and (
+            "key" in raw_entries[0] or "keysecondary" in raw_entries[0]
+        ):
+            entries = [_entry_from_worldinfo(e, uid=None) for e in raw_entries]
+            source_format = "worldinfo"
+        else:
+            # A list of native-shaped entries is the native shape,
+            # with or without the format marker (parse_import's own
+            # rule treats it so).
+            entries = [_entry_from_native(e) for e in raw_entries]
+            source_format = "native"
+    else:
+        raise LorebookParseError("'entries' must be an object or a list")
+
+    if source_format == "native":
+        name = _as_str(data.get("name"))
+        if not name:
+            raise LorebookParseError("lorebook file needs a name")
+        return LorebookFile(
+            name=name,
+            entries=entries,
+            description=_as_str(data.get("description")),
+            scan_depth=_as_int(data.get("scan_depth"), 4),
+            token_budget=data.get("token_budget"),
+            extra={
+                k: copy.deepcopy(v)
+                for k, v in data.items()
+                if k
+                not in (
+                    "name",
+                    "entries",
+                    "description",
+                    "scan_depth",
+                    "token_budget",
+                    "format",
+                    "version",
+                )
+            },
+            raw=copy.deepcopy(data),
+            source_format="native",
+        )
+
+    original = data.get("originalData")
+    return LorebookFile(
+        name=_as_str(data.get("name")) or "Imported lorebook",
+        entries=entries,
+        original_data=copy.deepcopy(original) if isinstance(original, dict) else None,
+        extra={
+            k: copy.deepcopy(v)
+            for k, v in data.items()
+            if k not in ("name", "entries", "originalData")
+        },
+        raw=copy.deepcopy(data),
+        source_format="worldinfo",
+    )
+
+
+def _export_worldinfo_entry(entry: WorldInfoEntry) -> dict:
+    # Only a world-info-shaped raw may seed the export; a native
+    # entry's raw carries native spellings that are not world-info
+    # fields and must not leak in as duplicates.
+    obj: dict = copy.deepcopy(entry.raw) if entry.source == "worldinfo" and entry.raw else {}
+    # World-info spellings are overlaid from the normalized fields;
+    # fields that arrived in the file keep their place, fields that
+    # never arrived are written only when they carry a value the
+    # defaults would lose (the persona no-fabrication rule).
+    obj["comment"] = entry.name
+    obj["content"] = entry.content
+    obj["key"] = list(entry.keys)
+    obj["keysecondary"] = list(entry.secondary_keys)
+    obj["constant"] = entry.constant
+    obj["disable"] = not entry.enabled
+    obj["order"] = entry.priority
+    code = entry.position_code
+    if code is None:
+        code = CODE_FROM_POSITION.get(entry.position, 0)
+    obj["position"] = code
+    if "caseSensitive" in obj or entry.case_sensitive:
+        obj["caseSensitive"] = entry.case_sensitive
+    if "matchWholeWords" in obj or not entry.whole_word:
+        obj["matchWholeWords"] = entry.whole_word
+    for src, value in (
+        ("sticky", entry.sticky_prompts),
+        ("cooldown", entry.cooldown_prompts),
+        ("delay", entry.delay_prompts),
+    ):
+        if src in obj or value:
+            obj[src] = value
+    if entry.depth is not None:
+        obj["depth"] = entry.depth
+    if entry.role is not None:
+        obj["role"] = copy.deepcopy(entry.role)
+    # Part III fields and unknowns ride back verbatim.
+    for key, value in entry.extra.items():
+        obj[key] = copy.deepcopy(value)
+    return obj
+
+
+def export_worldinfo(book: LorebookFile) -> dict:
+    """Export as a world-info JSON object (uid-keyed entries)."""
+    obj: dict = {}
+    if book.source_format == "worldinfo" and book.raw:
+        obj = copy.deepcopy(book.raw)
+    obj["name"] = book.name
+    entries_obj: dict = {}
+    for index, entry in enumerate(book.entries):
+        uid = entry.uid if entry.uid is not None else str(index)
+        entries_obj[uid] = _export_worldinfo_entry(entry)
+    obj["entries"] = entries_obj
+    if book.original_data is not None:
+        obj["originalData"] = copy.deepcopy(book.original_data)
+    for key, value in book.extra.items():
+        obj.setdefault(key, copy.deepcopy(value))
+    return obj
+
+
+def export_worldinfo_bytes(book: LorebookFile) -> bytes:
+    return json.dumps(export_worldinfo(book), ensure_ascii=False, indent=2).encode("utf-8")
+
+
+def export_native(book: LorebookFile) -> dict:
+    """Export in Rúnmál's native shape (transfer.export_book's set)."""
+    return {
+        "format": "runmal-lorebook",
+        "version": 1,
+        "name": book.name,
+        "description": book.description,
+        "scan_depth": book.scan_depth if book.scan_depth is not None else 4,
+        "token_budget": book.token_budget,
+        "entries": [e.native_fields() for e in book.entries],
+    }
+
+
+def worldinfo_from_native(book: dict, entries: list[dict]) -> dict:
+    """World-info export for a book held as native API dicts.
+
+    Used by the export endpoint's ``format=worldinfo`` shape: only
+    the natively-modelled fields exist on that side, so only they
+    are written — nothing is fabricated from nothing.
+    """
+    # API dicts carry DB bookkeeping (ids, timestamps) that is not
+    # file content; it must not leak into the exported file.
+    bookkeeping = {"id", "lorebook_id", "created_at", "updated_at"}
+    file = LorebookFile(
+        name=_as_str(book.get("name")) or "Imported lorebook",
+        description=_as_str(book.get("description")),
+        scan_depth=_as_int(book.get("scan_depth"), 4),
+        token_budget=book.get("token_budget"),
+        entries=[
+            _entry_from_native({k: v for k, v in e.items() if k not in bookkeeping})
+            for e in entries
+        ],
+        source_format="native",
+    )
+    return export_worldinfo(file)
