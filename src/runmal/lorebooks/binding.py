@@ -275,6 +275,10 @@ def normalise_book_entry(raw: dict) -> dict:
         ),
         "selective_logic": _normalise_selective_logic(raw),
         "constant": bool(raw.get("constant", False)),
+        # Entry states (P-035) via P-041: the vectorised flag rides
+        # the embedded-book leg too -- before P-041 a vectorized
+        # character-book entry silently materialised as selective.
+        "vectorised": _bool_field(raw, ("vectorised", "vectorized"), False),
         "enabled": enabled,
         "priority": _priority_of_raw(raw),
         "position": _normalise_position(raw.get("position")),
@@ -618,6 +622,7 @@ async def materialise_character_book(
                 position=fields["position"],
                 enabled=fields["enabled"],
                 constant=fields["constant"],
+                vectorised=fields["vectorised"],
                 case_sensitive=fields["case_sensitive"],
                 whole_word=fields["whole_word"],
                 sticky_prompts=fields["sticky_prompts"],
@@ -675,6 +680,7 @@ async def serialise_bound_book(session: AsyncSession, binding) -> dict:
                 "case_sensitive": data["case_sensitive"],
                 "whole_word": data["whole_word"],
                 "constant": data["constant"],
+                "vectorized": data["vectorised"],
                 "selective_logic": data["selective_logic"],
                 "position": data["position"],
                 "id": index,
@@ -748,8 +754,26 @@ async def merged_preview(
         effective_token_budget = world_book.token_budget
     else:
         effective_token_budget = character_book.token_budget
+    # Vectorised lore (P-041): the merged preview is a live path
+    # too -- run the embedding matcher over the merged winners
+    # (the owner's active profile backend, or the deterministic
+    # local backend) so a vectorised winner can fire here.
+    from runmal.lorebooks.vector_match import (
+        match_vectorised,
+        resolve_lore_embedding_backend,
+    )
+
+    lore_backend = await resolve_lore_embedding_backend(session, user_id)
+    vector_outcome = await match_vectorised(
+        winners, list(messages), backend=lore_backend
+    )
     result = preview_activation(
-        winners, messages, effective_scan_depth, effective_token_budget, seed=seed
+        winners,
+        messages,
+        effective_scan_depth,
+        effective_token_budget,
+        seed=seed,
+        vector_match=vector_outcome if vector_outcome.candidates else None,
     )
     for row in result.get("entries", []):
         row["scope"] = scope_by_id.get(_text(row.get("entry_id") or ""))

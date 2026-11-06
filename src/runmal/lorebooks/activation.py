@@ -168,7 +168,7 @@ class EntryState:
 class ResolvedActivation:
     entry_id: str
     content: str  # with {{lore:...}} references expanded
-    via: str  # "constant" | "key" | "sticky" | "delay" | "reference" | "recursive" | "vector"
+    via: str  # constant|key|sticky|delay|reference|recursive|vector|vector_fallback
     depth: int  # recursion depth; 0 = directly activated
 
 
@@ -195,6 +195,7 @@ def _tick_entry(
     key_hit: bool,
     vector_hit: bool,
     states: dict[str, EntryState],
+    fallback_hit: bool = False,
 ) -> str | None:
     """Process one entry for one tick. Returns the via-tag or None."""
     if not entry.enabled:
@@ -216,16 +217,22 @@ def _tick_entry(
         return None
     # Trigger dispatch on the derived kind (P-035): a vectorised
     # entry fires only from a vector hit, a selective entry only
-    # from a key hit -- the two hit kinds never cross.
+    # from a key hit -- the two hit kinds never cross. P-041 adds
+    # exactly one sanctioned crossing: a keyword-fallback hit,
+    # which the matcher supplies ONLY when embeddings were
+    # unavailable or matched nothing at/above threshold; it fires
+    # via "vector_fallback", honestly labelled, never "vector".
     is_vectorised = entry.activation_kind == KIND_VECTORISED
-    triggered = vector_hit if is_vectorised else key_hit
+    triggered = (vector_hit or fallback_hit) if is_vectorised else key_hit
     if triggered:
         if entry.delay_prompts > 0:
             state.delay_armed = True
             state.delay_remaining = entry.delay_prompts
             return None
         _arm_post(state, entry)
-        return "vector" if is_vectorised else "key"
+        if is_vectorised:
+            return "vector" if vector_hit else "vector_fallback"
+        return "key"
     if state.sticky_remaining > 0:
         state.sticky_remaining -= 1
         return "sticky"
@@ -273,6 +280,7 @@ def activate(
     recursive_hit_ids: set[str] | None = None,
     hit_depths: dict[str, int] | None = None,
     vector_hit_ids: set[str] | None = None,
+    vector_fallback_ids: set[str] | None = None,
 ) -> ActivationResult:
     """Run one activation tick.
 
@@ -288,8 +296,16 @@ def activate(
     Absent/None = pre-P-031 behaviour, unchanged.
 
     ``vector_hit_ids``: entry ids hit by vector matching this tick
-    (P-035; the embedding matcher itself is P-041).
-    Absent/None = no vector hits.
+    (P-035; the embedding matcher itself is P-041 --
+    ``runmal.lorebooks.vector_match`` computes these in the live
+    paths now). Absent/None = no vector hits.
+
+    ``vector_fallback_ids`` (P-041): entry ids hit by the keyword
+    fallback -- supplied by the matcher only when embeddings were
+    unavailable or no vector score reached the threshold. A
+    fallback hit fires a vectorised entry via "vector_fallback";
+    it never fires a selective entry (those use ``hit_ids``) and
+    a real vector hit on the same entry wins the "vector" label.
 
     Entry states (P-035): one engine dispatches on the derived
     kind (``activation_kind``: constant / selective / vectorised);
@@ -321,6 +337,7 @@ def activate(
             entry.id in hit_ids,
             entry.id in (vector_hit_ids or set()),
             states,
+            fallback_hit=entry.id in (vector_fallback_ids or set()),
         )
         if (
             via == "key"

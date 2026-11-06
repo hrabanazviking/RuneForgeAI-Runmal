@@ -251,6 +251,10 @@ async def run_activation_tick(
     recursive_hit_ids: set[str] | None = None,
     hit_depths: dict[str, int] | None = None,
     vector_hit_ids: set[str] | None = None,
+    vector_messages: list[str] | None = None,
+    embedding_backend=None,
+    vector_threshold=None,
+    vector_max_entries=None,
 ) -> ActivationResult | None:
     """Run one activation tick for a real chat, persisting the counters.
 
@@ -262,7 +266,12 @@ async def run_activation_tick(
     computation stays outside; ``hit_ids`` (plus the P-031 recursive
     passthroughs) are given.
     ``vector_hit_ids`` (P-035) passes through to ``activate()``.
-    Returns ``None`` -- persisting nothing --
+    Vectorised lore (P-041): when ``vector_hit_ids`` is not given
+    but ``embedding_backend`` and ``vector_messages`` are, the
+    embedding matcher runs over the book's entries and the
+    messages and supplies both the vector hits and any keyword-
+    fallback hits -- the persisted tick is a live path now, not
+    a dormant seam. Returns ``None`` -- persisting nothing --
     when the chat or the book is missing or not owned.
     """
     if await get_chat(session, user_id, chat_id) is None:
@@ -274,6 +283,19 @@ async def run_activation_tick(
     states = await load_entry_states(session, user_id, chat_id, entry_ids)
     if states is None:
         return None
+    vector_fallback_ids: set[str] | None = None
+    if vector_hit_ids is None and embedding_backend is not None and vector_messages is not None:
+        from runmal.lorebooks.vector_match import match_vectorised
+
+        outcome = await match_vectorised(
+            entries,
+            list(vector_messages),
+            backend=embedding_backend,
+            threshold=vector_threshold,
+            max_entries=vector_max_entries,
+        )
+        vector_hit_ids = set(outcome.hit_ids)
+        vector_fallback_ids = set(outcome.fallback_ids)
     view = [ActivatableEntry.from_orm(entry) for entry in entries]
     result = activate(
         view,
@@ -282,6 +304,7 @@ async def run_activation_tick(
         recursive_hit_ids=recursive_hit_ids,
         hit_depths=hit_depths,
         vector_hit_ids=vector_hit_ids,
+        vector_fallback_ids=vector_fallback_ids,
     )
     await save_entry_states(session, user_id, chat_id, result.states, entry_ids=entry_ids)
     return result

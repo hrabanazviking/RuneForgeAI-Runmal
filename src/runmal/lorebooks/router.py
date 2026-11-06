@@ -85,6 +85,8 @@ class PreviewRequest(BaseModel):
     token_budget: int | None = Field(default=None, ge=1)
     seed: int | None = None
     vector_hit_ids: list[str] = Field(default_factory=list)
+    vector_threshold: float | None = Field(default=None, ge=-1, le=1)
+    vector_max_entries: int | None = Field(default=None, ge=1)
     roll_context: str = ""
     scan_mode: str | None = None
     scan_external_context: bool | None = None
@@ -202,9 +204,39 @@ async def preview_lorebook(
         # Strict at the API boundary: a bad mode override is a 422,
         # never a silent fall back to a different window.
         check_scan_mode(scan_mode)
+        # Vectorised lore (P-041): with no caller-supplied vector
+        # hits, the embedding matcher runs live -- the owner's
+        # active embedding profile's backend, or the deterministic
+        # local backend when no profile is active -- over the same
+        # resolved scan window the preview itself will use.
+        vector_match = None
+        if not body.vector_hit_ids:
+            from runmal.lorebooks.vector_match import (
+                match_vectorised,
+                resolve_lore_embedding_backend,
+            )
+            from runmal.lorebooks.windows import ScanSettings as _ScanSettings
+
+            backend = await resolve_lore_embedding_backend(session, user_id)
+            outcome = await match_vectorised(
+                entries,
+                body.messages,
+                backend=backend,
+                threshold=body.vector_threshold,
+                max_entries=body.vector_max_entries,
+                settings=_ScanSettings.normalised(
+                    scan_depth=scan_depth,
+                    scan_mode=scan_mode,
+                    scan_external_context=scan_external,
+                ),
+                external_context=body.external_context,
+            )
+            if outcome.candidates:
+                vector_match = outcome
         result = preview_activation(
             entries, body.messages, scan_depth, token_budget, seed=body.seed,
             vector_hit_ids=set(body.vector_hit_ids) if body.vector_hit_ids else None,
+            vector_match=vector_match,
             roll_context=body.roll_context,
             scan_mode=scan_mode,
             scan_external_context=scan_external,

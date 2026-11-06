@@ -144,17 +144,35 @@ async def inspect_prompt(
             )
         )
 
+    # Vectorised lore (P-041): the inspector is a live path -- the
+    # embedding matcher runs per book (the owner's active profile
+    # backend, or the deterministic local backend) so a vectorised
+    # entry can be included here, with its vector trigger shown.
+    from runmal.lorebooks.vector_match import (
+        match_vectorised,
+        resolve_lore_embedding_backend,
+    )
+
+    lore_backend = await resolve_lore_embedding_backend(session, user_id)
     for book_id in lorebook_ids or []:
         book = await lore_service.get_lorebook(session, user_id, book_id)
         if book is None:
             return None
         entries = await lore_service.list_entries(session, user_id, book_id)
         book_settings = ScanSettings.from_book(book)
+        vector_outcome = await match_vectorised(
+            entries or [],
+            messages,
+            backend=lore_backend,
+            settings=book_settings,
+            external_context=[persona_text] if persona_text else [],
+        )
         preview = preview_activation(
             entries,
             messages,
             book_settings.scan_depth,
             book.token_budget,
+            vector_match=vector_outcome if vector_outcome.candidates else None,
             scan_mode=book_settings.scan_mode,
             scan_external_context=book_settings.scan_external_context,
             # P-037: the persona text is the external context this
