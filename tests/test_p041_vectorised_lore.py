@@ -204,8 +204,10 @@ def test_cosine_contract():
         cosine_similarity((1.0,), (1.0, 0.0))
 
 
-def test_no_migration_head_stays_0031():
-    assert MIGRATIONS[-1][0] == "0031"
+def test_no_migration_p041_takes_none():
+    # P-041 itself added no migration; the merged head is 0032 (P-040, banked first).
+    assert MIGRATIONS[-1][0] == "0032"
+    assert "0031" in [m[0] for m in MIGRATIONS]
 
 
 # ------------------------------------------------------- local provider
