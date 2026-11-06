@@ -14,6 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from runmal.auth import data_dir
 from runmal.cards import import_card
 from runmal.cards.exporter import export_json
+from runmal.cards.models import CharacterCard
 from runmal.db.models import Character
 
 MAX_AVATAR_BYTES = 16 * 1024 * 1024
@@ -62,10 +63,22 @@ def character_to_dict(character: Character) -> dict:
     }
 
 
-async def create_character(
-    session: AsyncSession, user_id: str, card_data: dict, name: str | None = None
+async def create_character_from_card(
+    session: AsyncSession,
+    user_id: str,
+    card: CharacterCard,
+    *,
+    name: str | None = None,
+    commit: bool = True,
 ) -> Character:
-    card = import_card(json.dumps(card_data).encode(), "card.json")
+    """Create a Character from an already-parsed card (P-022).
+
+    Stores ``export_json(card, "2")`` exactly as ``create_character``
+    does. Embedded asset bytes (``card.assets``, e.g. from a CHARX
+    archive) are NOT persisted here - asset storage is P-023's work.
+    With ``commit=False`` the row is only flushed, leaving the
+    transaction to the caller (bulk import's per-file atomicity).
+    """
     character = Character(
         user_id=user_id,
         name=name or card.name,
@@ -73,8 +86,16 @@ async def create_character(
     )
     session.add(character)
     await session.flush()
-    await session.commit()
+    if commit:
+        await session.commit()
     return character
+
+
+async def create_character(
+    session: AsyncSession, user_id: str, card_data: dict, name: str | None = None
+) -> Character:
+    card = import_card(json.dumps(card_data).encode(), "card.json")
+    return await create_character_from_card(session, user_id, card, name=name)
 
 
 async def list_characters(session: AsyncSession, user_id: str) -> list[Character]:
