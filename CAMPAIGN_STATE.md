@@ -3495,3 +3495,29 @@ Last updated: 2026-10-31 ~14:15 EDT tick (P-017 banking deferred, no full run at
     work - nothing restarted or discarded. Next in roadmap
     order: P-039 (team-03, character-book binding; in
     flight from base 1ef4ec6, provisional migration 0031).
+  - BANKED P-039 (keeper tick 2026-11-06 ~17:35 EST): character-
+    book binding - a card's own lorebook travels with it and
+    merges with the world's by declared precedence - team-03
+    commit 1beb119 merged (no-ff) into yrsa/two-mirrors-build
+    as 42db500 and pushed; ls-remote verified
+    42db50015ed666b784019fa252ab3316370a83e2.
+    Evidence (team-03 worktree hidden_files/P039_EVIDENCE.md
+    and logs): battery 35/35, neighbours 554, full suite
+    1730 passed / 4 skipped / 0 failed on its base. Forge
+    confirmation suite at the merged tree: 1941 passed /
+    4 skipped / 0 failed; s503 did not fire. Migration 0031
+    (character_book_bindings) STANDS as numbered - P-037
+    took 0029 and P-038 took 0030, both banked first; head
+    is now 0031. Merge conflicts (migration registry,
+    clean-room log, 17 head-pin test files) resolved keeping
+    BOTH slices' work: chain 0029 -> 0030 -> 0031 composed
+    (registry tuple split at merge, the recurring defect
+    class), full-sequence lists restored where the union
+    had spliced the 0028 -> 0031 tail, head pins healed at
+    merge to the merged truth (exact pins updated to 0031,
+    no assertion weakened; combined batteries at the merged
+    tree 889 passed). Carried: prompt/inspect.py still
+    previews world books per-book; wiring the bound book
+    into inspect_prompt's loop is P-040's surface. Next in
+    roadmap order: P-040 (team-01, global + persona + chat
+    lore scopes).
