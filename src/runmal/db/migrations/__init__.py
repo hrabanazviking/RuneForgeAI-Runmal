@@ -27,6 +27,7 @@ from runmal.db.migrations import (
     m0017_bridge_outbox,
     m0018_bridge_idempotency,
     m0019_preset_interop,
+    m0020_library_organisation,
 )
 
 MIGRATIONS: list[tuple[str, str, object]] = [
@@ -120,5 +121,10 @@ MIGRATIONS: list[tuple[str, str, object]] = [
         m0019_preset_interop.REVISION,
         m0019_preset_interop.DESCRIPTION,
         m0019_preset_interop,
+    ),
+    (
+        m0020_library_organisation.REVISION,
+        m0020_library_organisation.DESCRIPTION,
+        m0020_library_organisation,
     ),
 ]

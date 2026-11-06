@@ -405,3 +405,4 @@ source in §0(2) and appends its entry here:
   own S207 preset system and migration chain. No preset file
   was downloaded; the slice's extra test presets are authored
   inline in the test module (P-005 discipline).
+- **P-024 (2026-11-06, own tree only):** no new external source and no mirror reading. Tag/favourite/library-organisation behaviour (per-card tags, a favourite flag, filter/search/sort over a card library) implements only the public, commonly documented library behaviour already recorded in P-002's census spirit; storage rides Rúnmál's own migration chain (0020) and the card parser/exporter. No SillyTavern or Voxta source code was read and no files were downloaded; the slice's test cards are authored fresh in the test module (P-005 discipline).
