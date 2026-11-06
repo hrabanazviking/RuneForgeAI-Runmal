@@ -3189,3 +3189,22 @@ Last updated: 2026-10-31 ~14:15 EDT tick (P-017 banking deferred, no full run at
     Carried limitations in the slice doc: cards only (no
     lorebook tagging), no UI or collections/folders.
     Next in roadmap order: P-025 (team-07).
+  - BANKED P-025 (keeper tick 2026-11-06 ~09:45 EST): duplicate
+    and version handling — team-07 commit bd74710 merged (no-ff)
+    into yrsa/two-mirrors-build as 440ab38 and pushed; ls-remote
+    verified 440ab384dc08eabe82bb42679cd3ba9975e8320e. Evidence
+    (team-07 worktree hidden_files/ logs): battery 19/19,
+    neighbours 256, full suite 1069 passed / 4 skipped / 0
+    failed. Forge confirmation suite at the merged tree: 1069
+    passed / 4 skipped / 0 failed (= 1050 + 19, exact).
+    Same-name cards are versioned (migration 0022 adds
+    version_no, lineage_id, content_hash to characters), never
+    silently overwritten; an exact live-hash duplicate returns
+    the sibling flagged duplicate_exact. In-slice fix:
+    version-detail 404 wordings separated (character not found
+    vs version not found). Carried limitations in the slice
+    doc: dedup scans live siblings only (re-importing content
+    identical to a soft-deleted character starts a fresh v1
+    lineage), multiple pre-P-025 legacy lineages under one
+    name stay separate, no restore/merge/rollback or UI.
+    Next in roadmap order: P-026 (team-08).
