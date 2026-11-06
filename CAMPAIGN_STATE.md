@@ -3274,3 +3274,26 @@ Last updated: 2026-10-31 ~14:15 EDT tick (P-017 banking deferred, no full run at
     no DB table until Part IX; chat_events and thumbnail
     bytes excluded (derived or regenerable).
     Next in roadmap order: P-029 (team-02, in flight).
+  - BANKED P-029 (keeper tick 2026-11-06 ~11:30 EST): provenance
+    on import — team-02 commit 95a4a49 merged (no-ff) into
+    yrsa/two-mirrors-build as 266ca44 and pushed; ls-remote
+    verified 266ca44679769a1107854055ea08334ae2cd50dd.
+    Evidence (team-02 worktree hidden_files/P029_EVIDENCE.md):
+    battery 14/14, neighbours 207, full suite 1178 passed / 4
+    skipped / 0 failed on its base (= 1164 + 14, exact). Forge
+    confirmation suite at the merged tree: 1188 passed / 4
+    skipped / 0 failed (= 1174 + 14, exact). One merge conflict
+    (docs/CLEAN_ROOM_LOG_2026-10-30.md, append-vs-append)
+    resolved keeping BOTH P-028 and P-029 entries. Migration
+    0023 (characters.provenance_json) STANDS as numbered —
+    P-028 took no migration, so no renumber was needed; head
+    is now 0023. Provenance records source kind, filename,
+    card format/spec, creator snapshots and original-byte
+    sha256 on library paths (null, never fabricated, for
+    api_json/copy); it closes the P-022 byte-provenance
+    limitation on library paths and travels via the .runmal
+    archive, not card exports. Carried limitations in the
+    slice doc: exact-duplicate re-import stores no new record;
+    legacy rows stay null; lorebooks carry no provenance in
+    this slice. Next in roadmap order: P-030 (Part II gate,
+    team-03).
