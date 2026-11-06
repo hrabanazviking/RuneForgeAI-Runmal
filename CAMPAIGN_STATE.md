@@ -3324,3 +3324,22 @@ Last updated: 2026-10-31 ~14:15 EDT tick (P-017 banking deferred, no full run at
     character-only, API path sha null by design.
     PART II (P-015..P-030) IS COMPLETE. Next: Part III
     (Lorebook Depth, P-031..P-048) in roadmap order.
+  - BANKED P-031 (keeper tick 2026-11-06 ~13:00 EST): Part III
+    opener - recursive lorebook scanning, entries triggering
+    entries with depth limits, cycle safety and token budget
+    enforced - team-01 commit 87aba91 merged (no-ff) into
+    yrsa/two-mirrors-build as 591e60c and pushed; ls-remote
+    verified 591e60c4c58c6dff372d257d0433ab23eac56929.
+    Evidence (team-01 worktree hidden_files/P031_EVIDENCE.md
+    and logs): battery 50/50, neighbours 134, full suite
+    1293 passed / 4 skipped / 0 failed. Forge confirmation
+    suite at the merged tree: 1293 passed / 4 skipped /
+    0 failed (= 1243 + 50, exact); s503 did not fire. No
+    migration (head stays 0023). Finished by a relaunched
+    lead continuing the interrupted lead uncommitted work;
+    five defects in that inherited implementation were found
+    and fixed in-slice (budget_exhausted at depth 0, depth
+    override leaking to non-recursive firings, recursion
+    depth above the hard cap 5 now clamped, one-shot
+    iterables materialised, duplicate entry ids fire once).
+    Next in roadmap order: P-032 (team-02, in flight).
