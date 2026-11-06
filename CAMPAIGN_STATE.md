@@ -3363,3 +3363,18 @@ Last updated: 2026-10-31 ~14:15 EDT tick (P-017 banking deferred, no full run at
     deliberate pin edits now that selectiveLogic is modelled
     on both file legs; no assertion weakened. Next in
     roadmap order: P-033 (team-03, timed effects).
+  - BANKED P-033 (keeper tick 2026-11-06 ~14:30 EST): timed
+    effects persistence - sticky/cooldown/delay entry state
+    across a chat's life - team-03 commit 82966cd merged
+    (no-ff) into yrsa/two-mirrors-build as fc0c449 and pushed;
+    ls-remote verified fc0c449553f55d737e2e97208e1960e55c59027a.
+    Evidence (team-03 worktree hidden_files/P033_EVIDENCE.md
+    and logs): battery 69/69, neighbours 269, full suite
+    1549 passed / 4 skipped / 0 failed on its base. Forge
+    confirmation suite at the merged tree: 1549 passed /
+    4 skipped / 0 failed (= 1480 + 69, exact); s503 did not
+    fire. Migration 0025 (chat_lore_entry_states) STANDS as
+    numbered - head is now 0025. No defects found in-slice;
+    no assertion weakened. F1 remains P-038's road. Next in
+    roadmap order: P-034 (team-01, inclusion groups; built,
+    held for this banking).
