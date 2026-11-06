@@ -232,7 +232,7 @@ def _canonical_lorebook_hash(shape: dict) -> str:
     canon = dict(shape)
     entries = canon.get("entries") or []
     canon["entries"] = sorted(
-        (json.dumps(e, sort_keys=True, ensure_ascii=False) for e in entries)
+        json.dumps(e, sort_keys=True, ensure_ascii=False) for e in entries
     )
     canon["entries"] = [json.loads(blob) for blob in canon["entries"]]
     blob = json.dumps(canon, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
@@ -406,6 +406,8 @@ async def _finish_card(
     entry.outcome = BulkOutcome.REPAIRED if repairs else BulkOutcome.ACCEPTED
     entry.created_id = character.id
     entry.created_name = character.name
+    if getattr(character, "version_no", 1) and character.version_no > 1:
+        entry.notes.append(f"versioned:v{character.version_no}")
     batch.batch_char_hashes[digest] = entry.relpath
     batch.batch_char_names[card.name] = character.id
     return entry
