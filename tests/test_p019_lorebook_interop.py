@@ -27,16 +27,17 @@ def read_json(name: str) -> dict:
     return json.loads((CORPUS / name).read_text(encoding="utf-8"))
 
 
-# The 17 fields P-005 pinned as dropped by the DB-path importer
+# The 15 fields P-005 pinned as dropped by the DB-path importer
 # (group/groupWeight were promoted to first-class fields by
 # P-034, vectorized by P-035; probability/useProbability by
-# P-036). P-019 preserves all of them at file level: depth/role
-# as first-class at-depth data, the other 15 verbatim in `extra`.
+# P-036; depth/role were promoted by P-019 as preserved data and
+# MODELLED by P-038 -- position & depth control). P-019 preserves
+# all of them at file level, verbatim in `extra`.
 P005_DROPPED = {
     "automationId", "characterFilter", "decorators", "delayUntilRecursion",
-    "depth", "displayIndex", "excludeRecursion", "groupOverride",
+    "displayIndex", "excludeRecursion", "groupOverride",
     "id", "ignoreBudget", "outletName", "preventRecursion",
-    "role", "scanDepth", "selective",
+    "scanDepth", "selective",
     "triggers", "useGroupScoring",
 }
 
@@ -58,8 +59,10 @@ def test_worldinfo_full_imports_whole() -> None:
 def test_p005_dropped_fields_are_preserved_as_data() -> None:
     book = parse_lorebook_file(read_json("lorebook_worldinfo_full.json"))
     gale = book.entries[0]
-    assert gale.depth == 4 and gale.role == 0  # at-depth companions, first-class
-    assert set(gale.extra) == P005_DROPPED - {"depth", "role"}
+    # at-depth companions, first-class: depth verbatim, role
+    # normalised to its NAME by P-038's code table (0 -> system).
+    assert gale.depth == 4 and gale.role == "system"
+    assert set(gale.extra) == P005_DROPPED
     assert gale.inclusion_group == "weather" and gale.group_weight == 75  # P-034 first-class
     assert "group" not in gale.extra and "groupWeight" not in gale.extra
     assert gale.probability == 80 and gale.use_probability is True  # P-036 first-class
@@ -76,12 +79,14 @@ def test_at_depth_position_code_maps_as_data() -> None:
     gale, harbour, tithe = book.entries
     # Code 4 is the at-depth code (P-005); the file layer now keeps
     # it as data instead of collapsing it. The DB-path importer
-    # still collapses it — P-038 owns the behaviour change there.
+    # as data instead of collapsing it, and since P-038 the DB-path
+    # importer maps it too (the pinned collapse is closed).
     assert gale.position == "at_depth" and gale.position_code == 4
     assert harbour.position == "before_char" and harbour.position_code == 0
     assert tithe.position == "after_char" and tithe.position_code == 1
     _, db_entries = parse_import(read_json("lorebook_worldinfo_full.json"))
-    assert db_entries[0]["position"] == "before_char"  # unchanged, deliberately
+    assert db_entries[0]["position"] == "at_depth"  # P-038: mapped, not collapsed
+    assert db_entries[0]["depth"] == 4 and db_entries[0]["role"] == "system"
 
 
 def test_worldinfo_round_trip_is_fixed_point() -> None:

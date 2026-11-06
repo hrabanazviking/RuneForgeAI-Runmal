@@ -24,9 +24,11 @@ fixtures: 5 cards, 3 lorebooks, 2 presets, 1 chat, 1 persona):
   Part II — its leg is file-model only, deliberately.
 - the only allowed losses are the pinned ones, each named and
   exact in this module: (a) lorebook DB-path dropped field set
-  (22 world-info fields, P-005) and position code 4 collapsing
-  to before_char at the DB layer (P-038 owns the real mapping),
-  plus the native at_depth entry the DB layer cannot hold yet;
+  (the world-info fields the DB path still drops, P-005).
+  Position code 4 (at_depth) collapsed to before_char at the DB
+  layer when this gate was written; P-038 closed that pin (the
+  store leg below now asserts the real mapping, and the native
+  at_depth book round-trips through the store whole);
   (b) the chat live-projection loss report (P-020), pinned as an
   exact list; (c) card spec_version collapsing to "2" through
   the character store, which stores the v2 export shape;
@@ -46,7 +48,6 @@ import hashlib
 import json
 from pathlib import Path
 
-import pytest
 
 from runmal.cards.archive import export_charx
 from runmal.cards.exporter import export_json, export_png
@@ -60,6 +61,7 @@ from runmal.db.base import create_db_engine, create_session_factory
 from runmal.db.migrate import migrate_to_head
 from runmal.db.models import User
 from runmal.lorebooks import service as lore_service
+from runmal.lorebooks.placement import normalise_role
 from runmal.lorebooks.interop import (
     export_native,
     export_worldinfo,
@@ -342,19 +344,17 @@ async def test_cards_store_provenance_carried_but_not_exported(tmp_path) -> None
 
 # --- 4. lorebooks, file leg (full clean, P-019's contract) -----------------
 
-# The 17 fields P-005 pinned as dropped by the DB-path importer
+# The 15 fields P-005 pinned as dropped by the DB-path importer
 # (group/groupWeight were promoted to first-class fields by
 # P-034, vectorized by P-035; probability/useProbability by
-# P-036). The file layer preserves all of them as data:
-# depth/role as first-class at-depth companions, the other 15
-# verbatim in extra.
+# P-036; depth/role MODELLED by P-038). The file layer preserves
+# all of them as data: the other 15 verbatim in extra.
 WORLDINFO_DROPPED_TODAY = frozenset(
     {
         "automationId",
         "characterFilter",
         "decorators",
         "delayUntilRecursion",
-        "depth",
         "displayIndex",
         "excludeRecursion",
         "groupOverride",
@@ -362,14 +362,13 @@ WORLDINFO_DROPPED_TODAY = frozenset(
         "ignoreBudget",
         "outletName",
         "preventRecursion",
-        "role",
         "scanDepth",
         "selective",
         "triggers",
         "useGroupScoring",
     }
 )
-assert len(WORLDINFO_DROPPED_TODAY) == 17  # group/groupWeight P-034, vectorized P-035, probability P-036
+assert len(WORLDINFO_DROPPED_TODAY) == 15  # promotions: P-034/P-035/P-036/P-038
 
 # Source fields the DB-path transfer layer maps (P-005's set).
 WORLDINFO_TRANSFER_MAPPED_SOURCE = frozenset(
@@ -393,6 +392,8 @@ WORLDINFO_TRANSFER_MAPPED_SOURCE = frozenset(
         "sticky",
         "cooldown",
         "delay",
+        "depth",
+        "role",
     }
 )
 
@@ -406,6 +407,8 @@ MAPPED_ENTRY_KEYS = (
     "group_weight",
     "probability",
     "priority",
+    "depth",
+    "role",
     "enabled",
     "constant",
     "case_sensitive",
@@ -453,9 +456,7 @@ def test_lorebooks_file_leg_dropped_fields_survive_as_data() -> None:
     for entry, uid in zip(book.entries, sorted(source["entries"])):
         raw_entry = source["entries"][uid]
         expected_extra = {
-            key
-            for key in raw_entry
-            if key in WORLDINFO_DROPPED_TODAY - {"depth", "role"}
+            key for key in raw_entry if key in WORLDINFO_DROPPED_TODAY
         }
         assert set(entry.extra) == expected_extra, entry.name
         for key in expected_extra:
@@ -463,10 +464,13 @@ def test_lorebooks_file_leg_dropped_fields_survive_as_data() -> None:
         if "depth" in raw_entry:
             assert entry.depth == raw_entry["depth"], entry.name
         if "role" in raw_entry:
-            assert entry.role == raw_entry["role"], entry.name
+            # P-038: the file layer normalises the role CODE to its
+            # name via placement's table (0 -> system).
+            assert entry.role == normalise_role(raw_entry["role"]), entry.name
     gale = book.entries[0]
-    assert set(gale.extra) == WORLDINFO_DROPPED_TODAY - {"depth", "role"}
-    assert gale.depth == 4 and gale.role == 0
+    assert set(gale.extra) == WORLDINFO_DROPPED_TODAY
+    # P-038: role is the normalised NAME (code 0 -> system).
+    assert gale.depth == 4 and gale.role == "system"
     assert gale.selective_logic == "not_all"
     assert gale.extra["scanDepth"] is None  # explicit null kept, not dropped
 
@@ -567,51 +571,53 @@ async def test_lorebooks_store_leg_worldinfo_mapped_only_clean(tmp_path) -> None
         for entry in exported["entries"]:
             assert set(entry) == {
                 "name", "content", "keys", "secondary_keys", "selective_logic", "inclusion_group", "group_weight", "probability", "vectorised", "priority",
-                "position", "enabled", "constant", "case_sensitive",
+                "position", "depth", "role", "enabled", "constant", "case_sensitive",
                 "whole_word", "sticky_prompts", "cooldown_prompts",
                 "delay_prompts",
             }, name
-    # PINNED LOSS (a), position half: source code 4 (at_depth) is
-    # stored as before_char by the DB path — P-038 owns the fix.
+    # PINNED LOSS (a), position half -- CLOSED by P-038: source
+    # code 4 (at_depth) is stored as at_depth by the DB path,
+    # with depth 4 and role code 0 read as the name system.
     exported = await _store_round_trip(
         factory, user_id, "lorebook_worldinfo_full.json"
     )
     # (second import of the same book is a distinct stored book;
     # read the Gale-Bell entry from this fresh export)
     gale = next(e for e in exported["entries"] if e["name"] == "The Gale-Bell")
-    assert gale["position"] == "before_char"
+    assert gale["position"] == "at_depth"
+    assert gale["depth"] == 4 and gale["role"] == "system"
 
 
 def test_lorebooks_store_leg_dropped_set_is_pinned_exactly() -> None:
     # PINNED LOSS (a), field half: source keys minus the transfer-
-    # mapped set EQUALS the named 17-field frozenset. A future
+    # mapped set EQUALS the named 15-field frozenset. A future
     # slice that shrinks this loss must edit this pin deliberately.
     source = read_json("lorebook_worldinfo_full.json")
     dropped = set(source["entries"]["0"]) - WORLDINFO_TRANSFER_MAPPED_SOURCE
     assert dropped == WORLDINFO_DROPPED_TODAY
-    assert len(dropped) == 17  # vectorized landed in P-035, probability/useProbability in P-036
+    assert len(dropped) == 15  # depth/role landed in P-038
 
 
-async def test_lorebooks_store_leg_native_at_depth_pinned_limitation(
+async def test_lorebooks_store_leg_native_at_depth_round_trips(
     tmp_path,
 ) -> None:
-    # PINNED LIMITATION (a, native half): the native fixture's
-    # at_depth entry is data the file layer holds whole, but the
-    # DB layer's positions are only before_char / after_char
-    # today, so the transactional store import refuses the book
-    # whole (nothing is left behind). P-038 owns at-depth in the
-    # DB; when it lands, this pin must be replaced by a clean
-    # native store round trip.
+    # PINNED LIMITATION (a, native half) -- CLOSED by P-038: where
+    # this gate pinned the transactional store import REFUSING the
+    # native at_depth book whole (ValueError: at_depth), the store
+    # now holds it clean. The Ferry is at_depth with NO depth/role
+    # declared in the fixture: depth stays None (undeclared is
+    # stored, never an invented number) and role reads back as the
+    # default name system.
     factory = make_factory(tmp_path)
     user_id = await make_user(factory)
-    async with factory() as session:
-        with pytest.raises(ValueError, match="at_depth"):
-            await import_book_transactional(
-                session, user_id, read_json("lorebook_native_rich.json")
-            )
-        await session.rollback()
-        books = await lore_service.list_lorebooks(session, user_id)
-    assert books == []
+    exported = await _store_round_trip(factory, user_id, "lorebook_native_rich.json")
+    by_name = {e["name"]: e for e in exported["entries"]}
+    ferry = by_name["The Ferry"]
+    assert ferry["position"] == "at_depth"
+    assert ferry["depth"] is None and ferry["role"] == "system"
+    assert by_name["Bruni's Rule"]["position"] == "before_char"
+    _parsed_book, parsed_entries = parse_import(read_json("lorebook_native_rich.json"))
+    assert _sorted_entries(exported["entries"]) == _sorted_entries(parsed_entries)
 
 
 # --- 6. presets, file + store legs -----------------------------------------

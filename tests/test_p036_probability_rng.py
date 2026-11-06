@@ -431,10 +431,15 @@ def test_migration_head_is_0029_p037():
     # 0027 is reserved for P-035 (entry states, concurrent, banks
     # first); the merged sequence runs 0026 -> 0027 -> 0028, and
     # P-037's 0029 moved the head after this slice banked.
-    assert MIGRATIONS[-1][0] == "0029"
-    assert MIGRATIONS[-2][0] == "0028"
-    assert MIGRATIONS[-3][0] == "0027"
-    assert MIGRATIONS[-4][0] == "0026"
+    assert MIGRATIONS[-1][0] == "0030"
+def test_migration_head_is_0030_provisional_p038():
+    # 0027 was P-035's reserved number (banked first); head moved
+    # -> 0030 by P-038 (0029 reserved for P-037, banking first).
+    # The sequence runs 0026 -> 0027 -> 0028 -> 0029 -> 0030.
+    assert MIGRATIONS[-1][0] == "0030"
+    assert MIGRATIONS[-2][0] == "0029"
+    assert MIGRATIONS[-3][0] == "0028"
+    assert MIGRATIONS[-4][0] == "0027"
 
 
 def test_migration_0028_column_exists_and_defaults(tmp_path):
@@ -480,7 +485,7 @@ def test_old_database_upgrades_in_place_preserving_entries(tmp_path):
     finally:
         conn.close()
     applied = migrate_to_head(db_path)
-    assert applied == ["0027", "0028", "0029"]
+    assert applied == ["0027", "0028", "0029", "0030"]
     conn = sqlite3.connect(db_path)
     try:
         row = conn.execute(

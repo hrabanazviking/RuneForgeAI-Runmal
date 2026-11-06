@@ -10,7 +10,8 @@ Export is Rúnmál's native shape. Import accepts two shapes:
    "order": int, "position": int}}}`` (``entries`` may also be a list).
    Field mapping: key->keys, keysecondary->secondary_keys,
    comment->name, order->priority, disable->not enabled,
-   position 0->before_char / 1->after_char (anything else -> before_char),
+   position 0->before_char / 1->after_char / 4->at_depth (anything
+   else -> before_char, via placement.normalise_position),
    caseSensitive->case_sensitive, matchWholeWords->whole_word,
    sticky/cooldown/delay -> sticky/cooldown/delay_prompts (P-005),
    selectiveLogic->selective_logic (P-032, codes per
@@ -28,12 +29,17 @@ Export is Rúnmál's native shape. Import accepts two shapes:
    runmal.lorebooks.rng; an explicit useProbability=false folds
    to 100 -- the gate is off -- because the store carries the
    effective percent, not the flag; the file layer in
-   interop.py preserves the flag itself verbatim).
+   interop.py preserves the flag itself verbatim),
+   depth->depth and role->role (P-038, via
+   runmal.lorebooks.placement: depth tolerantly an int >= 0 or
+   None when undeclared; the world-info role CODE maps to the
+   stored role NAME, 0->system / 1->user / 2->assistant, any
+   other value -> system; native entries carry depth + the
+   role name directly).
    Numeric fields coerce tolerantly: explicit nulls and numeric
    strings in real files mean the default / the number, never a
    crash (P-005). Fields with no Rúnmál home yet (recursion
-   flags, groupOverride/useGroupScoring, depth…) are
-   still dropped;
+   flags, groupOverride/useGroupScoring) are still dropped;
    the P-005 corpus test pins that set exactly.
 """
 
@@ -45,6 +51,13 @@ from runmal.db.models import Lorebook, LoreEntry
 from runmal.lorebooks import service
 from runmal.lorebooks.groups import normalise_group_weight, normalise_inclusion_group
 from runmal.lorebooks.logic import normalise_selective_logic, selective_logic_from_code
+from runmal.lorebooks.placement import (
+    check_depth,
+    check_role,
+    normalise_depth,
+    normalise_position,
+    normalise_role,
+)
 from runmal.lorebooks.rng import DEFAULT_PROBABILITY, normalise_probability
 from runmal.lorebooks.windows import (
     check_scan_mode,
@@ -79,6 +92,8 @@ def export_book(book: dict, entries: list[dict]) -> dict:
                 "probability": normalise_probability(e.get("probability")),
                 "priority": e["priority"],
                 "position": e["position"],
+                "depth": normalise_depth(e.get("depth")),
+                "role": normalise_role(e.get("role")),
                 "enabled": e["enabled"],
                 "constant": e["constant"],
                 "vectorised": bool(e.get("vectorised", False)),
@@ -127,6 +142,8 @@ def _native_entry(raw: dict) -> dict:
         "probability": normalise_probability(raw.get("probability")),
         "priority": _as_int(raw.get("priority"), 100),
         "position": str(raw.get("position", "before_char")),
+        "depth": normalise_depth(raw.get("depth")),
+        "role": normalise_role(raw.get("role")),
         "enabled": bool(raw.get("enabled", True)),
         "constant": bool(raw.get("constant", False)),
         "vectorised": bool(raw.get("vectorised", raw.get("vectorized", False))),
@@ -139,9 +156,7 @@ def _native_entry(raw: dict) -> dict:
 
 
 def _worldinfo_entry(raw: dict) -> dict:
-    position = {0: "before_char", 1: "after_char"}.get(
-        raw.get("position"), "before_char"
-    )
+    position = normalise_position(raw.get("position"))
     keys = raw.get("key") or []
     if isinstance(keys, str):
         keys = [keys]
@@ -168,6 +183,8 @@ def _worldinfo_entry(raw: dict) -> dict:
         ),
         "priority": _as_int(raw.get("order"), 100),
         "position": position,
+        "depth": normalise_depth(raw.get("depth")),
+        "role": normalise_role(raw.get("role")),
         "enabled": not bool(raw.get("disable", False)),
         "constant": bool(raw.get("constant", False)),
         "vectorised": bool(raw.get("vectorized", False)),
@@ -294,6 +311,8 @@ def validate_parsed_book(book_fields: dict, entry_fields: list[dict]) -> list[di
                 "position": service._check_position(
                     fields.get("position", "before_char")
                 ),
+                "depth": check_depth(fields.get("depth")),
+                "role": check_role(normalise_role(fields.get("role"))),
                 "enabled": bool(fields.get("enabled", True)),
                 "constant": bool(fields.get("constant", False)),
                 "vectorised": bool(fields.get("vectorised", False)),

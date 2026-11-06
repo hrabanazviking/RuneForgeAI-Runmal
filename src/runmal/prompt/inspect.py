@@ -9,6 +9,27 @@ ones with their trigger, excluded ones with their stage and reason.
 
 Nothing here writes state: lore activation runs from a clean runtime
 state, exactly like the S209 editor preview.
+
+Position & depth control (P-038): lore slots honour each entry's
+declared placement via the preview row's placement fields --
+before_char entries become lore_before slots, after_char entries
+lore_after slots, and at_depth entries lore_before slots carrying
+the S206 depth splice count (Slot.depth) and the entry's role,
+which the composer splices into the history. Before P-038 every
+lore slot was built as lore_before/system regardless of the
+declared position.
+
+One ordering subtlety is load-bearing: the composer splices a
+depth slot into the history only when it reaches the slot AFTER
+the history slot has been emitted (the S206 contract -- the
+depth-note kinds sit after history in the baseline order). A
+lore_before-ordered depth slot would be reached first, find no
+history, and fall through to plain emission before the history
+-- its depth silently unhonoured. At-depth lore slots therefore
+keep kind lore_before (the trace still groups them as lore) but
+take the baseline order of the depth-injection position
+(authors_note) as explicit slot data. Ordering stays data,
+never a hidden branch (PROMPT_COMPOSER.md section 2).
 """
 
 from __future__ import annotations
@@ -22,7 +43,7 @@ from runmal.lorebooks import service as lore_service
 from runmal.lorebooks.preview import preview_activation
 from runmal.lorebooks.windows import ScanSettings
 from runmal.prompt.composer import compose
-from runmal.prompt.slots import Slot, make_slot
+from runmal.prompt.slots import Slot, baseline_order, make_slot
 from runmal.prompt.trace import TraceSlot, build_trace, trace_to_dict
 
 MAIN_SYSTEM_TEXT = "You are Rúnmál, a sovereign local chat companion."
@@ -41,6 +62,46 @@ def _persona_text(character) -> str:
         if isinstance(value, str) and value.strip():
             parts.append(value.strip())
     return "\n".join(parts)
+
+
+def _lore_slot(row: dict, slot_id: str, provenance: str) -> Slot:
+    """The composer slot for one included lore row (P-038).
+
+    Placement comes from the preview row's placement fields:
+    at_depth rows become lore_before slots carrying the S206
+    depth + the entry's role, ordered at the depth-injection
+    position (see the module docstring for why the order is
+    load-bearing); after_char rows become lore_after slots;
+    everything else is a plain lore_before slot.
+    """
+    if row.get("injection_depth") is not None:
+        return make_slot(
+            "lore_before",
+            row.get("role") or "system",
+            row["content"] or "",
+            id=slot_id,
+            trigger=_trigger_for(row),
+            provenance=provenance,
+            depth=row["injection_depth"],
+            order=baseline_order("authors_note"),
+        )
+    if row.get("position") == "after_char":
+        return make_slot(
+            "lore_after",
+            "system",
+            row["content"] or "",
+            id=slot_id,
+            trigger=_trigger_for(row),
+            provenance=provenance,
+        )
+    return make_slot(
+        "lore_before",
+        "system",
+        row["content"] or "",
+        id=slot_id,
+        trigger=_trigger_for(row),
+        provenance=provenance,
+    )
 
 
 def _trigger_for(row: dict) -> str:
@@ -105,16 +166,7 @@ async def inspect_prompt(
             slot_id = f"lore/{row['entry_id']}"
             provenance = f"lorebook:{book.name}"
             if row["status"] == "included":
-                slots.append(
-                    make_slot(
-                        "lore_before",
-                        "system",
-                        row["content"] or "",
-                        id=slot_id,
-                        trigger=_trigger_for(row),
-                        provenance=provenance,
-                    )
-                )
+                slots.append(_lore_slot(row, slot_id, provenance))
             else:
                 reason = (
                     f"lore:{row['discard_reason']}"
@@ -124,8 +176,12 @@ async def inspect_prompt(
                 extras.append(
                     TraceSlot(
                         slot_id=slot_id,
-                        kind="lore_before",
-                        role="system",
+                        kind=(
+                            "lore_after"
+                            if row.get("position") == "after_char"
+                            else "lore_before"
+                        ),
+                        role=row.get("role") or "system",
                         status="discarded",
                         tokens=row["tokens"] or 0,
                         reason=reason,

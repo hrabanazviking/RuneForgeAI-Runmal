@@ -49,9 +49,16 @@ Preservation discipline (INV-009, the P-018 persona pattern):
   lorebooks/rng.py's. The DB store carries only the effective
   percent (see transfer.py); this file layer carries both
   fields losslessly.
-- At-depth companions ``depth`` / ``role`` are preserved as data
-  (``depth`` tolerantly coerced, ``role`` verbatim — its code
-  table is Part III's to define); neither is fabricated when
+- At-depth companions ``depth`` / ``role`` are first-class
+  modelled fields (P-038): ``depth`` is a tolerant int-or-None
+  and ``role`` is normalised to a role NAME via placement's
+  code table {0: system, 1: user, 2: assistant} -- Runmal's own
+  table, defined by P-038 (P-019 preserved the codes as data
+  and left the table to Part III). On world-info export the
+  role is written back as its code under the no-fabrication
+  rule; the companions are preserved as data
+  (``depth`` tolerantly coerced, ``role`` normalised to
+  its name by the table above); neither is fabricated when
   absent.
 - Book-level unknowns and the book's ``originalData`` mapping
   survive verbatim the same way.
@@ -64,9 +71,10 @@ Preservation discipline (INV-009, the P-018 persona pattern):
   preserved-as-data in ``extra``: P-037's settings are
   per-book, and no per-entry semantics are claimed for it.
 
-No database schema changes: the interop model is a file model,
-like P-018's. The DB import path (`transfer.import_book`) keeps
-storing the natively-modelled subset; the file round trip loses
+The interop model itself is a file model, like P-018's. Since
+P-038 the DB store holds the placement fields too (migration
+0030), so the DB import path (`transfer.import_book`) stores
+them alongside the file layer; the file round trip loses
 nothing.
 """
 
@@ -92,6 +100,15 @@ from runmal.lorebooks.logic import (
     selective_logic_from_code,
     worldinfo_code,
 )
+from runmal.lorebooks.placement import (
+    CODE_FROM_POSITION,
+    CODE_FROM_ROLE,
+    DEFAULT_ROLE,
+    POSITION_FROM_CODE,
+    normalise_depth,
+    normalise_role,
+)
+from runmal.lorebooks.rng import DEFAULT_PROBABILITY, normalise_probability
 from runmal.lorebooks.transfer import _as_int
 from runmal.safety import SafetyError, safe_json_loads
 
@@ -146,16 +163,17 @@ NATIVE_MAPPED_FIELDS = frozenset(
         "vectorized",
         "case_sensitive",
         "whole_word",
+        "depth",
+        "role",
         "sticky_prompts",
         "cooldown_prompts",
         "delay_prompts",
     }
 )
 
-#: Attested world-info position codes -> native position strings.
-POSITION_FROM_CODE = {0: "before_char", 1: "after_char", 4: "at_depth"}
-#: Native position strings -> world-info codes (reverse of the above).
-CODE_FROM_POSITION = {v: k for k, v in POSITION_FROM_CODE.items()}
+# Attested world-info position codes <-> native position strings
+# The tables themselves are owned by runmal.lorebooks.placement
+# (P-038), imported above and re-exported under these names.
 
 
 class LorebookParseError(ValueError):
@@ -215,7 +233,7 @@ class WorldInfoEntry:
     cooldown_prompts: int = 0
     delay_prompts: int = 0
     depth: int | None = None
-    role: object = None
+    role: str = "system"
     uid: str | None = None
     extra: dict = field(default_factory=dict)
     raw: dict = field(default_factory=dict, compare=False)
@@ -235,6 +253,8 @@ class WorldInfoEntry:
             "use_probability": self.use_probability,
             "priority": self.priority,
             "position": self.position,
+            "depth": self.depth,
+            "role": self.role,
             "enabled": self.enabled,
             "constant": self.constant,
             "vectorised": self.vectorised,
@@ -279,7 +299,6 @@ def _entry_from_worldinfo(raw: dict, uid: str | None) -> WorldInfoEntry:
         raise LorebookParseError("world-info entry must be a JSON object")
     code = _position_code(raw.get("position"))
     whole_word = raw.get("matchWholeWords")
-    depth_raw = raw.get("depth")
     return WorldInfoEntry(
         name=_as_str(raw.get("comment") or raw.get("name") or ""),
         content=_as_str(raw.get("content")),
@@ -303,8 +322,8 @@ def _entry_from_worldinfo(raw: dict, uid: str | None) -> WorldInfoEntry:
         sticky_prompts=_as_int(raw.get("sticky"), 0),
         cooldown_prompts=_as_int(raw.get("cooldown"), 0),
         delay_prompts=_as_int(raw.get("delay"), 0),
-        depth=None if depth_raw is None else _as_int(depth_raw, 0),
-        role=copy.deepcopy(raw.get("role")),
+        depth=normalise_depth(raw.get("depth")),
+        role=normalise_role(raw.get("role")),
         uid=uid,
         extra={
             k: copy.deepcopy(v)
@@ -332,6 +351,8 @@ def _entry_from_native(raw: dict) -> WorldInfoEntry:
         priority=_as_int(raw.get("priority"), 100),
         position=position,
         position_code=CODE_FROM_POSITION.get(position),
+        depth=normalise_depth(raw.get("depth")),
+        role=normalise_role(raw.get("role")),
         enabled=bool(raw.get("enabled", True)),
         constant=bool(raw.get("constant", False)),
         vectorised=bool(raw.get("vectorised", raw.get("vectorized", False))),
@@ -477,8 +498,11 @@ def _export_worldinfo_entry(entry: WorldInfoEntry) -> dict:
             obj[src] = value
     if entry.depth is not None:
         obj["depth"] = entry.depth
-    if entry.role is not None:
-        obj["role"] = copy.deepcopy(entry.role)
+    # Role (P-038): written back as its world-info CODE under the
+    # no-fabrication rule -- only when the source file carried a
+    # role or the entry's role differs from the default (system).
+    if "role" in obj or entry.role != DEFAULT_ROLE:
+        obj["role"] = CODE_FROM_ROLE[entry.role]
     if "selectiveLogic" in obj or entry.selective_logic != DEFAULT_SELECTIVE_LOGIC:
         obj["selectiveLogic"] = worldinfo_code(entry.selective_logic)
     # Inclusion groups (P-034): same no-fabrication rule -- write

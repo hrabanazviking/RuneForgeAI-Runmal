@@ -154,6 +154,15 @@ class LoreEntry(Base):
     probability: Mapped[int] = mapped_column(nullable=False, default=100)
     priority: Mapped[int] = mapped_column(nullable=False, default=100)
     position: Mapped[str] = mapped_column(String(40), nullable=False, default="before_char")
+    # Placement (P-038): the at-depth companions. depth is the S206
+    # splice count (NULL = undeclared; placement materialises the
+    # default at compose time); role is the chat role an at_depth
+    # entry is injected as. Both are stored for every entry and
+    # consulted only when position == "at_depth".
+    depth: Mapped[int | None] = mapped_column(nullable=True, default=None)
+    role: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="system"
+    )
     enabled: Mapped[bool] = mapped_column(nullable=False, default=True)
     constant: Mapped[bool] = mapped_column(nullable=False, default=False)
     # Entry states (P-035): vectorised kind flag; the kind itself is derived (runmal.lorebooks.states), never stored.

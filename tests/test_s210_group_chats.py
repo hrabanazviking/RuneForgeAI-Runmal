@@ -26,7 +26,7 @@ def make_client(tmp_path, monkeypatch):
     monkeypatch.setenv("RUNMAL_DATA_DIR", str(tmp_path))
     db_path = tmp_path / "test.db"
     applied = migrate_to_head(db_path)
-    assert applied[-1] == "0029"  # head pin moved by P-037 (0029; P-036 took 0028 before it)
+    assert applied[-1] == "0030"  # head pin moved by P-038 (0030; P-037 took 0029 before it)
     engine = create_db_engine(db_path)
     client = TestClient(create_app(create_session_factory(engine)))
     token = get_or_create_credential()

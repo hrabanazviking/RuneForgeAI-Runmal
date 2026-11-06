@@ -54,6 +54,17 @@ result reports ``scan_mode``, ``scan_external_context`` and a
 counts only, never the text), and each hit row reports
 ``external_indices`` (which external texts its keys matched;
 empty when the match was chat-side or there was no hit).
+Position & depth control (P-038): every row reports the
+entry's declared ``position`` plus its EFFECTIVE placement --
+``role`` and ``injection_depth`` from placement_for applied to
+the stored position/depth/role triple (before/after: role
+system, injection_depth None; at_depth: the stored role and
+depth, with the default depth 4 materialised when undeclared).
+``injection_depth`` is deliberately not named ``depth``: the
+row's existing ``depth`` key is the recursion depth (P-031).
+Placement is data only here -- preview does not reorder or
+splice content; the composer honours it (prompt/inspect.py
+builds the slots from these fields).
 
 Entry states (P-035): vector-fired rows honestly report
 ``matched_primary`` / ``matched_secondary`` empty (no keyword
@@ -65,10 +76,15 @@ also reports ``vectorised`` and the derived ``activation_kind``.
 from __future__ import annotations
 
 from runmal.lorebooks.activation import ActivatableEntry, activate
-from runmal.lorebooks.groups import normalise_group_weight, normalise_inclusion_group
-from runmal.lorebooks.states import activation_kind_for, normalise_vectorised
-from runmal.lorebooks.rng import normalise_probability
 from runmal.lorebooks.budget import BudgetCandidate, resolve_budget
+from runmal.lorebooks.groups import normalise_group_weight, normalise_inclusion_group
+from runmal.lorebooks.placement import (
+    normalise_depth,
+    normalise_position,
+    normalise_role,
+    placement_for,
+)
+from runmal.lorebooks.rng import normalise_probability
 from runmal.lorebooks.scan import (
     MAX_RECURSIVE_SCAN_DEPTH,
     ScanEntry,
@@ -76,6 +92,7 @@ from runmal.lorebooks.scan import (
     scan_entries_windowed,
 )
 from runmal.lorebooks.windows import ScanSettings, build_scan_window
+from runmal.lorebooks.states import activation_kind_for, normalise_vectorised
 
 
 def preview_activation(
@@ -181,6 +198,11 @@ def preview_activation(
     rows: list[dict] = []
     for entry in entries:
         entry_id = str(entry.id)
+        placement = placement_for(
+            normalise_position(getattr(entry, "position", None)),
+            normalise_depth(getattr(entry, "depth", None)),
+            normalise_role(getattr(entry, "role", None)),
+        )
         vectorised = normalise_vectorised(getattr(entry, "vectorised", None))
         row: dict = {
             "entry_id": entry_id,
@@ -206,6 +228,9 @@ def preview_activation(
             "group_winner_id": None,
             "probability": normalise_probability(getattr(entry, "probability", None)),
             "probability_roll": None,
+            "position": normalise_position(getattr(entry, "position", None)),
+            "role": placement.role,
+            "injection_depth": placement.depth,
         }
         hit = hit_by_id.get(entry_id)
         if hit is not None:
