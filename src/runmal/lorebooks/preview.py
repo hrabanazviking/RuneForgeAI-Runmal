@@ -45,6 +45,16 @@ final inclusion is still decided by the budget/priority pass, so a
 directly-hit entry over budget shows as discarded, never as
 silently untriggered.
 
+Scan windows (P-037): the scan runs over the window the
+book's settings resolve (``scan_mode`` / ``scan_depth`` /
+``scan_external_context``, caller-resolved like scan_depth);
+``external_context`` carries the caller's external texts. The
+result reports ``scan_mode``, ``scan_external_context`` and a
+``scan_window`` summary (texts scanned, split chat/external --
+counts only, never the text), and each hit row reports
+``external_indices`` (which external texts its keys matched;
+empty when the match was chat-side or there was no hit).
+
 Entry states (P-035): vector-fired rows honestly report
 ``matched_primary`` / ``matched_secondary`` empty (no keyword
 matched) with ``via="vector"``; the caller supplies
@@ -62,9 +72,10 @@ from runmal.lorebooks.budget import BudgetCandidate, resolve_budget
 from runmal.lorebooks.scan import (
     MAX_RECURSIVE_SCAN_DEPTH,
     ScanEntry,
-    scan_entries,
     scan_entries_recursive,
+    scan_entries_windowed,
 )
+from runmal.lorebooks.windows import ScanSettings, build_scan_window
 
 
 def preview_activation(
@@ -78,6 +89,9 @@ def preview_activation(
     recursive_scan: bool = False,
     max_recursion_depth: int = MAX_RECURSIVE_SCAN_DEPTH,
     vector_hit_ids: set[str] | None = None,
+    scan_mode: str | None = None,
+    scan_external_context: bool | None = None,
+    external_context: list[str] | None = None,
 ) -> dict:
     """Preview one activation tick for ``entries`` (ORM rows, service order).
 
@@ -100,6 +114,17 @@ def preview_activation(
     if token_budget is not None and token_budget < 1:
         raise ValueError("token_budget must be >= 1 or None")
 
+    # P-037: the effective scan window, from the caller's resolved
+    # settings (None means the pre-P-037 defaults: depth mode,
+    # external context off).
+    settings = ScanSettings.normalised(
+        scan_depth=scan_depth,
+        scan_mode=scan_mode,
+        scan_external_context=scan_external_context,
+    )
+    external_texts = list(external_context or ())
+    window = build_scan_window(settings, list(messages), external_texts)
+
     scan_view = [ScanEntry.from_orm(e) for e in entries]
     act_view = [ActivatableEntry.from_orm(e) for e in entries]
     by_id = {str(e.id): e for e in entries}
@@ -112,6 +137,8 @@ def preview_activation(
             scan_depth,
             max_recursion_depth=max_recursion_depth,
             token_budget=token_budget,
+            settings=settings,
+            external_context=external_texts,
         )
         hits = recursive_result.hits
         hit_by_id = {h.entry_id: h for h in hits}
@@ -123,7 +150,9 @@ def preview_activation(
             vector_hit_ids=vector_hit_ids,
         )
     else:
-        hits = scan_entries(scan_view, list(messages), scan_depth)
+        hits = scan_entries_windowed(
+            scan_view, list(messages), settings, external_texts
+        )
         hit_by_id = {h.entry_id: h for h in hits}
         result = activate(
             act_view, set(hit_by_id), vector_hit_ids=vector_hit_ids
@@ -162,6 +191,7 @@ def preview_activation(
             "activation_kind": activation_kind_for(bool(entry.constant), vectorised),
             "matched_primary": [],
             "matched_secondary": [],
+            "external_indices": [],
             "via": None,
             "depth": None,
             "content": None,
@@ -181,6 +211,7 @@ def preview_activation(
         if hit is not None:
             row["matched_primary"] = list(hit.matched_primary)
             row["matched_secondary"] = list(hit.matched_secondary)
+            row["external_indices"] = list(hit.external_indices)
         activation = act_by_id.get(entry_id)
         if not entry.enabled:
             row["status"] = "disabled"
@@ -213,6 +244,9 @@ def preview_activation(
 
     preview: dict = {
         "scan_depth": scan_depth,
+        "scan_mode": settings.scan_mode,
+        "scan_external_context": settings.scan_external_context,
+        "scan_window": window.summary(),
         "token_budget": token_budget,
         "tokens_used": budget.tokens_used,
         "seed": seed,

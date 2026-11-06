@@ -496,3 +496,24 @@ source in §0(2) and appends its entry here:
   No SillyTavern or Voxta source code was read and no file
   was downloaded; the slice's test entries are authored
   fresh in the test module (P-005 discipline).
+- **P-037 (2026-11-06, own tree only):** no new external
+  source and no mirror reading. Scan depth & context windows
+  (per-book scan settings -- messages-deep, whole-chat,
+  external context -- as data) are built entirely from
+  Rúnmál's own roadmap line and its own S201/S202 lorebook
+  pipeline: `scan_depth` is Rúnmál's own stored book field
+  since S201 (migration 0004), and the world-info shapes the
+  slice touches are exactly those already recorded in-tree
+  (book settings riding in `originalData` and the per-entry
+  `scanDepth` field, both as P-005's authored corpus fixture
+  already carries them -- the Gale-Bell entry's explicit-null
+  `scanDepth` stays preserved-as-data, no per-entry semantics
+  claimed). The mode vocabulary (`depth` / `whole_chat`),
+  the external-segment rule (appended, uncounted against the
+  depth, governed by its own per-book flag), and the honest
+  hit provenance (`external_indices` beside `message_indices`)
+  are Rúnmál's own design for the roadmap line, not a
+  reproduction of any mirror behaviour. No SillyTavern or
+  Voxta source code was read and no file was downloaded;
+  the slice's test entries are authored fresh in the test
+  module (P-005 discipline).

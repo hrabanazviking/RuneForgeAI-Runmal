@@ -626,14 +626,14 @@ def test_api_preview_reports_group_exclusion(tmp_path, monkeypatch):
 # ----------------------------------------------------------------- migration
 
 
-def test_migration_head_is_0028_provisional_p036():
+def test_migration_head_is_0029_p037():
     # 0025 was reserved for P-033 and P-033 took it, banking first;
-    # Head moved 0026 -> 0028 by P-036 (0027 is P-035's reserved
-    # number, banked first). 0026 stands as numbered.
-    assert MIGRATIONS[-1][0] == "0028"
-    assert MIGRATIONS[-2][0] == "0027"
-    assert MIGRATIONS[-3][0] == "0026"
-    assert MIGRATIONS[-4][0] == "0025"
+    # head moved 0026 -> 0028 by P-036 (0027 is P-035's reserved
+    # number, banked first), then -> 0029 by P-037. 0026 stands.
+    assert MIGRATIONS[-1][0] == "0029"
+    assert MIGRATIONS[-2][0] == "0028"
+    assert MIGRATIONS[-3][0] == "0027"
+    assert MIGRATIONS[-4][0] == "0026"
 
 
 def test_migration_0026_columns_exist_and_default(tmp_path):
@@ -687,7 +687,7 @@ def test_old_database_upgrades_in_place_preserving_entries(tmp_path):
     finally:
         conn.close()
     applied = migrate_to_head(db_path)
-    assert applied == ["0025", "0026", "0027", "0028"]
+    assert applied == ["0025", "0026", "0027", "0028", "0029"]
     conn = sqlite3.connect(db_path)
     try:
         row = conn.execute(
