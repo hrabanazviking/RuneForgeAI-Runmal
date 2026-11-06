@@ -30,6 +30,7 @@ from runmal.cards.errors import CardErrorKind, CardParseError
 from runmal.cards.exporter import export_json
 from runmal.cards.models import CharacterCard
 from runmal.cards.parser import MAX_INPUT_BYTES, PNG_SIGNATURE, ZIP_SIGNATURE
+from runmal.characters.provenance import build_provenance
 from runmal.characters.service import create_character_from_card
 from runmal.db.models import Character, Lorebook
 from runmal.library.models import (
@@ -268,6 +269,7 @@ class _Batch:
     batch_char_names: dict[str, str | None] = field(default_factory=dict)
     batch_book_names: dict[str, str | None] = field(default_factory=dict)
     bytes_seen: int = 0
+    source_kind: str = "library_upload"
 
 
 async def _build_index(
@@ -383,12 +385,21 @@ async def _finish_card(
         return entry
     character = None
     try:
+        provenance = build_provenance(
+            card,
+            source_kind=batch.source_kind,
+            original_filename=entry.filename,
+            relpath=entry.relpath,
+            original_sha256=entry.sha256,
+            original_byte_length=entry.size_bytes,
+        )
         character = await create_character_from_card(
             batch.session,
             batch.user_id,
             card,
             commit=False,
             source_bytes=source_bytes,
+            provenance=provenance,
         )
         await batch.session.commit()
     except SQLAlchemyError as exc:
@@ -847,6 +858,7 @@ async def import_library_folder(
         char_names=char_names,
         book_hashes=book_hashes,
         book_names=book_names,
+        source_kind="library_folder",
     )
     discovered = _discover(root, recursive)
     discovered.sort(key=lambda d: (d.relpath.casefold(), d.relpath))
@@ -876,6 +888,7 @@ async def import_library_uploads(
         char_names=char_names,
         book_hashes=book_hashes,
         book_names=book_names,
+        source_kind="library_upload",
     )
     prepared: list[tuple[str, str, bytes | Path]] = []
     for name, data in files:

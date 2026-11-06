@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import posixpath
 import shutil
@@ -20,6 +21,11 @@ from runmal.auth import data_dir
 from runmal.cards import import_card
 from runmal.cards.exporter import export_json
 from runmal.cards.models import CharacterCard
+from runmal.characters.provenance import (
+    build_provenance,
+    dump_provenance,
+    parse_provenance,
+)
 from runmal.characters.versioning import (
     DUPLICATE_ATTR,
     content_hash_of,
@@ -76,7 +82,59 @@ def character_to_dict(character: Character) -> dict:
         "version_no": getattr(character, "version_no", None) or 1,
         "lineage_id": effective_lineage_id(character),
         "content_hash": effective_content_hash(character),
+        "provenance": parse_provenance(character),
     }
+
+
+def _resolve_provenance(card, provenance, *, digest, source_bytes):
+    """Merge caller provenance facts with the card/hash/time facts.
+
+    A caller (e.g. bulk library import) supplies only the facts it
+    knows -- source_kind, original filename/relpath and the
+    original file bytes facts -- as a plain dict. The service fills
+    in the rest from the parsed card, always sets ``content_hash``
+    to the stored form digest, and sets ``imported_at`` when the
+    caller record lacks one (``build_provenance`` stamps UTC now).
+    With no caller record the character is ``manual`` and, when
+    original bytes are in hand, their hash/length are recorded.
+    """
+    if provenance is None:
+        sha = (
+            hashlib.sha256(source_bytes).hexdigest()
+            if source_bytes is not None
+            else None
+        )
+        length = len(source_bytes) if source_bytes is not None else None
+        return build_provenance(
+            card,
+            source_kind="manual",
+            original_sha256=sha,
+            original_byte_length=length,
+            content_hash=digest,
+        )
+    if "original_sha256" in provenance:
+        sha = provenance.get("original_sha256")
+    elif source_bytes is not None:
+        sha = hashlib.sha256(source_bytes).hexdigest()
+    else:
+        sha = None
+    if "original_byte_length" in provenance:
+        length = provenance.get("original_byte_length")
+    elif source_bytes is not None:
+        length = len(source_bytes)
+    else:
+        length = None
+    return build_provenance(
+        card,
+        source_kind=provenance.get("source_kind") or "manual",
+        imported_at=provenance.get("imported_at"),
+        original_filename=provenance.get("original_filename"),
+        relpath=provenance.get("relpath"),
+        original_sha256=sha,
+        original_byte_length=length,
+        parent_character_id=provenance.get("parent_character_id"),
+        content_hash=digest,
+    )
 
 
 async def create_character_from_card(
@@ -87,6 +145,7 @@ async def create_character_from_card(
     name: str | None = None,
     commit: bool = True,
     source_bytes: bytes | None = None,
+    provenance: dict | None = None,
 ) -> Character:
     """Create a Character from an already-parsed card (P-022).
 
@@ -134,6 +193,9 @@ async def create_character_from_card(
         version_no = await lineage_max_version(session, user_id, lineage_id) + 1
     else:
         version_no = 1
+    provenance_record = _resolve_provenance(
+        card, provenance, digest=digest, source_bytes=source_bytes
+    )
     character = Character(
         user_id=user_id,
         name=effective_name,
@@ -141,6 +203,7 @@ async def create_character_from_card(
         version_no=version_no,
         lineage_id=lineage_id,
         content_hash=digest,
+        provenance_json=dump_provenance(provenance_record),
     )
     session.add(character)
     await session.flush()
@@ -176,7 +239,13 @@ async def create_character(
     session: AsyncSession, user_id: str, card_data: dict, name: str | None = None
 ) -> Character:
     card = import_card(json.dumps(card_data).encode(), "card.json")
-    return await create_character_from_card(session, user_id, card, name=name)
+    return await create_character_from_card(
+        session,
+        user_id,
+        card,
+        name=name,
+        provenance=build_provenance(card, source_kind="api_json"),
+    )
 
 
 async def list_characters(session: AsyncSession, user_id: str) -> list[Character]:
@@ -210,11 +279,22 @@ async def duplicate_character(
     source = await get_character(session, user_id, character_id)
     if source is None:
         return None
+    try:
+        source_card = import_card(source.card_json.encode(), "card.json")
+    except Exception:
+        source_card = None
+    clone_provenance = build_provenance(
+        source_card,
+        source_kind="copy",
+        parent_character_id=source.id,
+        content_hash=content_hash_of(source.card_json),
+    )
     clone = Character(
         user_id=user_id,
         name=f"{source.name} (copy)",
         card_json=source.card_json,
         avatar_asset=source.avatar_asset,
+        provenance_json=dump_provenance(clone_provenance),
     )
     session.add(clone)
     await session.flush()

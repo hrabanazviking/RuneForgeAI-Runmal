@@ -29,6 +29,7 @@ import json
 from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from runmal.characters.provenance import parse_provenance
 from runmal.db.models import Character
 
 DUPLICATE_ATTR = "p025_duplicate_exact"
@@ -90,6 +91,7 @@ def version_to_dict(character, *, latest_version_no=None) -> dict:
         "version_no": _version_no(character),
         "lineage_id": effective_lineage_id(character),
         "content_hash": effective_content_hash(character),
+        "provenance": parse_provenance(character),
         "created_at": character.created_at.isoformat()
         if character.created_at is not None
         else None,
