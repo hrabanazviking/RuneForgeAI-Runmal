@@ -532,3 +532,21 @@ source in §0(2) and appends its entry here:
   SillyTavern or Voxta source code was read and no file
   was downloaded; the slice's test entries are authored
   fresh in the test module (P-005 discipline).
+- **P-040 (2026-11-06, own tree only):** no new external
+  source and no mirror reading. Global + persona + chat
+  lore scopes are built from the layering behaviour the
+  P-002 census recorded from the mirrors' official public
+  documentation (a world layer applying everywhere, a
+  character layer, a per-chat layer, per-layer budgets).
+  The assignment store (one book, several scope rows), the
+  four-layer order world -> character -> persona -> chat
+  (the persona layer is Runmal's own placement: a chat's
+  persona IS a character here), the scope-budget semantics
+  (None unlimited, 0 mutes the layer, strictest assignment
+  wins), the most-specific-layer dedupe with shadowed
+  reporting, and the per-scope inspect summary are Runmal's
+  own design for the roadmap line, not a reproduction of
+  any mirror behaviour. No SillyTavern or Voxta source
+  code was read and no file was downloaded; the slice's
+  test entries are authored fresh in the test module
+  (P-005 discipline).

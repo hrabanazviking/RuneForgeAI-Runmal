@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.db.deps import get_owner_id, get_session
+from runmal.lorebooks import scopes as lore_scopes
 from runmal.lorebooks import service, transfer
 from runmal.lorebooks.preview import preview_activation
 from runmal.lorebooks.service import entry_to_dict, lorebook_to_dict
@@ -361,3 +362,114 @@ async def delete_entry(
     if not await service.delete_entry(session, user_id, book_id, entry_id):
         raise HTTPException(status_code=404, detail="entry not found")
     return {"deleted": True, "id": entry_id}
+
+
+class ScopeAssign(BaseModel):
+    scope_kind: str
+    owner_id: str | None = None
+    token_budget: int | None = Field(default=None, ge=0)
+    position: int = 0
+
+
+class LayeredPreviewRequest(BaseModel):
+    messages: list[str] = Field(default_factory=list)
+    seed: int | None = None
+    persona_character_id: str | None = None
+
+
+@router.put("/lorebooks/{book_id}/scope", status_code=status.HTTP_201_CREATED)
+async def assign_lorebook_scope(
+    book_id: str,
+    body: ScopeAssign,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    try:
+        scope = await lore_scopes.assign_scope(
+            session,
+            user_id,
+            book_id,
+            body.scope_kind,
+            body.owner_id,
+            body.token_budget,
+            body.position,
+        )
+    except ValueError as exc:
+        if "not found" in str(exc):
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        raise _service_error(exc) from exc
+    book = await service.get_lorebook(session, user_id, book_id)
+    return lore_scopes.scope_to_dict(scope, book)
+
+
+@router.delete("/lorebooks/{book_id}/scope")
+async def unassign_lorebook_scope(
+    book_id: str,
+    scope_kind: str,
+    owner_id: str | None = None,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    try:
+        removed = await lore_scopes.unassign_scope(
+            session, user_id, book_id, scope_kind, owner_id
+        )
+    except ValueError as exc:
+        raise _service_error(exc) from exc
+    if not removed:
+        raise HTTPException(status_code=404, detail="scope assignment not found")
+    return {"deleted": True, "lorebook_id": book_id, "scope_kind": scope_kind}
+
+
+@router.get("/lorebooks/{book_id}/scopes")
+async def list_lorebook_scopes(
+    book_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    rows = await lore_scopes.list_book_scopes(session, user_id, book_id)
+    if rows is None:
+        raise HTTPException(status_code=404, detail="lorebook not found")
+    book = await service.get_lorebook(session, user_id, book_id)
+    return {
+        "lorebook_id": book_id,
+        "scopes": [lore_scopes.scope_to_dict(row, book) for row in rows],
+    }
+
+
+@router.get("/lore-scopes")
+async def list_layer_scopes(
+    scope_kind: str,
+    owner_id: str | None = None,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    try:
+        rows = await lore_scopes.list_scopes(session, user_id, scope_kind, owner_id)
+    except ValueError as exc:
+        raise _service_error(exc) from exc
+    out = []
+    for row in rows:
+        book = await service.get_lorebook(session, user_id, row.lorebook_id)
+        out.append(lore_scopes.scope_to_dict(row, book))
+    return {"scope_kind": scope_kind, "scopes": out}
+
+
+@router.post("/chats/{chat_id}/lore-preview")
+async def layered_lore_preview(
+    chat_id: str,
+    body: LayeredPreviewRequest,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    result = await lore_scopes.layered_preview(
+        session,
+        user_id,
+        chat_id=chat_id,
+        persona_character_id=body.persona_character_id,
+        messages=body.messages,
+        seed=body.seed,
+    )
+    if result is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return result

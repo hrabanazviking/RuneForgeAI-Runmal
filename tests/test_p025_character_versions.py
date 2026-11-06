@@ -118,17 +118,17 @@ def post_card(client, card, name=None, expect=None):
 
 
 def test_migration_head_is_0029_p037() -> None:
-    assert MIGRATIONS[-1][0] == "0031"
+    assert MIGRATIONS[-1][0] == "0032"
 def test_migration_head_is_0030_p038() -> None:
-    assert MIGRATIONS[-1][0] == "0031"
+    assert MIGRATIONS[-1][0] == "0032"
 def test_migration_head_is_0028_p036() -> None:
-    assert MIGRATIONS[-1][0] == "0031"
+    assert MIGRATIONS[-1][0] == "0032"
 
 
 def test_migration_0022_columns_and_indexes(tmp_path) -> None:
     db_path = tmp_path / "m.db"
     migrate_to_head(db_path)
-    assert current_revision(db_path) == "0031"
+    assert current_revision(db_path) == "0032"
     conn = sqlite3.connect(db_path)
     try:
         columns = {

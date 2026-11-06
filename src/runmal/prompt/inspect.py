@@ -39,6 +39,7 @@ import json
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.characters import service as character_service
+from runmal.lorebooks import scopes as lore_scopes
 from runmal.lorebooks import service as lore_service
 from runmal.lorebooks.preview import preview_activation
 from runmal.lorebooks.windows import ScanSettings
@@ -117,12 +118,15 @@ async def inspect_prompt(
     character_id: str | None = None,
     lorebook_ids: list[str] | None = None,
     messages: list[str] | None = None,
+    chat_id: str | None = None,
+    persona_character_id: str | None = None,
     context_limit: int = 4096,
     reserve_response: int = 512,
 ) -> dict | None:
     """Build the trace dict for a hypothetical prompt, or None when a
     referenced character/lorebook does not exist."""
     messages = list(messages or [])
+    lore_scope_summary: dict | None = None
     slots: list[Slot] = [
         make_slot("main_system", "system", MAIN_SYSTEM_TEXT, required=True, id="system/main")
     ]
@@ -190,6 +194,65 @@ async def inspect_prompt(
                     )
                 )
 
+    if chat_id is not None:
+        # P-040: scoped lore layers for this chat (world ->
+        # character -> persona -> chat), each with its own
+        # budget, composed per scope and reported per scope.
+        layered = await lore_scopes.layered_preview(
+            session,
+            user_id,
+            chat_id=chat_id,
+            persona_character_id=persona_character_id,
+            messages=messages,
+            external_context=[persona_text] if persona_text else [],
+        )
+        if layered is None:
+            return None
+        name_by_book = {
+            book["lorebook_id"]: book["name"]
+            for summary in layered["scopes"]
+            for book in summary["books"]
+        }
+        for kind in lore_scopes.LAYER_ORDER:
+            layer = layered["layers"].get(kind)
+            if layer is None:
+                continue
+            for row in layer["entries"]:
+                slot_id = f"lore/{kind}/{row['entry_id']}"
+                provenance = (
+                    f"lorebook:{name_by_book.get(row['lorebook_id'], '')}@{kind}"
+                )
+                if row["status"] == "included":
+                    slots.append(_lore_slot(row, slot_id, provenance))
+                else:
+                    reason = (
+                        f"lore:{row['discard_reason']}"
+                        if row["status"] == "discarded"
+                        else row["status"]
+                    )
+                    extras.append(
+                        TraceSlot(
+                            slot_id=slot_id,
+                            kind=(
+                                "lore_after"
+                                if row.get("position") == "after_char"
+                                else "lore_before"
+                            ),
+                            role=row.get("role") or "system",
+                            status="discarded",
+                            tokens=row["tokens"] or 0,
+                            reason=reason,
+                            trigger=(_trigger_for(row) if row["via"] else None),
+                            provenance=provenance,
+                        )
+                    )
+        lore_scope_summary = {
+            "layer_order": layered["layer_order"],
+            "scopes": layered["scopes"],
+            "shadowed": layered["shadowed"],
+            "tokens_used": layered["tokens_used"],
+        }
+
     if messages:
         slots.append(
             make_slot(
@@ -204,4 +267,7 @@ async def inspect_prompt(
 
     composed = compose(slots, context_limit=context_limit, reserve_response=reserve_response)
     trace = build_trace(composed, slots, extra_discards=tuple(extras))
-    return trace_to_dict(trace)
+    result = trace_to_dict(trace)
+    if lore_scope_summary is not None:
+        result["lore_scopes"] = lore_scope_summary
+    return result

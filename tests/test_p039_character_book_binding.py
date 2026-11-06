@@ -391,10 +391,10 @@ def test_merge_bad_precedence_raises_and_none_defaults():
 def test_migration_head_is_0031_provisional():
     # 0029 is reserved for P-037 and 0030 for P-038 (both bank
     # first); in this tree the tail runs 0028 -> 0031.
-    assert MIGRATIONS[-1][0] == "0031"
-    assert MIGRATIONS[-2][0] == "0030"
-    assert MIGRATIONS[-3][0] == "0029"
-    assert MIGRATIONS[-4][0] == "0028"
+    assert MIGRATIONS[-1][0] == "0032"
+    assert MIGRATIONS[-3][0] == "0030"
+    assert MIGRATIONS[-4][0] == "0029"
+    assert MIGRATIONS[-5][0] == "0028"
 
 
 def test_migration_0031_table_exists(tmp_path):
