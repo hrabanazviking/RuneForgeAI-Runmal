@@ -3208,3 +3208,25 @@ Last updated: 2026-10-31 ~14:15 EDT tick (P-017 banking deferred, no full run at
     lineage), multiple pre-P-025 legacy lineages under one
     name stay separate, no restore/merge/rollback or UI.
     Next in roadmap order: P-026 (team-08).
+  - BANKED P-026 (keeper tick 2026-11-06 ~10:20 EST): scenario
+    content interop — team-08 commit 93c288a merged (no-ff)
+    into yrsa/two-mirrors-build as f002c00 and pushed; ls-remote
+    verified below with the record push. Evidence (team-08
+    worktree hidden_files/ logs): battery 59/59, neighbours
+    134, full suite 1109 passed / 4 skipped / 0 failed.
+    Forge confirmation suite at the merged tree: 1128 passed /
+    4 skipped / 0 failed (= 1069 + 59, exact). Voxta-shaped
+    scenario files import/export with an honest unmappable
+    report; no migration (scenario storage is Part IX).
+    BANKING PIN HEAL: the battery asserted schema head 0021
+    both ways (its base predated P-025); both assertions were
+    updated to the true head 0022 inside the merge commit —
+    each still pins the exact head, no assertion weakened.
+    Honest record: hidden_files/P026_DESIGN.md on disk was
+    truncated at 53 lines (it ends after Decisions item 5);
+    the build proceeded from those five decisions plus the
+    normative mapping doc, the fixed contracts, and sibling
+    house style. Carried limitations in the slice doc:
+    unmappable machinery round-trips Voxta to Voxta only;
+    bootstrap string-block exports in list form.
+    Next in roadmap order: P-027 (team-09, built, held).
