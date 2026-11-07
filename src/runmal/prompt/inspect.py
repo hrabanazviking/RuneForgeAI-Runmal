@@ -47,6 +47,12 @@ Lore token account (P-044): the trace now carries
 the composer's own manifest via the trace, so it reconciles
 with the ledger by construction; visible before sending
 because the inspector never sends.
+
+Prompt manager (P-049): ``prompt_layout`` is honoured via
+``manager.apply_layout`` before compose; disabled blocks surface
+in the trace as discards with reason ``prompt_manager_disabled``;
+the result carries a ``prompt_layout`` echo; with no layout the
+pipeline is exactly the pre-P-049 pipeline.
 """
 
 from __future__ import annotations
@@ -62,7 +68,9 @@ from runmal.lorebooks.accounting import account_from_trace
 from runmal.lorebooks.preview import preview_activation
 from runmal.lorebooks.windows import ScanSettings
 from runmal.prompt.composer import compose
-from runmal.prompt.slots import Slot, baseline_order, make_slot
+from runmal.prompt.manager import DISABLED_REASON, apply_layout
+from runmal.prompt.service import layout_echo, resolve_layout
+from runmal.prompt.slots import Slot, baseline_order, make_slot, slot_tokens
 from runmal.prompt.trace import TraceSlot, build_trace, trace_to_dict
 
 MAIN_SYSTEM_TEXT = "You are Rúnmál, a sovereign local chat companion."
@@ -141,9 +149,11 @@ async def inspect_prompt(
     include_activation_inspection: bool = False,
     context_limit: int = 4096,
     reserve_response: int = 512,
+    prompt_layout: object | None = None,
 ) -> dict | None:
     """Build the trace dict for a hypothetical prompt, or None when a
     referenced character/lorebook does not exist."""
+    layout, layout_source = resolve_layout(prompt_layout)
     messages = list(messages or [])
     lorebook_inspections: dict = {}
     lore_scope_summary: dict | None = None
@@ -332,9 +342,30 @@ async def inspect_prompt(
             )
         )
 
-    composed = compose(slots, context_limit=context_limit, reserve_response=reserve_response)
+    if layout is not None:
+        kept, dropped = apply_layout(slots, layout)
+        for slot in dropped:
+            extras.append(
+                TraceSlot(
+                    slot_id=slot.id,
+                    kind=slot.kind,
+                    role=slot.role,
+                    status="discarded",
+                    tokens=slot_tokens(slot),
+                    reason=DISABLED_REASON,
+                    trigger=slot.trigger or None,
+                    provenance=slot.provenance,
+                )
+            )
+        slots_for_compose = kept
+    else:
+        slots_for_compose = slots
+    composed = compose(
+        slots_for_compose, context_limit=context_limit, reserve_response=reserve_response
+    )
     trace = build_trace(composed, slots, extra_discards=tuple(extras))
     result = trace_to_dict(trace)
+    result["prompt_layout"] = layout_echo(layout, layout_source)
     if lore_scope_summary is not None:
         result["lore_scopes"] = lore_scope_summary
     if include_activation_inspection:

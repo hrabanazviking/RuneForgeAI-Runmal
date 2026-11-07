@@ -9,6 +9,18 @@ from runmal.prompt.composer import (
     SlotUsage,
     compose,
 )
+from runmal.prompt.manager import (
+    BLOCK_KINDS,
+    BLOCK_ORDER,
+    DISABLED_REASON,
+    PromptBlock,
+    PromptLayout,
+    apply_layout,
+    block_for_kind,
+    default_layout,
+    layout_from_data,
+    layout_to_data,
+)
 from runmal.prompt.slots import (
     BASELINE_ORDER,
     Slot,
@@ -20,6 +32,11 @@ from runmal.prompt.slots import (
 
 __all__ = [
     "BASELINE_ORDER",
+    "BLOCK_KINDS",
+    "BLOCK_ORDER",
+    "DISABLED_REASON",
+    "PromptBlock",
+    "PromptLayout",
     "ComposedMessage",
     "ComposedPrompt",
     "ImpossiblePromptError",
@@ -27,6 +44,11 @@ __all__ = [
     "Slot",
     "SlotDiscard",
     "SlotUsage",
+    "apply_layout",
+    "block_for_kind",
+    "default_layout",
+    "layout_from_data",
+    "layout_to_data",
     "baseline_order",
     "compose",
     "make_slot",
