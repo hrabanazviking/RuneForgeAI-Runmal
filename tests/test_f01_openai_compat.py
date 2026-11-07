@@ -118,11 +118,11 @@ async def test_sampler_truth_matches_s208_openai_profile():
     # and declared + unsupported account for every canonical control.
     assert SAMPLERS == frozenset(OPENAI_PROFILE.wire_names)
     assert WIRE_NAMES == {k: k for k in SAMPLERS}
-    canonical = set(SamplingParams().to_bag()) | {
-        "temperature", "top_p", "top_k", "min_p", "repetition_penalty",
-        "presence_penalty", "frequency_penalty", "max_tokens", "stop",
-        "seed", "context_length",
-    }
+    # P-052: the canonical vocabulary is the sampler catalogue as
+    # data; this test previously hardcoded the pre-P-052 set.
+    from runmal.backends.samplers import SAMPLER_NAMES
+
+    canonical = set(SamplingParams().to_bag()) | set(SAMPLER_NAMES)
     assert SAMPLERS | UNSUPPORTED_SAMPLERS == canonical
     assert not (SAMPLERS & UNSUPPORTED_SAMPLERS)
 

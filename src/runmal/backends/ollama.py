@@ -32,12 +32,17 @@ from runmal.tokens import TokenQuality
 SAMPLERS = frozenset({
     "temperature", "top_p", "top_k", "min_p", "seed", "stop",
     "max_tokens", "repetition_penalty", "context_length",
+    # P-052: Ollama's public options carry these natively; the
+    # adapter forwards them via _OPTION_NAMES below.
+    "typical_p", "tfs_z", "mirostat_mode", "mirostat_tau", "mirostat_eta",
 })
 _OPTION_NAMES = {
     "temperature": "temperature", "top_p": "top_p", "top_k": "top_k",
     "min_p": "min_p", "seed": "seed", "stop": "stop",
     "max_tokens": "num_predict", "repetition_penalty": "repeat_penalty",
-    "context_length": "num_ctx",
+    "context_length": "num_ctx", "typical_p": "typical_p", "tfs_z": "tfs_z",
+    "mirostat_mode": "mirostat", "mirostat_tau": "mirostat_tau",
+    "mirostat_eta": "mirostat_eta",
 }
 
 

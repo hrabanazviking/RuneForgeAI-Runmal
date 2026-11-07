@@ -626,3 +626,17 @@ source in §0(2) and appends its entry here:
   was read and no file was downloaded; the slice's test
   conversations are authored fresh in the test module
   (P-005 discipline).
+- **P-052 (2026-11-06, public sampler semantics only):** the
+  complete sampler surface is built from the public sampler
+  literature and public backend documentation: DRY and XTC
+  from their public sampling descriptions, Mirostat / typical
+  / tail-free / epsilon / eta / dynamic-temperature from the
+  public sampler-research descriptions and the public
+  llama.cpp sampling documentation, and Ollama's forwarded
+  options from Ollama's public options documentation. The
+  catalogue shape, the surface/merge/resolution design, and
+  the per-backend honesty accounting are Runmal's own design
+  for the roadmap line, extending the tree's S207/S208/S301/
+  S310 contracts. No SillyTavern or Voxta source code was
+  read and no file was downloaded; the slice's tests are
+  authored fresh in the test module (P-005 discipline).
