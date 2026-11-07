@@ -4182,3 +4182,53 @@ P-058 BANKED - token budget governor: the
     echo, and no content enters either payload
     (S214).
     Next in roadmap order: P-059.
+P-059 BANKED - prompt preview: the exact
+    final prompt per backend rendering is
+    inspectable before send - team-03 commit
+    a678b4e merged (no-ff) into
+    yrsa/two-mirrors-build as d2dfbc6 and pushed;
+    ls-remote verified
+    d2dfbc65c58f380602d8aadda67dd66c27b21719.
+    Evidence (team-03 worktree
+    hidden_files/P059_EVIDENCE.md + finisher
+    logs): battery 19 passed, neighbours 273
+    passed, team full suite 2616 passed /
+    4 skipped / 0 failed on its base. Forge
+    confirmation suite at the merged tree:
+    2709 passed / 4 skipped / 0 failed
+    (= 2690 + 19, exact). NO migration: the
+    merged head stays 0035. Merge: three
+    conflicts (prompt/__init__.py, inspect.py,
+    router.py - the P-057/P-058 overlap files),
+    all resolved as additive unions keeping
+    ALL slices' work: the preview export,
+    include_preview wiring and the
+    /debug/prompt-preview route added alongside
+    the P-057 aliased note/post-history imports
+    (note_has_content/ph_has_content - verified
+    intact, no regression of the P-057 banking
+    fix) and the P-058 governor wiring; the
+    preview endpoint also forwards
+    budget_policy so the governor applies
+    there too (banking heal). Combined
+    batteries at the merged tree (P-059 +
+    P-057 + P-058 + P-056 batteries):
+    170 passed. Slice: prompt/preview.py -
+    build_preview built ONLY from the composed
+    messages + RenderedPrompt inspect_prompt
+    already produced (one composition, one
+    render, never a second); the 11-key
+    prompt_preview payload carries structured
+    messages, wire_messages and the instruct
+    render text, with backend keys derived
+    from the capabilities matrix (an unknown
+    backend raises, router maps to 422);
+    opt-in include_preview on prompt-inspect
+    plus the dedicated /debug/prompt-preview
+    endpoint; the S214 trace itself still
+    carries no content. Carried: live
+    generation does not yet route through the
+    composer/inspector, so the preview is what
+    the composition pipeline will hand a
+    backend, not a capture of a live send.
+    Next in roadmap order: P-060.
