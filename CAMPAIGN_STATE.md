@@ -3868,3 +3868,36 @@ P-050 BANKED - instruct templates: the public template
     with P-052.
     Next in roadmap order: P-051 (context templates,
     team-01).
+
+P-051 BANKED - context templates: story-string/context
+    assembly formats as editable data (P-021 presets land
+    here) - team-01 finisher commit b15c056 merged (no-ff,
+    clean) into yrsa/two-mirrors-build as 858447b and
+    pushed; ls-remote verified
+    858447b3a698f53cf60e68084bea0049da0069d3.
+    Evidence (team-01 worktree hidden_files/P051_EVIDENCE.md
+    + logs): battery 88 passed, neighbours 142 passed,
+    team full suite 2398 passed / 4 skipped / 0 failed;
+    forge confirmation suite at the merged tree 2398
+    passed / 4 skipped / 0 failed (exit 0). NO migration;
+    head stays 0032.
+    Slice: prompt/context.py (ContextTemplate as data -
+    segments per anchor with enabled/prefix/suffix,
+    separators, stops-from-separators; story-string
+    serialise/parse with public alias spellings; preset
+    derivation context_template > story_string >
+    prompt_order). The first lead was cancelled; a
+    finisher reconciled the inherited build to
+    P051_DESIGN (default separators empty, no second
+    render path, echo whitelist) and completed the
+    battery to the design's full shape.
+    Bug fixed in-slice: inspect_prompt echoed a
+    preset-tier template but never applied it; the apply
+    condition now keys on the resolved template, pinned
+    end-to-end by a new API test.
+    Carried: sampler wiring of derived stops is
+    P-052/P-060; template persistence is a named
+    follow-up slice owning its own migration.
+    Next in roadmap order: P-052 (sampler surface,
+    team-02, already complete as ed01f90, held for this
+    banking).
