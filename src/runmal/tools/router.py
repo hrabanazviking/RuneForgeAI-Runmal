@@ -93,3 +93,49 @@ async def resolve_tool(body: ResolveIn):
 
     result = resolve_variables(body.text, char_name=body.char, user_name=body.user)
     return result.to_dict()
+
+
+class MacroIn(BaseModel):
+    text: str
+    char: str = ""
+    user: str = "User"
+    persona: str = ""
+    model: str = ""
+    chat_id: str = ""
+    seed: int | None = None
+    strict: bool = False
+    variables: dict = {}
+    roll_context: str = ""
+
+
+@router.get("/tools/macros")
+async def macros_tool():
+    """The macro registry (P-055): chips for the helper UI."""
+    from runmal.prompt.macros import list_macros
+
+    return list_macros()
+
+
+@router.post("/tools/macros/expand")
+async def macro_expand_tool(body: MacroIn):
+    """Expand macros in a preview text (P-055); strict failures are 422s."""
+    from runmal.prompt.macros import MacroContext, MacroError, expand_macros
+
+    try:
+        result = expand_macros(
+            body.text,
+            MacroContext(
+                char_name=body.char,
+                user_name=body.user,
+                persona_name=body.persona,
+                model=body.model,
+                chat_id=body.chat_id,
+                seed=body.seed,
+                variables=dict(body.variables),
+                roll_context=body.roll_context,
+            ),
+            strict=body.strict,
+        )
+    except MacroError as exc:
+        raise _visible(exc) from exc
+    return result.to_dict()
