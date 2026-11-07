@@ -415,6 +415,12 @@ async def delete_chat(session: AsyncSession, user_id: str, chat_id: str) -> bool
     # No chat.deleted event: the FK cascade wipes this chat's event log anyway.
     await session.execute(delete(Chat).where(Chat.id == chat_id))
     await session.commit()
+    try:
+        from runmal.chats.checkpoints import remove_chat_checkpoints
+
+        remove_chat_checkpoints(user_id, chat_id)
+    except Exception:
+        pass
     return True
 
 

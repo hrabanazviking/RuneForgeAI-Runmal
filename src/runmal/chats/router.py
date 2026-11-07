@@ -84,6 +84,14 @@ class BranchNameIn(BaseModel):
     name: str
 
 
+class CheckpointCreate(BaseModel):
+    name: str | None = None
+
+
+class CheckpointRestoreIn(BaseModel):
+    name: str | None = None
+
+
 @router.post("/chats", status_code=status.HTTP_201_CREATED)
 async def create_chat(
     body: ChatCreate,
@@ -530,6 +538,115 @@ async def rename_branch(
         raise HTTPException(status_code=404, detail="chat not found")
     history = await service.get_history(session, user_id, chat_id) or []
     return chat_to_dict(chat, len(history))
+
+
+@router.post("/chats/{chat_id}/checkpoints", status_code=status.HTTP_201_CREATED)
+async def create_checkpoint(
+    chat_id: str,
+    body: CheckpointCreate,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Snapshot a chat as a named checkpoint (P-067). Never
+    destructive: the source chat is copied, never mutated."""
+    from runmal.chats import checkpoints
+
+    try:
+        checkpoint = await checkpoints.create_checkpoint(session, user_id, chat_id, body.name)
+    except (checkpoints.CheckpointError, ValueError) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if checkpoint is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return checkpoint
+
+
+@router.get("/chats/{chat_id}/checkpoints")
+async def list_checkpoints(
+    chat_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """List a chat's checkpoints (P-067), oldest first."""
+    from runmal.chats import checkpoints
+
+    try:
+        result = await checkpoints.list_checkpoints(session, user_id, chat_id)
+    except (checkpoints.CheckpointError, ValueError) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if result is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return result
+
+
+@router.get("/chats/{chat_id}/checkpoints/{checkpoint_id}")
+async def get_checkpoint(
+    chat_id: str,
+    checkpoint_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """One checkpoint's metadata (P-067): a verified read, so a
+    tampered file is a 422 here, not only at restore."""
+    from runmal.chats import checkpoints
+
+    try:
+        checkpoint = await checkpoints.get_checkpoint(session, user_id, chat_id, checkpoint_id)
+    except (checkpoints.CheckpointError, ValueError) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if checkpoint is None:
+        raise HTTPException(status_code=404, detail="chat or checkpoint not found")
+    return checkpoint
+
+
+@router.post(
+    "/chats/{chat_id}/checkpoints/{checkpoint_id}/restore",
+    status_code=status.HTTP_201_CREATED,
+)
+async def restore_checkpoint(
+    chat_id: str,
+    checkpoint_id: str,
+    body: CheckpointRestoreIn,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Restore a checkpoint as a NEW chat (P-067): the snapshot
+    moment returns as a chat to continue in; the source chat and
+    everything after the checkpoint are never discarded."""
+    from runmal.chats import checkpoints
+
+    try:
+        restored = await checkpoints.restore_checkpoint(
+            session, user_id, chat_id, checkpoint_id, body.name
+        )
+    except (checkpoints.CheckpointError, ValueError) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if restored is None:
+        raise HTTPException(status_code=404, detail="chat or checkpoint not found")
+    history = await service.get_history(session, user_id, restored.id) or []
+    return chat_to_dict(restored, len(history))
+
+
+@router.delete("/chats/{chat_id}/checkpoints/{checkpoint_id}")
+async def delete_checkpoint(
+    chat_id: str,
+    checkpoint_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Delete one checkpoint file (P-067). Only that file is
+    removed; the chat, its other checkpoints, and any chat already
+    restored from this checkpoint are untouched."""
+    from runmal.chats import checkpoints
+
+    try:
+        result = await checkpoints.delete_checkpoint(session, user_id, chat_id, checkpoint_id)
+    except (checkpoints.CheckpointError, ValueError) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if result is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    if not result:
+        raise HTTPException(status_code=404, detail="checkpoint not found")
+    return {"deleted": True, "id": checkpoint_id}
 
 
 @router.get("/chats/{chat_id}/export")
