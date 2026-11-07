@@ -679,3 +679,18 @@ source in §0(2) and appends its entry here:
   SillyTavern or Voxta source code was read and no file
   was downloaded; the slice's tests are authored fresh
   in the test module (P-005 discipline).
+- **P-077 (2026-11-07, public behaviour + own tree
+  only):** long-chat performance is built entirely from
+  Runmal's own facts: the founding UI campaign's
+  THREAD_WINDOW = 100 standard in web/static/app.js and
+  renderer.js, the P-046 budget discipline (budget stated
+  before measuring, seeded corpus shared by bench and
+  battery, single-core medians, frozen-oracle equivalence),
+  the P-068 position semantics, and the P-072 search
+  contract as already recorded in this tree. The paged
+  history shape, the density-aggregate append proof, the
+  composer prefix-sum trim, and the search word-prefix
+  pre-filter are Runmal's own design for the roadmap line.
+  No SillyTavern or Voxta source code was read and no file
+  was downloaded; the slice's tests are authored fresh in
+  the test module (P-005 discipline).

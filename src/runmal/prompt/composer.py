@@ -189,9 +189,34 @@ def compose(
             # Newest-first packing: drop oldest parts until it fits.
             parts = list(slot.parts)
             trimmed = 0
-            while parts and count("\n".join(parts)) > input_budget - used:
-                parts.pop(0)
-                trimmed += 1
+            if count is estimate_tokens:
+                # Fast path: estimate_tokens is a pure function of
+                # the joined length, max(1, len(text) // 4). The
+                # joined length of a suffix parts[d:] is the sum of
+                # its part lengths plus one separator per adjacent
+                # pair (suffix_parts - 1), empty parts included, so
+                # prefix sums give every suffix count in O(1) and
+                # the smallest fitting drop count is exact. The
+                # count floor is 1, so a remaining budget <= 0
+                # drops every part, exactly as the loop did.
+                budget_remaining = input_budget - used
+                prefix_len = [0]
+                for part in parts:
+                    prefix_len.append(prefix_len[-1] + len(part))
+                total_len = prefix_len[len(parts)]
+                dropped = 0
+                while dropped < len(parts):
+                    suffix_parts = len(parts) - dropped
+                    joined_len = total_len - prefix_len[dropped] + suffix_parts - 1
+                    if max(1, joined_len // 4) <= budget_remaining:
+                        break
+                    dropped += 1
+                parts = parts[dropped:]
+                trimmed = dropped
+            else:
+                while parts and count("\n".join(parts)) > input_budget - used:
+                    parts.pop(0)
+                    trimmed += 1
             if not parts:
                 discarded.append(
                     SlotDiscard(slot.id, slot_tokens(slot, count), "over_input_budget")

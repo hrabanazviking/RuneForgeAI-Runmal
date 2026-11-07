@@ -91,20 +91,40 @@ function appendMessage(role, text, rendered) {
 const THREAD_WINDOW = 100; // S302: virtualized thread window size
 state.allMessages = [];
 state.windowShown = THREAD_WINDOW;
+state.totalMessages = 0;
+state.oldestLoaded = 0;
 
 function renderThread() {
   const thread = $("thread");
   thread.textContent = "";
-  const { visible, hidden } = window.RunmalRenderer.windowMessages(
+  state.windowShown = state.allMessages.length;
+  const { visible } = window.RunmalRenderer.windowMessages(
     state.allMessages, state.windowShown
   );
+  const hidden = Math.max(0, state.totalMessages - state.allMessages.length);
+  state.oldestLoaded = hidden;
   if (hidden > 0) {
     const more = document.createElement("button");
     more.type = "button";
     more.id = "show-earlier";
     more.textContent = "Show earlier messages (" + hidden + " hidden)";
-    more.addEventListener("click", () => {
-      state.windowShown += THREAD_WINDOW;
+    more.addEventListener("click", async () => {
+      const chatId = state.currentChatId;
+      if (!chatId) return;
+      const remaining = Math.max(0, state.totalMessages - state.allMessages.length);
+      const limit = Math.min(THREAD_WINDOW, remaining);
+      if (limit <= 0) return;
+      const offset = Math.max(0, state.totalMessages - state.allMessages.length - limit);
+      try {
+        const page = await (await api(
+          "/api/v1/chats/" + chatId + "/messages?limit=" + limit + "&offset=" + offset
+        )).json();
+        if (state.currentChatId !== chatId) return; // switched mid-fetch
+        state.allMessages = page.messages.concat(state.allMessages);
+        state.totalMessages = page.total;
+        state.windowShown = state.allMessages.length;
+        state.oldestLoaded = Math.max(0, state.totalMessages - state.allMessages.length);
+      } catch (err) { showError("Could not load earlier messages: " + err.message); }
       renderThread();
     });
     thread.appendChild(more);
@@ -143,10 +163,20 @@ async function selectChat(chatId) {
   state.currentChatId = chatId;
   if (window.RunmalDrawer) window.RunmalDrawer.close();
   renderChatList();
-  const chat = await (await api("/api/v1/chats/" + chatId)).json();
-  state.allMessages = chat.messages;
-  state.windowShown = THREAD_WINDOW;
-  if ($("preset-select")) $("preset-select").value = chat.preset_id || "";
+  const row = state.chats.find((c) => c.id === chatId);
+  let presetId = row ? (row.preset_id || "") : null;
+  if (!row) {
+    const chat = await (await api("/api/v1/chats/" + chatId)).json();
+    presetId = chat.preset_id || "";
+  }
+  const page = await (await api(
+    "/api/v1/chats/" + chatId + "/messages?limit=100&tail=true"
+  )).json();
+  state.allMessages = page.messages;
+  state.totalMessages = page.total;
+  state.oldestLoaded = Math.max(0, page.total - page.messages.length);
+  state.windowShown = state.allMessages.length;
+  if ($("preset-select")) $("preset-select").value = presetId || "";
   renderThread();
 }
 
@@ -227,6 +257,8 @@ async function streamGeneration(chatId) {
       body: JSON.stringify({ role: "assistant", content: full || "(no output)" }),
     });
     state.allMessages.push({ role: "assistant", content: full || "(no output)" });
+    state.totalMessages += 1;
+    state.windowShown = state.allMessages.length;
     if (stopped) setRetryVisible(true);
   } catch (err) {
     showError("Generation failed: " + err.message);
@@ -251,6 +283,8 @@ async function sendMessage() {
       body: JSON.stringify({ role: "user", content: text }),
     });
     state.allMessages.push({ role: "user", content: text });
+    state.totalMessages += 1;
+    state.windowShown = state.allMessages.length;
     appendMessage("user", text, true);
     await streamGeneration(chatId);
   } catch (err) {

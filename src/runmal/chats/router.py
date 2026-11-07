@@ -367,13 +367,32 @@ async def append_message(
 @router.get("/chats/{chat_id}/messages")
 async def get_history(
     chat_id: str,
+    limit: int | None = None,
+    offset: int = 0,
+    tail: bool = False,
     user_id: str = Depends(get_owner_id),
     session: AsyncSession = Depends(get_session),
 ):
-    history = await service.get_history(session, user_id, chat_id)
-    if history is None:
+    if limit is None and offset == 0 and not tail:
+        history = await service.get_history(session, user_id, chat_id)
+        if history is None:
+            raise HTTPException(status_code=404, detail="chat not found")
+        return [message_to_dict(m) for m in history]
+    page_result = await service.get_history_page(
+        session, user_id, chat_id,
+        limit=limit if limit is not None else 100,
+        offset=offset, tail=tail,
+    )
+    if page_result is None:
         raise HTTPException(status_code=404, detail="chat not found")
-    return [message_to_dict(m) for m in history]
+    page, total, effective_offset, effective_limit = page_result
+    return {
+        "messages": [message_to_dict(m) for m in page],
+        "total": total,
+        "limit": effective_limit,
+        "offset": effective_offset,
+        "has_more": effective_offset + len(page) < total,
+    }
 
 
 @router.patch("/chats/{chat_id}/messages/{message_id}")
