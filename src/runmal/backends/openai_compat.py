@@ -75,6 +75,10 @@ SAMPLERS = frozenset(
         "presence_penalty",
         "stop",
         "seed",
+        # P-060: the OpenAI-shaped wire carries logit_bias as a
+        # {token-id-string: bias} object; the adapter forwards the
+        # canonical bag form unchanged.
+        "logit_bias",
     }
 )
 #: Canonical bag key -> wire name (identity: the common shape spells

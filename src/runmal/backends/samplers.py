@@ -31,6 +31,11 @@ This module makes the complete set DATA:
   merged params degrade honestly to a model's declared
   capabilities when a model is given.
 
+P-060 adds ``logit_bias`` to the catalogue: a per-token bias map
+(token id -> bias in [-100, 100], the public OpenAI-shaped wire
+range), carried as data like every other control and degraded by
+the same honest negotiation path. Its spec kind is ``bias_map``.
+
 Sampler semantics are the PUBLIC ones, from the public sampler
 literature and public backend documentation (DRY: the public
 DRY-sampling description; XTC: the public XTC-sampling
@@ -51,7 +56,7 @@ from runmal.backends.params import SamplingParams
 class SamplerSpec:
     name: str  # canonical bag key
     group: str  # core | penalty | dry | xtc | cutoff | mirostat | dynamic | limit | control
-    kind: str  # float | int | strings
+    kind: str  # float | int | strings | bias_map
     minimum: float | None = None
     maximum: float | None = None
     description: str = ""
@@ -125,6 +130,9 @@ SAMPLER_SPECS: tuple[SamplerSpec, ...] = (
           "Maximum tokens to generate."),
     _spec("stop", "control", "strings", None, None,
           "Stop sequences: generation halts when one is produced."),
+    _spec("logit_bias", "control", "bias_map", -100.0, 100.0,
+          "Logit bias: per-token bias by token id, added to the "
+          "token's logit before sampling (-100..100)."),
     _spec("seed", "control", "int", 0, None,
           "Random seed for reproducible sampling."),
     _spec("context_length", "limit", "int", 1, None,

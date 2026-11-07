@@ -1,6 +1,7 @@
 """P-052 Sampler surface complete battery.
 
-Pins: the complete canonical catalogue as data (28 bag keys),
+Pins: the complete canonical catalogue as data (28 bag keys;
+29 since P-060 added logit_bias),
 SamplingParams validation + bag round-trip for every new sampler,
 preset-bag validation parity, honest per-backend applicability
 (declared only where the adapter forwards; dropped with reasons
@@ -51,6 +52,7 @@ FULL_PARAMS = SamplingParams(
     mirostat_eta=0.1, dynamic_temperature_range=0.4,
     dynamic_temperature_exponent=1.0, max_output_tokens=256,
     stop=("END",), seed=42, context_length=8192,
+    logit_bias=((42, 1.5),),
 )
 
 
@@ -62,8 +64,8 @@ def _model(supported, key="x", mid="m1"):
 # ---------------- catalogue as data ----------------
 
 def test_catalogue_is_complete_and_consistent():
-    assert len(SAMPLER_NAMES) == 28
-    assert len(set(SAMPLER_NAMES)) == 28
+    assert len(SAMPLER_NAMES) == 29  # 28 at P-052, + logit_bias (P-060)
+    assert len(set(SAMPLER_NAMES)) == 29
     for key in NEW_KEYS:
         assert key in SAMPLER_NAMES
     # catalogue == SamplingParams fields (bag spelling) exactly
@@ -75,7 +77,7 @@ def test_catalogue_is_complete_and_consistent():
     groups = {s.group for s in SAMPLER_SPECS}
     assert {"core", "penalty", "dry", "xtc", "cutoff", "mirostat", "dynamic"} <= groups
     for spec in SAMPLER_SPECS:
-        assert spec.description and spec.kind in ("float", "int", "strings")
+        assert spec.description and spec.kind in ("float", "int", "strings", "bias_map")
     assert spec_for("dry_multiplier").group == "dry"
     with pytest.raises(ValueError):
         spec_for("nope")
@@ -105,6 +107,7 @@ def test_full_params_bag_roundtrip():
     bag = FULL_PARAMS.to_bag()
     assert set(bag) == set(SAMPLER_NAMES)
     assert bag["dry_sequence_breakers"] == ["\n"]
+    assert bag["logit_bias"] == {"42": 1.5}
     assert bag["stop"] == ["END"] and bag["max_tokens"] == 256
     assert SamplingParams.from_bag(bag) == FULL_PARAMS
 

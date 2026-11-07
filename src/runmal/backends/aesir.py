@@ -108,6 +108,10 @@ UNSUPPORTED_SAMPLERS = frozenset(
         "min_p",
         "repetition_penalty",
         "stop",
+        # P-060: logit_bias joins the canonical vocabulary; the
+        # OpenAI chat route does not serve it either (P-009 D2
+        # shape: unserved controls are named, never silent).
+        "logit_bias",
         "presence_penalty",
         "frequency_penalty",
         "context_length",

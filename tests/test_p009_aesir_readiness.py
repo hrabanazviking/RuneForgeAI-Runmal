@@ -102,6 +102,9 @@ def test_declared_sampler_sets_are_pinned() -> None:
         "xtc_probability", "xtc_threshold",
         "mirostat_mode", "mirostat_tau", "mirostat_eta",
         "dynamic_temperature_range", "dynamic_temperature_exponent",
+        # P-060: logit_bias joins the canonical vocabulary and the
+        # declared-unsupported remainder (the route serves it not).
+        "logit_bias",
     }
 
 

@@ -20,7 +20,9 @@ Truth sources, in the open (no row claims more than its source):
   Aesir's OpenAI chat route, which serves a subset; Aesir's native
   ``/v1/generate`` route serves the full canonical set. Both rows of
   the ledger are data here (``AESIR_LEDGER``); a truth row always
-  names the route it was judged against.
+  names the route it was judged against. Since P-060 the native
+  row carries one explicit carve-out (logit_bias, unverified
+  in-tree) instead of silently claiming the whole vocabulary.
 
 No row claims ``measured``: nothing in this tree probes a live server
 for sampler support, so no row says it did.
@@ -160,12 +162,15 @@ def _aesir_ledger() -> tuple[LedgerRoute, ...]:
         ),
         LedgerRoute(
             route="native-generate",
-            served=_CANONICAL,
+            served=_CANONICAL - {"logit_bias"},
             note=(
                 "Aesir's native /v1/generate route serves the full "
                 "canonical sampler set (P-009 D2). This adapter speaks "
                 "the OpenAI chat route; the native row is the ledger's "
-                "record, not a promise this adapter keeps."
+                "record, not a promise this adapter keeps. P-060 "
+                "carve-out: logit_bias service on the native route "
+                "is NOT recorded by the P-009 matrix and is "
+                "unverified in-tree, so the row does not claim it."
             ),
         ),
     )
@@ -423,7 +428,8 @@ def audit_truth() -> list[str]:
         findings.append(
             "aesir ledger openai-chat row disagrees with the adapter's "
             "declared SAMPLERS")
-    if ledger["native-generate"].served != _CANONICAL:
+    if ledger["native-generate"].served != _CANONICAL - {"logit_bias"}:
         findings.append(
-            "aesir ledger native-generate row is not the full canonical set")
+            "aesir ledger native-generate row is not the canonical "
+            "set minus the P-060 logit_bias carve-out")
     return findings

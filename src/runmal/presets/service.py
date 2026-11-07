@@ -57,7 +57,25 @@ _CANONICAL: dict[str, tuple[tuple[type, ...], object]] = {
     "mirostat_eta": ((int, float), lambda v: v > 0),
     "dynamic_temperature_range": ((int, float), lambda v: v >= 0),
     "dynamic_temperature_exponent": ((int, float), lambda v: v > 0),
+    # P-060: logit bias joins the canonical bag as a JSON object of
+    # decimal token-id strings -> bias numbers in [-100, 100] (the
+    # public OpenAI-shaped wire range). Token ids are data the user
+    # supplies; nothing here derives ids from text.
+    "logit_bias": ((dict,), lambda v: _valid_logit_bias_bag(v)),
 }
+
+
+def _valid_logit_bias_bag(value: object) -> bool:
+    if not isinstance(value, dict):
+        return False
+    for raw_id, bias in value.items():
+        if not isinstance(raw_id, str) or not raw_id.isdigit():
+            return False
+        if isinstance(bias, bool) or not isinstance(bias, (int, float)):
+            return False
+        if not -100 <= bias <= 100:
+            return False
+    return True
 
 
 def _is_int(value: object) -> bool:
