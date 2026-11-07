@@ -285,6 +285,23 @@ async def _record_event(
     return event
 
 
+async def _journal(
+    session: AsyncSession, user_id: str, chat_id: str, operation: str, detail: dict | None = None
+) -> None:
+    """Journal the chat's before-image for undo (P-076).
+
+    Lazy import (undo imports this module) and a fresh owned-chat
+    read, so the snapshot is exactly the state the operation is
+    about to change. Called AFTER validation and no-op checks,
+    BEFORE any mutation, by every covered operation below.
+    """
+    from runmal.chats import undo as undo_mod
+
+    chat = await _get_owned_chat(session, user_id, chat_id)
+    if chat is not None:
+        await undo_mod.record_journal(session, user_id, chat, operation, detail)
+
+
 async def _get_owned_chat(session: AsyncSession, user_id: str, chat_id: str) -> Chat | None:
     result = await session.execute(select(Chat).where(Chat.id == chat_id, Chat.user_id == user_id))
     return result.scalar_one_or_none()
@@ -342,6 +359,7 @@ async def set_chat_preset(
 
         if await presets.get_preset(session, user_id, preset_id) is None:
             raise KeyError(preset_id)
+    await _journal(session, user_id, chat_id, "chat.preset", {"preset_id": preset_id})
     chat.preset_id = preset_id
     await session.commit()
     return chat
@@ -378,6 +396,7 @@ async def set_chat_authors_note(
     if chat is None:
         return None
     note = note_from_data(data)
+    await _journal(session, user_id, chat_id, "chat.authors_note")
     chat.authors_note_json = json.dumps(note_to_data(note))
     await _record_event(
         session,
@@ -416,6 +435,7 @@ async def set_chat_post_history(
     if chat is None:
         return None
     ph = instructions_from_data(data)
+    await _journal(session, user_id, chat_id, "chat.post_history")
     chat.post_history_json = json.dumps(instructions_to_data(ph))
     await _record_event(
         session,
@@ -455,6 +475,7 @@ async def set_chat_swipe_settings(
     if chat is None:
         return None
     settings = settings_from_data(data)
+    await _journal(session, user_id, chat_id, "chat.swipe_settings")
     chat.swipe_settings_json = json.dumps(settings_to_data(settings))
     await _record_event(
         session,
@@ -490,6 +511,9 @@ async def set_chat_persona(
     if chat.character_id == character_id:
         return chat
     previous = chat.character_id
+    await _journal(
+        session, user_id, chat_id, "chat.persona", {"from": previous, "to": character_id}
+    )
     chat.character_id = character_id
     data = {"from": previous, "to": character_id}
     if event_data:
@@ -518,6 +542,7 @@ async def set_chat_backend_profile(
 
         if await backend_profiles.get_profile(session, user_id, profile_id) is None:
             raise KeyError(profile_id)
+    await _journal(session, user_id, chat_id, "chat.backend_profile", {"profile_id": profile_id})
     chat.backend_profile_id = profile_id
     await session.commit()
     return chat
@@ -527,6 +552,7 @@ async def rename_chat(session: AsyncSession, user_id: str, chat_id: str, title: 
     chat = await _get_owned_chat(session, user_id, chat_id)
     if chat is None:
         return None
+    await _journal(session, user_id, chat_id, "chat.rename")
     chat.title = title
     await _record_event(session, chat.id, EVENT_CHAT_RENAMED, data={"title": title})
     await session.commit()
@@ -552,6 +578,12 @@ async def delete_chat(session: AsyncSession, user_id: str, chat_id: str) -> bool
         remove_chat_databank(user_id, chat_id)
     except Exception:
         pass
+    try:
+        from runmal.chats.undo import remove_chat_undo
+
+        remove_chat_undo(user_id, chat_id)
+    except Exception:
+        pass
     return True
 
 
@@ -574,6 +606,7 @@ async def append_message(
         raise ValueError(f"invalid role: {role!r}")
     if not content:
         raise ValueError("message content must not be empty")
+    await _journal(session, user_id, chat_id, "message.append", {"role": role})
     existing = await _ordered_messages(session, chat_id)
     new_position: int | None = None
     if any(m.position is not None for m in existing):
@@ -632,6 +665,7 @@ async def edit_message(
         raise ValueError("message content must not be empty")
     if content == message.content:
         return message
+    await _journal(session, user_id, chat_id, "message.edit", {"message_id": message_id})
     deck, idx = _deck(message)
     history = action_mod.record_edit(
         _variants(message), message.content, _now().isoformat(), idx
@@ -686,6 +720,7 @@ async def delete_message(
     message = await _get_owned_message(session, user_id, chat_id, message_id)
     if message is None:
         return False
+    await _journal(session, user_id, chat_id, "message.delete", {"message_id": message_id})
     was_materialised = message.position is not None
     if getattr(message, "pinned", False):
         memory = await _pin_memory_for(session, user_id, message_id)
@@ -728,6 +763,10 @@ async def move_message(
     from_index = [m.id for m in ordered].index(message_id)
     if from_index == target:
         return message
+    await _journal(
+        session, user_id, chat_id, "message.move",
+        {"message_id": message_id, "from_index": from_index, "to_index": target},
+    )
     _renumber(action_mod.move_index(ordered, from_index, target))
     message.updated_at = _now()
     await _record_event(
@@ -878,9 +917,11 @@ async def pin_message_to_memory(
     existing = await _pin_memory_for(session, user_id, message_id)
     if existing is not None:
         if not getattr(message, "pinned", False):
+            await _journal(session, user_id, chat_id, "message.pin", {"message_id": message_id})
             message.pinned = True
             await session.commit()
         return existing
+    await _journal(session, user_id, chat_id, "message.pin", {"message_id": message_id})
     from runmal.memory import service as memory_svc
 
     memory = await memory_svc.create_memory(
@@ -923,6 +964,7 @@ async def unpin_message_from_memory(
     memory = await _pin_memory_for(session, user_id, message_id)
     if memory is None and not getattr(message, "pinned", False):
         return False
+    await _journal(session, user_id, chat_id, "message.unpin", {"message_id": message_id})
     if memory is not None:
         from runmal.memory import service as memory_svc
 
@@ -979,6 +1021,7 @@ async def add_swipe(
     if message is None:
         return None
     swipe_mod.validate_new_alternate(content)
+    await _journal(session, user_id, chat_id, "message.swipe_add", {"message_id": message_id})
     deck, _idx = _deck(message)
     new_deck = list(deck)
     new_deck.append(content)
@@ -1038,6 +1081,7 @@ async def select_swipe(
         new_id = swipe_mod.navigate(deck, current, action)
     if new_id == current:
         return message
+    await _journal(session, user_id, chat_id, "message.swipe_select", {"message_id": message_id})
     _store_deck(message, list(deck), new_id)
     await _record_event(
         session,
@@ -1072,6 +1116,7 @@ async def delete_swipe(
     swipe_mod.select_index(deck, index)
     if len(deck) == 1:
         raise ValueError("cannot delete the only swipe")
+    await _journal(session, user_id, chat_id, "message.swipe_delete", {"message_id": message_id})
     new_deck = list(deck)
     del new_deck[index]
     message.provenance_json = prov_mod.dump_document(
@@ -1141,6 +1186,7 @@ async def import_session_swipes(
     message = await _get_owned_message(session, user_id, chat_id, message_id)
     if message is None:
         return None
+    await _journal(session, user_id, chat_id, "message.swipe_import", {"message_id": message_id})
     _store_deck(message, list(swipes_list), idx)
     mode_value = getattr(session_obj, "mode", None)
     generation = {

@@ -231,6 +231,9 @@ async def rename_branch(
         return None
     cleaned = _clean_name(name)
     assert cleaned is not None  # name is required here; None cleans to None
+    from runmal.chats import undo as undo_mod
+
+    await undo_mod.record_journal(session, user_id, chat, "branch.rename")
     chat.title = cleaned
     await _record_event(session, chat.id, EVENT_BRANCH_RENAMED, data={"title": cleaned})
     await session.commit()

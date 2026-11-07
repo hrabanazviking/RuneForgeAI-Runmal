@@ -369,6 +369,17 @@ async def _get_owned_chat(
     return result.scalar_one_or_none()
 
 
+async def _journal(
+    session: AsyncSession, user_id: str, chat: Chat, operation: str, detail: dict | None = None
+) -> None:
+    """Journal the chat's before-image for undo (P-076): lazy
+    import (undo imports chats.service), called after
+    validation, before any metadata mutation."""
+    from runmal.chats import undo as undo_mod
+
+    await undo_mod.record_journal(session, user_id, chat, operation, detail)
+
+
 async def _tags_for(session: AsyncSession, chat_id: str) -> list[str]:
     result = await session.execute(
         select(ChatTag.tag)
@@ -457,6 +468,19 @@ async def update_metadata(
     unknown = sorted(set(updates) - set(_FIELDS))
     if unknown:
         raise ValueError(f"unknown metadata fields: {', '.join(unknown)}")
+    # Pre-validate purely BEFORE journaling (P-076): a bad value
+    # must raise without leaving a journal entry behind. The
+    # branches below re-run the same pure validators.
+    if "title" in updates:
+        validate_title(updates["title"])
+    if "summary" in updates:
+        validate_summary(updates["summary"])
+    if "tags" in updates:
+        normalise_chat_tags(updates["tags"])
+    if updates:
+        await _journal(
+            session, user_id, chat, "chat.metadata", {"fields": sorted(updates)}
+        )
     prov = provenance_from_chat(chat)
     changed: list[str] = []
     if "title" in updates:
@@ -515,6 +539,18 @@ async def regenerate_metadata(
         if character is not None:
             character_name = character.name
     prov = provenance_from_chat(chat)
+    # Journal BEFORE the generation loop mutates (P-076), and
+    # only when at least one field will actually generate --
+    # the same manual-skip rule the loop applies.
+    _planned = [
+        f for f in wanted
+        if not (prov[f"{f}_source"] == SOURCE_MANUAL and not force)
+    ]
+    if _planned:
+        await _journal(
+            session, user_id, chat, "chat.metadata_regenerate",
+            {"fields": _planned, "force": bool(force)},
+        )
     generated: list[str] = []
     skipped: list[str] = []
     for field in wanted:
@@ -559,6 +595,9 @@ async def set_favourite(
     chat = await _get_owned_chat(session, user_id, chat_id)
     if chat is None:
         return None
+    await _journal(
+        session, user_id, chat, "chat.favourite", {"is_favourite": bool(is_favourite)}
+    )
     org = await _org_for(session, chat_id)
     if org is None:
         org = ChatOrganisation(
