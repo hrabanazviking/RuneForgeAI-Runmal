@@ -99,9 +99,12 @@ async def make_chat(factory, user_id, title="Saga"):
 
 
 def test_migration_head_stays_0039():
-    assert MIGRATIONS[-1][0] == "0039"  # re-pinned at P-074 banking: 0039 is P-073 m0039_chat_metadata; P-074 took no migration
+    assert MIGRATIONS[-1][0] == "0040"  # re-pinned at P-074 banking: 0039 is P-073 m0039_chat_metadata; P-074 took no migration
     revisions = [r for r, _d, _m in MIGRATIONS]
-    assert "0040" not in revisions
+    # P-075 banking heal: 0040 now exists exactly once and is P-075's
+    # m0040_message_provenance -- still none from P-074.
+    assert revisions.count("0040") == 1
+    assert MIGRATIONS[-1][2].__name__.endswith("m0040_message_provenance")
 
 
 # ---------------- attach / get / list ----------------
