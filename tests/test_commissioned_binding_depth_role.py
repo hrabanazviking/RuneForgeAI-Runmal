@@ -231,7 +231,7 @@ async def test_materialise_stores_placement_and_serialise_emits_it(tmp_path):
 
 
 def test_migration_head_unchanged():
-    assert MIGRATIONS[-1][0] == "0033"
+    assert MIGRATIONS[-1][0] == "0034"
 
 
 # --------------------------------------------------------------------- API

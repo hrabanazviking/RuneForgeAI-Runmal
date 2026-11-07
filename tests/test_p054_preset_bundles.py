@@ -227,8 +227,8 @@ def test_override_unknown_key_refuses():
 def test_migration_head_is_0033(tmp_path):
     db_path = tmp_path / "m.db"
     migrate_to_head(db_path)
-    assert MIGRATIONS[-1][0] == "0033"
-    assert current_revision(db_path) == "0033"
+    assert MIGRATIONS[-1][0] == "0034"
+    assert current_revision(db_path) == "0034"
     assert migrate_to_head(db_path) == []  # idempotent
 
 

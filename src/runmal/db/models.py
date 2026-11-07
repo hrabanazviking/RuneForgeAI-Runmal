@@ -68,6 +68,8 @@ class Chat(Base):
     preset_id: Mapped[str | None] = mapped_column(String(36), nullable=True, default=None)
     # Selected backend profile (S306/S307); plain id, integrity by service.
     backend_profile_id: Mapped[str | None] = mapped_column(String(36), nullable=True, default=None)
+    # Author's note (P-056, PROVISIONAL 0034); one validated JSON document.
+    authors_note_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
 
 

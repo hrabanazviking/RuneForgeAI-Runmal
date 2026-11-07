@@ -76,8 +76,8 @@ def test_full_backup_stage_restore_via_api(tmp_path, monkeypatch):
     body = created.json()
     assert body["secrets_included"] is False
     assert body["asset_files"] == 1
-    assert body["schema_revision"] == "0033"
-    assert body["schema_revision"] == "0033"
+    assert body["schema_revision"] == "0034"
+    assert body["schema_revision"] == "0034"
 
     staged = client.post(f"/api/v1/backups/full/{body['name']}/stage")
     assert staged.status_code == 200
