@@ -206,7 +206,7 @@ def test_cosine_contract():
 
 def test_no_migration_p041_takes_none():
     # P-041 itself added no migration; the merged head is 0032 (P-040, banked first).
-    assert MIGRATIONS[-1][0] == "0032"
+    assert MIGRATIONS[-1][0] == "0033"
     assert "0031" in [m[0] for m in MIGRATIONS]
 
 

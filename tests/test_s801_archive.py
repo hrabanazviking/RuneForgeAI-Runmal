@@ -147,8 +147,8 @@ async def test_export_validates_and_counts_match(tmp_path):
     manifest = validate_archive(dest)
     assert manifest["format"] == "runmal-archive"
     assert manifest["format_version"] == 1
-    assert manifest["schema_revision"] == "0032"
-    assert manifest["schema_revision"] == "0032"
+    assert manifest["schema_revision"] == "0033"
+    assert manifest["schema_revision"] == "0033"
     assert manifest["policy"]["secrets_included"] is False
     contents = manifest["contents"]
     assert contents["characters"] == 1
