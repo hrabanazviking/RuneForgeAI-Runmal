@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, StrictBool, StrictInt
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.chats import metadata as metadata_mod
@@ -133,6 +133,26 @@ class ChatFavouriteIn(BaseModel):
 
 class CheckpointRestoreIn(BaseModel):
     name: str | None = None
+
+
+class DataBankAttachIn(BaseModel):
+    name: str
+    content: str = ""
+    content_type: str | None = None
+    enabled: StrictBool | None = None
+    priority: StrictInt | None = None
+
+
+class DataBankUpdateIn(BaseModel):
+    name: str | None = None
+    content: str | None = None
+    content_type: str | None = None
+    enabled: StrictBool | None = None
+    priority: StrictInt | None = None
+
+
+class DataBankBudgetIn(BaseModel):
+    budget_tokens: StrictInt
 
 
 @router.post("/chats", status_code=status.HTTP_201_CREATED)
@@ -1046,3 +1066,161 @@ async def list_events(
     if events is None:
         raise HTTPException(status_code=404, detail="chat not found")
     return [event_to_dict(e) for e in events]
+
+
+# ---------------- Data bank (P-074) ----------------
+
+
+def _databank_http(exc):
+    return HTTPException(status_code=422, detail=str(exc))
+
+
+@router.post("/chats/{chat_id}/databank", status_code=status.HTTP_201_CREATED)
+async def attach_databank_document(chat_id: str, body: DataBankAttachIn, user_id: str = Depends(get_owner_id), session: AsyncSession = Depends(get_session)):
+    """Attach a document to this chat's data bank (P-074)."""
+    from runmal.chats import databank
+    try:
+        result = await databank.attach_document(session, user_id, databank.SCOPE_CHAT, chat_id, name=body.name, content=body.content, content_type=body.content_type, enabled=body.enabled, priority=body.priority)
+    except (databank.DataBankError, ValueError) as exc:
+        raise _databank_http(exc) from exc
+    if result is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return result
+
+
+@router.get("/chats/{chat_id}/databank")
+async def list_databank_documents(chat_id: str, user_id: str = Depends(get_owner_id), session: AsyncSession = Depends(get_session)):
+    """List this chat's data-bank documents + budget accounting (P-074)."""
+    from runmal.chats import databank
+    try:
+        result = await databank.list_documents(session, user_id, databank.SCOPE_CHAT, chat_id)
+    except (databank.DataBankError, ValueError) as exc:
+        raise _databank_http(exc) from exc
+    if result is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return result
+
+
+@router.get("/chats/{chat_id}/databank/budget")
+async def get_databank_budget(chat_id: str, user_id: str = Depends(get_owner_id), session: AsyncSession = Depends(get_session)):
+    """This chat's declared data-bank token budget (P-074)."""
+    from runmal.chats import databank
+    try:
+        result = await databank.get_budget(session, user_id, chat_id)
+    except (databank.DataBankError, ValueError) as exc:
+        raise _databank_http(exc) from exc
+    if result is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return result
+
+
+@router.put("/chats/{chat_id}/databank/budget")
+async def set_databank_budget(chat_id: str, body: DataBankBudgetIn, user_id: str = Depends(get_owner_id), session: AsyncSession = Depends(get_session)):
+    """Set this chat's declared data-bank token budget (P-074)."""
+    from runmal.chats import databank
+    try:
+        result = await databank.set_budget(session, user_id, chat_id, body.budget_tokens)
+    except (databank.DataBankError, ValueError) as exc:
+        raise _databank_http(exc) from exc
+    if result is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return result
+
+
+@router.get("/chats/{chat_id}/databank/{doc_id}")
+async def get_databank_document(chat_id: str, doc_id: str, user_id: str = Depends(get_owner_id), session: AsyncSession = Depends(get_session)):
+    """One data-bank document, content included (P-074)."""
+    from runmal.chats import databank
+    try:
+        result = await databank.get_document(session, user_id, databank.SCOPE_CHAT, chat_id, doc_id)
+    except (databank.DataBankError, ValueError) as exc:
+        raise _databank_http(exc) from exc
+    if result is None:
+        raise HTTPException(status_code=404, detail="chat or document not found")
+    return result
+
+
+@router.put("/chats/{chat_id}/databank/{doc_id}")
+async def update_databank_document(chat_id: str, doc_id: str, body: DataBankUpdateIn, user_id: str = Depends(get_owner_id), session: AsyncSession = Depends(get_session)):
+    """Update a data-bank document's fields (P-074)."""
+    from runmal.chats import databank
+    try:
+        result = await databank.update_document(session, user_id, databank.SCOPE_CHAT, chat_id, doc_id, name=body.name, content=body.content, content_type=body.content_type, enabled=body.enabled, priority=body.priority)
+    except (databank.DataBankError, ValueError) as exc:
+        raise _databank_http(exc) from exc
+    if result is None:
+        raise HTTPException(status_code=404, detail="chat or document not found")
+    return result
+
+
+@router.delete("/chats/{chat_id}/databank/{doc_id}")
+async def detach_databank_document(chat_id: str, doc_id: str, user_id: str = Depends(get_owner_id), session: AsyncSession = Depends(get_session)):
+    """Detach (delete) one data-bank document (P-074)."""
+    from runmal.chats import databank
+    try:
+        result = await databank.detach_document(session, user_id, databank.SCOPE_CHAT, chat_id, doc_id)
+    except (databank.DataBankError, ValueError) as exc:
+        raise _databank_http(exc) from exc
+    if result is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    if not result:
+        raise HTTPException(status_code=404, detail="document not found")
+    return {"deleted": True, "id": doc_id}
+
+
+@router.post("/databank/global", status_code=status.HTTP_201_CREATED)
+async def attach_global_document(body: DataBankAttachIn, user_id: str = Depends(get_owner_id), session: AsyncSession = Depends(get_session)):
+    """Attach a global data-bank document (P-074): every chat of
+    this owner can read it, within that chat's budget."""
+    from runmal.chats import databank
+    try:
+        result = await databank.attach_document(session, user_id, databank.SCOPE_GLOBAL, None, name=body.name, content=body.content, content_type=body.content_type, enabled=body.enabled, priority=body.priority)
+    except (databank.DataBankError, ValueError) as exc:
+        raise _databank_http(exc) from exc
+    return result
+
+
+@router.get("/databank/global")
+async def list_global_documents(user_id: str = Depends(get_owner_id), session: AsyncSession = Depends(get_session)):
+    """List global data-bank documents + accounting (P-074)."""
+    from runmal.chats import databank
+    try:
+        return await databank.list_documents(session, user_id, databank.SCOPE_GLOBAL, None)
+    except (databank.DataBankError, ValueError) as exc:
+        raise _databank_http(exc) from exc
+
+
+@router.get("/databank/global/{doc_id}")
+async def get_global_document(doc_id: str, user_id: str = Depends(get_owner_id), session: AsyncSession = Depends(get_session)):
+    from runmal.chats import databank
+    try:
+        result = await databank.get_document(session, user_id, databank.SCOPE_GLOBAL, None, doc_id)
+    except (databank.DataBankError, ValueError) as exc:
+        raise _databank_http(exc) from exc
+    if result is None:
+        raise HTTPException(status_code=404, detail="document not found")
+    return result
+
+
+@router.put("/databank/global/{doc_id}")
+async def update_global_document(doc_id: str, body: DataBankUpdateIn, user_id: str = Depends(get_owner_id), session: AsyncSession = Depends(get_session)):
+    from runmal.chats import databank
+    try:
+        result = await databank.update_document(session, user_id, databank.SCOPE_GLOBAL, None, doc_id, name=body.name, content=body.content, content_type=body.content_type, enabled=body.enabled, priority=body.priority)
+    except (databank.DataBankError, ValueError) as exc:
+        raise _databank_http(exc) from exc
+    if result is None:
+        raise HTTPException(status_code=404, detail="document not found")
+    return result
+
+
+@router.delete("/databank/global/{doc_id}")
+async def detach_global_document(doc_id: str, user_id: str = Depends(get_owner_id), session: AsyncSession = Depends(get_session)):
+    from runmal.chats import databank
+    try:
+        result = await databank.detach_document(session, user_id, databank.SCOPE_GLOBAL, None, doc_id)
+    except (databank.DataBankError, ValueError) as exc:
+        raise _databank_http(exc) from exc
+    if not result:
+        raise HTTPException(status_code=404, detail="document not found")
+    return {"deleted": True, "id": doc_id}

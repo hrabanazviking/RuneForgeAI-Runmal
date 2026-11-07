@@ -366,6 +366,7 @@ async def inspect_prompt(
     messages = list(messages or [])
     note = AuthorsNote()
     authors_note_active = False
+    databank_echo: dict | None = None
     lorebook_inspections: dict = {}
     lore_scope_summary: dict | None = None
     slots: list[Slot] = [
@@ -566,6 +567,35 @@ async def inspect_prompt(
         )
 
     message_count = len(messages)
+    # Data bank (P-074): when a chat is in scope, its attached
+    # documents (chat scope + the owner's global scope) join the
+    # composition as databank slots, selected whole within the
+    # chat's declared budget. Excluded documents surface as
+    # discards; the accounting echo carries ids/names/counts
+    # only, never content.
+    if chat_id is not None:
+        from runmal.chats import databank as _databank
+
+        _selection = await _databank.load_prompt_selection(session, user_id, chat_id)
+        if _selection is not None:
+            slots.extend(_databank.slots_for_selection(_selection))
+            for _doc, _reason, _tokens in _selection.excluded:
+                extras.append(
+                    TraceSlot(
+                        slot_id=f"databank/{_doc['id']}",
+                        kind="databank",
+                        role="system",
+                        status="discarded",
+                        tokens=_tokens,
+                        reason=(
+                            "databank_disabled"
+                            if _reason == _databank.REASON_DISABLED
+                            else "databank_over_budget"
+                        ),
+                        provenance=f"databank:{_doc['scope']}:{_doc['name']}",
+                    )
+                )
+            databank_echo = _databank.accounting_to_dict(_selection)
     if note_has_content(note):
         if is_active_for(note, message_count):
             an_slot = note_slot_for(note, message_count)
@@ -713,6 +743,7 @@ async def inspect_prompt(
     result["context_template"] = context_echo(ctx_template, ctx_source)
     result["rendered_tokens"] = estimate_tokens(rendered.text)
     result["authors_note"] = authors_note_echo
+    result["databank"] = databank_echo
     result["post_history"] = post_history_echo
     if lore_scope_summary is not None:
         result["lore_scopes"] = lore_scope_summary
