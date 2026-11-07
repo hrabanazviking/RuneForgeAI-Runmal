@@ -5883,3 +5883,83 @@ P-090 BANKED - Regex Scripts plugin (Part VI)
     /tmp/p090_forge_suite.log).
     No heal needed at this banking.
     Next in roadmap order: P-091.
+P-091 BANKED - TTS/STT as plugins (Part VI)
+    - team-03 commit 2ec7fba merged
+    (no-ff) into
+    yrsa/two-mirrors-build as 92588f3
+    and pushed; ls-remote verified
+    92588f3d3d6d83bd63dd175dea0ab5096d96d864
+    (see WAVE_PLAN update). Evidence
+    (team-03 worktree
+    hidden_files/P091_EVIDENCE.md):
+    battery 52 passed, neighbours
+    257 passed, team full suite 3758
+    passed / 4 skipped / 0 failed
+    (= 3706 + 52, exact, on its base).
+    Slice:
+    src/runmal/plugins/tts.py
+    (new - founding TTS stack behind
+    the P-081 Plugin API, explicit
+    actions only, byte parity with
+    the direct backend call),
+    src/runmal/plugins/stt.py
+    (new - founding STT stack behind
+    the same API, same stance),
+    tests/test_p091_voice_plugins.py
+    (52 tests),
+    docs/VOICE_PLUGINS_2026-11-07.md,
+    clean-room log append. 5 files.
+    Migration: NONE (head stays
+    0041; pinned by battery on the
+    declared head and the live
+    revision on a fresh database).
+    build_registry / create_app
+    deliberately unchanged by
+    design. Defects: review found
+    no code defect; five slice-doc
+    prose defects were fixed
+    in-slice before commit -
+    (1) swapped S503/S504 founding
+    seam numbers in the slice doc,
+    (2) speaking-rate road via
+    synthesize_all misdescribed,
+    (3) backend voices() named as
+    the introspection road instead
+    of the citizen methods,
+    (4) TTS observation record
+    understated, (5) two stale
+    internal cross-references.
+    No discovered bug left unfixed.
+    Design honesty: citizens are
+    NOT registered in the running
+    app - no build_registry /
+    create_app registration and no
+    HTTP routes; host wiring via
+    register_plugin is the only
+    road in v1, and the founding
+    /api/v1/voice/* routes remain
+    the HTTP road. Sandbox grants
+    are the empty frozenset; the
+    voice backend is host wiring,
+    never a grant. Per-chat latest
+    results and TTS observation
+    metadata are in-memory and
+    lost on restart; no real engine
+    was exercised (labelled fakes
+    and test doubles only).
+    Merge conflict only in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    (append-vs-append), resolved
+    keeping the P-090 and P-091
+    entries exactly once;
+    py_compile clean on the merged
+    tree. Combined batteries on the
+    merged tree: 117 passed / 0
+    failed (= 65 + 52 exact).
+    Forge confirmation suite:
+    3823 passed / 4 skipped / 0
+    failed (= 3771 P-090
+    confirmation + 52, exact; log
+    /tmp/p091_forge_suite.log).
+    No heal needed at this banking.
+    Next in roadmap order: P-092.
