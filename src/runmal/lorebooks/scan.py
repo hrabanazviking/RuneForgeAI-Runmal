@@ -88,6 +88,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, replace
+from functools import lru_cache
 
 from runmal.lorebooks.logic import normalise_selective_logic, secondary_gate
 from runmal.lorebooks.states import normalise_vectorised
@@ -164,12 +165,120 @@ def _usable(keys: tuple[str, ...]) -> list[str]:
     return [k for k in keys if isinstance(k, str) and k.strip()]
 
 
-def _compile(key: str, whole_word: bool, case_sensitive: bool) -> "re.Pattern[str]":
+@lru_cache(maxsize=8192)
+def _compile_cached(key: str, whole_word: bool, case_sensitive: bool) -> "re.Pattern[str]":
     pattern = re.escape(key)
     if whole_word:
         pattern = r"\b" + pattern + r"\b"
     flags = 0 if case_sensitive else re.IGNORECASE
     return re.compile(pattern, flags)
+
+
+def _compile(key: str, whole_word: bool, case_sensitive: bool) -> "re.Pattern[str]":
+    """Compiled-pattern cache (P-046 C1).
+
+    Identical pattern string and flags as the pre-P-046 direct
+    ``re.compile`` -- the cache only avoids recompiling the same
+    (key, whole_word, case_sensitive) triple on every tick.
+    Compiled patterns are immutable and safe to search from the
+    cache. Bounded LRU (8192) per the P-046 design.
+    """
+    return _compile_cached(key, whole_word, case_sensitive)
+
+
+
+_TOKEN_RE = re.compile(r"\w+")
+_SIMPLE_KEY_RE = re.compile(r"\w+")
+
+
+class _WindowIndex:
+    """Per-window lookup structures shared by every entry (P-046).
+
+    One scan tick searches the same window for every entry's keys,
+    so the window is indexed once: maximal-word-token -> window
+    positions maps (exact tokens for case-sensitive matching;
+    lowered tokens over ASCII texts for case-insensitive
+    matching) plus the lowered texts for substring pre-checks.
+    """
+
+    __slots__ = ("texts", "lowered", "ascii_pos", "non_ascii", "tokens_cs", "tokens_ci")
+
+    def __init__(self, texts: list[str]):
+        self.texts = texts
+        self.lowered = [t.lower() for t in texts]
+        self.ascii_pos = tuple(i for i, t in enumerate(texts) if t.isascii())
+        self.non_ascii = tuple(i for i, t in enumerate(texts) if not t.isascii())
+        tokens_cs: dict[str, set[int]] = {}
+        tokens_ci: dict[str, set[int]] = {}
+        for i, text in enumerate(texts):
+            ascii_text = text.isascii()
+            for match in _TOKEN_RE.finditer(text):
+                token = match.group(0)
+                tokens_cs.setdefault(token, set()).add(i)
+                if ascii_text:
+                    tokens_ci.setdefault(token.lower(), set()).add(i)
+        self.tokens_cs = tokens_cs
+        self.tokens_ci = tokens_ci
+
+
+def _regex_positions(key, window, whole_word, case_sensitive, positions):
+    rx = _compile(key, whole_word, case_sensitive)
+    return {i for i in positions if rx.search(window[i])}
+
+
+def _key_positions(key, index, whole_word, case_sensitive):
+    """Window positions where ``key`` matches (regex-exact).
+
+    Each fast path is restricted to the domain where it is
+    provably identical to the compiled-regex search it replaces
+    (notably: case folding over ASCII text is exactly lower());
+    anything outside that domain falls back to the original
+    regex search over the affected texts, so matched keys and
+    indices are unchanged. P-046 design C3 + scout step 4 (the
+    token index), landed only after the profile indicted
+    _match_keys / re.search (hidden_files/P046_PROFILE_BEFORE.txt).
+    """
+    window = index.texts
+    if whole_word and _SIMPLE_KEY_RE.fullmatch(key):
+        # \b<key>\b for an all-word-char key matches exactly a
+        # maximal \w+ token equal to the key under the case rule:
+        # a match inside a longer token has no boundary on the
+        # inner side, and a match cannot span tokens.
+        if case_sensitive:
+            return set(index.tokens_cs.get(key, ()))
+        if key.isascii():
+            found = set(index.tokens_ci.get(key.lower(), ()))
+            if index.non_ascii:
+                found |= _regex_positions(key, window, True, False, index.non_ascii)
+            return found
+        return _regex_positions(key, window, True, False, range(len(window)))
+    if not whole_word:
+        # An escaped literal with no boundaries IS a substring
+        # search; for case-sensitive keys str.__contains__ is
+        # exactly that, for any script.
+        if case_sensitive:
+            return {i for i, text in enumerate(window) if key in text}
+        if key.isascii():
+            lowered_key = key.lower()
+            found = {i for i in index.ascii_pos if lowered_key in index.lowered[i]}
+            if index.non_ascii:
+                found |= _regex_positions(key, window, False, False, index.non_ascii)
+            return found
+        return _regex_positions(key, window, False, False, range(len(window)))
+    # Whole-word key containing non-word characters: a regex
+    # match contains the literal key, so a substring pre-check
+    # may skip the regex but never replaces it.
+    if case_sensitive:
+        candidates = [i for i, text in enumerate(window) if key in text]
+        return _regex_positions(key, window, True, True, candidates)
+    if key.isascii():
+        lowered_key = key.lower()
+        candidates = [i for i in index.ascii_pos if lowered_key in index.lowered[i]]
+        found = _regex_positions(key, window, True, False, candidates)
+        if index.non_ascii:
+            found |= _regex_positions(key, window, True, False, index.non_ascii)
+        return found
+    return _regex_positions(key, window, True, False, range(len(window)))
 
 
 def _match_keys(
@@ -178,18 +287,17 @@ def _match_keys(
     offset: int,
     whole_word: bool,
     case_sensitive: bool,
+    index: _WindowIndex | None = None,
 ) -> tuple[tuple[str, ...], tuple[int, ...]]:
+    if index is None:
+        index = _WindowIndex(window)
     matched: list[str] = []
     indices: set[int] = set()
     for key in keys:
-        rx = _compile(key, whole_word, case_sensitive)
-        hit_here = False
-        for i, text in enumerate(window):
-            if rx.search(text):
-                hit_here = True
-                indices.add(offset + i)
-        if hit_here:
+        positions = _key_positions(key, index, whole_word, case_sensitive)
+        if positions:
             matched.append(key)
+            indices.update(offset + i for i in positions)
     return tuple(matched), tuple(sorted(indices))
 
 
@@ -204,6 +312,7 @@ def _scan_texts(
     then translate positions into their own index spaces, so the
     two paths can never drift in matching semantics.
     """
+    index = _WindowIndex(texts)
     hits: list[ScanHit] = []
     for entry in entries:
         if not entry.enabled or entry.constant or entry.vectorised:
@@ -212,14 +321,14 @@ def _scan_texts(
         if not primaries:
             continue
         matched_p, idx_p = _match_keys(
-            primaries, texts, 0, entry.whole_word, entry.case_sensitive
+            primaries, texts, 0, entry.whole_word, entry.case_sensitive, index=index
         )
         if not matched_p:
             continue
         secondaries = _usable(entry.secondary_keys)
         if secondaries:
             matched_s, idx_s = _match_keys(
-                secondaries, texts, 0, entry.whole_word, entry.case_sensitive
+                secondaries, texts, 0, entry.whole_word, entry.case_sensitive, index=index
             )
             if not secondary_gate(
                 entry.selective_logic,
@@ -329,6 +438,7 @@ def _near_misses_texts(
     texts: list[str],
 ) -> list[NearMiss]:
     """Near misses over one window; indices are window positions."""
+    index = _WindowIndex(texts)
     out: list[NearMiss] = []
     for entry in entries:
         if not entry.enabled or entry.constant or entry.vectorised:
@@ -337,7 +447,7 @@ def _near_misses_texts(
         if not primaries:
             continue
         matched_p, idx_p = _match_keys(
-            primaries, texts, 0, entry.whole_word, entry.case_sensitive
+            primaries, texts, 0, entry.whole_word, entry.case_sensitive, index=index
         )
         if not matched_p:
             continue
@@ -345,7 +455,7 @@ def _near_misses_texts(
         if not secondaries:
             continue
         matched_s, idx_s = _match_keys(
-            secondaries, texts, 0, entry.whole_word, entry.case_sensitive
+            secondaries, texts, 0, entry.whole_word, entry.case_sensitive, index=index
         )
         if secondary_gate(
             entry.selective_logic,
