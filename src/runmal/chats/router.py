@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from runmal.chats import service
 from runmal.chats.service import chat_to_dict, event_to_dict, message_to_dict
 from runmal.db.deps import get_owner_id, get_session
+from runmal.prompt.post_history import instructions_to_data
 
 router = APIRouter(tags=["chats"])
 
@@ -35,6 +36,12 @@ class MessageUpdate(BaseModel):
 
 class ChatPresetIn(BaseModel):
     preset_id: str | None = None
+
+
+class ChatPostHistoryIn(BaseModel):
+    text: str = ""
+    enabled: bool = True
+    role: str = "system"
 
 
 class ChatBackendProfileIn(BaseModel):
@@ -175,6 +182,38 @@ async def set_chat_preset(
     if chat is None:
         raise HTTPException(status_code=404, detail="chat not found")
     return chat_to_dict(chat)
+
+
+@router.post("/chats/{chat_id}/post-history")
+async def set_chat_post_history(
+    chat_id: str,
+    body: ChatPostHistoryIn,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Set a chat's post-history instructions (P-057)."""
+    try:
+        chat = await service.set_chat_post_history(
+            session, user_id, chat_id, body.model_dump()
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if chat is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return chat_to_dict(chat)
+
+
+@router.get("/chats/{chat_id}/post-history")
+async def get_chat_post_history(
+    chat_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """A chat's post-history instructions (P-057)."""
+    ph = await service.get_chat_post_history(session, user_id, chat_id)
+    if ph is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return instructions_to_data(ph)
 
 
 @router.post("/chats/{chat_id}/backend-profile")

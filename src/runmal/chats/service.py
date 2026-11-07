@@ -11,6 +11,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.characters.service import get_character as get_char
 from runmal.db.models import Chat, ChatEvent, Message
+from runmal.prompt.post_history import (
+    PostHistoryInstructions,
+    instructions_from_data,
+    instructions_to_data,
+)
 
 VALID_ROLES = frozenset({"user", "assistant", "system"})
 
@@ -20,13 +25,24 @@ EVENT_PERSONA_CHANGED = "persona.changed"
 EVENT_MESSAGE_APPENDED = "message.appended"
 EVENT_MESSAGE_EDITED = "message.edited"
 EVENT_MESSAGE_DELETED = "message.deleted"
+EVENT_POST_HISTORY_CHANGED = "post_history.changed"
 
 
 def _now() -> datetime:
     return datetime.now(UTC)
 
 
+def _post_history_from_chat(chat: Chat) -> PostHistoryInstructions:
+    try:
+        raw = getattr(chat, "post_history_json", None)
+        parsed = json.loads(raw) if raw else None
+        return instructions_from_data(parsed)
+    except (json.JSONDecodeError, ValueError, TypeError, AttributeError):
+        return PostHistoryInstructions()
+
+
 def chat_to_dict(chat: Chat, message_count: int = 0) -> dict:
+    ph = _post_history_from_chat(chat)
     return {
         "id": chat.id,
         "title": chat.title,
@@ -35,6 +51,7 @@ def chat_to_dict(chat: Chat, message_count: int = 0) -> dict:
         "backend_profile_id": chat.backend_profile_id,
         "created_at": chat.created_at.isoformat(),
         "message_count": message_count,
+        "post_history": instructions_to_data(ph),
     }
 
 
@@ -138,6 +155,44 @@ async def set_chat_preset(
         if await presets.get_preset(session, user_id, preset_id) is None:
             raise KeyError(preset_id)
     chat.preset_id = preset_id
+    await session.commit()
+    return chat
+
+
+async def get_chat_post_history(
+    session: AsyncSession, user_id: str, chat_id: str
+) -> PostHistoryInstructions | None:
+    """The chat's post-history instructions (P-057), or None when missing.
+
+    A corrupt stored document reads as the default (empty)
+    instructions rather than failing the read.
+    """
+    chat = await _get_owned_chat(session, user_id, chat_id)
+    if chat is None:
+        return None
+    return _post_history_from_chat(chat)
+
+
+async def set_chat_post_history(
+    session: AsyncSession, user_id: str, chat_id: str, data: dict
+) -> Chat | None:
+    """Set a chat's post-history instructions (P-057).
+
+    The chat must belong to the user; a missing chat returns None.
+    Invalid data raises ValueError and stores nothing. The mutation
+    event records only enabled/role -- never the instruction text.
+    """
+    chat = await _get_owned_chat(session, user_id, chat_id)
+    if chat is None:
+        return None
+    ph = instructions_from_data(data)
+    chat.post_history_json = json.dumps(instructions_to_data(ph))
+    await _record_event(
+        session,
+        chat.id,
+        EVENT_POST_HISTORY_CHANGED,
+        data={"enabled": ph.enabled, "role": ph.role},
+    )
     await session.commit()
     return chat
 

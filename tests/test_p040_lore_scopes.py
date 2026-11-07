@@ -300,14 +300,14 @@ def test_resolve_layers_rejects_bad_kind_and_budget():
 
 
 def test_migration_head_is_0032():
-    assert MIGRATIONS[-1][0] == "0033"
+    assert MIGRATIONS[-1][0] == "0035"  # head moved by P-057 (PROVISIONAL 0035)
 
 
 def test_migration_creates_table_with_unique_triple(tmp_path):
     db_path = tmp_path / "t.db"
     applied = migrate_to_head(db_path)
-    assert applied[-1] == "0033"
-    assert current_revision(db_path) == "0033"
+    assert applied[-1] == "0035"
+    assert current_revision(db_path) == "0035"
     conn = sqlite3.connect(db_path)
     cols = {row[1] for row in conn.execute("PRAGMA table_info(lorebook_scopes)")}
     assert {

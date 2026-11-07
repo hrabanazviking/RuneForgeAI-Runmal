@@ -22,11 +22,12 @@ through it before composition:
   required flag);
 - a kept slot's ``order`` becomes its block's position, so
   reordering the layout changes assembly order in the composer;
-- slots whose kind belongs to no managed block (today:
-  ``post_history``, P-057's future citizen) keep baseline-relative
-  order after the managed blocks -- the manager governs what it
-  names and leaves the rest exactly where the baseline put it
-  relative to the whole;
+- slots whose kind belongs to no managed block keep
+  baseline-relative order after the managed blocks -- the manager
+  governs what it names and leaves the rest exactly where the
+  baseline put it relative to the whole (today every baseline kind
+  is managed -- ``post_history`` became a managed block in P-057 --
+  so this applies only to a future kind that arrives unmanaged);
 - depth-injected slots (S206) keep the splice contract: a depth slot
   is composed only when the composer reaches it AFTER the history
   slot has been emitted, so when a depth slot's own block sits
@@ -73,6 +74,7 @@ BLOCK_KINDS: dict[str, tuple[str, ...]] = {
     "history": ("history",),
     "lore_after": ("lore_after",),
     "authors_note": ("authors_note",),
+    "post_history": ("post_history",),
 }
 
 #: Block names in baseline (default layout) order.
@@ -128,10 +130,10 @@ def layout_from_data(data: object) -> PromptLayout:
     Blocks the data does not mention are filled in from the default
     layout at their baseline-relative positions, so a partial layout
     (e.g. only the blocks a user actually moved) still denotes a
-    complete structure. (A future block -- P-057's post_history is
-    the known candidate -- must not invalidate layouts written
-    before it existed, which is why missing blocks fill rather
-    than fail.)
+    complete structure. (A future block must not invalidate layouts
+    written before it existed, which is why missing blocks fill
+    rather than fail -- that is how P-057's post_history, now a
+    managed block like any other, joined old layouts seamlessly.)
     """
     if isinstance(data, dict):
         data = data.get("blocks")
@@ -206,8 +208,9 @@ def apply_layout(
     adjustment: the depth slot falls through to plain emission, as
     the composer already treats a history-less prompt.
 
-    Unmanaged kinds (today: ``post_history``, P-057's future
-    citizen) form the unmanaged tail:
+    Unmanaged kinds (none today -- every baseline kind, including
+    ``post_history`` since P-057, belongs to a managed block) would
+    form the unmanaged tail:
     ``len(blocks) * 100 + baseline_index(kind)``.
     """
     from runmal.prompt.slots import BASELINE_ORDER as _BO

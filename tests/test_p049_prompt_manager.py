@@ -2,7 +2,7 @@
 
 Pins the prompt-manager contract: default layout is an exact
 identity on the baseline assembly, layout validation/fill-missing,
-apply_layout drop/reorder/depth/unmanaged-tail semantics, the
+apply_layout drop/reorder/depth/managed-block semantics, the
 resolve/echo service, and the inspector API surface (trace discards
 with reason prompt_manager_disabled, ledger exclusion, 422s, and
 the /debug/prompt-manager/default endpoint).
@@ -207,17 +207,22 @@ def test_depth_dropped_when_its_block_disabled():
     assert [s.id for s in kept] == ["history"]
 
 
-# ---------------- pure: unmanaged tail / mapping / migration ----------------
+# ---------------- pure: managed post_history block / mapping / migration ----------------
 
-def test_unmanaged_tail_order_value():
+def test_post_history_managed_block_order_value():
     post = make_slot("post_history", "system", "POST", id="post/1")
     layout = default_layout()
     kept, dropped = apply_layout([post], layout)
     assert dropped == []
-    assert kept[0].order == len(layout.blocks) * 100 + BASELINE_INDEX["post_history"]
+    # Managed since P-057: order = block position * 100 + baseline index.
+    # The default layout puts the post_history block last (position 9),
+    # so 9 * 100 + 9 == 909 -- the same value the old unmanaged tail
+    # produced, now with managed meaning.
+    assert layout.position("post_history") == 9
+    assert kept[0].order == 9 * 100 + 9 == 909
 
 
-def test_unmanaged_tail_composes_last_even_if_authors_note_first():
+def test_post_history_composes_last_even_if_authors_note_first():
     order = ["authors_note"] + [n for n in BLOCK_ORDER if n != "authors_note"]
     slots = [
         make_slot("authors_note", "system", "NOTE", id="note/1"),
@@ -227,7 +232,17 @@ def test_unmanaged_tail_composes_last_even_if_authors_note_first():
     kept, _ = apply_layout(slots, layout_with(order=order))
     ids = [m.slot_id for m in compose(kept, **CTX).messages]
     assert ids[0] == "note/1"
+    # post_history follows its BLOCK position: it is still the last
+    # block in this layout, so it still composes last -- as a managed
+    # block now, not as an unmanaged tail.
     assert ids[-1] == "post/1"
+
+
+def test_post_history_block_disabled_drops_slot():
+    post = make_slot("post_history", "system", "POST", id="post/1")
+    kept, dropped = apply_layout([post], layout_with(disabled={"post_history"}))
+    assert kept == []
+    assert [s.id for s in dropped] == ["post/1"]
 
 
 def test_block_for_kind_mapping():
@@ -240,12 +255,12 @@ def test_block_for_kind_mapping():
     assert block_for_kind("examples") == "examples"
     assert block_for_kind("history") == "history"
     assert block_for_kind("authors_note") == "authors_note"
-    assert block_for_kind("post_history") is None
+    assert block_for_kind("post_history") == "post_history"
     assert block_for_kind("no-such-kind") is None
 
 
-def test_migration_head_stays_0032():
-    assert MIGRATIONS[-1][0] == "0033"  # head moved by P-054 (0033)
+def test_migration_head_is_0035_provisional():
+    assert MIGRATIONS[-1][0] == "0035"  # PROVISIONAL 0035 (P-057); P-056 provisional 0034 banks first
 
 
 # ---------------- service ----------------

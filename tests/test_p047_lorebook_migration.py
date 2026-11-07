@@ -578,10 +578,10 @@ def test_upgrade_database_report(tmp_path):
     assert report["schema"] == UPGRADE_SCHEMA
     assert report["status"] == "upgraded"
     assert report["before_revision"] == "0023"
-    assert report["after_revision"] == "0033"
+    assert report["after_revision"] == "0035"
     assert report["applied_revisions"] == [
         "0024", "0025", "0026", "0027", "0028",
-        "0029", "0030", "0031", "0032", "0033",  # 0033 appended by P-054
+        "0029", "0030", "0031", "0032", "0033", "0035",  # PROVISIONAL 0035 appended by P-057
     ]
     assert report["books_before"] == 1
     assert report["books_after"] == 1
@@ -688,7 +688,7 @@ def test_upgrade_database_no_lorebooks_left_untouched(tmp_path):
 
 
 def test_no_new_migration_head_stays_0032():
-    assert MIGRATIONS[-1][0] == "0033"
+    assert MIGRATIONS[-1][0] == "0035"  # head moved by P-057 (PROVISIONAL 0035)
 
 
 # ------------------------------------------------------------------
