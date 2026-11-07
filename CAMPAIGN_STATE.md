@@ -3749,3 +3749,40 @@ P-047 BANKED - migration: existing lorebooks upgraded
     Commissioned as the immediate slice after the
     P-048 gate.
     Next in roadmap order: P-048 (Part III gate).
+
+P-048 BANKED - Part III gate: the ST-shaped lore test
+    pack (logic, recursion, timing) passes on Runmal's
+    engine; inspector explains every firing - team-03
+    commit bf35322 merged (no-ff, clean) into
+    yrsa/two-mirrors-build as d92f2ca and pushed;
+    ls-remote verified
+    d92f2cac2430efbf578bf313e6795c4f2f95d5e2.
+    Evidence (team-03 worktree hidden_files/P048_EVIDENCE.md
+    and logs): gate battery 32/32 (logic+recursion 12,
+    timing 4, inspector 16), gate-record module 10/10,
+    neighbours 906 (19 Part III modules P-031..P-047),
+    team full suite 2199 passed / 4 skipped / 0 failed
+    (= 2157 + 32 + 10, exact); s503 did not fire in the
+    team run. Forge confirmation suite at the merged
+    tree: 2198 passed / 4 skipped / 1 failed - the one
+    failure is test_s503_stt.py's timing contract, solo
+    re-run 4/4 green, classified contention on the
+    shared laptop, NOT a defect. NO migration; head
+    stays 0032. PART III COMPLETE (P-031..P-048).
+    Verdict PASS in every area: logic (P-032 truth table,
+    P-034 deterministic groups, P-035 three kinds one
+    engine), recursion (chains, depth clamp 5,
+    cycle-safe, budget-gated), timing (sticky/cooldown/
+    delay exact across a chat's life and fresh sessions),
+    inspector (every firing in the 18-entry Gateworld
+    explained - 8 included / 7 not_triggered /
+    2 group_excluded / 1 disabled, reconciliation exact).
+    Cross-cutting PASS incl. placement asserted in the
+    composed prompt - P-030 finding F1 CLOSED. Findings
+    carried (gate doc section 5, none hidden): F1 P-046
+    vector cache in-process only, direct Pi 4 bench owed;
+    F2 binding.normalise_book_entry drops depth/role -
+    commissioned as the immediate next slice; F3 P-019
+    preservation file-layer only.
+    Next in roadmap order: the commissioned binding
+    depth/role slice (team-01), then Part IV (P-049..).
