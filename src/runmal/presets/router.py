@@ -11,7 +11,7 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.db.deps import get_owner_id, get_session
-from runmal.presets import bundles, interop, service
+from runmal.presets import bundles, interop, packs, service
 
 router = APIRouter(tags=["presets"])
 
@@ -109,6 +109,38 @@ async def import_bundle(body: dict, name: str | None = None, user_id: str = Depe
     out = bundles.bundle_to_dict(row)
     out["import_report"] = report
     return out
+
+
+class PackExportIn(BaseModel):
+    name: str
+    bundle_ids: list[str] | None = None
+    preset_ids: list[str] | None = None
+    items: list[dict[str, Any]] | None = None
+
+
+@router.post("/presets/packs/export")
+async def export_pack(body: PackExportIn, user_id: str = Depends(get_owner_id), session: AsyncSession = Depends(get_session)):
+    try:
+        return await packs.export_library_pack(session, user_id, body.name, bundle_ids=body.bundle_ids, preset_ids=body.preset_ids, extra_items=body.items)
+    except ValueError as exc:
+        raise _bundle_error(exc) from exc
+
+
+@router.post("/presets/packs/inspect")
+async def inspect_pack(body: dict, user_id: str = Depends(get_owner_id)):
+    try:
+        return packs.inspect_pack(body)
+    except ValueError as exc:
+        raise _bundle_error(exc) from exc
+
+
+@router.post("/presets/packs/import")
+async def import_pack(body: dict, on_conflict: str = "create_new", user_id: str = Depends(get_owner_id), session: AsyncSession = Depends(get_session)):
+    try:
+        report = await packs.import_pack(session, user_id, body, on_conflict=on_conflict)
+    except ValueError as exc:
+        raise _bundle_error(exc) from exc
+    return {"import_report": report}
 
 
 @router.get("/presets/bundles/{bundle_id}/share")
