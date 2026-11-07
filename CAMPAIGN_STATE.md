@@ -4340,3 +4340,28 @@ P-062 BANKED - Multi-model prompt profiles: one
     default precedence; GET /debug/model-profiles
     + POST /debug/model-profile-diff. Next in
     roadmap order: P-063.
+P-063 BANKED - Prompt import/export packs (Part
+    IV, with Part XII sharing) - team-01 commit
+    b4e2aa9 merged (no-ff) into
+    yrsa/two-mirrors-build as 97c6bdf and pushed;
+    ls-remote verified (see WAVE_PLAN update).
+    Evidence (team-01 worktree
+    hidden_files/P063_EVIDENCE.md): battery 17
+    passed, neighbours 333 passed, team full
+    suite 2758 passed / 4 skipped / 1 failed
+    (s503 contention flake, four solo runs 4/4)
+    on its base. Forge confirmation suite at the
+    merged tree: 2875 passed / 4 skipped / 0
+    failed (= 2858 + 17, exact). NO migration:
+    the merged head stays 0035 (pinned by the
+    battery). Merge: CLEAN, no conflicts
+    (footprint disjoint: new presets/packs.py +
+    presets/router.py routes declared before
+    /presets/{preset_id}, grep-verified at lines
+    121-137 vs 285). Combined batteries at the
+    merged tree (P-063 + P-054 + P-061 + P-062):
+    164 passed. Slice: presets/packs.py - prompt
+    packs export/inspect/import for sharing
+    presets and bundles as one portable unit.
+    Part IV now has only the P-064 gate left.
+    Next in roadmap order: P-064 (Part IV gate).
