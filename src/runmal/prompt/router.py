@@ -11,6 +11,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from runmal.backends.capabilities import (
+    backend_truth_dict,
+    capability_matrix,
+)
 from runmal.db.deps import get_owner_id, get_session
 from runmal.prompt.inspect import inspect_prompt
 from runmal.prompt.context import (
@@ -115,3 +119,29 @@ async def context_template_default() -> dict:
         "template": context_echo(active, source),
         "story_string": to_story_string(active),
     }
+
+
+@router.get("/debug/backend-capabilities")
+async def backend_capabilities() -> dict:
+    """Per-backend capability truth for every chat backend (P-053).
+
+    The UI renders sampler greying from these rows and nothing else:
+    ``available`` controls may be offered enabled, ``greyed`` controls
+    are shown disabled with their reason, and nothing else is offered
+    at all. A non-empty ``audit`` list means a truth source drifted;
+    it is reported as data in this payload, never hidden.
+    """
+    return capability_matrix()
+
+
+@router.get("/debug/backend-capabilities/{backend_key}")
+async def backend_capability(backend_key: str,
+                             aesir_route: str = "openai-chat") -> dict:
+    """Capability truth for one backend's default model (P-053)."""
+    try:
+        return backend_truth_dict(backend_key, aesir_route=aesir_route)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(exc),
+        ) from exc
