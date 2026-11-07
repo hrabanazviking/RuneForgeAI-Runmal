@@ -10,6 +10,7 @@ from runmal.db.deps import get_owner_id, get_session
 from runmal.lorebooks import scopes as lore_scopes
 from runmal.lorebooks import service, transfer
 from runmal.lorebooks.preview import preview_activation
+from runmal.lorebooks.scan import MAX_RECURSIVE_SCAN_DEPTH
 from runmal.lorebooks.service import entry_to_dict, lorebook_to_dict
 from runmal.lorebooks.windows import ScanSettings, check_scan_mode
 
@@ -92,6 +93,11 @@ class PreviewRequest(BaseModel):
     scan_mode: str | None = None
     scan_external_context: bool | None = None
     external_context: list[str] = Field(default_factory=list)
+    # Editor depth (P-042): the P-031 recursive-scan opt-in was
+    # honoured by preview_activation but carried by no API shape;
+    # it is a first-class preview control now.
+    recursive_scan: bool = False
+    max_recursion_depth: int | None = Field(default=None, ge=0)
 
 
 def _service_error(exc: ValueError) -> HTTPException:
@@ -242,11 +248,30 @@ async def preview_lorebook(
             scan_mode=scan_mode,
             scan_external_context=scan_external,
             external_context=body.external_context,
+            recursive_scan=body.recursive_scan,
+            max_recursion_depth=(
+                body.max_recursion_depth
+                if body.max_recursion_depth is not None
+                else MAX_RECURSIVE_SCAN_DEPTH
+            ),
         )
     except ValueError as exc:
         raise _service_error(exc) from exc
     result["book_id"] = book.id
     return result
+
+
+@router.get("/lorebooks/editor-schema")
+async def lorebook_editor_schema(
+    user_id: str = Depends(get_owner_id),
+):
+    """P-042 editor census: every engine-honoured lorebook field,
+    the API model that carries it and the editor element that edits
+    it. The editor battery pins this census against the models,
+    the service dicts and the shipped page/JS."""
+    from runmal.lorebooks.editor import editor_schema
+
+    return editor_schema()
 
 
 @router.get("/lorebooks/{book_id}")
