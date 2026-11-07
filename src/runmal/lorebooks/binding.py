@@ -35,6 +35,11 @@ from runmal.lorebooks.logic import (
     normalise_selective_logic,
     selective_logic_from_code,
 )
+from runmal.lorebooks.placement import (
+    normalise_depth,
+    normalise_position,
+    normalise_role,
+)
 from runmal.lorebooks.preview import preview_activation
 from runmal.lorebooks.rng import normalise_probability
 from runmal.lorebooks.service import entry_to_dict, lorebook_to_dict
@@ -71,8 +76,6 @@ PRECEDENCES = frozenset(
 
 DEFAULT_PRECEDENCE = PRECEDENCE_CHARACTER_FIRST
 
-_POSITIONS = frozenset({"before_char", "after_char", "at_depth"})
-_POSITION_BY_CODE = {0: "before_char", 1: "after_char", 4: "at_depth"}
 
 
 def _now() -> datetime:
@@ -192,19 +195,6 @@ def character_book_entries(book) -> list:
     return []
 
 
-def _normalise_position(value) -> str:
-    if isinstance(value, str):
-        candidate = value.strip().lower()
-        return candidate if candidate in _POSITIONS else "before_char"
-    if isinstance(value, bool):
-        return "before_char"
-    if isinstance(value, int):
-        return _POSITION_BY_CODE.get(value, "before_char")
-    if isinstance(value, float) and value.is_integer():
-        return _POSITION_BY_CODE.get(int(value), "before_char")
-    return "before_char"
-
-
 def _normalise_selective_logic(raw: dict) -> str:
     for key in ("selective_logic", "selectiveLogic"):
         if key in raw and raw[key] is not None:
@@ -246,9 +236,14 @@ def normalise_book_entry(raw: dict) -> dict:
     character-card names (``key`` / ``keysecondary`` / ``comment`` /
     ``disable`` / ``order`` / ``selectiveLogic`` / ``group`` /
     ``groupWeight`` / ``caseSensitive`` / ``matchWholeWords`` /
-    ``sticky`` / ``cooldown`` / ``delay``). Non-dict input raises
-    ValueError. The result carries exactly the native entry fields
-    that a LoreEntry row is built from in materialisation.
+    ``sticky`` / ``cooldown`` / ``delay``). Placement (P-038) rides
+    this leg whole: ``position`` and its ``at_depth`` companions
+    ``depth`` / ``role`` are normalised by lorebooks.placement, the
+    single vocabulary owner (a bad depth degrades to None --
+    undeclared, never an invented number; a bad role degrades to
+    system). Non-dict input raises ValueError. The result carries
+    exactly the native entry fields that a LoreEntry row is built
+    from in materialisation.
     """
     if not isinstance(raw, dict):
         raise ValueError(f"character book entry must be an object: {raw!r}")
@@ -281,7 +276,9 @@ def normalise_book_entry(raw: dict) -> dict:
         "vectorised": _bool_field(raw, ("vectorised", "vectorized"), False),
         "enabled": enabled,
         "priority": _priority_of_raw(raw),
-        "position": _normalise_position(raw.get("position")),
+        "position": normalise_position(raw.get("position")),
+        "depth": normalise_depth(raw.get("depth")),
+        "role": normalise_role(raw.get("role")),
         "case_sensitive": _bool_field(
             raw, ("case_sensitive", "caseSensitive"), False
         ),
@@ -620,6 +617,8 @@ async def materialise_character_book(
                 probability=fields["probability"],
                 priority=fields["priority"],
                 position=fields["position"],
+                depth=fields["depth"],
+                role=fields["role"],
                 enabled=fields["enabled"],
                 constant=fields["constant"],
                 vectorised=fields["vectorised"],
@@ -683,6 +682,8 @@ async def serialise_bound_book(session: AsyncSession, binding) -> dict:
                 "vectorized": data["vectorised"],
                 "selective_logic": data["selective_logic"],
                 "position": data["position"],
+                "depth": data["depth"],
+                "role": data["role"],
                 "id": index,
             }
         )
