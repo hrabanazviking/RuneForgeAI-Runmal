@@ -4,10 +4,11 @@ from __future__ import annotations
 
 from typing import Literal
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from runmal.chats import metadata as metadata_mod
 from runmal.chats import service
 from runmal.chats.service import chat_to_dict, event_to_dict, message_to_dict
 from runmal.chats.swipes import settings_to_data
@@ -115,6 +116,21 @@ class CheckpointCreate(BaseModel):
     name: str | None = None
 
 
+class ChatMetadataIn(BaseModel):
+    title: str | None = None
+    summary: str | None = None
+    tags: list[str] | None = None
+
+
+class ChatRegenerateIn(BaseModel):
+    fields: list[str] | None = None
+    force: bool = False
+
+
+class ChatFavouriteIn(BaseModel):
+    is_favourite: bool
+
+
 class CheckpointRestoreIn(BaseModel):
     name: str | None = None
 
@@ -138,6 +154,44 @@ async def list_chats(
     session: AsyncSession = Depends(get_session),
 ):
     return [chat_to_dict(chat, count) for chat, count in await service.list_chats(session, user_id)]
+
+
+@router.get("/chats/library")
+async def list_chat_library(
+    q: str | None = None,
+    tags: list[str] | None = Query(default=None),
+    tag_mode: str = "any",
+    favourites_only: bool = False,
+    character_id: str | None = None,
+    sort: str = "recent",
+    limit: int = 50,
+    offset: int = 0,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    try:
+        return await metadata_mod.list_chat_library(
+            session,
+            user_id,
+            q=q,
+            tags=tags,
+            tag_mode=tag_mode,
+            favourites_only=favourites_only,
+            character_id=character_id,
+            sort=sort,
+            limit=limit,
+            offset=offset,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@router.get("/chats/tags")
+async def list_chat_tags(
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    return await metadata_mod.list_chat_tags(session, user_id)
 
 
 @router.get("/chats/{chat_id}")
@@ -177,6 +231,72 @@ async def delete_chat(
     if not await service.delete_chat(session, user_id, chat_id):
         raise HTTPException(status_code=404, detail="chat not found")
     return {"deleted": True, "id": chat_id}
+
+
+@router.get("/chats/{chat_id}/metadata")
+async def get_chat_metadata(
+    chat_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    payload = await metadata_mod.get_metadata(session, user_id, chat_id)
+    if payload is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return payload
+
+
+@router.put("/chats/{chat_id}/metadata")
+async def update_chat_metadata(
+    chat_id: str,
+    body: ChatMetadataIn,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    updates = {
+        key: value
+        for key, value in body.model_dump().items()
+        if value is not None
+    }
+    try:
+        payload = await metadata_mod.update_metadata(session, user_id, chat_id, updates)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if payload is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return payload
+
+
+@router.post("/chats/{chat_id}/metadata/regenerate")
+async def regenerate_chat_metadata(
+    chat_id: str,
+    body: ChatRegenerateIn,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    try:
+        payload = await metadata_mod.regenerate_metadata(
+            session, user_id, chat_id, fields=body.fields, force=body.force
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if payload is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return payload
+
+
+@router.put("/chats/{chat_id}/favourite")
+async def set_chat_favourite(
+    chat_id: str,
+    body: ChatFavouriteIn,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    payload = await metadata_mod.set_favourite(
+        session, user_id, chat_id, body.is_favourite
+    )
+    if payload is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return payload
 
 
 @router.post("/chats/{chat_id}/messages", status_code=status.HTTP_201_CREATED)

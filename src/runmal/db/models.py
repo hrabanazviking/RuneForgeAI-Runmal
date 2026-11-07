@@ -82,6 +82,10 @@ class Chat(Base):
     branch_fork_index: Mapped[int | None] = mapped_column(Integer, nullable=True, default=None)
     branch_kind: Mapped[str] = mapped_column(String(20), nullable=False, default="root")
     branch_merge_of_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
+    # Chat metadata (P-073, PROVISIONAL 0039): the summary text and
+    # ONE JSON provenance document (runmal.chats.metadata).
+    summary: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    metadata_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
 
 
@@ -657,6 +661,45 @@ class CharacterAsset(Base):
         String(40), nullable=False, default="not_applicable"
     )
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
+
+
+class ChatOrganisation(Base):
+    """Per-user library organisation for one chat (P-073).
+
+    One row per chat: the owning user's favourite flag and when
+    it last changed. Absence of a row means not a favourite.
+    """
+
+    __tablename__ = "chat_organisation"
+
+    chat_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("chats.id", ondelete="CASCADE"), primary_key=True
+    )
+    user_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    is_favourite: Mapped[bool] = mapped_column(nullable=False, default=False)
+    updated_at: Mapped[datetime | None] = mapped_column(nullable=True, default=None)
+
+
+class ChatTag(Base):
+    """One user-applied tag on a chat (P-073).
+
+    ``tag`` is the display form; ``tag_key`` is its normalised lookup
+    form and, with the chat, the primary key - so the same tag
+    cannot be applied twice to one chat.
+    """
+
+    __tablename__ = "chat_tags"
+
+    chat_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("chats.id", ondelete="CASCADE"), primary_key=True
+    )
+    tag_key: Mapped[str] = mapped_column(String(80), primary_key=True)
+    user_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    tag: Mapped[str] = mapped_column(String(80), nullable=False)
 
 
 class CharacterOrganisation(Base):
