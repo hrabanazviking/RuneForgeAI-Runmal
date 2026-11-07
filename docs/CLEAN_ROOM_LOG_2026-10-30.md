@@ -660,3 +660,22 @@ source in §0(2) and appends its entry here:
   S310 contracts. No SillyTavern or Voxta source code was
   read and no file was downloaded; the slice's tests are
   authored fresh in the test module (P-005 discipline).
+- **P-055 (2026-11-07, public behaviour + own tree
+  only):** the text-macro engine (the {{name}} and
+  {{name::arg1::arg2}} forms and the identity / clock /
+  random / variable / transform set) is built from the
+  mirrors' publicly documented macro behaviour as
+  generally published, plus Runmal's own in-tree facts:
+  S110 substitute_macros and S307 resolve_variables
+  supply the legacy surfaces whose behaviour is preserved
+  untouched, the P-036 seeded-RNG discipline supplies
+  the recorded-roll honesty pattern, and the tools
+  router's existing registry / preview endpoints supply
+  the API shape. The single-pass rule, the unknown /
+  malformed honesty contract (preserved verbatim and
+  reported, or refused in strict mode), the variable
+  working-copy rule, and the engine data shapes are
+  Runmal's own design for the roadmap line. No
+  SillyTavern or Voxta source code was read and no file
+  was downloaded; the slice's tests are authored fresh
+  in the test module (P-005 discipline).
