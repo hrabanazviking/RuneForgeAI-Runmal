@@ -79,6 +79,24 @@ class MessageCopyIn(BaseModel):
 class SwipeSettingsIn(BaseModel):
     enabled: bool = True
     params: dict = {}
+
+
+class ContinueIn(BaseModel):
+    mode: str = "auto"
+    instruction: str | None = None
+
+
+class ImpersonateIn(BaseModel):
+    instruction: str | None = None
+
+
+class ImpersonateAcceptIn(BaseModel):
+    content: str = Field(min_length=1)
+    draft_id: str | None = None
+
+
+class ImpersonateDiscardIn(BaseModel):
+    draft_id: str | None = None
 class BranchCreate(BaseModel):
     message_id: str | None = None
     name: str | None = None
@@ -694,6 +712,32 @@ async def list_checkpoints(
     return result
 
 
+@router.post("/chats/{chat_id}/continue", status_code=status.HTTP_201_CREATED)
+async def continue_chat(
+    chat_id: str,
+    body: ContinueIn,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Continue a chat (P-069): the model nudges the conversation
+    forward and the result LANDS -- extend grows the last
+    assistant message in place; next appends a new assistant
+    message."""
+    from runmal.chats import continue_impersonate as ci
+
+    try:
+        result = await ci.continue_chat(
+            session, user_id, chat_id, mode=body.mode, instruction=body.instruction
+        )
+    except ci.GenerationFailedError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if result is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return result
+
+
 @router.get("/chats/{chat_id}/checkpoints/{checkpoint_id}")
 async def get_checkpoint(
     chat_id: str,
@@ -763,6 +807,75 @@ async def delete_checkpoint(
     if not result:
         raise HTTPException(status_code=404, detail="checkpoint not found")
     return {"deleted": True, "id": checkpoint_id}
+
+
+@router.post("/chats/{chat_id}/impersonate", status_code=status.HTTP_201_CREATED)
+async def impersonate_draft(
+    chat_id: str,
+    body: ImpersonateIn,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Draft the next user turn (P-069). The result is a DRAFT
+    document only: it is never stored as a message and history
+    is untouched until the user accepts a final text."""
+    from runmal.chats import continue_impersonate as ci
+
+    try:
+        draft = await ci.impersonate_draft(
+            session, user_id, chat_id, instruction=body.instruction
+        )
+    except ci.GenerationFailedError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if draft is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return draft
+
+
+@router.post(
+    "/chats/{chat_id}/impersonate/accept", status_code=status.HTTP_201_CREATED
+)
+async def accept_impersonate(
+    chat_id: str,
+    body: ImpersonateAcceptIn,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Accept an impersonate draft (P-069): the final text the
+    user supplies -- the draft verbatim or their edit of it --
+    is appended as a real user message. This is the only road
+    by which impersonated text becomes a message."""
+    from runmal.chats import continue_impersonate as ci
+
+    try:
+        message = await ci.accept_impersonate(
+            session, user_id, chat_id, body.content, draft_id=body.draft_id
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if message is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return message_to_dict(message)
+
+
+@router.post("/chats/{chat_id}/impersonate/discard")
+async def discard_impersonate(
+    chat_id: str,
+    body: ImpersonateDiscardIn,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Discard an impersonate draft (P-069): records the
+    discard and stores nothing -- a draft was never stored."""
+    from runmal.chats import continue_impersonate as ci
+
+    if not await ci.discard_impersonate(
+        session, user_id, chat_id, draft_id=body.draft_id
+    ):
+        raise HTTPException(status_code=404, detail="chat not found")
+    return {"discarded": True, "chat_id": chat_id}
 
 
 @router.get("/chats/{chat_id}/export")
