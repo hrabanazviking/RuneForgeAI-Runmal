@@ -4649,3 +4649,51 @@ P-072 BANKED - Chat search: full-text +
     One doc defect found and fixed in-slice
     (F1: phrase_score wording); no code
     defect found. Next in roadmap order: P-073.
+P-073 BANKED - Chat metadata: titles, tags,
+    summaries auto-generated and editable;
+    the library view at scale (Part V) -
+    team-02 commit 1786df5 merged (no-ff) into
+    yrsa/two-mirrors-build as 456db8d, banking
+    heal 9822fd4, and pushed; ls-remote
+    verified (see WAVE_PLAN update).
+    Evidence (team-02 worktree
+    hidden_files/P073_EVIDENCE.md): battery 17
+    passed, neighbours 211 passed / 17 failed,
+    team full suite 3076 passed / 4 skipped /
+    99 failed - ALL failures the
+    migration-head pin class, zero functional
+    failures. Forge first run at the merged
+    tree: 3118 passed / 100 failed (the 99
+    plus P-072's own head pins), every one
+    the same pin class; healed batteries
+    1816 passed; forge confirmation suite:
+    3218 passed / 4 skipped / 0 failed
+    (= 3201 + 17, exact). MIGRATION 0039
+    TAKEN by P-073 and STANDS as numbered
+    (P-072 took no migration); head becomes
+    0039. Adds chats.summary,
+    chats.metadata_json, chat_tags,
+    chat_organisation; registry verified with
+    0039 as a separate tuple entry after
+    0038, chain 0037 -> 0038 -> 0039. Merge
+    CONFLICT in chats/router.py only,
+    resolved as an additive union keeping
+    BOTH slices' routes (P-072 /chats/search
+    and P-073 /chats/library + /chats/tags,
+    all declared before /chats/{chat_id}).
+    Heal: uniform re-pin of the head to 0039
+    across 44 test files, positional pins
+    shifted one step, revision lists
+    extended honestly, NO assertion
+    weakened; P-072's anti-0039 assert
+    reworked to pin the single registry
+    0039 as P-073's own. Slice: deterministic
+    extractive-v1 auto titles/tags/summaries
+    (no model call), per-field provenance,
+    manual fields survive regeneration;
+    library view routes GET /chats/library,
+    GET /chats/tags, metadata GET/PUT/
+    regenerate, favourite. One test defect
+    found and fixed in-slice (tag read-back
+    order); no code defect found. Next in
+    roadmap order: P-074.
