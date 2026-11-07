@@ -808,3 +808,23 @@ source in §0(2) and appends its entry here:
   source code was read and no file was downloaded; the
   slice's tests are authored fresh in the test module
   (P-005 discipline).
+- **P-084 (2026-11-07, public behaviour + own tree
+  only):** the Memory Summarise plugin — rolling chat
+  summary into memory — is built entirely from Runmal's
+  own in-tree contracts: the P-081 Plugin API v1 (whose
+  slice doc's canonical example is this very citizen,
+  id runmal.summarise, made registerable by declaring
+  the full surface the example omitted), the P-082
+  sandbox grant policy (surface permissions only, an
+  empty resource grant set), the founding S404 roll
+  (versioned ChatSummary rows plus kind='summary'
+  memories with full message sources) driven by
+  fire-and-observe chat events, the S404 summarizer
+  seam filled with a deterministic extractive
+  summarizer in the P-073 honesty pattern (no model
+  called or claimed), and the prompt composer's
+  slots stage as the read-back path with forced
+  plugin provenance (PLG-07). No SillyTavern or
+  Voxta source code was read and no file was
+  downloaded; the slice's tests are authored fresh
+  in the test module (P-005 discipline).
