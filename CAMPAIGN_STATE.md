@@ -4802,3 +4802,58 @@ P-075 BANKED - Message-level provenance
     skipped, all 109 the head-pin class.
     No new defect found at banking.
     Next in roadmap order: P-076.
+P-076 BANKED - Undo for chat
+    operations (the coders journal
+    pattern at chat scale) (Part V) -
+    team-02 commit 2b2eca9 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as bf52316, banking heal 8efb7bb,
+    and pushed; ls-remote verified (see
+    WAVE_PLAN update). Evidence
+    (team-02 worktree
+    hidden_files/P076_EVIDENCE.md):
+    battery 28 passed, neighbours 308
+    passed / 0 failed, team full suite
+    3272 passed / 4 skipped / 0 failed
+    (= 3244 + 28, exact on its base).
+    Combined Part V batteries on the
+    merged tree: 387 passed / 0 failed.
+    Forge confirmation suite: 3285
+    passed / 4 skipped / 0 failed
+    (= 3257 + 28, exact). NO migration
+    taken by P-076: the undo journal is
+    sealed per-chat files (P-067/P-074
+    idiom); head stays 0040, 40
+    migrations. Merge was CLEAN
+    (ort auto-merge, no conflicts):
+    chats/service.py, metadata.py,
+    branches.py and router.py merged
+    additively; py_compile clean and
+    grep-verified P-075 provenance
+    routes and P-076 undo routes
+    coexist (journal-before-mutate in
+    append_message survives alongside
+    provenance-on-append), P-072
+    /chats/search, P-073 library/tags,
+    P-074 databank routes intact, and
+    the P-057 note_/ph_ aliasing in
+    prompt/inspect.py intact. Heal:
+    the P-076 battery head pin reworked
+    honestly at equal strength from
+    0039 to 0040 (exact head still
+    pinned; its no-migration guard now
+    pins 0040 as exactly-once and
+    provably P-075s
+    m0040_message_provenance -- no
+    assertion weakened), per the P-075
+    banking precedent. Honest
+    boundaries (from the evidence):
+    chat create/delete are NOT undoable
+    (deletion is terminal; the journal
+    dies with the chat), fork/merge/
+    copy are not journaled, there is
+    NO redo (undo consumes its entry),
+    and the journal is capped at 50
+    entries per chat. No new defect
+    found at banking. Next in roadmap
+    order: P-077.
