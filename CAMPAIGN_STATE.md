@@ -4509,3 +4509,44 @@ P-068 BANKED - Message actions complete (Part V) -
     retrieval road; message.edited events carry
     data={variant_count}. No new defect found.
     Next in roadmap order: P-069.
+P-069 BANKED - Continue & impersonate (Part V) -
+    team-01 commit e07848d merged (no-ff) into
+    yrsa/two-mirrors-build as 922c29e, banking
+    heal 05f7e37, and pushed; ls-remote verified
+    (see WAVE_PLAN update).
+    Evidence (team-01 worktree
+    hidden_files/P069_EVIDENCE.md): battery 34
+    passed, neighbours 335 passed, team full
+    suite 3041 passed / 4 skipped / 0 failed.
+    Forge confirmation suite at the merged
+    tree: 3120 passed / 4 skipped / 0 failed
+    (= 3086 + 34, exact). NO migration taken
+    by P-069 (by approved design; provisional
+    0040 unused); head stays 0038 from P-068,
+    chain 0035 -> 0036 -> 0037 -> 0038 as
+    separate registry entries. Merge
+    reconciliation: chats/router.py conflict
+    resolved as an additive union (P-066
+    branch routes + P-067 checkpoint routes +
+    P-068 message-action routes + P-069
+    continue/impersonate routes all verified
+    coexisting; line-multiset union check
+    exact, 43 handler defs); chats/__init__.py
+    auto-merged as an exact union. Head pins
+    healed to the merged truth in the heal
+    (battery + slice doc: P-069 took no
+    migration; head is 0038 from P-068; the
+    no-0040 assertion kept, none weakened).
+    Slice: continue (extend appends onto the
+    last assistant message in place,
+    swipe-deck aware; next appends a new
+    assistant message; auto resolves by last
+    message role) and impersonate (stateless
+    draft only, never lands; accept posts the
+    final text as a real user message with
+    source=impersonate; discard records
+    metadata only); generation failures store
+    nothing; metadata-only events; cross-user
+    isolation 404. F1/F2 fixed in-slice. No
+    new defect found. Next in roadmap
+    order: P-070.
