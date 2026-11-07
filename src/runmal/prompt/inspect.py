@@ -113,6 +113,14 @@ composed messages + RenderedPrompt this call already computed (one
 composition, one render — never a second); default off, pipeline and
 trace byte-identical to pre-P-059; the preview is a separate explicit
 owner-scoped payload — the S214 trace itself still carries no content.
+Model profiles (P-062): ``model_profile`` binds a model, its
+instruct/context template selections, its prompt layout and its
+sampler set as one swappable unit. Per-field precedence is
+explicit > profile > the existing resolvers' defaults; the
+result carries a ``model_profile`` echo -- metadata only (names,
+sources, sampler key partition), never content or values (S214).
+Profiles govern this composition/inspection path only; live
+generation does not route through the composer in this tree.
 """
 
 from __future__ import annotations
@@ -149,12 +157,19 @@ from runmal.prompt.post_history import has_content as ph_has_content
 from runmal.prompt.post_history import slot_for as ph_slot_for
 from runmal.prompt.preview import build_preview
 from runmal.prompt.render import render_prompt
+from runmal.prompt.model_profiles import (
+    layout_for_profile,
+    selection_to_context_template,
+    selection_to_template,
+)
 from runmal.prompt.service import (
     context_echo,
     layout_echo,
+    model_profile_echo,
     policy_echo,
     resolve_context_template,
     resolve_layout,
+    resolve_model_profile,
     resolve_policy,
     resolve_template,
     template_echo,
@@ -279,14 +294,69 @@ async def inspect_prompt(
     budget_policy: object | None = None,
     include_preview: bool = False,
     backend_key: str | None = None,
+    model_profile: object | None = None,
 ) -> dict | None:
     """Build the trace dict for a hypothetical prompt, or None when a
     referenced character/lorebook does not exist."""
-    layout, layout_source = resolve_layout(prompt_layout)
-    template, template_source = resolve_template(instruct_template, model_id)
-    ctx_template, ctx_source = resolve_context_template(
-        context_template, preset=context_preset
-    )
+    # P-062: a model profile binds model + templates + layout +
+    # samplers as one swappable unit. Per-field precedence:
+    # explicit per-request value > profile value > the existing
+    # resolvers' own defaults. field_sources records, for every
+    # governed field, which layer supplied it.
+    profile, profile_source = resolve_model_profile(model_profile)
+    field_sources: dict[str, str] = {}
+    eff_model_id = model_id
+    if eff_model_id is not None:
+        field_sources["model_id"] = "explicit"
+    elif profile is not None and profile.model_id is not None:
+        eff_model_id = profile.model_id
+        field_sources["model_id"] = "profile"
+    else:
+        field_sources["model_id"] = "none"
+    eff_backend_key = backend_key
+    if eff_backend_key is not None:
+        field_sources["backend_key"] = "explicit"
+    elif profile is not None and profile.backend_key is not None:
+        eff_backend_key = profile.backend_key
+        field_sources["backend_key"] = "profile"
+    else:
+        field_sources["backend_key"] = "none"
+    if prompt_layout is not None:
+        layout, layout_source = resolve_layout(prompt_layout)
+        field_sources["prompt_layout"] = "explicit"
+    elif profile is not None and profile.prompt_layout is not None:
+        layout, layout_source = layout_for_profile(profile), "profile"
+        field_sources["prompt_layout"] = "profile"
+    else:
+        layout, layout_source = resolve_layout(None)
+        field_sources["prompt_layout"] = layout_source
+    if instruct_template is not None:
+        template, template_source = resolve_template(
+            instruct_template, eff_model_id)
+        field_sources["instruct_template"] = "explicit"
+    elif profile is not None and profile.instruct_template is not None:
+        template = selection_to_template(profile.instruct_template)
+        template_source = "profile"
+        field_sources["instruct_template"] = "profile"
+    else:
+        template, template_source = resolve_template(None, eff_model_id)
+        field_sources["instruct_template"] = template_source
+    if context_template is not None or context_preset is not None:
+        ctx_template, ctx_source = resolve_context_template(
+            context_template, preset=context_preset
+        )
+        field_sources["context_template"] = (
+            "explicit" if context_template is not None else ctx_source)
+    elif profile is not None and profile.context_template is not None:
+        ctx_template = selection_to_context_template(
+            profile.context_template)
+        ctx_source = "profile"
+        field_sources["context_template"] = "profile"
+    else:
+        ctx_template, ctx_source = resolve_context_template(None)
+        field_sources["context_template"] = ctx_source
+    if profile is not None:
+        field_sources["sampler"] = "profile"
     policy, policy_source = resolve_policy(budget_policy)
     governor_actions: tuple = ()
     messages = list(messages or [])
@@ -651,8 +721,11 @@ async def inspect_prompt(
         **policy_echo(policy, policy_source),
         "actions": [a.to_dict() for a in governor_actions],
     }
+    result["model_profile"] = model_profile_echo(
+        profile, profile_source, field_sources=field_sources)
     if include_preview:
         result["prompt_preview"] = build_preview(
-            composed.messages, rendered, backend_key=backend_key, model_id=model_id
+            composed.messages, rendered,
+            backend_key=eff_backend_key, model_id=eff_model_id
         )
     return result

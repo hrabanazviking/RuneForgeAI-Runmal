@@ -32,6 +32,14 @@ from runmal.prompt.governor import default_policy, policy_to_data
 from runmal.prompt.inspect import inspect_prompt
 from runmal.prompt.instruct import list_templates, template_to_data
 from runmal.prompt.manager import default_layout, layout_to_data
+from runmal.prompt.model_profiles import (
+    PROFILE_SCHEMA,
+    diff_profiles,
+    get_profile,
+    list_profiles,
+    profile_from_data,
+    profile_to_data,
+)
 from runmal.prompt.service import (
     context_echo,
     resolve_context_template,
@@ -59,6 +67,7 @@ class InspectRequest(BaseModel):
     budget_policy: dict | None = None
     include_preview: bool = False
     backend_key: str | None = None
+    model_profile: dict | str | None = None
 
 
 @router.post("/debug/prompt-inspect")
@@ -87,6 +96,7 @@ async def prompt_inspect(
             budget_policy=body.budget_policy,
             include_preview=body.include_preview,
             backend_key=body.backend_key,
+            model_profile=body.model_profile,
         )
     except ValueError as exc:
         raise HTTPException(
@@ -127,6 +137,7 @@ async def prompt_preview_endpoint(
             include_preview=True,
             backend_key=body.backend_key,
             budget_policy=body.budget_policy,
+            model_profile=body.model_profile,
         )
     except ValueError as exc:
         raise HTTPException(
@@ -203,3 +214,37 @@ async def backend_capability(backend_key: str,
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(exc),
         ) from exc
+
+
+@router.get("/debug/model-profiles")
+async def model_profiles() -> dict:
+    """Builtin model profiles in data form (P-062)."""
+    return {
+        "schema": PROFILE_SCHEMA,
+        "profiles": [profile_to_data(p) for p in list_profiles()],
+    }
+
+
+class ProfileDiffRequest(BaseModel):
+    from_profile: dict | str
+    to_profile: dict | str
+
+
+def _coerce_profile(value):
+    if isinstance(value, str):
+        return get_profile(value)
+    return profile_from_data(value)
+
+
+@router.post("/debug/model-profile-diff")
+async def model_profile_diff(body: ProfileDiffRequest) -> dict:
+    """What switching between two profiles changes / carries (P-062)."""
+    try:
+        before = _coerce_profile(body.from_profile)
+        after = _coerce_profile(body.to_profile)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=str(exc),
+        ) from exc
+    return diff_profiles(before, after)
