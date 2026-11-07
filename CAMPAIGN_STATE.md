@@ -3671,3 +3671,40 @@ P-045 BANKED - book sharing: lorebooks as importable
     (world-info-shaped pack dedups against its book) and
     malformed packs refuse 422 as PackError, never 500.
     Next in roadmap order: P-046 (team-01, performance).
+
+P-046 BANKED - performance: 10,000-entry lorebook scans
+    within the stated Pi-class budget - team-01 commits
+    b9ebe4a (slice) + 97299b2 (review fixes D1-D5) merged
+    (no-ff, clean) into yrsa/two-mirrors-build as e2b2c29
+    and pushed; ls-remote verified
+    e2b2c294c5ef5d9280556701e411c2df33cb4539.
+    Evidence (team-01 worktree hidden_files/P046_EVIDENCE.md
+    and logs): battery 27/27, neighbours 341, full suite
+    2109 passed / 4 skipped / 0 failed on its base; s503
+    passed in-run. Forge confirmation suite at the merged
+    tree: 2142 passed / 4 skipped / 0 failed
+    (= 2115 + 27, exact). NO migration; head stays 0032.
+    Budget stated before measuring (BUDGET-P046: full tick
+    <=2000 ms Pi-equiv, keyword <=1200 ms Pi-equiv; laptop
+    gates 500/300 ms, one pinned core, x4.0 derating -
+    laptop numbers, never Pi measurements). BEFORE: total
+    median 2144.8 ms, keyword 1451.4 ms - both gates FAIL.
+    AFTER (cold): total 310.1 ms (Pi-equiv 1240.6 ms),
+    keyword 14.25 ms (Pi-equiv 57 ms) - both gates PASS;
+    warm cache total 65.0 ms. Hit counts identical in
+    every run (240 keyword / 1000 vector / 1740
+    activations; --verify PASS). Design finding: the
+    compile cache alone could not meet the budget (design
+    book keys unique per entry, cache never hits) - a
+    per-window token index landed with fast paths
+    restricted to provably regex-identical domains,
+    proven byte-exact by the frozen-oracle equivalence
+    battery. Review defects D1-D5 fixed in-slice (full
+    provenance space identity incl. dims+version in the
+    vector cache key/guard, candidate-order merge, no
+    unprovenanced stores). Carried: vector cache is
+    in-process only (no persistent/DB store); no
+    production caller yet owns a long-lived cache; a
+    direct Pi 4 run remains the one-off validation.
+    Next in roadmap order: P-047 (team-02, migration),
+    then the P-048 Part III gate.
