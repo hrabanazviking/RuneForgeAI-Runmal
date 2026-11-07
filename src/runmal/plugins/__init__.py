@@ -6,6 +6,12 @@ fire-and-observe chat events, with plugins living OUTSIDE the core
 packages -- chats, prompt and generation never grow a branch
 naming any plugin (design section 0 / section 8 wiring rule).
 
+P-083 adds three lazy layers on the same pattern: packs
+(:mod:`runmal.plugins.packs`, the local pack envelope), cards
+(:mod:`runmal.plugins.cards`, permission cards) and the
+manager (:mod:`runmal.plugins.manager`, install / update /
+uninstall over a durable file ledger).
+
 This module re-exports the pure core -- the vocabularies
 (:mod:`runmal.plugins.api`), the manifest as data
 (:mod:`runmal.plugins.manifest`) and the event shapes
@@ -80,6 +86,19 @@ _LAZY = {
     "PluginCompatibilityError": "registry",
     "InvalidPluginTransition": "registry",
     "PromptHookContext": "hooks",
+    "PackError": "packs",
+    "ParsedPack": "packs",
+    "build_pack": "packs",
+    "parse_pack": "packs",
+    "manifest_checksum": "packs",
+    "permission_card": "cards",
+    "PluginManager": "manager",
+    "ManagerOutcome": "manager",
+    "PluginManagerError": "manager",
+    "GrantMismatchError": "manager",
+    "PluginConflictError": "manager",
+    "NotManagedPluginError": "manager",
+    "DataOnlyPackError": "manager",
 }
 
 __all__ = [
@@ -138,6 +157,22 @@ __all__ = [
     "InvalidPluginTransition",
     # Prompt hooks (hooks.py, lazy).
     "PromptHookContext",
+    # Packs (packs.py, lazy).
+    "PackError",
+    "ParsedPack",
+    "build_pack",
+    "parse_pack",
+    "manifest_checksum",
+    # Permission cards (cards.py, lazy).
+    "permission_card",
+    # Plugin manager (manager.py, lazy).
+    "PluginManager",
+    "ManagerOutcome",
+    "PluginManagerError",
+    "GrantMismatchError",
+    "PluginConflictError",
+    "NotManagedPluginError",
+    "DataOnlyPackError",
 ]
 
 

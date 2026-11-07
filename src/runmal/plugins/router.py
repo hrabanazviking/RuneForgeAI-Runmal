@@ -1,25 +1,49 @@
-"""Plugin API REST surface (P-081, design section 8).
+"""Plugin REST surface (P-081 read/lifecycle + P-083 manager).
 
-Read + lifecycle verbs only: there is deliberately NO
-``POST /plugins`` (register/install) and NO ``DELETE`` --
-registration is trusted in-process code in v1, and their absence
-is pinned by the battery. Unknown plugin id -> 404;
-:class:`InvalidPluginTransition` -> 422 (house ``_visible``
-pattern); an ``on_enable`` failure answers 200 with the ERRORED
-record -- the record IS the report, never a 500 (PLG-01).
+P-081 surface: read + lifecycle verbs only. Registration was
+trusted in-process code, so there was deliberately NO
+``POST /plugins`` and NO ``DELETE`` -- and there still is not:
+both stay 405, as the P-081 battery pins.
 
-The registry comes from the service layer's default holder
-(lead adjudication B); when none is installed, one empty
-registry is built lazily so the surface still answers honestly.
+P-083 adds the manager surface in the same POST-verb idiom:
+
+- ``POST /plugins/install/preview`` -- the permission-card
+  verdict for a pack, writing nothing;
+- ``POST /plugins/install`` -- install a local pack whose
+  declared permissions the caller grants exactly;
+- ``POST /plugins/{plugin_id}/update`` -- the versioned swap,
+  same grant rule, card shows the diff;
+- ``POST /plugins/{plugin_id}/uninstall`` -- removal as a verb;
+- ``GET /plugins/manager`` -- the durable ledger view;
+- ``GET /plugins/{plugin_id}/permission-card`` -- the card for
+  an installed or in-tree plugin.
+
+Error mapping: malformed packs, grant mismatches, data-only
+refusals, compatibility verdicts and not-managed refusals are
+422 (house ``_visible`` pattern); an occupied-id conflict is
+409; an unknown plugin id is 404; an ``on_enable`` failure
+answers 200 with the ERRORED record (PLG-01: the record IS
+the report, never a 500). Lifecycle verbs also sync the
+manager ledger's enabled flag for pack-managed plugins, so
+HTTP enable/disable survives a restart like a manager call.
 """
 
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Response, status
 
 from runmal.plugins import service
 from runmal.plugins.api import UI_SLOTS
-from runmal.plugins.registry import InvalidPluginTransition
+from runmal.plugins.cards import permission_card
+from runmal.plugins.manager import (
+    PluginConflictError,
+    PluginManagerError,
+)
+from runmal.plugins.packs import PackError
+from runmal.plugins.registry import (
+    InvalidPluginTransition,
+    PluginCompatibilityError,
+)
 
 router = APIRouter(tags=["plugins"])
 
@@ -43,6 +67,39 @@ def _record_or_404(registry, plugin_id: str):
             detail=f"unknown plugin: {plugin_id}") from None
 
 
+def _manager_http_error(exc: Exception, plugin_id: str | None = None) -> HTTPException:
+    if isinstance(exc, PluginConflictError):
+        return HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail=str(exc))
+    if isinstance(exc, KeyError):
+        return HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"unknown plugin: {plugin_id}")
+    return _visible(exc)
+
+
+def _sync(plugin_id: str) -> None:
+    """Ledger sync after a lifecycle verb. The registry state
+    is the live truth and the verb has already succeeded, so a
+    ledger write failure never fails the verb; the next
+    manager operation rewrites the row wholesale."""
+    try:
+        service.sync_managed_state(plugin_id)
+    except Exception:
+        pass
+
+
+def _outcome_payload(outcome, registry) -> dict:
+    return {
+        "outcome": outcome.outcome,
+        "plugin": (
+            service.record_detail_to_dict(outcome.record, registry)
+            if outcome.record is not None else None),
+        "manager": outcome.row,
+        "permission_card": outcome.card,
+    }
+
+
 @router.get("/plugins/api")
 async def plugin_api():
     return service.plugin_api_info(_registry())
@@ -59,6 +116,15 @@ async def plugin_ui_slots(slot: str | None = None):
     }
 
 
+@router.get("/plugins/manager")
+async def plugin_manager_view():
+    manager = service.plugin_manager()
+    return {
+        "installed": manager.installed_rows(),
+        "rehydration_problems": service.rehydration_problems(),
+    }
+
+
 @router.get("/plugins")
 async def list_plugins():
     registry = _registry()
@@ -66,11 +132,78 @@ async def list_plugins():
             for plugin_id in registry.keys()]
 
 
+@router.post("/plugins/install/preview")
+async def plugin_install_preview(body: dict):
+    if "pack" not in body:
+        raise _visible(ValueError("request body must carry a 'pack'"))
+    manager = service.plugin_manager()
+    return manager.preview(body["pack"])
+
+
+@router.post("/plugins/install", status_code=status.HTTP_201_CREATED)
+async def plugin_install(body: dict, response: Response):
+    if "pack" not in body:
+        raise _visible(ValueError("request body must carry a 'pack'"))
+    manager = service.plugin_manager()
+    try:
+        outcome = manager.install(
+            body["pack"],
+            granted_permissions=body.get("granted_permissions"),
+            enable=bool(body.get("enable", False)))
+    except (KeyError, PackError, PluginManagerError,
+            PluginCompatibilityError) as exc:
+        raise _manager_http_error(exc) from exc
+    if outcome.outcome == "duplicate_exact":
+        response.status_code = status.HTTP_200_OK
+    return _outcome_payload(outcome, _registry())
+
+
 @router.get("/plugins/{plugin_id}")
 async def plugin_detail(plugin_id: str):
     registry = _registry()
     record = _record_or_404(registry, plugin_id)
     return service.record_detail_to_dict(record, registry)
+
+
+@router.get("/plugins/{plugin_id}/permission-card")
+async def plugin_permission_card(plugin_id: str):
+    registry = _registry()
+    record = _record_or_404(registry, plugin_id)
+    manager = service.plugin_manager()
+    row = manager.row_for(plugin_id)
+    granted = (set(row.get("granted_permissions", []))
+               if row is not None else None)
+    return permission_card(record.manifest, granted=granted)
+
+
+@router.post("/plugins/{plugin_id}/update")
+async def plugin_update(plugin_id: str, body: dict):
+    if "pack" not in body:
+        raise _visible(ValueError("request body must carry a 'pack'"))
+    manager = service.plugin_manager()
+    try:
+        outcome = manager.update(
+            plugin_id, body["pack"],
+            granted_permissions=body.get("granted_permissions"))
+    except (KeyError, PackError, PluginManagerError,
+            PluginCompatibilityError) as exc:
+        raise _manager_http_error(exc, plugin_id) from exc
+    return _outcome_payload(outcome, _registry())
+
+
+@router.post("/plugins/{plugin_id}/uninstall")
+async def plugin_uninstall(plugin_id: str):
+    manager = service.plugin_manager()
+    try:
+        outcome = manager.uninstall(plugin_id)
+    except (KeyError, PackError, PluginManagerError,
+            PluginCompatibilityError) as exc:
+        raise _manager_http_error(exc, plugin_id) from exc
+    return {
+        "outcome": outcome.outcome,
+        "plugin_id": outcome.plugin_id,
+        "permission_card": outcome.card,
+    }
 
 
 @router.post("/plugins/{plugin_id}/enable")
@@ -81,6 +214,7 @@ async def plugin_enable(plugin_id: str):
         record = registry.enable(plugin_id)
     except InvalidPluginTransition as exc:
         raise _visible(exc) from exc
+    _sync(plugin_id)
     return service.record_detail_to_dict(record, registry)
 
 
@@ -92,6 +226,7 @@ async def plugin_disable(plugin_id: str):
         record = registry.disable(plugin_id)
     except InvalidPluginTransition as exc:
         raise _visible(exc) from exc
+    _sync(plugin_id)
     return service.record_detail_to_dict(record, registry)
 
 
@@ -103,4 +238,5 @@ async def plugin_acknowledge(plugin_id: str):
         record = registry.acknowledge(plugin_id)
     except InvalidPluginTransition as exc:
         raise _visible(exc) from exc
+    _sync(plugin_id)
     return service.record_detail_to_dict(record, registry)
