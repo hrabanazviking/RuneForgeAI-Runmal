@@ -3812,3 +3812,32 @@ COMMISSIONED BINDING DEPTH/ROLE SLICE BANKED - character-book
     stand as recorded at P-048.
     Next in roadmap order: P-049 (Part IV opener - prompt
     manager, team-02, in flight from base 0ae13a9).
+
+P-049 BANKED - Part IV opens: prompt manager - ordered,
+    toggleable prompt blocks as first-class editable layout
+    data, honoured by the composer/inspector - team-02 commit
+    b3aeb3d merged (no-ff) into yrsa/two-mirrors-build as
+    22ccca5 and pushed; ls-remote verified
+    22ccca5ca5bee32a6771341226a98a8233c7dda3.
+    Evidence (team-02 worktree hidden_files/P049_EVIDENCE.md
+    and logs): battery 40/40, neighbours 358, team full suite
+    2239 passed / 4 skipped / 0 failed on its base
+    (= 2199 + 40, exact). Forge confirmation suite at the
+    merged tree: 2268 passed / 4 skipped / 0 failed
+    (= 2228 + 40, exact); combined batteries 69 passed.
+    Merge note: the clean-room log append conflict was
+    resolved keeping BOTH the commissioned-slice and P-049
+    entries. NO migration; head stays 0032.
+    Slice: prompt/manager.py (9 position-faithful blocks as
+    data, validated layout_from_data, apply_layout drops
+    disabled blocks incl. required ones and surfaces them in
+    the Prompt Trace as prompt_manager_disabled discards),
+    prompt/service.py resolve_layout, inspector honours the
+    layout and echoes prompt_layout; the default layout is a
+    proven exact identity. Carried: F1 tools/service.py
+    compose_preview is stateless and does not resolve layouts
+    (the inspector is the honoured path); F2 layout
+    persistence (per owner/per chat) is a named follow-up
+    slice owning its own migration - not faked here.
+    Next in roadmap order: P-050 (instruct templates,
+    team-03).
