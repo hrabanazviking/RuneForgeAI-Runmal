@@ -4390,3 +4390,33 @@ P-064 BANKED - Part IV gate (Part IV, P-049..P-064) -
     no new defect. Part IV (P-049..P-064) is now
     COMPLETE. Next in roadmap order: P-065 (Part V
     opener).
+P-065 BANKED - Swipes deepened (Part V opener) -
+    team-03 commit e654e1a merged (no-ff) into
+    yrsa/two-mirrors-build as 3b4c157 and pushed;
+    ls-remote verified (see WAVE_PLAN update).
+    Evidence (team-03 worktree
+    hidden_files/P065_EVIDENCE.md): battery 79
+    passed, neighbours 177 passed, swept-pin
+    verification 1496 passed, team full suite
+    2977 passed / 4 skipped / 0 failed
+    (= 2898 + 79 exact). Forge confirmation
+    suite at the merged tree: 2977 passed /
+    4 skipped / 0 failed (exact). Migration
+    0036 STANDS as numbered: head now 0036
+    (messages.swipes_json + messages.swipe_id
+    + chats.swipe_settings_json); neighbour
+    head pins swept 0035 -> 0036 in-commit.
+    Merge: CLEAN, no conflicts. Slice:
+    swipes.py - unlimited alternates per
+    message as a persisted deck (content ==
+    active invariant), swipe navigation
+    everywhere persisted messages live (chat
+    + group, same table) via service + REST,
+    per-chat swipe regen settings as a
+    validated document resolved over preset
+    params; GenerationSession candidates
+    importable as decks. Voice-turn limitation
+    recorded in the slice doc (voice turns
+    are ephemeral TurnRecords, never
+    persisted). Next in roadmap order: P-066
+    (branches).
