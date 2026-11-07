@@ -5963,3 +5963,92 @@ P-091 BANKED - TTS/STT as plugins (Part VI)
     /tmp/p091_forge_suite.log).
     No heal needed at this banking.
     Next in roadmap order: P-092.
+P-092 BANKED - Expression/sprite plugin surface (Part VI)
+    - team-01 commit cf7c03a merged
+    (no-ff) into
+    yrsa/two-mirrors-build as 21d97f3
+    and pushed; ls-remote verified
+    21d97f3798d2a02a6afcf539b4a6e30eee15405b
+    (see WAVE_PLAN update). Evidence
+    (team-01 worktree
+    hidden_files/P092_EVIDENCE.md):
+    battery 24 passed, neighbours
+    425 passed, team full suite 3795
+    passed / 4 skipped / 0 failed
+    (= 3771 + 24, exact, on its base).
+    Slice:
+    src/runmal/plugins/expressions.py
+    (new - declared expression sets
+    per character and current-
+    expression selection per chat
+    with provenance, behind the
+    P-081 Plugin API),
+    src/runmal/plugins/router.py
+    (expression routes appended),
+    tests/test_p092_expressions.py
+    (24 tests),
+    docs/EXPRESSION_SPRITE_2026-11-07.md,
+    clean-room log append. 5 files.
+    Migration: NONE (head stays
+    0041; pinned by battery -
+    MIGRATIONS[-1] == 0041, no 0042,
+    current_revision == 0041).
+    Sets and selections ride the
+    durable per-user file store
+    (data_dir()/expressions/
+    <user_id>.json); no migration.
+    Defects: one lint defect in the
+    new battery (unused json import,
+    F401) found and fixed in-slice,
+    battery re-run green; ruff clean
+    on the new module and battery
+    (the router's B008 findings are
+    the pre-existing house FastAPI
+    Depends idiom, not introduced
+    by this slice). No shipped-code
+    defects were discovered.
+    Design honesty: sprite assets
+    are bound by reference only via
+    the P-023 character-asset
+    machinery - the citizen binds
+    existing expression assets by id
+    and never copies bytes; the
+    binding report is honest per
+    entry (bound, or no_asset /
+    asset_missing / wrong_kind /
+    not_stored); the derivation
+    draft from existing expression
+    assets is returned, never saved.
+    No renderer was invented and no
+    message text is scanned to guess
+    an expression - Part X owns
+    rendering. Selection receipts
+    name source, actor, reason,
+    message and the expression
+    replaced, from a closed
+    selection-source set.
+    Merge conflict only in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    (append-vs-append), resolved
+    keeping the P-091 and P-092
+    entries exactly once;
+    plugins/router.py auto-merged
+    clean (P-091 did not touch it);
+    py_compile clean on the merged
+    tree, and the merged router
+    verified to carry the P-092
+    expression routes alongside all
+    prior plugin routes; the merged
+    tree contains both the P-091
+    voice citizens (tts.py / stt.py)
+    and the P-092 expressions
+    citizen. Combined batteries on
+    the merged tree: 76 passed / 0
+    failed (= 52 + 24 exact).
+    Forge confirmation suite:
+    3847 passed / 4 skipped / 0
+    failed (= 3823 P-091
+    confirmation + 24, exact; log
+    /tmp/p092_forge_suite.log).
+    No heal needed at this banking.
+    Next in roadmap order: P-093.
