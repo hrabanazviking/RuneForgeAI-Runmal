@@ -4550,3 +4550,30 @@ P-069 BANKED - Continue & impersonate (Part V) -
     isolation 404. F1/F2 fixed in-slice. No
     new defect found. Next in roadmap
     order: P-070.
+P-070 BANKED - Group chats deepened (Part V) -
+    team-02 commit 46796a3 merged (no-ff) into
+    yrsa/two-mirrors-build as 5f5c848, and pushed;
+    ls-remote verified (see WAVE_PLAN update).
+    Evidence (team-02 worktree
+    hidden_files/P070_EVIDENCE.md): battery 15
+    passed, neighbours 78 passed, team full
+    suite 3101 passed / 4 skipped / 0 failed.
+    Forge confirmation suite at the merged
+    tree: 3135 passed / 4 skipped / 0 failed
+    (= 3120 + 15, exact). Combined P-070 +
+    P-069 batteries at the merged tree: 49
+    passed. NO migration taken by P-070;
+    head stays 0038 (state lives in
+    groups.speaker_config JSON under the
+    p070 key; battery asserts head 0038,
+    no pin heal needed). Merge CLEAN -
+    footprint groupchat-only, P-069 touched
+    chats/ only. Slice: activation strategies
+    on the room road (force/never/self-response
+    around the S211 policies, persisted list
+    cursor + pool via POST /groups/{id}/next
+    and /run), per-member overrides, swap/join
+    prompt assembly, group lore via the P-040
+    scoped layered preview, member peek;
+    metadata-only events. No new defect
+    found. Next in roadmap order: P-071.
