@@ -5812,3 +5812,74 @@ P-089 BANKED - Quick Replies plugin (Part VI)
     /tmp/p089_forge_suite.log).
     No heal needed at this banking.
     Next in roadmap order: P-090.
+P-090 BANKED - Regex Scripts plugin (Part VI)
+    - team-02 commit e8a7ebf merged
+    (no-ff) into
+    yrsa/two-mirrors-build as 586e8e0
+    and pushed; ls-remote verified
+    586e8e07c77ce77d6120393f6b3cbe5e9c64a02f
+    (see WAVE_PLAN update). Evidence
+    (team-02 worktree
+    hidden_files/P090_EVIDENCE.md):
+    battery 65 passed, neighbours
+    269 passed, team full suite 3747
+    passed / 4 skipped / 0 failed
+    (= 3682 + 65, exact, on its base).
+    Slice:
+    src/runmal/plugins/regex_scripts.py
+    (new - ST-shaped find/replace
+    rules at declared stages, safe
+    regex dialect, per-rule timeout),
+    tests/test_p090_regex_scripts.py
+    (65 tests),
+    docs/REGEX_SCRIPTS_2026-11-07.md,
+    clean-room log append. 4 files.
+    Migration: NONE (head stays
+    0041; "0042" not in MIGRATIONS,
+    pinned by battery).
+    build_registry / create_app
+    deliberately unchanged by
+    design. Defects fixed in-slice:
+    two safe-dialect holes -
+    (1) brace-quantifier bypass
+    ({,n} treated as {0,n} escaped
+    the quantifier-bound and
+    nested-quantifier checks;
+    _BRACE_RE now matches every
+    brace form Python treats as a
+    repeat); (2) duplicate named
+    groups now refuse in the scan
+    as unsupported_group_construct
+    instead of falling through to
+    the re.compile fallback.
+    No discovered bug left unfixed.
+    Design honesty: scripts ride
+    the durable per-user file store
+    (P-089 idiom), no migration;
+    the safe-dialect scan is a
+    heuristic - (a|aa)+ passes it
+    and is caught only by the
+    per-rule timeout; the hook
+    applies the prompt_assembly
+    stage only, other stages via
+    explicit apply_scripts calls
+    only; ST-shaped, not
+    ST-compatible - unknown ST
+    fields refuse; sandbox grants
+    are the empty frozenset.
+    Merge conflict only in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    (append-vs-append), resolved
+    keeping the P-089 and P-090
+    entries exactly once;
+    py_compile clean on the merged
+    tree. Combined batteries on the
+    merged tree: 89 passed / 0
+    failed (= 24 + 65 exact).
+    Forge confirmation suite:
+    3771 passed / 4 skipped / 0
+    failed (= 3706 P-089
+    confirmation + 65, exact; log
+    /tmp/p090_forge_suite.log).
+    No heal needed at this banking.
+    Next in roadmap order: P-091.
