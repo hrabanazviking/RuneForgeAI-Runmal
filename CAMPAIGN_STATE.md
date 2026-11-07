@@ -4750,3 +4750,55 @@ P-074 BANKED - Data bank: per-chat
     on the data-bank request models). No
     new defect found at banking. Next in
     roadmap order: P-075.
+P-075 BANKED - Message-level provenance
+    (Part V) - team-01 commit fb2aa62
+    merged (no-ff) into
+    yrsa/two-mirrors-build as 41fc7fb,
+    banking heal 60eb4e5, and pushed;
+    ls-remote verified (see WAVE_PLAN
+    update). Evidence (team-01 worktree
+    hidden_files/P075_EVIDENCE.md):
+    battery 13 passed, neighbours 283
+    passed / 32 failed (ALL the migration
+    head-pin class superseded by 0040,
+    zero functional), team full suite
+    3123 passed / 108 failed / 4 skipped
+    (programmatic check: every failure
+    the same head-pin class; test_s503
+    clean). Forge confirmation suite:
+    3257 passed / 4 skipped / 0 failed
+    (= 3244 + 13, exact). Migration
+    PROVISIONAL 0040 STANDS as numbered
+    (P-074 took none):
+    m0040_message_provenance adds
+    messages.provenance_json; head is
+    now 0040, chain 0038 -> 0039 -> 0040
+    as separate registry tuples, 40
+    migrations. Merge CONFLICT in
+    chats/__init__.py only, resolved as
+    an additive union keeping BOTH
+    slices' work (P-074 databank exports
+    plus P-075 message_provenance);
+    router.py, service.py, migrations
+    registry and models auto-merged;
+    grep-verified P-072 /chats/search,
+    P-073 /chats/library + /chats/tags,
+    P-074 databank routes and P-075
+    provenance routes all coexist, and
+    the P-057 authors_note/post_history
+    note_/ph_ aliasing in
+    prompt/inspect.py is intact. Heal:
+    46 test files re-pinned honestly to
+    the merged truth 0040 (exact head
+    still pinned, positional pins
+    shifted, revision lists extended;
+    the four no-migration absence
+    asserts in p069/p071/p072/p074
+    reworked at equal strength to pin
+    0040 as exactly-once and provably
+    P-075's module -- no assertion
+    weakened). Pre-heal merged-tree
+    suite: 3148 passed / 109 failed / 4
+    skipped, all 109 the head-pin class.
+    No new defect found at banking.
+    Next in roadmap order: P-076.
