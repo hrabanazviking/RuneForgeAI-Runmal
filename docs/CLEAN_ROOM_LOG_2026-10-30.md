@@ -786,3 +786,25 @@ source in §0(2) and appends its entry here:
   the roadmap line. No SillyTavern or Voxta source code was
   read and no file was downloaded; the slice's tests are
   authored fresh in the test module (P-005 discipline).
+- **P-083 (2026-11-07, public behaviour + own tree
+  only):** the plugin manager — Part VI's install road — is
+  built entirely from Runmal's own precedents: the P-045
+  lorebook-pack envelope discipline (single JSON envelope,
+  content_sha256 over the canonical NORMALISED payload,
+  provenance carried verbatim and never interpreted) becomes
+  the local plugin pack; the P-025 collision discipline
+  (exact duplicate = no-op report, never a silent overwrite)
+  becomes the manager's duplicate/conflict rule; the P-081
+  design's own bequests (its section 7 durable-state question
+  and section 10 permission-card + manager-verbs sketch)
+  become the file ledger in the data dir, the permission
+  card rendering declared capabilities/permissions/events/
+  hooks/slots plainly, and a manager driving exactly the
+  P-081 registry verbs. The exact-grant rule (a grant must
+  name precisely the declared permission set) and the
+  data-only rule (packs declaring prompt hooks refuse —
+  hooks are code, and code is not in packs) are Runmal's own
+  design for the roadmap line. No SillyTavern or Voxta
+  source code was read and no file was downloaded; the
+  slice's tests are authored fresh in the test module
+  (P-005 discipline).
