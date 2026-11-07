@@ -60,9 +60,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.backends.messages import ChatMessage
 from runmal.characters.service import get_character
+from runmal.chats import provenance as prov_mod
 from runmal.chats.service import (
     _deck,
     _get_owned_chat,
+    _preset_snapshot,
+    _profile_snapshot,
     _record_event,
     _store_deck,
     append_message,
@@ -250,6 +253,30 @@ async def _character_snapshot(
     return character.id, character.name
 
 
+async def _generation_record(session, user_id, chat, backend, *,
+                             origin_kind, origin=None, generation=None,
+                             lore=None, speaker=None):
+    """A P-075 record for a continue/impersonate landing: the
+    model facts come from the backend object that actually
+    generated, the preset/profile are chat snapshots, and lore
+    is not_run — this road composes persona + history only and
+    never runs lore activation (the P-069 boundary)."""
+    backend_key, model_id = prov_mod.backend_model_fields(backend)
+    profile_id, profile_name = await _profile_snapshot(session, user_id, chat)
+    return prov_mod.build_record(
+        origin_kind=origin_kind, origin=origin,
+        model=prov_mod.model_section(
+            backend_key=backend_key, model_id=model_id,
+            backend_profile_id=profile_id,
+            backend_profile_name=profile_name),
+        preset=await _preset_snapshot(session, user_id, chat),
+        lore=lore if lore is not None else prov_mod.lore_section(
+            status="not_run",
+            reason="continue/impersonate composes persona + history "
+                   "only; lore activation is not run on this road"),
+        generation=generation, speaker=speaker)
+
+
 async def resolve_backend(session: AsyncSession, user_id: str, chat: Chat):
     """Same resolution as the local /generate route and the
     bridge: the chat's pinned backend profile when set and
@@ -345,6 +372,13 @@ async def continue_chat(
         new_deck = list(deck)
         new_deck[idx] = deck[idx] + text
         _store_deck(message, new_deck, idx)
+        backend_key, model_id = prov_mod.backend_model_fields(backend)
+        message.provenance_json = prov_mod.dump_document(
+            prov_mod.with_amendment(
+                getattr(message, "provenance_json", None), idx,
+                {"kind": "continuation", "mode": resolved,
+                 "backend_key": backend_key, "model_id": model_id,
+                 "fingerprint": gen.fingerprint}))
         message.updated_at = _now()
         await _record_event(
             session,
@@ -357,6 +391,11 @@ async def continue_chat(
         continuation_of = message.id
     else:
         speaker_id, speaker_name = await _character_snapshot(session, user_id, chat)
+        record = await _generation_record(
+            session, user_id, chat, backend,
+            origin_kind="continue", origin={"mode": resolved},
+            generation={"fingerprint": gen.fingerprint, "mode": resolved},
+            speaker={"speaker_id": speaker_id, "speaker_name": speaker_name})
         message = await append_message(
             session,
             user_id,
@@ -366,6 +405,7 @@ async def continue_chat(
             speaker_id=speaker_id,
             speaker_name=speaker_name,
             event_data={"source": KIND_CONTINUE, "mode": resolved},
+            provenance=record,
         )
         await _record_event(
             session,
@@ -465,6 +505,12 @@ async def accept_impersonate(
         return None
     if not content or not content.strip():
         raise ValueError("message content must not be empty")
+    record = prov_mod.build_record(
+        origin_kind="impersonate_accepted",
+        origin={"draft_id": draft_id},
+        model=prov_mod.model_section(status="unknown"),
+        preset=await _preset_snapshot(session, user_id, chat),
+        lore=prov_mod.lore_section(status="not_applicable"))
     message = await append_message(
         session,
         user_id,
@@ -472,6 +518,7 @@ async def accept_impersonate(
         "user",
         content,
         event_data={"source": KIND_IMPERSONATE},
+        provenance=record,
     )
     data = {"draft_id": draft_id} if draft_id else {}
     await _record_event(

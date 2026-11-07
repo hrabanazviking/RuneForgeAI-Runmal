@@ -28,6 +28,7 @@ from runmal.chats.continue_impersonate import (
     impersonate_draft,
     resolve_continue_mode,
 )
+from runmal.chats import provenance as message_provenance
 from runmal.chats.search import (
     SearchError,
     make_snippet,
@@ -64,6 +65,7 @@ __all__ = [
     "discard_impersonate",
     "impersonate_draft",
     "resolve_continue_mode",
+    "message_provenance",
     "SearchError",
     "make_snippet",
     "rank_hits",

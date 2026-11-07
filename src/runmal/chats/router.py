@@ -396,6 +396,36 @@ async def get_message_variants(
             "variant_count": len(variants)}
 
 
+@router.get("/chats/{chat_id}/messages/{message_id}/provenance")
+async def get_message_provenance(
+    chat_id: str,
+    message_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """A message's full provenance document: the recorded
+    production record for every swipe (P-075). Legacy messages
+    read as an explicit not_recorded document, never a 404."""
+    payload = await service.get_message_provenance(
+        session, user_id, chat_id, message_id)
+    if payload is None:
+        raise HTTPException(status_code=404, detail="message not found")
+    return payload
+
+
+@router.get("/chats/{chat_id}/provenance")
+async def list_chat_provenance(
+    chat_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Per-message active provenance records + summary (P-075)."""
+    payload = await service.list_chat_provenance(session, user_id, chat_id)
+    if payload is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return payload
+
+
 @router.post("/chats/{chat_id}/messages/{message_id}/move")
 async def move_message(
     chat_id: str,

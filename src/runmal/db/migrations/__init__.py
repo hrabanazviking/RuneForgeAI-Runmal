@@ -47,6 +47,7 @@ from runmal.db.migrations import (
     m0037_chat_branches,
     m0038_message_actions,
     m0039_chat_metadata,
+    m0040_message_provenance,
 )
 
 MIGRATIONS: list[tuple[str, str, object]] = [
@@ -240,5 +241,10 @@ MIGRATIONS: list[tuple[str, str, object]] = [
         m0039_chat_metadata.REVISION,
         m0039_chat_metadata.DESCRIPTION,
         m0039_chat_metadata,
+    ),
+    (
+        m0040_message_provenance.REVISION,
+        m0040_message_provenance.DESCRIPTION,
+        m0040_message_provenance,
     ),
 ]

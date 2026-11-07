@@ -52,6 +52,7 @@ import json
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from runmal.chats import provenance as prov_mod
 from runmal.cards import import_card
 from runmal.characters.service import get_character
 from runmal.db.models import ChatEvent, Group
@@ -632,7 +633,21 @@ async def next_turn(
     )
     prompt_messages = build_prompt_messages(picked, roster, deepening, history, lore_texts)
     text = await _generate(prompt_messages)
-    message = await store.append_message(session, user_id, group_id, picked, text)
+    from runmal.generation import service as _gen_service
+
+    _backend_key, _model_id = prov_mod.backend_model_fields(
+        _gen_service.default_backend())
+    record = prov_mod.build_record(
+        origin_kind="group_generated",
+        origin={"strategy": group.speaker_policy, "speaker_id": picked},
+        model=prov_mod.model_section(
+            backend_key=_backend_key, model_id=_model_id),
+        preset=prov_mod.preset_section(status="not_applicable"),
+        lore=prov_mod.lore_from_report(lore_report),
+        speaker={"speaker_id": picked,
+                 "speaker_name": result["speaker_name"]})
+    message = await store.append_message(
+        session, user_id, group_id, picked, text, provenance=record)
     chat = await store._room_chat(session, group.id)
     await _record_event(
         session,
