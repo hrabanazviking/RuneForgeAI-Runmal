@@ -4091,3 +4091,54 @@ P-056 BANKED - authors note depth: per-chat note
     ephemeral note remains a separate feature.
     Next in roadmap order: P-057 (post-history
     instructions).
+P-057 BANKED - post-history instructions: a
+    prompt-manager citizen, baseline-last slot -
+    team-01 commit 85f6040 merged (no-ff) into
+    yrsa/two-mirrors-build as 3490fd3 and pushed;
+    ls-remote verified
+    3490fd32359a9138b3cd66b786d41cfd4ff5a6ee.
+    Evidence (team-01 worktree
+    hidden_files/P057_EVIDENCE.md + finisher logs):
+    battery 59 passed, neighbours 160 passed,
+    team full suite 2568 passed / 4 skipped /
+    0 failed on its base. Forge confirmation
+    suite at the merged tree: 2657 passed /
+    4 skipped / 0 failed (= 2597 + 59 + 1, the
+    one extra being the finisher-reconciled
+    defect test). Migration 0035 STANDS as
+    numbered (P-056 took 0034 first):
+    m0035_chat_post_history adds
+    chats.post_history_json; the merged registry
+    chain ends 0033 -> 0034 -> 0035, both tuples
+    separate, and the merged head is 0035.
+    Merge conflicts resolved keeping BOTH
+    slices: migration registry composed
+    0034 + 0035; chats router/service and
+    prompt files took additive unions (the
+    authors-note and post-history route/service
+    blocks spliced whole, both kept); the 30
+    head-pin test files took 0035 with their
+    position/tail/list pins healed to the
+    merged truth (0034 + 0035 both in sequence),
+    and the P-056 battery head pin healed
+    0034 -> 0035 at banking. Defect found and
+    fixed at banking, never left: inspect.py
+    imported has_content/slot_for from BOTH
+    authors_note and post_history unaliased, so
+    the post-history names shadowed the note
+    ones (active-note inspect 422s); imports
+    and call sites now aliased note_/ph_.
+    Combined batteries at the merged tree
+    (battery + all healed files): 1300 passed.
+    Slice: prompt/post_history.py -
+    PostHistoryInstructions with strict
+    instructions_from_data / to_data; chats
+    get/set post-history API (owner-checked);
+    prompt-manager citizenship (default layout
+    gains the block baseline-last, disabling
+    drops the slot); inspector precedence
+    chat > character > none with a metadata-only
+    post_history echo; the instruction text
+    never enters result or events (S214).
+    Next in roadmap order: P-058 (token budget
+    governor).
