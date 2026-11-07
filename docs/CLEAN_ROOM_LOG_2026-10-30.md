@@ -768,3 +768,21 @@ source in §0(2) and appends its entry here:
   Voxta source code was read and no file was
   downloaded; the slice's tests are authored fresh
   in the test module (P-005 discipline).
+- **P-082 (2026-11-07, public behaviour + own tree
+  only):** the plugin sandbox -- plugins are data+declared
+  capabilities; no plugin touches the network/files/secrets
+  uninvited -- is built entirely from Runmal's own in-tree
+  contracts: the P-081 design as landed in team-01's tree
+  (closed manifest vocabularies, the failure rule, the
+  metadata-only failure record), the P-027 typed-refusal and
+  error-hygiene discipline, and the SECURITY_MODEL section 8
+  honesty rule (no implied sandboxing without a real
+  boundary). The grant policy (surface permissions grant no
+  resource access; resource permissions live outside the v1
+  vocabulary, so a v1 plugin's resource grant set is empty),
+  the guarded-context facade (grant check + realpath
+  confinement + host-wired transport/provider + audit), and
+  the ADR-0008 decision record are Runmal's own design for
+  the roadmap line. No SillyTavern or Voxta source code was
+  read and no file was downloaded; the slice's tests are
+  authored fresh in the test module (P-005 discipline).
