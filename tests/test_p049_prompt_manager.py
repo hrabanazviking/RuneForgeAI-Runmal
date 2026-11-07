@@ -245,7 +245,7 @@ def test_block_for_kind_mapping():
 
 
 def test_migration_head_stays_0032():
-    assert MIGRATIONS[-1][0] == "0033"  # head moved by P-054 (0033)
+    assert MIGRATIONS[-1][0] == "0034"  # head moved by P-056 (0034)
 
 
 # ---------------- service ----------------

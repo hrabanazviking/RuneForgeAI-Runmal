@@ -41,6 +41,7 @@ from runmal.db.migrations import (
     m0031_character_book_binding,
     m0032_lorebook_scopes,
     m0033_preset_bundles,
+    m0034_chat_authors_note,
 )
 
 MIGRATIONS: list[tuple[str, str, object]] = [
@@ -204,5 +205,10 @@ MIGRATIONS: list[tuple[str, str, object]] = [
         m0033_preset_bundles.REVISION,
         m0033_preset_bundles.DESCRIPTION,
         m0033_preset_bundles,
+    ),
+    (
+        m0034_chat_authors_note.REVISION,
+        m0034_chat_authors_note.DESCRIPTION,
+        m0034_chat_authors_note,
     ),
 ]

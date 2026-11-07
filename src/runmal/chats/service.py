@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.characters.service import get_character as get_char
 from runmal.db.models import Chat, ChatEvent, Message
+from runmal.prompt.authors_note import AuthorsNote, note_from_data, note_to_data
 
 VALID_ROLES = frozenset({"user", "assistant", "system"})
 
@@ -20,6 +21,7 @@ EVENT_PERSONA_CHANGED = "persona.changed"
 EVENT_MESSAGE_APPENDED = "message.appended"
 EVENT_MESSAGE_EDITED = "message.edited"
 EVENT_MESSAGE_DELETED = "message.deleted"
+EVENT_AUTHORS_NOTE_CHANGED = "authors_note.changed"
 
 
 def _now() -> datetime:
@@ -27,6 +29,10 @@ def _now() -> datetime:
 
 
 def chat_to_dict(chat: Chat, message_count: int = 0) -> dict:
+    try:
+        note = note_from_data(json.loads(chat.authors_note_json or "{}"))
+    except (json.JSONDecodeError, ValueError, TypeError):
+        note = AuthorsNote()
     return {
         "id": chat.id,
         "title": chat.title,
@@ -35,6 +41,7 @@ def chat_to_dict(chat: Chat, message_count: int = 0) -> dict:
         "backend_profile_id": chat.backend_profile_id,
         "created_at": chat.created_at.isoformat(),
         "message_count": message_count,
+        "authors_note": note_to_data(note),
     }
 
 
@@ -138,6 +145,48 @@ async def set_chat_preset(
         if await presets.get_preset(session, user_id, preset_id) is None:
             raise KeyError(preset_id)
     chat.preset_id = preset_id
+    await session.commit()
+    return chat
+
+
+async def get_chat_authors_note(
+    session: AsyncSession, user_id: str, chat_id: str
+) -> AuthorsNote | None:
+    """The chat's author's note (P-056), or None when the chat is missing.
+
+    A corrupt stored document reads as the default (empty) note rather
+    than failing the read.
+    """
+    chat = await _get_owned_chat(session, user_id, chat_id)
+    if chat is None:
+        return None
+    try:
+        return note_from_data(json.loads(chat.authors_note_json or "{}"))
+    except (json.JSONDecodeError, ValueError, TypeError):
+        return AuthorsNote()
+
+
+async def set_chat_authors_note(
+    session: AsyncSession, user_id: str, chat_id: str, data: dict
+) -> Chat | None:
+    """Set a chat's author's note (P-056).
+
+    The chat must belong to the user; a missing chat returns None.
+    Invalid note data raises ValueError and stores nothing. The
+    mutation event records only depth/frequency/enabled -- never the
+    note text.
+    """
+    chat = await _get_owned_chat(session, user_id, chat_id)
+    if chat is None:
+        return None
+    note = note_from_data(data)
+    chat.authors_note_json = json.dumps(note_to_data(note))
+    await _record_event(
+        session,
+        chat.id,
+        EVENT_AUTHORS_NOTE_CHANGED,
+        data={"depth": note.depth, "frequency": note.frequency, "enabled": note.enabled},
+    )
     await session.commit()
     return chat
 

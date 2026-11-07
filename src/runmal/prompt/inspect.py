@@ -74,6 +74,16 @@ Prompt manager (P-049): ``prompt_layout`` is honoured via
 in the trace as discards with reason ``prompt_manager_disabled``;
 the result carries a ``prompt_layout`` echo; with no layout the
 pipeline is exactly the pre-P-049 pipeline.
+
+Author's note (P-056): when a ``chat_id`` is given, the chat's stored
+author's note joins the composition: an active note becomes the
+composer's depth slot (spliced into the history under the S206
+contract), a note silenced by its frequency surfaces in the trace as
+a discard with reason ``authors_note_frequency``, and the result
+carries an ``authors_note`` echo -- metadata only (present / active /
+depth / frequency / enabled / message count / source); the note text
+never enters the result. With no chat the echo reports source
+``none`` and the pipeline is exactly the pre-P-056 pipeline.
 """
 
 from __future__ import annotations
@@ -83,11 +93,20 @@ import json
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.characters import service as character_service
+from runmal.chats import service as chat_service
 from runmal.lorebooks import scopes as lore_scopes
 from runmal.lorebooks import service as lore_service
 from runmal.lorebooks.accounting import account_from_trace
 from runmal.lorebooks.preview import preview_activation
 from runmal.lorebooks.windows import ScanSettings
+from runmal.prompt.authors_note import (
+    FREQUENCY_REASON,
+    AuthorsNote,
+    has_content,
+    is_active_for,
+    note_from_data,
+    slot_for,
+)
 from runmal.prompt.composer import compose
 from runmal.prompt.context import DISABLED_REASON as CONTEXT_DISABLED_REASON
 from runmal.prompt.context import apply_context_template
@@ -195,6 +214,8 @@ async def inspect_prompt(
         context_template, preset=context_preset
     )
     messages = list(messages or [])
+    note = AuthorsNote()
+    authors_note_active = False
     lorebook_inspections: dict = {}
     lore_scope_summary: dict | None = None
     slots: list[Slot] = [
@@ -312,6 +333,13 @@ async def inspect_prompt(
                 )
 
     if chat_id is not None:
+        chat = await chat_service.get_chat(session, user_id, chat_id)
+        if chat is None:
+            return None
+        try:
+            note = note_from_data(json.loads(chat.authors_note_json or "{}"))
+        except (json.JSONDecodeError, ValueError, TypeError):
+            note = AuthorsNote()
         # P-040: scoped lore layers for this chat (world ->
         # character -> persona -> chat), each with its own
         # budget, composed per scope and reported per scope.
@@ -382,6 +410,43 @@ async def inspect_prompt(
             )
         )
 
+    message_count = len(messages)
+    if has_content(note):
+        if is_active_for(note, message_count):
+            an_slot = slot_for(note, message_count)
+            if an_slot is not None:
+                slots.append(an_slot)
+                authors_note_active = True
+        else:
+            _an_probe = make_slot(
+                "authors_note",
+                note.role,
+                note.text,
+                id="authors_note/chat",
+                depth=note.depth,
+                provenance="chat:authors_note",
+            )
+            extras.append(
+                TraceSlot(
+                    slot_id="authors_note/chat",
+                    kind="authors_note",
+                    role=note.role,
+                    status="discarded",
+                    tokens=slot_tokens(_an_probe),
+                    reason=FREQUENCY_REASON,
+                    provenance="chat:authors_note",
+                )
+            )
+    authors_note_echo = {
+        "present": has_content(note),
+        "active": authors_note_active,
+        "depth": note.depth,
+        "frequency": note.frequency,
+        "enabled": note.enabled,
+        "message_count": message_count,
+        "source": "chat" if chat_id else "none",
+    }
+
     slots_for_compose = slots
     if layout is not None:
         kept, dropped = apply_layout(slots, layout)
@@ -425,6 +490,7 @@ async def inspect_prompt(
     result["instruct_template"] = template_echo(template, template_source)
     result["context_template"] = context_echo(ctx_template, ctx_source)
     result["rendered_tokens"] = estimate_tokens(rendered.text)
+    result["authors_note"] = authors_note_echo
     if lore_scope_summary is not None:
         result["lore_scopes"] = lore_scope_summary
     if include_activation_inspection:

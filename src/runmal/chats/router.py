@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from runmal.chats import service
 from runmal.chats.service import chat_to_dict, event_to_dict, message_to_dict
 from runmal.db.deps import get_owner_id, get_session
+from runmal.prompt.authors_note import note_to_data
 
 router = APIRouter(tags=["chats"])
 
@@ -35,6 +36,14 @@ class MessageUpdate(BaseModel):
 
 class ChatPresetIn(BaseModel):
     preset_id: str | None = None
+
+
+class ChatAuthorsNoteIn(BaseModel):
+    text: str = ""
+    depth: int = 4
+    frequency: int = 1
+    enabled: bool = True
+    role: str = "system"
 
 
 class ChatBackendProfileIn(BaseModel):
@@ -175,6 +184,38 @@ async def set_chat_preset(
     if chat is None:
         raise HTTPException(status_code=404, detail="chat not found")
     return chat_to_dict(chat)
+
+
+@router.post("/chats/{chat_id}/authors-note")
+async def set_chat_authors_note(
+    chat_id: str,
+    body: ChatAuthorsNoteIn,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Set a chat's author's note (P-056)."""
+    try:
+        chat = await service.set_chat_authors_note(
+            session, user_id, chat_id, body.model_dump()
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if chat is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return chat_to_dict(chat)
+
+
+@router.get("/chats/{chat_id}/authors-note")
+async def get_chat_authors_note(
+    chat_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """A chat's author's note (P-056)."""
+    note = await service.get_chat_authors_note(session, user_id, chat_id)
+    if note is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return note_to_data(note)
 
 
 @router.post("/chats/{chat_id}/backend-profile")
