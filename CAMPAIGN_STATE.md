@@ -3646,3 +3646,28 @@ P-044 BANKED - token accounting: lore's exact prompt
     else ESTIMATED. In-slice fix: a muted scope layer's
     budget 0 is no longer conflated with unlimited.
     Next in roadmap order: P-045 (team-03, book sharing).
+
+P-045 BANKED - book sharing: lorebooks as importable
+    packs - team-03 commits c17c827 + 7fe7caf + ba87510
+    merged (no-ff, clean) into yrsa/two-mirrors-build as
+    7245df8 and pushed; ls-remote verified
+    7245df835dbb27ebf9ad326a450b357ea0ff5eed.
+    Evidence (team-03 worktree hidden_files/P045_EVIDENCE.md
+    and logs): battery 33/33, neighbours 935, full suite
+    2094 passed / 4 skipped / 0 failed on its base
+    (= 2061 + 33, exact). Forge confirmation suite at the
+    merged tree: 2115 passed / 4 skipped / 0 failed
+    (= 2082 + 33, exact); s503 did not fire. NO migration
+    taken by P-045; head stays 0032. Pack envelope
+    runmal-lorebook-pack v1 around the unchanged
+    transfer.export_book payload, manifest with
+    normalised-content SHA-256, P-029-style honest
+    provenance (self-asserted, no implied origin chain);
+    import via the transactional P-022 path, never
+    silently overwriting (exact duplicate returns the
+    existing book; same-name/different-content creates
+    fresh or refuses under reject). Review Mediums fixed
+    in-slice: shape-independent canonical identity
+    (world-info-shaped pack dedups against its book) and
+    malformed packs refuse 422 as PackError, never 500.
+    Next in roadmap order: P-046 (team-01, performance).
