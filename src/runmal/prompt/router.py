@@ -21,6 +21,11 @@ from runmal.backends.capabilities import (
     backend_truth_dict,
     capability_matrix,
 )
+from runmal.backends.structured import (
+    MODES,
+    audit_structured_truth,
+    structured_matrix,
+)
 from runmal.db.deps import get_owner_id, get_session
 from runmal.prompt.context import (
     context_to_data,
@@ -57,6 +62,7 @@ class InspectRequest(BaseModel):
     context_template: dict | str | None = None
     context_preset: dict | None = None
     budget_policy: dict | None = None
+    structured_output: dict | None = None
     include_preview: bool = False
     backend_key: str | None = None
 
@@ -85,6 +91,7 @@ async def prompt_inspect(
             context_template=body.context_template,
             context_preset=body.context_preset,
             budget_policy=body.budget_policy,
+            structured_output=body.structured_output,
             include_preview=body.include_preview,
             backend_key=body.backend_key,
         )
@@ -127,6 +134,7 @@ async def prompt_preview_endpoint(
             include_preview=True,
             backend_key=body.backend_key,
             budget_policy=body.budget_policy,
+            structured_output=body.structured_output,
         )
     except ValueError as exc:
         raise HTTPException(
@@ -203,3 +211,27 @@ async def backend_capability(backend_key: str,
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(exc),
         ) from exc
+
+
+_MODE_FIELDS = {
+    "off": [],
+    "json_object": [],
+    "json_schema": ["schema", "name", "strict"],
+    "grammar": ["grammar"],
+}
+
+
+@router.get("/debug/structured-modes")
+async def structured_modes() -> dict:
+    """Structured-output catalogue + per-backend truth (P-061).
+
+    Metadata only: no declaration is an input to this endpoint,
+    so no schema or grammar content can appear in its payload
+    (S214). A non-empty ``audit`` list means a truth source
+    drifted; it is reported as data, never hidden.
+    """
+    return {
+        "modes": [{"mode": m, "fields": _MODE_FIELDS[m]} for m in MODES],
+        "backends": structured_matrix()["backends"],
+        "audit": audit_structured_truth(),
+    }

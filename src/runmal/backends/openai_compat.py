@@ -54,6 +54,7 @@ from runmal.backends.errors import (
 )
 from runmal.backends.events import Done, TextDelta, UsageUpdate
 from runmal.backends.models import Capabilities, HealthStatus, ModelInfo
+from runmal.backends.structured import wire_payload
 from runmal.tokens import TokenQuality
 
 #: Default endpoint: OpenAI's own API. Any compatible endpoint is a
@@ -156,6 +157,7 @@ class OpenAICompatibleChatBackend(ChatBackend):
             capabilities=Capabilities(
                 chat=True,
                 streaming=True,
+                structured_output=True,
                 context_length=context_length,
                 max_output_tokens=max_output,
                 token_count_quality=TokenQuality.ESTIMATED,
@@ -163,7 +165,7 @@ class OpenAICompatibleChatBackend(ChatBackend):
             ),
         )
 
-    async def chat_stream(self, messages, params, cancel):
+    async def chat_stream(self, messages, params, cancel, *, structured=None):
         if cancel.is_set():
             raise GenerationCancelled("generation cancelled")
         filtered, _warnings = self.filter_params(params)
@@ -175,6 +177,8 @@ class OpenAICompatibleChatBackend(ChatBackend):
         for key, value in filtered.to_bag().items():
             if key in WIRE_NAMES:
                 payload[WIRE_NAMES[key]] = value
+        if structured is not None and structured.is_active():
+            payload.update(wire_payload(self.backend_key, structured))
         usage: UsageUpdate | None = None
         reason: str | None = None
         saw_terminal_marker = False

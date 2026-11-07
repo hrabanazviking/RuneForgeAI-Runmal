@@ -26,6 +26,9 @@ data:
   selection in play.
 - ``template_ref`` — the legacy S207 prompt-template reference,
   carried for compatibility.
+- ``structured_output`` — a P-061 structured-output declaration,
+  validated by ``structured_from_data`` and stored in its
+  normalised form (``structured_to_data``), or None.
 - ``prompts`` / ``prompt_order`` — the P-021 carriage, verbatim.
 - ``extensions`` — every OTHER top-level key of an incoming
   bundle, preserved verbatim. Foreign fields are carried, never
@@ -73,6 +76,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from runmal.backends.structured import structured_from_data, structured_to_data
 from runmal.db.models import Character, Chat, PresetBundle, PresetOverride
 from runmal.presets.service import validate_params
 from runmal.prompt.context import context_from_data, get_context_template
@@ -101,11 +105,11 @@ SCOPE_KINDS = frozenset({SCOPE_CHARACTER, SCOPE_CHAT})
 _KNOWN_KEYS = frozenset({
     "name", "sampler", "prompt_layout", "instruct_template",
     "context_template", "template_ref", "prompts", "prompt_order",
-    "extensions",
+    "extensions", "structured_output",
 })
 _SECTION_KEYS = (
     "sampler", "prompt_layout", "instruct_template",
-    "context_template", "template_ref",
+    "context_template", "template_ref", "structured_output",
 )
 
 
@@ -205,6 +209,12 @@ def validate_bundle(data: object) -> dict:
             layout = layout_to_data(layout_from_data(layout))
         except ValueError as exc:
             raise BundleError(str(exc)) from exc
+    structured = data.get("structured_output")
+    if structured is not None:
+        try:
+            structured = structured_to_data(structured_from_data(structured))
+        except ValueError as exc:
+            raise BundleError(str(exc)) from exc
     instruct = _validate_selection(data.get("instruct_template"), "instruct_template")
     context = _validate_selection(data.get("context_template"), "context_template")
     template_ref = data.get("template_ref", "")
@@ -230,6 +240,7 @@ def validate_bundle(data: object) -> dict:
         "prompt_layout": layout,
         "instruct_template": instruct,
         "context_template": context,
+        "structured_output": structured,
         "template_ref": template_ref,
         "prompts": copy.deepcopy(prompts),
         "prompt_order": copy.deepcopy(prompt_order),
@@ -275,6 +286,15 @@ def validate_overrides(data: object) -> dict:
             except ValueError as exc:
                 raise BundleError(str(exc)) from exc
         out["prompt_layout"] = layout
+    if "structured_output" in data:
+        raw_structured = data["structured_output"]
+        if raw_structured is not None:
+            try:
+                raw_structured = structured_to_data(
+                    structured_from_data(raw_structured))
+            except ValueError as exc:
+                raise BundleError(str(exc)) from exc
+        out["structured_output"] = raw_structured
     if "instruct_template" in data:
         out["instruct_template"] = _validate_selection(data["instruct_template"], "instruct_template")
     if "context_template" in data:
@@ -298,7 +318,8 @@ def merge_bundle(base: dict, *deltas: dict) -> tuple[dict, dict]:
     """
     effective = copy.deepcopy(base)
     sources: dict = {"sampler": {k: "bundle" for k in base["sampler"]}}
-    for key in ("prompt_layout", "instruct_template", "context_template", "template_ref"):
+    for key in ("prompt_layout", "instruct_template", "context_template", "template_ref",
+     "structured_output"):
         sources[key] = "bundle"
     for idx, delta in enumerate(deltas):
         label = f"delta{idx + 1}"
@@ -310,7 +331,8 @@ def merge_bundle(base: dict, *deltas: dict) -> tuple[dict, dict]:
                 else:
                     effective["sampler"][key] = copy.deepcopy(value)
                     sources["sampler"][key] = label
-        for key in ("prompt_layout", "instruct_template", "context_template", "template_ref"):
+        for key in ("prompt_layout", "instruct_template", "context_template", "template_ref",
+     "structured_output"):
             if key in delta:
                 effective[key] = copy.deepcopy(delta[key])
                 sources[key] = label

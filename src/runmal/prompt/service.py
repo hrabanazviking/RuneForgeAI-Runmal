@@ -190,3 +190,87 @@ def policy_echo(policy: BudgetPolicy | None, source: str) -> dict:
         "source": source,
         "policy": policy_to_data(policy if policy is not None else default_policy()),
     }
+
+
+# ---------------- P-061: structured output resolution ----------------
+
+from runmal.backends.capabilities import default_model  # noqa: E402
+from runmal.backends.models import ModelInfo  # noqa: E402
+from runmal.backends.structured import (  # noqa: E402
+    StructuredOutput,
+    plan_structured,
+    structured_from_data,
+    structured_matrix,
+    truth_for_model,
+)
+
+
+def resolve_structured(
+    explicit: object | None,
+) -> tuple[StructuredOutput | None, str]:
+    """Resolve the structured-output declaration for a composition.
+
+    Returns ``(structured, source)``: an explicit declaration is
+    validated by structured_from_data (ValueError propagates to
+    the caller, which maps it to 422) and returned with source
+    ``"explicit"`` -- including an explicit ``{"mode": "off"}``,
+    which is a real declaration, distinct from absence; ``None``
+    yields ``(None, "default")`` -- no declaration in play.
+    """
+    if explicit is not None:
+        return structured_from_data(explicit), "explicit"
+    return None, "default"
+
+
+def structured_echo(
+    structured: StructuredOutput | None,
+    source: str,
+    *,
+    backend_key: str | None = None,
+    model_id: str | None = None,
+) -> dict:
+    """The ``structured_output`` echo for an inspect result.
+
+    Metadata only (S214): ``declared`` carries mode / name /
+    strict plus schema / grammar PRESENCE booleans -- never the
+    schema object, never the grammar text. ``truth`` is the
+    in-play backend's rows (the resolved model when a model_id
+    is known), else the full structured matrix's backend rows.
+    ``warnings`` come from plan_structured against the in-play
+    model when both a declaration and a backend are in play.
+    """
+    if structured is None:
+        declared = {
+            "mode": "off", "name": None, "strict": False,
+            "schema_present": False, "grammar_present": False,
+        }
+    else:
+        is_schema = structured.mode == "json_schema"
+        declared = {
+            "mode": structured.mode,
+            "name": structured.name if is_schema else None,
+            "strict": structured.strict if is_schema else False,
+            "schema_present": structured.schema is not None,
+            "grammar_present": structured.grammar is not None,
+        }
+    warnings: list[str] = []
+    if backend_key is not None:
+        if model_id is not None:
+            model = ModelInfo(
+                model_id=model_id, display_name=model_id,
+                backend_key=backend_key)
+        else:
+            model = default_model(backend_key)
+        truth: object = [r.to_dict() for r in truth_for_model(model)]
+        if structured is not None and structured.is_active():
+            _planned, warnings = plan_structured(structured, model)
+    else:
+        truth = structured_matrix()["backends"]
+    return {
+        "declared": declared,
+        "source": source,
+        "backend_key": backend_key,
+        "model_id": model_id,
+        "truth": truth,
+        "warnings": warnings,
+    }
