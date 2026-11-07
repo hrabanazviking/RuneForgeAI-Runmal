@@ -4697,3 +4697,56 @@ P-073 BANKED - Chat metadata: titles, tags,
     found and fixed in-slice (tag read-back
     order); no code defect found. Next in
     roadmap order: P-074.
+P-074 BANKED - Data bank: per-chat
+    attached documents, scoped and
+    budgeted (Part V) - team-03 commit
+    e93668d merged (no-ff) into
+    yrsa/two-mirrors-build as 54003a9,
+    banking heal 28b2408, and pushed;
+    ls-remote verified (see WAVE_PLAN
+    update). Evidence (team-03 worktree
+    hidden_files/P074_EVIDENCE.md):
+    battery 26 passed, neighbours 177
+    passed, team full suite 3227 passed /
+    4 skipped / 0 failed on its base.
+    Forge confirmation suite: 3244
+    passed / 4 skipped / 0 failed
+    (= 3218 + 26, exact). NO MIGRATION
+    taken by P-074; head stays 0039
+    (P-073's m0039_chat_metadata stands);
+    registry verified loading with head
+    0039, 39 migrations. Merge CONFLICT
+    in chats/router.py only (imports),
+    resolved as an additive union keeping
+    BOTH slices' work (Query from
+    P-072/P-073 plus StrictBool/StrictInt
+    from P-074); grep-verified P-072
+    /chats/search, P-073 /chats/library +
+    /chats/tags and P-074 databank routes
+    all coexist, and the P-057
+    authors_note/post_history aliasing in
+    prompt/inspect.py is intact. Heal:
+    the battery's head pin re-pinned
+    honestly to 0039 (test renamed
+    test_migration_head_stays_0039, exact
+    head still pinned, no assertion
+    weakened; its anti-0039 assert
+    reworked to pin 0040 absent, the
+    no-migration guard for this slice).
+    Slice: per-chat + global attached
+    documents as sealed JSON files on
+    the P-067 checkpoint pattern,
+    whole-document selection within a
+    declared per-chat token budget
+    (default 2000), priority-ordered,
+    never truncated; over-budget docs
+    excluded whole with reason; spend
+    visible in list accounting,
+    prompt-inspect echo + trace discards,
+    and the P-058 governor context
+    section. Bug found + fixed in-slice:
+    Pydantic bool-to-int coercion at the
+    router boundary (StrictInt/StrictBool
+    on the data-bank request models). No
+    new defect found at banking. Next in
+    roadmap order: P-075.
