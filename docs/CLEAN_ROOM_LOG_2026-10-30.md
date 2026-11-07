@@ -581,3 +581,17 @@ source in §0(2) and appends its entry here:
   Voxta source code was read and no file was downloaded; the
   slice's test entries are authored fresh in the test modules
   (P-005 discipline).
+- **Commissioned binding depth/role slice (2026-11-06,
+  own tree only):** no new external source and no mirror
+  reading. Closing gate finding F2 (character-book entries
+  carry P-038 placement into materialisation) is built
+  entirely from Runmal's own in-tree facts: the P-038
+  placement module's tolerant normalisers, the P-039
+  binding legs they were missing from, and the finding as
+  P-047's evidence and P-048's gate record state it. The
+  asymmetric degradation (bad depth to undeclared, bad
+  role to system) and the role/position code tables are
+  P-038's own, reused unchanged. No SillyTavern or Voxta
+  source code was read and no file was downloaded; the
+  slice's test entries are authored fresh in the test
+  module (P-005 discipline).
