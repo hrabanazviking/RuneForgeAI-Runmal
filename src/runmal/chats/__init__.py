@@ -64,6 +64,13 @@ from runmal.chats.filebridge import (
 )
 from runmal.chats.fileexport import export_chat_jsonl
 from runmal.chats.fileimport import parse_chat_file, parse_chat_jsonl
+from runmal.chats.liveimport import (
+    EVENT_CHAT_IMPORTED,
+    LiveImportReport,
+    import_chat_file,
+    materialise_import,
+    plan_import,
+)
 from runmal.chats.filemodels import (
     ChatFileErrorKind,
     ChatFileParseError,
@@ -120,7 +127,12 @@ __all__ = [
     "export_chat_jsonl",
     "field_diff",
     "loss_report",
+    "EVENT_CHAT_IMPORTED",
+    "LiveImportReport",
+    "import_chat_file",
+    "materialise_import",
     "parse_chat_file",
+    "plan_import",
     "parse_chat_jsonl",
     "project_messages",
     "resolve_character",

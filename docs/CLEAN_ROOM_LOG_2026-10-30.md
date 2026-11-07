@@ -679,3 +679,19 @@ source in §0(2) and appends its entry here:
   SillyTavern or Voxta source code was read and no file
   was downloaded; the slice's tests are authored fresh
   in the test module (P-005 discipline).
+- **P-078 (2026-11-07, public behaviour + own tree
+  only):** chat import surgery — P-020's parsed imports
+  become fully live chats — is built entirely from
+  Runmal's own in-tree contracts: the P-020 file contract
+  (filemodels/fileimport/filebridge), the P-065 swipe-deck
+  invariant, the P-066 lineage columns, the P-075
+  provenance document shape, and the P-068 materialised-
+  position rule. The deck-resolution rules (mes
+  authoritative, empty alternates dropped and reported,
+  branch-link header keys preserved as data and never
+  mapped to lineage) extend the tree's own filebridge law;
+  no external behaviour was consulted beyond what earlier
+  slices already recorded. No SillyTavern or Voxta source
+  code was read and no file was downloaded; the slice's
+  tests are authored fresh in the test module (P-005
+  discipline).
