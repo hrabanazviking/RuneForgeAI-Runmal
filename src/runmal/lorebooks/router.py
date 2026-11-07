@@ -161,6 +161,63 @@ async def import_lorebook(
     return lorebook_to_dict(book, len(entries or []))
 
 
+@router.post("/lorebooks/import-pack", status_code=status.HTTP_201_CREATED)
+async def import_lorebook_pack(
+    body: dict,
+    on_conflict: str = "create_new",
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Import a lorebook sharing pack (P-045).
+
+    Never overwrites: an exact duplicate returns the existing
+    book with a 200 and ``pack_import.duplicate_exact`` set;
+    a same-name collision creates a fresh book by default or
+    refuses with ``?on_conflict=reject``.
+    """
+    from fastapi.responses import JSONResponse
+
+    from runmal.lorebooks import packs
+
+    try:
+        book, report = await packs.import_pack(
+            session, user_id, body, on_conflict=on_conflict
+        )
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)
+        ) from exc
+    entries = await service.list_entries(session, user_id, book.id)
+    payload = lorebook_to_dict(book, len(entries or []))
+    payload["pack_import"] = report
+    return JSONResponse(
+        content=payload,
+        status_code=200 if report["duplicate_exact"] else 201,
+    )
+
+
+@router.post("/lorebooks/pack/inspect")
+async def inspect_lorebook_pack(
+    body: dict,
+    user_id: str = Depends(get_owner_id),
+):
+    """Validate a pack and report on it WITHOUT importing (P-045).
+
+    The hub's pre-flight: format, manifest, provenance and the
+    verified content checksum, as data. Owner-scoped like every
+    lorebook route (the credential dependency is the scope);
+    nothing is written.
+    """
+    from runmal.lorebooks import packs
+
+    try:
+        return packs.inspect_pack(body)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)
+        ) from exc
+
+
 @router.get("/lorebooks/{book_id}/export")
 async def export_lorebook(
     book_id: str,
@@ -186,6 +243,26 @@ async def export_lorebook(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         detail=f"unknown export format: {format!r} (valid: native, worldinfo)",
     )
+
+
+@router.get("/lorebooks/{book_id}/pack")
+async def export_lorebook_pack(
+    book_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Export one lorebook as a sharing pack (P-045): the native
+    payload sealed in the pack envelope with its manifest and
+    provenance (schema runmal-p045-lorebook-pack-v1)."""
+    from runmal.lorebooks import packs
+
+    book = await service.get_lorebook(session, user_id, book_id)
+    if book is None:
+        raise HTTPException(status_code=404, detail="lorebook not found")
+    entries = await service.list_entries(session, user_id, book_id)
+    book_dict = lorebook_to_dict(book, len(entries or []))
+    entry_dicts = [entry_to_dict(e) for e in entries or []]
+    return packs.build_pack(book_dict, entry_dicts)
 
 
 @router.post("/lorebooks/{book_id}/preview")
