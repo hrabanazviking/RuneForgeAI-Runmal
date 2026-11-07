@@ -1,4 +1,5 @@
-"""Chat service + API (S107) + chat file interop (P-020).
+"""Chat service + API (S107) + chat file interop (P-020)
++ branches (P-066).
 
 The file-interop surface parses ST-shaped chat JSONL and
 Runmal native export documents into the typed contract in
@@ -8,6 +9,13 @@ Clean-room basis: P-002 census of public documentation, P-005
 authored corpus fixture, public JSONL format documentation.
 """
 
+from runmal.chats.branches import (
+    branch_info,
+    fork_chat,
+    list_branch_family,
+    merge_back,
+    rename_branch,
+)
 from runmal.chats.filebridge import (
     field_diff,
     loss_report,
@@ -28,6 +36,11 @@ from runmal.chats.filemodels import (
 )
 
 __all__ = [
+    "branch_info",
+    "fork_chat",
+    "list_branch_family",
+    "merge_back",
+    "rename_branch",
     "ChatFileErrorKind",
     "ChatFileParseError",
     "ImportReport",
