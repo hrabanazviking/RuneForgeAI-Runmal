@@ -29,6 +29,7 @@ from runmal.backends.messages import ChatMessage
 from runmal.cards import CardParseError, parse_json_card
 from runmal.characters.service import get_character
 from runmal.chats import service as chats
+from runmal.chats import provenance as prov_mod
 from runmal.chats.service import chat_to_dict, message_to_dict
 from runmal.db.models import Chat, Message
 from runmal.generation import service as generation_service
@@ -93,6 +94,18 @@ async def append_turn(
         event_data["bridge_timestamp"] = bridge_timestamp
     if metadata:
         event_data["metadata"] = metadata
+    chat_row = await chats.get_chat(session, user_id, chat_id)
+    record = prov_mod.build_record(
+        origin_kind="bridge",
+        origin={"bridge_id": bridge_id, "speaker_kind": speaker_kind},
+        model=prov_mod.model_section(
+            status="unknown" if speaker_kind == "companion"
+            else "not_applicable"),
+        preset=(await chats._preset_snapshot(session, user_id, chat_row)
+                if chat_row is not None else prov_mod.preset_section()),
+        lore=prov_mod.lore_section(status="not_applicable"),
+        speaker={"speaker_id": resolved_id, "speaker_name": resolved_name},
+    )
     message = await chats.append_message(
         session,
         user_id,
@@ -102,6 +115,7 @@ async def append_turn(
         speaker_id=resolved_id,
         speaker_name=resolved_name,
         event_data=event_data,
+        provenance=record,
     )
     from runmal.bridge import outbox
 
@@ -264,6 +278,27 @@ async def stream_generation(
                 await _store_summary(session, bridge_id, chat_id, idempotency_key, summary)
         return
     async with session_factory() as session:
+        chat_row = await chats.get_chat(session, user_id, chat_id)
+        backend_key, model_id = prov_mod.backend_model_fields(backend)
+        profile_id, profile_name = (
+            await chats._profile_snapshot(session, user_id, chat_row)
+            if chat_row is not None else (None, None))
+        record = prov_mod.build_record(
+            origin_kind="bridge_generated",
+            origin={"bridge_id": bridge_id},
+            model=prov_mod.model_section(
+                backend_key=backend_key, model_id=model_id,
+                backend_profile_id=profile_id,
+                backend_profile_name=profile_name),
+            preset=(await chats._preset_snapshot(session, user_id, chat_row)
+                    if chat_row is not None else prov_mod.preset_section()),
+            lore=prov_mod.lore_section(
+                status="not_run",
+                reason="bridge generation composes persona + history "
+                       "only; lore activation is not run on this road"),
+            generation={"request_id": request_id},
+            speaker={"speaker_id": persona_id, "speaker_name": persona_name},
+        )
         message = await chats.append_message(
             session,
             user_id,
@@ -277,6 +312,7 @@ async def stream_generation(
                 "bridge_id": bridge_id,
                 "request_id": request_id,
             },
+            provenance=record,
         )
         from runmal.bridge import outbox
 

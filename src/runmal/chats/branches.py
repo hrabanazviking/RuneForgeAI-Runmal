@@ -36,6 +36,7 @@ never reconciled; the suffix is appended whole.
 
 from __future__ import annotations
 
+import hashlib
 import json
 from datetime import UTC, datetime, timedelta
 
@@ -43,6 +44,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.chats.service import _get_owned_chat, _record_event
+from runmal.chats import provenance as prov_mod
 from runmal.db.models import Chat, Message
 
 EVENT_BRANCH_CREATED = "branch.created"
@@ -96,6 +98,15 @@ def _copy_message(source: Message, chat_id: str, created_at=None) -> Message:
         content=source.content,
         speaker_id=source.speaker_id,
         speaker_name=source.speaker_name,
+        provenance_json=prov_mod.dump_document(
+            prov_mod.document_for_copy(
+                {"schema": prov_mod.PROVENANCE_SCHEMA, "recorded": True,
+                 "recorded_at": None,
+                 "swipes": {"0": prov_mod.active_record(source)}},
+                source_chat_id=source.chat_id,
+                source_message_id=source.id,
+                source_content_sha256=hashlib.sha256(
+                    source.content.encode("utf-8")).hexdigest())),
         created_at=created_at if created_at is not None else _aware(source.created_at),
         updated_at=_aware(source.updated_at),
     )

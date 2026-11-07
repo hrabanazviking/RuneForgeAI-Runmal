@@ -3,6 +3,7 @@ mutation event log (S107). Events feed future memory sync."""
 
 from __future__ import annotations
 
+import hashlib
 import json
 from datetime import UTC, datetime
 
@@ -11,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.characters.service import get_character as get_char
 from runmal.chats import actions as action_mod
+from runmal.chats import provenance as prov_mod
 from runmal.chats import swipes as swipe_mod
 from runmal.chats.swipes import (
     SwipeRegenSettings,
@@ -150,6 +152,63 @@ def _metadata_provenance(chat: Chat) -> dict:
     return provenance_from_chat(chat)
 
 
+async def _preset_snapshot(
+    session: AsyncSession, user_id: str, chat: Chat
+) -> dict:
+    """The chat's applied preset AS OF NOW (P-075): a snapshot
+    section for a provenance record being written at production
+    time. No preset applied -> not_applicable; an applied id
+    whose row has since vanished records the id alone."""
+    preset_id = getattr(chat, "preset_id", None)
+    if not preset_id:
+        return prov_mod.preset_section(status="not_applicable")
+    from runmal.presets import service as presets
+
+    preset = await presets.get_preset(session, user_id, preset_id)
+    if preset is None:
+        return prov_mod.preset_section(preset_id=preset_id)
+    data = presets.preset_to_dict(preset)
+    return prov_mod.preset_section(
+        preset_id=preset_id, name=data.get("name"),
+        params=data.get("params"))
+
+
+async def _profile_snapshot(
+    session: AsyncSession, user_id: str, chat: Chat
+) -> tuple[str | None, str | None]:
+    """(backend_profile_id, backend_profile_name) pinned on the
+    chat as of now, for a provenance record's model section."""
+    profile_id = getattr(chat, "backend_profile_id", None)
+    if not profile_id:
+        return None, None
+    from runmal.backends import profiles as backend_profiles
+
+    profile = await backend_profiles.get_profile(session, user_id, profile_id)
+    return profile_id, (profile.name if profile is not None else None)
+
+
+async def _default_record(
+    session: AsyncSession, user_id: str, chat: Chat, role: str,
+    speaker_id: str | None, speaker_name: str | None,
+) -> dict:
+    """The record for a bare append (P-075): origin manual; the
+    model section is a gap — unknown for an assistant line (the
+    append road cannot know a model produced it), not_applicable
+    for user/system lines — over a snapshot of the chat's
+    current preset/profile configuration."""
+    profile_id, profile_name = await _profile_snapshot(session, user_id, chat)
+    return prov_mod.build_record(
+        origin_kind="manual",
+        model=prov_mod.model_section(
+            status="unknown" if role == "assistant" else "not_applicable",
+            backend_profile_id=profile_id,
+            backend_profile_name=profile_name),
+        preset=await _preset_snapshot(session, user_id, chat),
+        lore=prov_mod.lore_section(status="not_applicable"),
+        speaker={"speaker_id": speaker_id, "speaker_name": speaker_name},
+    )
+
+
 def chat_to_dict(chat: Chat, message_count: int = 0) -> dict:
     try:
         note = note_from_data(json.loads(chat.authors_note_json or "{}"))
@@ -191,6 +250,7 @@ def message_to_dict(message: Message) -> dict:
         "position": getattr(message, "position", None),
         "speaker_id": message.speaker_id,
         "speaker_name": message.speaker_name,
+        "provenance": prov_mod.active_view(message, swipe_id),
         "created_at": message.created_at.isoformat(),
         "updated_at": message.updated_at.isoformat() if message.updated_at else None,
     }
@@ -505,6 +565,7 @@ async def append_message(
     speaker_id: str | None = None,
     speaker_name: str | None = None,
     event_data: dict | None = None,
+    provenance: dict | None = None,
 ) -> Message:
     chat = await _get_owned_chat(session, user_id, chat_id)
     if chat is None:
@@ -518,6 +579,9 @@ async def append_message(
     if any(m.position is not None for m in existing):
         _renumber(existing)
         new_position = len(existing)
+    if provenance is None:
+        provenance = await _default_record(
+            session, user_id, chat, role, speaker_id, speaker_name)
     message = Message(
         chat_id=chat_id,
         role=role,
@@ -527,6 +591,8 @@ async def append_message(
         swipes_json=json.dumps([content]),
         swipe_id=0,
         position=new_position,
+        provenance_json=prov_mod.dump_document(
+            prov_mod.build_document(provenance)),
     )
     session.add(message)
     await session.flush()
@@ -571,6 +637,10 @@ async def edit_message(
         _variants(message), message.content, _now().isoformat(), idx
     )
     message.variant_history_json = json.dumps(history)
+    message.provenance_json = prov_mod.dump_document(
+        prov_mod.with_amendment(
+            getattr(message, "provenance_json", None), idx,
+            {"kind": "edit", "variant_count": len(history)}))
     new_deck = list(deck)
     new_deck[idx] = content
     _store_deck(message, new_deck, idx)
@@ -719,6 +789,11 @@ async def copy_message_to_branch(
             variant_history_json=getattr(m, "variant_history_json", "[]"),
             pinned=False,
             position=position,
+            provenance_json=prov_mod.dump_document(
+                prov_mod.document_for_copy(
+                    m, source_chat_id=chat_id, source_message_id=m.id,
+                    source_content_sha256=hashlib.sha256(
+                        m.content.encode("utf-8")).hexdigest())),
         )
 
     if target_chat_id is None:
@@ -909,6 +984,18 @@ async def add_swipe(
     new_deck.append(content)
     new_id = len(new_deck) - 1
     _store_deck(message, new_deck, new_id)
+    chat = await _get_owned_chat(session, user_id, chat_id)
+    swipe_record = prov_mod.build_record(
+        origin_kind="swipe_manual",
+        model=prov_mod.model_section(status="not_applicable"),
+        preset=(await _preset_snapshot(session, user_id, chat)
+                if chat is not None else prov_mod.preset_section()),
+        lore=prov_mod.lore_section(status="not_applicable"),
+        speaker={"speaker_id": message.speaker_id,
+                 "speaker_name": message.speaker_name})
+    message.provenance_json = prov_mod.dump_document(
+        prov_mod.with_record_for_swipe(
+            prov_mod.parse_provenance(message), new_id, swipe_record))
     await _record_event(
         session,
         chat_id,
@@ -987,6 +1074,9 @@ async def delete_swipe(
         raise ValueError("cannot delete the only swipe")
     new_deck = list(deck)
     del new_deck[index]
+    message.provenance_json = prov_mod.dump_document(
+        prov_mod.without_swipe(
+            getattr(message, "provenance_json", None), index))
     if index < active:
         new_active = active - 1
     elif index == active:
@@ -1052,6 +1142,26 @@ async def import_session_swipes(
     if message is None:
         return None
     _store_deck(message, list(swipes_list), idx)
+    mode_value = getattr(session_obj, "mode", None)
+    generation = {
+        "fingerprint": getattr(session_obj, "fingerprint", None),
+        "mode": getattr(mode_value, "value", mode_value),
+    }
+    document = None
+    for position in range(len(swipes_list)):
+        session_record = prov_mod.build_record(
+            origin_kind="generation_session",
+            generation=generation,
+            speaker={"speaker_id": message.speaker_id,
+                     "speaker_name": message.speaker_name})
+        if document is None:
+            document = prov_mod.build_document(
+                session_record, swipe_index=position)
+        else:
+            document = prov_mod.with_record_for_swipe(
+                document, position, session_record)
+    if document is not None:
+        message.provenance_json = prov_mod.dump_document(document)
     await _record_event(
         session,
         chat_id,
@@ -1097,3 +1207,45 @@ async def list_events(session: AsyncSession, user_id: str, chat_id: str) -> list
         select(ChatEvent).where(ChatEvent.chat_id == chat_id).order_by(ChatEvent.created_at)
     )
     return list(result.scalars().all())
+
+# -- Message provenance reads (P-075) --------------------------------------
+
+
+async def get_message_provenance(
+    session: AsyncSession, user_id: str, chat_id: str, message_id: str
+) -> dict | None:
+    """One message's FULL provenance document (every recorded
+    swipe), for the Inspector. None when missing/foreign."""
+    message = await _get_owned_message(session, user_id, chat_id, message_id)
+    if message is None:
+        return None
+    view = prov_mod.full_view(message)
+    view["message_id"] = message.id
+    view["chat_id"] = chat_id
+    view["active_swipe_id"] = _deck(message)[1]
+    return view
+
+
+async def list_chat_provenance(
+    session: AsyncSession, user_id: str, chat_id: str
+) -> dict | None:
+    """A chat's per-message ACTIVE provenance records plus the
+    aggregate summary (P-075). None when the chat is missing
+    or foreign."""
+    if await _get_owned_chat(session, user_id, chat_id) is None:
+        return None
+    history = await _ordered_messages(session, chat_id)
+    messages = []
+    views = []
+    for message in history:
+        view = prov_mod.active_view(message, _deck(message)[1])
+        views.append(view)
+        messages.append({
+            "message_id": message.id, "role": message.role,
+            "provenance": view,
+        })
+    return {
+        "chat_id": chat_id,
+        "messages": messages,
+        "summary": prov_mod.summarise_provenance(views),
+    }

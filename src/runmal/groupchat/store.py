@@ -18,6 +18,7 @@ import json
 from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from runmal.chats import provenance as prov_mod
 from runmal.characters.service import get_character
 from runmal.db.models import Character, Chat, ChatEvent, Group, GroupMember, Message
 from runmal.groupchat.policies import get_policy
@@ -62,6 +63,8 @@ def message_to_dict(message: Message) -> dict:
         "content": message.content,
         "speaker_id": message.speaker_id,
         "speaker_name": message.speaker_name,
+        "provenance": prov_mod.active_view(
+            message, getattr(message, "swipe_id", 0) or 0),
         "created_at": message.created_at.isoformat(),
         "updated_at": message.updated_at.isoformat() if message.updated_at else None,
     }
@@ -264,6 +267,8 @@ async def append_message(
     group_id: str,
     speaker: str,
     content: str,
+    *,
+    provenance: dict | None = None,
 ) -> Message | None:
     """Append a transcript message with explicit speaker identity.
 
@@ -286,12 +291,23 @@ async def append_message(
             raise ValueError(f"speaker is not a group member: {speaker}")
         role, speaker_id, speaker_name = "assistant", speaker, names[speaker]
 
+    if provenance is None:
+        provenance = prov_mod.build_record(
+            origin_kind="manual" if speaker == USER_SPEAKER
+            else "group_declared",
+            model=prov_mod.model_section(status="not_applicable"),
+            preset=prov_mod.preset_section(status="not_applicable"),
+            lore=prov_mod.lore_section(status="not_applicable"),
+            speaker={"speaker_id": speaker_id,
+                     "speaker_name": speaker_name})
     message = Message(
         chat_id=chat.id,
         role=role,
         content=content,
         speaker_id=speaker_id,
         speaker_name=speaker_name,
+        provenance_json=prov_mod.dump_document(
+            prov_mod.build_document(provenance)),
     )
     session.add(message)
     await session.flush()

@@ -106,6 +106,9 @@ class Message(Base):
     # row lives in memories), and explicit in-chat order once
     # materialised (NULL = legacy created_at order).
     variant_history_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
+    # Message provenance (P-075, PROVISIONAL 0040): ONE JSON production
+    # record per message, per swipe (runmal.chats.provenance).
+    provenance_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
     pinned: Mapped[bool] = mapped_column(nullable=False, default=False)
     position: Mapped[int | None] = mapped_column(Integer, nullable=True, default=None)
     # Per-message speaker identity (S210): the speaking character's id and a
