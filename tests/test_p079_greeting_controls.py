@@ -583,11 +583,11 @@ async def test_export_full_deck_and_fork_active_line(tmp_path):
         assert fork is not None
         rows = await svc.get_history(session, user, fork.id)
         state = message_to_dict(rows[0])
-    # P-066 fork copies carry the ACTIVE alternate only, for every
-    # message by design (branches._copy_message): the greeting's
-    # active line survives as a one-card deck, like any message.
+    # P-078 fixed branches._copy_message to carry the whole deck
+    # (the old active-only copy silently destroyed swipe decks on
+    # fork): the greeting's full deck and active index ride along.
     assert state["content"] == ALTS[0]
-    assert state["swipes"] == [ALTS[0]] and state["swipe_id"] == 0
+    assert state["swipes"] == DECK and state["swipe_id"] == 1
 
 
 def test_api_undo_removes_seeded_greeting(app_client):
