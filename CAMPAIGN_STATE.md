@@ -5738,3 +5738,77 @@ P-088 BANKED - Web Search plugin (Part VI)
     /tmp/p088_confirm.log).
     No heal needed at this banking.
     Next in roadmap order: P-089.
+P-089 BANKED - Quick Replies plugin (Part VI)
+    - team-01 commit ae6bddd merged
+    (no-ff) into
+    yrsa/two-mirrors-build as 71533ff
+    and pushed; ls-remote verified
+    71533ff299709803f99fcdec860db451dfdbf013
+    (see WAVE_PLAN update). Evidence
+    (team-01 worktree
+    hidden_files/P089_EVIDENCE.md):
+    battery 24 passed, neighbours
+    228 passed, team full suite 3674
+    passed / 4 skipped / 0 failed
+    (= 3650 + 24, exact, on its base).
+    Slice:
+    src/runmal/plugins/quick_replies.py
+    (new - user-defined one-tap
+    macros, chained steps with
+    variable threading, input
+    senders with honest P-075
+    receipts, durable per-user
+    file store),
+    src/runmal/plugins/router.py
+    (routes appended),
+    tests/test_p089_quick_replies.py
+    (24 tests),
+    docs/QUICK_REPLIES_2026-11-07.md,
+    clean-room log append. 5 files.
+    Migration: NONE (head stays
+    0041; "0042" not in MIGRATIONS,
+    pinned by battery).
+    build_registry / create_app
+    deliberately unchanged by
+    design. Defects: none in
+    shipped code; one
+    battery-authoring defect
+    (MIGRATIONS tuple shape) was
+    fixed in the test itself
+    before the green run; no
+    discovered bug left unfixed.
+    Design honesty: definitions
+    ride the durable per-user
+    file store
+    (data_dir()/quick_replies/<user_id>.json),
+    no migration; chained steps
+    run in declared order with a
+    persisted per-step execution
+    record; strict macro mode at
+    execution, so unknown macros
+    fail a step loudly instead
+    of posting raw text; input
+    senders post a user-role
+    message whose receipt still
+    names the quick-reply road
+    (origin kind stays in the
+    closed P-075 vocabulary);
+    sandbox grants are the empty
+    frozenset; no hidden
+    generation.
+    Merge conflict only in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    (append-vs-append), resolved
+    keeping the P-088 and P-089
+    entries exactly once;
+    py_compile clean on the merged
+    tree. Combined batteries on the
+    merged tree: 56 passed / 0
+    failed (= 32 + 24 exact).
+    Forge confirmation suite:
+    3706 passed / 4 skipped / 0
+    failed (= 3682 P-088
+    confirmation + 24, exact; log
+    /tmp/p089_forge_suite.log).
+    No heal needed at this banking.
+    Next in roadmap order: P-090.
