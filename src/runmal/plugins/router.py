@@ -388,3 +388,252 @@ async def quick_replies_execute(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="unknown quick reply or chat")
     return record
+
+
+# -- Expressions surface (P-092) ------------------------------------------
+# Declared expression sets per character + current-expression
+# selection per chat with provenance, in the house router idiom
+# (session + owner deps, ValueError -> 422 via _visible, unknown
+# ids -> 404, create -> 201). The store, binding and selection
+# roads live in runmal.plugins.expressions; imports are lazy so
+# this router's import graph is unchanged at module load.
+
+
+@router.get("/expressions/sets")
+async def expressions_sets_list(
+    character_id: str | None = None,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    from runmal.plugins import expressions as ex
+
+    try:
+        if character_id is not None:
+            expr_set = ex.get_set(user_id, character_id)
+            return [expr_set] if expr_set is not None else []
+        return ex.list_sets(user_id)
+    except ValueError as exc:
+        raise _visible(exc) from exc
+
+
+@router.post("/expressions/sets", status_code=status.HTTP_201_CREATED)
+async def expressions_sets_create(
+    body: dict,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    from runmal.characters import service as characters_svc
+    from runmal.plugins import expressions as ex
+
+    character_id = body.get("character_id") if isinstance(body, dict) else None
+    if character_id is not None:
+        try:
+            character = await characters_svc.get_character(
+                session, user_id, character_id)
+        except Exception:
+            character = None
+        if character is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"unknown character: {character_id}")
+    try:
+        return ex.create_set(user_id, body)
+    except ValueError as exc:
+        raise _visible(exc) from exc
+
+
+@router.get("/expressions/sets/{character_id}")
+async def expressions_set_detail(
+    character_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    from runmal.plugins import expressions as ex
+
+    try:
+        expr_set = ex.get_set(user_id, character_id)
+    except ValueError as exc:
+        raise _visible(exc) from exc
+    if expr_set is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"unknown expression set: {character_id}")
+    return expr_set
+
+
+@router.put("/expressions/sets/{character_id}")
+async def expressions_set_update(
+    character_id: str,
+    body: dict,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    from runmal.plugins import expressions as ex
+
+    try:
+        expr_set = ex.update_set(user_id, character_id, body)
+    except ValueError as exc:
+        raise _visible(exc) from exc
+    if expr_set is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"unknown expression set: {character_id}")
+    return expr_set
+
+
+@router.delete("/expressions/sets/{character_id}")
+async def expressions_set_delete(
+    character_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    from runmal.plugins import expressions as ex
+
+    try:
+        deleted = ex.delete_set(user_id, character_id)
+    except ValueError as exc:
+        raise _visible(exc) from exc
+    if not deleted:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"unknown expression set: {character_id}")
+    return {"deleted": True, "character_id": character_id}
+
+
+@router.get("/expressions/sets/{character_id}/bindings")
+async def expressions_set_bindings(
+    character_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    from runmal.plugins import expressions as ex
+
+    try:
+        report = await ex.binding_report(session, user_id, character_id)
+    except ValueError as exc:
+        raise _visible(exc) from exc
+    if report is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"unknown character: {character_id}")
+    return report
+
+
+@router.post("/expressions/sets/{character_id}/derive")
+async def expressions_set_derive(
+    character_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    from runmal.plugins import expressions as ex
+
+    try:
+        draft = await ex.derive_set_from_assets(session, user_id, character_id)
+    except ValueError as exc:
+        raise _visible(exc) from exc
+    if draft is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"unknown character: {character_id}")
+    return draft
+
+
+@router.get("/expressions/current")
+async def expressions_current(
+    chat_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    from runmal.plugins import expressions as ex
+
+    try:
+        current = ex.current_expression(user_id, chat_id)
+    except ValueError as exc:
+        raise _visible(exc) from exc
+    if current is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"no current expression for chat: {chat_id}")
+    return current
+
+
+@router.get("/expressions/history")
+async def expressions_history(
+    chat_id: str | None = None,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    from runmal.plugins import expressions as ex
+
+    try:
+        return ex.list_history(user_id, chat_id=chat_id)
+    except ValueError as exc:
+        raise _visible(exc) from exc
+
+
+@router.get("/expressions/inspect")
+async def expressions_inspect(
+    chat_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    from runmal.plugins import expressions as ex
+
+    try:
+        state = await ex.inspect_state(session, user_id, chat_id)
+    except ValueError as exc:
+        raise _visible(exc) from exc
+    if state is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"unknown chat: {chat_id}")
+    return state
+
+
+@router.post("/expressions/select")
+async def expressions_select(
+    body: dict,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    from runmal.plugins import expressions as ex
+
+    chat_id = body.get("chat_id") if isinstance(body, dict) else None
+    name = body.get("name") if isinstance(body, dict) else None
+    if not chat_id or not name:
+        raise _visible(ValueError("request body must carry 'chat_id' and 'name'"))
+    try:
+        selection = await ex.select_for_chat(
+            session, user_id, chat_id, name,
+            source=body.get("source"), reason=body.get("reason"),
+            message_id=body.get("message_id"))
+    except ValueError as exc:
+        raise _visible(exc) from exc
+    if selection is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="unknown chat")
+    return selection
+
+
+@router.post("/expressions/clear")
+async def expressions_clear(
+    body: dict,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    from runmal.plugins import expressions as ex
+
+    chat_id = body.get("chat_id") if isinstance(body, dict) else None
+    if not chat_id:
+        raise _visible(ValueError("request body must carry a 'chat_id'"))
+    try:
+        cleared = ex.clear_selection(
+            user_id, chat_id, reason=body.get("reason"))
+    except ValueError as exc:
+        raise _visible(exc) from exc
+    if not cleared:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"no current expression for chat: {chat_id}")
+    return {"cleared": True, "chat_id": chat_id}
