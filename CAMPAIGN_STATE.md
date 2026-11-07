@@ -3596,3 +3596,26 @@ P-042 BANKED - lorebook editor depth: the editor UI now
     now carries P-031 recursive_scan +
     max_recursion_depth. Next in roadmap order: P-043
     (team-01, activation inspector).
+
+P-043 BANKED - activation inspector: why did this entry
+    fire, explained as data - team-01 commit 92a8e21
+    merged (no-ff) into yrsa/two-mirrors-build as 7f97d86
+    and pushed; ls-remote verified
+    7f97d867049a833425a1b0192b8b398732000105.
+    Evidence (team-01 worktree hidden_files/P043_EVIDENCE.md
+    and logs): battery 26/26, neighbours 891, full suite
+    2046 passed / 4 skipped / 0 failed on its base
+    (= 2020 + 26, exact). Forge confirmation suite at the
+    merged tree: 2061 passed / 4 skipped / 0 failed
+    (= 2035 + 26, exact); s503 did not fire. One merge
+    conflict (lorebooks/router.py: P-042 editor-schema
+    route vs P-043 inspect route, both additive) resolved
+    keeping BOTH routes; combined batteries 41 passed.
+    NO migration taken by P-043; head stays 0032 (no 0033
+    exists in this tree; the reservation lapsed unused).
+    The slice was completed by a finisher lead continuing
+    the cancelled lead's landed uncommitted work; review
+    found no defect. Payload schema
+    runmal-p043-activation-inspection-v1 for Part XIII's
+    Inspector. Next in roadmap order: P-044 (team-02,
+    token accounting).
