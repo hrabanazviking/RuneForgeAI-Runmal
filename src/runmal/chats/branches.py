@@ -76,8 +76,20 @@ def branch_info(chat: Chat) -> dict:
 
 
 async def _history(session: AsyncSession, chat_id: str) -> list[Message]:
+    # Display order, mirroring service._ordered_messages:
+    # materialised rows by position first, legacy rows by
+    # created_at. Ordering by created_at alone misorders a
+    # materialised chat whose timestamps interleave (an import
+    # mixing dated and undated messages, P-078 review).
     result = await session.execute(
-        select(Message).where(Message.chat_id == chat_id).order_by(Message.created_at)
+        select(Message)
+        .where(Message.chat_id == chat_id)
+        .order_by(
+            Message.position.is_(None),
+            Message.position,
+            Message.created_at,
+            Message.id,
+        )
     )
     return list(result.scalars().all())
 
@@ -92,17 +104,24 @@ def _aware(value):
 
 
 def _copy_message(source: Message, chat_id: str, created_at=None) -> Message:
+    # P-078 fix: a branch copy previously dropped the source's
+    # swipe deck (swipes_json/swipe_id) and collapsed provenance
+    # to swipe 0, so forking ANY chat silently destroyed its
+    # decks -- service.copy_message_to_branch (P-068) already
+    # copies them. Mirror that road: deck, active index, variant
+    # history and the full per-swipe provenance ride along.
     return Message(
         chat_id=chat_id,
         role=source.role,
         content=source.content,
+        swipes_json=getattr(source, "swipes_json", "[]"),
+        swipe_id=getattr(source, "swipe_id", 0),
         speaker_id=source.speaker_id,
         speaker_name=source.speaker_name,
+        variant_history_json=getattr(source, "variant_history_json", "[]"),
         provenance_json=prov_mod.dump_document(
             prov_mod.document_for_copy(
-                {"schema": prov_mod.PROVENANCE_SCHEMA, "recorded": True,
-                 "recorded_at": None,
-                 "swipes": {"0": prov_mod.active_record(source)}},
+                source,
                 source_chat_id=source.chat_id,
                 source_message_id=source.id,
                 source_content_sha256=hashlib.sha256(
@@ -189,8 +208,10 @@ async def fork_chat(
     branch.branch_merge_of_json = "[]"
     session.add(branch)
     await session.flush()
-    for message in prefix:
-        session.add(_copy_message(message, branch.id))
+    for position, message in enumerate(prefix):
+        copied = _copy_message(message, branch.id)
+        copied.position = position
+        session.add(copied)
     await session.flush()
     await _record_event(
         session,

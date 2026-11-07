@@ -504,6 +504,31 @@ def _parse_native(doc: dict, text: str, bom_stripped: bool) -> ImportResult:
         send_date_parsed: datetime | None = None
         if "created_at" in entry:
             send_date_raw, send_date_parsed, _u = _date_fields(entry["created_at"])
+        # P-078: a native export document carries each message's
+        # live swipe deck (service.message_to_dict emits `swipes`
+        # + `swipe_id`); the P-020 parser dropped them, so a
+        # native round-trip silently lost every deck. Read them
+        # with the JSONL road's discipline: string members only,
+        # swipe_id coerced + clamped, `content` authoritative.
+        deck: list[str] = [content]
+        deck_id = 0
+        has_deck = False
+        raw_deck = entry.get("swipes")
+        if isinstance(raw_deck, list):
+            kept = [item for item in raw_deck if isinstance(item, str)]
+            if kept:
+                deck = kept
+                has_deck = True
+                deck_id = _coerce_swipe_id(entry.get("swipe_id", 0))
+                deck_id = min(max(deck_id, 0), len(deck) - 1)
+                if not isinstance(content_value, str) or content == "":
+                    # No usable content field: the deck's active
+                    # entry IS the message text (design rule:
+                    # content = deck[swipe_id]). An empty content
+                    # must never overwrite the deck's real text.
+                    content = deck[deck_id]
+                elif deck[deck_id] != content:
+                    deck[deck_id] = content
         chat.messages.append(
             ImportedMessage(
                 role=role,
@@ -512,9 +537,9 @@ def _parse_native(doc: dict, text: str, bom_stripped: bool) -> ImportResult:
                 is_system=(role == "system"),
                 send_date_raw=send_date_raw,
                 send_date_parsed=send_date_parsed,
-                swipes=[content],
-                swipe_id=0,
-                has_explicit_swipes=False,
+                swipes=deck,
+                swipe_id=deck_id,
+                has_explicit_swipes=has_deck,
                 swipe_info=[],
                 has_swipe_info=False,
                 extra={},
