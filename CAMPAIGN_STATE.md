@@ -3708,3 +3708,44 @@ P-046 BANKED - performance: 10,000-entry lorebook scans
     direct Pi 4 run remains the one-off validation.
     Next in roadmap order: P-047 (team-02, migration),
     then the P-048 Part III gate.
+
+P-047 BANKED - migration: existing lorebooks upgraded
+    in place, behaviour-preserving, fixture-proven -
+    team-02 commit 5a3dfd9 merged (no-ff, clean) into
+    yrsa/two-mirrors-build as c54be6c and pushed;
+    ls-remote verified
+    c54be6c711a436be5f3b42d3ad4001486c02a323.
+    Evidence (team-02 worktree hidden_files/P047_EVIDENCE.md
+    and logs): battery 15/15, neighbours 913, full suite
+    2130 passed / 4 skipped / 0 failed on its base
+    (= 2115 + 15, exact); s503 did not fire. Forge
+    confirmation suite at the merged tree: 2157 passed /
+    4 skipped / 0 failed (= 2142 + 15, exact).
+    NO new DB migration; head stays 0032.
+    Coverage: file layer - same-format in-place upgrade
+    (native files gain every current field explicitly,
+    unknown keys preserved verbatim, aliases
+    canonicalised, idempotent, input never mutated;
+    world-info files refreshed via interop export);
+    inspect reports generation + missing-field counts
+    under schema runmal-p047-lorebook-upgrade-v1.
+    DB layer - upgrade_database snapshots lore tables
+    raw, runs migrate_to_head, proves every pre-existing
+    row/column byte-identical with new columns at exact
+    0024-0032 defaults; fixture-proven on a DB frozen at
+    0023, incl. preview_activation dict equality.
+    Defects fixed in-slice: (1) transfer._native_entry
+    ignored use_probability - a native entry with the
+    gate off stored its raw probability (now folds both
+    spellings); (2) upgrade_database wrote
+    schema_migrations into a no-lorebook database via a
+    side effect (now reads the revision raw).
+    COMMISSIONED DISCOVERY (recorded in P047_EVIDENCE.md,
+    not fixed here - it changes P-039 materialisation
+    semantics and needs its own slice/battery):
+    binding.normalise_book_entry returns no depth/role
+    keys, so embedded character-book entries cannot
+    carry P-038 placement into materialisation.
+    Commissioned as the immediate slice after the
+    P-048 gate.
+    Next in roadmap order: P-048 (Part III gate).
