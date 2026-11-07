@@ -5,6 +5,14 @@ deterministically. Nothing is silently lost: every input parameter ends up
 either in the output ``params``, in ``mapped`` (renamed, same value), or in
 ``dropped`` (with an explicit reason). Provider quirks live here and only
 here, behind the backend seam.
+
+P-053 alignment: the profiles below are kept in exact agreement with
+the adapters' own declared sampler sets (Ollama serves ``min_p`` and
+``context_length`` — mapped to ``min_p`` / ``num_ctx`` here exactly as
+the adapter's own options mapping does; OpenAI's unserved canonical
+controls carry named reasons instead of the generic unknown-parameter
+drop). ``runmal.backends.capabilities.audit_truth`` pins the agreement
+so the two truth sources cannot drift apart again silently.
 """
 
 from __future__ import annotations
@@ -57,8 +65,13 @@ OPENAI_PROFILE = BackendProfile(
     },
     unsupported={
         "top_k": "OpenAI chat completions has no top_k parameter",
+        "min_p": "OpenAI chat completions has no min_p parameter",
         "repetition_penalty": (
             "OpenAI uses frequency_penalty/presence_penalty instead"
+        ),
+        "context_length": (
+            "context length is a model property on OpenAI chat "
+            "completions, not a per-request parameter"
         ),
     },
 )
@@ -69,10 +82,12 @@ OLLAMA_PROFILE = BackendProfile(
         "temperature": "temperature",
         "top_p": "top_p",
         "top_k": "top_k",
+        "min_p": "min_p",
         "seed": "seed",
         "stop": "stop",
         "max_tokens": "num_predict",
         "repetition_penalty": "repeat_penalty",
+        "context_length": "num_ctx",
     },
     unsupported={
         "frequency_penalty": "Ollama options have no frequency_penalty",

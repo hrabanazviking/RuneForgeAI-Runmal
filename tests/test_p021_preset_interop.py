@@ -628,14 +628,20 @@ def test_imported_preset_drives_generation_manifest(
     assert manifest["params"]["temperature"] == 0.9
     assert manifest["params"]["num_predict"] == 350  # max_tokens mapped
     assert manifest["params"]["repeat_penalty"] == 1.08  # rep. mapped
+    assert manifest["params"]["min_p"] == 0.05  # P-053: served, not dropped
+    assert manifest["params"]["num_ctx"] == 8192  # context_length mapped
     assert {(m["source"], m["dest"]) for m in manifest["mapped"]} == {
         ("max_tokens", "num_predict"),
         ("repetition_penalty", "repeat_penalty"),
+        ("context_length", "num_ctx"),
     }
     dropped = [d["param"] for d in manifest["dropped"]]
-    for param in ("frequency_penalty", "presence_penalty",
-                  "min_p", "context_length"):
+    for param in ("frequency_penalty", "presence_penalty"):
         assert param in dropped, param
+    # P-053 deliberate update: min_p/context_length were pinned here as
+    # dropped by the drifted S208 profile; the adapter serves both.
+    for param in ("min_p", "context_length"):
+        assert param not in dropped, param
 
 
 def test_sampling_params_from_imported_bag() -> None:
@@ -658,8 +664,14 @@ def test_s208_ollama_filter_on_imported_bag() -> None:
     assert result.params["repeat_penalty"] == 1.08
     assert result.params["num_predict"] == 350
     assert result.params["temperature"] == 0.9
+    # P-053 deliberate update: the S208 Ollama profile previously
+    # dropped min_p/context_length as "unknown" although the Ollama
+    # adapter declares and honours both (min_p, num_ctx) — the drift
+    # P-053's capability-truth audit exists to catch. They now flow.
+    assert result.params["min_p"] == 0.05
+    assert result.params["num_ctx"] == 8192
     dropped = [d.param for d in result.dropped]
-    assert "min_p" in dropped and "context_length" in dropped
+    assert "min_p" not in dropped and "context_length" not in dropped
 
 
 # --- migration (0019) + portable archive ------------------------------------
