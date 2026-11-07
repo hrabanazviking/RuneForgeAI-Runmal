@@ -4298,3 +4298,45 @@ P-061 BANKED - Grammar/JSON-mode as a prompt citizen:
     inspector echo + GET /debug/structured-modes;
     preset bundles gain a structured_output
     section. Next in roadmap order: P-062.
+P-062 BANKED - Multi-model prompt profiles: one
+    chat, swappable model profiles - team-03
+    commit b5803fb merged (no-ff) into
+    yrsa/two-mirrors-build as e90a753 and pushed;
+    ls-remote verified (see WAVE_PLAN update).
+    Evidence (team-03 worktree
+    hidden_files/P062_EVIDENCE.md): battery 19
+    passed, neighbours 333 passed, team full
+    suite 2727 passed / 4 skipped / 1 failed
+    (s503 contention flake, solo 4/4) on its
+    base. Forge confirmation suite at the merged
+    tree: 2858 passed / 4 skipped / 0 failed (=
+    2839 + 19, exact). NO migration: the merged
+    head stays 0035. Merge conflicts in
+    prompt/service.py, prompt/inspect.py and
+    prompt/router.py resolved as additive unions
+    keeping BOTH slices' work: P-057 note_/ph_
+    aliasing verified surviving in inspect.py;
+    P-058 governor + P-059 preview + P-061
+    structured echo/endpoint + P-062 profile
+    echo/endpoints all present and grep-verified;
+    the shared closing brace of structured_echo's
+    return was restored after the union (the one
+    merge-resolution repair). Combined batteries
+    at the merged tree (P-062 + P-061 + P-060 +
+    P-052..P-059 prompt set): 370 passed. Slice:
+    prompt/model_profiles.py - ModelProfile binds
+    model + templates + sampler set as one
+    swappable unit; sampler bag validated by
+    presets validate_params against the P-052
+    set as it stands at merged truth (composes
+    with P-060 logit_bias as the 29th control and
+    P-061's structured bundle section - full
+    suite green proves the composition, no pin
+    heal needed); partition_profile_sampler
+    judges sampler keys by the named backend's
+    declared set; diff_profiles reports per-field
+    and per-key changes; inspect gains
+    model_profile with explicit > profile >
+    default precedence; GET /debug/model-profiles
+    + POST /debug/model-profile-diff. Next in
+    roadmap order: P-063.
