@@ -4365,3 +4365,28 @@ P-063 BANKED - Prompt import/export packs (Part
     presets and bundles as one portable unit.
     Part IV now has only the P-064 gate left.
     Next in roadmap order: P-064 (Part IV gate).
+P-064 BANKED - Part IV gate (Part IV, P-049..P-064) -
+    PART IV COMPLETE / GATE PASSED. team-02 commit
+    ed2cadd merged (no-ff) into
+    yrsa/two-mirrors-build as 619e831 and pushed;
+    ls-remote verified (see WAVE_PLAN update).
+    Evidence (team-02 worktree
+    hidden_files/P064_EVIDENCE.md): gate battery 13
+    passed + gate-record 10 passed, neighbours 699
+    passed, team full suite 2898 passed / 4 skipped
+    / 0 failed (= 2875 + 23 exact; first run lone
+    s503 failure solo-re-ran 4/4, classified
+    contention). Forge confirmation at the merged
+    tree: gate battery + gate-record 23 passed,
+    full suite 2898 passed / 4 skipped / 0 failed
+    (exact). NO migration: head stays 0035. Merge:
+    CLEAN, no conflicts (footprint tests + docs
+    only: tests/test_p064_part_iv_gate.py,
+    tests/test_p064_gate_record.py,
+    docs/PART_IV_GATE_2026-11-07.md). Gate verdict
+    PASSED; carried findings F1 (grammar served on
+    no backend) and F2 (live generation does not
+    route through the composer) - both pre-carried,
+    no new defect. Part IV (P-049..P-064) is now
+    COMPLETE. Next in roadmap order: P-065 (Part V
+    opener).
