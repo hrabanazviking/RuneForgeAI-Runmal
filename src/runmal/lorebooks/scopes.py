@@ -71,6 +71,7 @@ from runmal.db.models import (
     LorebookScope,
     LoreEntry,
 )
+from runmal.lorebooks.accounting import account_from_rows
 from runmal.lorebooks.preview import preview_activation
 from runmal.lorebooks.windows import ScanSettings
 
@@ -553,6 +554,18 @@ async def _list_entries_service_order(session: AsyncSession, book_id: str) -> li
     return list(result.scalars().all())
 
 
+def _layer_account(rows, layer_budget):
+    """P-044 account for one layer's rows.
+
+    Scope budgets may be 0 (a muted layer: every included row
+    was trimmed to scope_over_budget, so tokens_used is 0 and
+    budget_remaining is 0 -- a real zero budget, never conflated
+    with None/unlimited). account_from_rows accepts 0 for this
+    reason; per-book budgets (>= 1 or None) never pass 0 here.
+    """
+    return account_from_rows(rows, token_budget=layer_budget).to_dict()
+
+
 def _apply_layer_budget(preview: dict, layer_budget: int | None) -> dict:
     """Trim one layer's composed preview to its scope budget. PURE-ish.
 
@@ -568,6 +581,8 @@ def _apply_layer_budget(preview: dict, layer_budget: int | None) -> dict:
     """
     if layer_budget is None:
         preview["scope_budget"] = None
+        if "token_account" in preview:
+            preview["token_account"] = _layer_account(preview["entries"], layer_budget)
         return preview
     used = 0
     for row in preview.get("entries", []):
@@ -581,6 +596,10 @@ def _apply_layer_budget(preview: dict, layer_budget: int | None) -> dict:
         used += tokens
     preview["tokens_used"] = used
     preview["scope_budget"] = layer_budget
+    if "token_account" in preview:
+        # Rows lack contents here, so no contents are passed:
+        # untriggered_tokens is honestly None in the rebuild.
+        preview["token_account"] = _layer_account(preview["entries"], layer_budget)
     return preview
 
 
@@ -677,6 +696,10 @@ async def layered_preview(
             },
             layer_budget,
         )
+        # P-044: layered accounts count only rows the budget
+        # passes counted (no contents are carried on merged
+        # rows), so untriggered_tokens is None.
+        layer_preview["token_account"] = _layer_account(merged_rows, layer_budget)
         layers_out[kind] = layer_preview
         included = sum(
             1 for r in merged_rows if r.get("status") == "included"
@@ -695,7 +718,7 @@ async def layered_preview(
             }
         )
         total_tokens += layer_preview["tokens_used"]
-    return {
+    result = {
         "layered": True,
         "layer_order": list(LAYER_ORDER),
         "chat_id": chat_id,
@@ -706,3 +729,10 @@ async def layered_preview(
         "shadowed": list(resolved.shadowed),
         "tokens_used": total_tokens,
     }
+    # P-044: aggregate account across all layers; layers have
+    # separate budgets, so the top level uses token_budget=None.
+    result["token_account"] = account_from_rows(
+        [row for layer in layers_out.values() for row in layer.get("entries", [])],
+        token_budget=None,
+    ).to_dict()
+    return result
