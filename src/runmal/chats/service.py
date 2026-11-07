@@ -478,6 +478,12 @@ async def delete_chat(session: AsyncSession, user_id: str, chat_id: str) -> bool
         remove_chat_checkpoints(user_id, chat_id)
     except Exception:
         pass
+    try:
+        from runmal.chats.databank import remove_chat_databank
+
+        remove_chat_databank(user_id, chat_id)
+    except Exception:
+        pass
     return True
 
 

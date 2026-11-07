@@ -1,7 +1,8 @@
 """Chat service + API (S107) + chat file interop (P-020)
 + branches (P-066)
 + continue & impersonate (P-069).
-+ chat search (P-072).
++ chat search (P-072)
++ data bank (P-074).
 
 The file-interop surface parses ST-shaped chat JSONL and
 Runmal native export documents into the typed contract in
@@ -27,6 +28,23 @@ from runmal.chats.continue_impersonate import (
     discard_impersonate,
     impersonate_draft,
     resolve_continue_mode,
+)
+from runmal.chats.databank import (
+    DataBankError,
+    accounting_to_dict,
+    attach_document,
+    detach_document,
+    document_to_dict,
+    get_budget,
+    get_document,
+    list_documents,
+    load_prompt_selection,
+    remove_chat_databank,
+    render_document,
+    select_documents,
+    set_budget,
+    slots_for_selection,
+    update_document,
 )
 from runmal.chats.search import (
     SearchError,
@@ -56,6 +74,21 @@ from runmal.chats.filemodels import (
 )
 
 __all__ = [
+    "update_document",
+    "slots_for_selection",
+    "set_budget",
+    "select_documents",
+    "render_document",
+    "remove_chat_databank",
+    "load_prompt_selection",
+    "list_documents",
+    "get_document",
+    "get_budget",
+    "document_to_dict",
+    "detach_document",
+    "attach_document",
+    "accounting_to_dict",
+    "DataBankError",
     "GenerationFailedError",
     "accept_impersonate",
     "build_continue_messages",
