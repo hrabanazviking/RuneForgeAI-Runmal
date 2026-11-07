@@ -358,7 +358,7 @@ def test_oversize_input_refused(monkeypatch):
 
 
 def test_no_migration_head_stays_0032():
-    assert MIGRATIONS[-1][0] == "0036"  # head moved by P-065 (PROVISIONAL 0036)
+    assert MIGRATIONS[-1][0] == "0039"  # head moved by P-065 (PROVISIONAL 0036)
 
 
 # ------------------------------------------------------------------

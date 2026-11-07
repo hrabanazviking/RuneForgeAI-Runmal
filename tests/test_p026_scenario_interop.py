@@ -539,24 +539,24 @@ def test_api_requires_auth(tmp_path, monkeypatch) -> None:
 
 
 def test_head_revision_is_0029_p037() -> None:
-    assert MIGRATIONS[-1][0] == "0036"  # head moved by P-065 (PROVISIONAL 0036)
+    assert MIGRATIONS[-1][0] == "0039"  # head moved by P-065 (PROVISIONAL 0036)
 def test_head_revision_is_0028_p036() -> None:
-    assert MIGRATIONS[-1][0] == "0036"  # head moved by P-065 (PROVISIONAL 0036)
+    assert MIGRATIONS[-1][0] == "0039"  # head moved by P-065 (PROVISIONAL 0036)
 
 
 def test_migrated_temp_db_head_is_0029_p037(tmp_path) -> None:
     db_path = tmp_path / "migrated.db"
     migrate_to_head(db_path)
-    assert current_revision(db_path) == "0036"
+    assert current_revision(db_path) == "0039"
 
 
 def test_head_revision_is_0030_p038() -> None:
-    assert MIGRATIONS[-1][0] == "0036"  # head moved by P-065 (PROVISIONAL 0036)
+    assert MIGRATIONS[-1][0] == "0039"  # head moved by P-065 (PROVISIONAL 0036)
 
 
 def test_migrated_temp_db_head_is_0030_p038(tmp_path) -> None:
     db_path = tmp_path / "migrated.db"
     migrate_to_head(db_path)
-    assert current_revision(db_path) == "0036"
-    assert current_revision(db_path) == "0036"
+    assert current_revision(db_path) == "0039"
+    assert current_revision(db_path) == "0039"
     assert current_revision(db_path) == MIGRATIONS[-1][0]
