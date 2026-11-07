@@ -5016,3 +5016,86 @@ P-078 BANKED - Chat import surgery
     unmappable only. No new defect
     found at banking. Next in roadmap
     order: P-079.
+P-079 BANKED - Quiet/greeting controls
+    (Part V) - team-02 commit c9a0b2c
+    merged (no-ff) into
+    yrsa/two-mirrors-build as 7ca082d
+    and pushed; ls-remote verified
+    (see WAVE_PLAN update). Evidence
+    (team-02 worktree
+    hidden_files/P079_EVIDENCE.md):
+    battery 50 passed, neighbours 243
+    passed, team full suite 3352
+    passed / 4 skipped / 0 failed
+    (= 3302 + 50 exact on its base).
+    Slice: chats/greetings.py pure
+    deck+choice contract (first /
+    index / random / quiet modes,
+    strict decode, seeded-random
+    honesty); create_chat seeds the
+    greeting as the first message
+    with the whole deck as swipes
+    and one P-075 provenance record
+    per alternate; seed_greeting
+    seeds an existing EMPTY chat
+    (quiet-created or persona bound
+    late); GET /characters/{id}/
+    greetings deck view; POST
+    /chats/{id}/greeting endpoint
+    (ValueError maps to 422).
+    Migration: NONE (the deck rides
+    the P-065 message columns; the
+    battery pins 0042 not in
+    MIGRATIONS, head still 0041).
+    Merge: ONE conflict, in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md,
+    resolved as an additive union -
+    the P-078 and P-079 clean-room
+    entries both kept. Heals at
+    banking (2): (1) the in-slice fix
+    the lead flagged and left
+    unamended - seed_greeting refused
+    group rooms only incidentally
+    (a room's character_id is None);
+    it now refuses EXPLICITLY on
+    chat.group_id (ValueError -> 422)
+    ahead of the character check,
+    pinned by a battery test that
+    binds a character to a group
+    room via set_chat_persona and
+    demands the refusal (heal
+    eb78249; battery 50 -> 51).
+    (2) The battery's fork
+    expectation followed P-078's
+    _copy_message fix: a fork now
+    carries the whole deck + active
+    index - the active-only copy the
+    test pinned was the deck-loss
+    behaviour P-078 repaired;
+    expectation updated at equal
+    strength with the reason inline,
+    no assertion weakened (heal
+    a4a3f73). Combined affected
+    batteries on the merged tree
+    (P-079 + P-078 + P-020 + P-030 +
+    P-065..068 + P-070 + P-073 +
+    P-075..077 + S106 + S107 + S210
+    x2 + S212 x2 + S602): 533 passed
+    / 0 failed. Forge confirmation
+    suite: 3388 passed / 4 skipped /
+    0 failed (= 3337 + 50 + 1 heal,
+    exact; log
+    hidden_files/p079_banking_fullsuite.log).
+    Contention note: the first
+    confirmation run hung inside
+    test_s804_doctor's PortAudio
+    device probe under cross-campaign
+    load (load avg ~14, a Mythic
+    Coder full suite running); the
+    doctor file passes solo (8 passed
+    in 0.67s) and the re-run at load
+    ~2 completed fully green -
+    contention, not a defect. No new
+    defect found at banking beyond
+    the two heals above. Next in
+    roadmap order: P-080.
