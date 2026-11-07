@@ -253,7 +253,7 @@ async def stream_generation(
     finish: str | None = None
     saw_error = False
     async for event in generation_service.generate_events(
-        request_id, messages=messages, backend=backend
+        request_id, messages=messages, backend=backend, chat_id=chat_id
     ):
         if event["type"] == "token":
             parts.append(event["text"])

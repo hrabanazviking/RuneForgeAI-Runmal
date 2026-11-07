@@ -728,3 +728,24 @@ source in §0(2) and appends its entry here:
   line. No SillyTavern or Voxta source code was read and
   no file was downloaded; the slice's tests are authored
   fresh in the test module (P-005 discipline).
+- **P-081 (2026-11-07, public behaviour + own tree
+  only):** the Plugin API v1 — Part VI's opener — is
+  built entirely from Runmal's own bridge row
+  (S601–S611): the versioned bridge protocol becomes
+  PLUGIN_API_VERSION, the bridge scopes' exact-match
+  grammar (INV-029) becomes the manifest's closed
+  capability/permission vocabularies, the bridge
+  /capabilities document becomes the plugin
+  introspection document, and the bridge event outbox
+  becomes fire-and-observe chat events — the Samtal
+  adapter pattern turned inward, exactly as the
+  roadmap line names it. The lifecycle states, the
+  failure rule (three consecutive failures, then
+  errored), the per-receiver chat.read payload
+  redaction, the prompt-hook stages riding the P-057
+  composition choke point, the forced-provenance rule
+  (S214), and the UI slot registry are Runmal's own
+  design for the roadmap line. No SillyTavern or
+  Voxta source code was read and no file was
+  downloaded; the slice's tests are authored fresh
+  in the test module (P-005 discipline).
