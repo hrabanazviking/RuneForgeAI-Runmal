@@ -98,10 +98,10 @@ async def make_chat(factory, user_id, title="Saga"):
 # ---------------- migration discipline ----------------
 
 
-def test_migration_head_stays_0038():
-    assert MIGRATIONS[-1][0] == "0038"
+def test_migration_head_stays_0039():
+    assert MIGRATIONS[-1][0] == "0039"  # re-pinned at P-074 banking: 0039 is P-073 m0039_chat_metadata; P-074 took no migration
     revisions = [r for r, _d, _m in MIGRATIONS]
-    assert "0039" not in revisions and "0040" not in revisions
+    assert "0040" not in revisions
 
 
 # ---------------- attach / get / list ----------------
