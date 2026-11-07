@@ -392,9 +392,9 @@ def test_migration_head_is_0031_provisional():
     # 0029 is reserved for P-037 and 0030 for P-038 (both bank
     # first); in this tree the tail runs 0028 -> 0031.
     assert MIGRATIONS[-1][0] == "0038"  # head moved by P-065 (PROVISIONAL 0036)
-    assert MIGRATIONS[-8][0] == "0030"  # position moved by P-065 (PROVISIONAL 0036)
-    assert MIGRATIONS[-9][0] == "0029"  # position moved by P-065 (PROVISIONAL 0036)
-    assert MIGRATIONS[-10][0] == "0028"  # position moved by P-065 (PROVISIONAL 0036)
+    assert MIGRATIONS[-9][0] == "0030"  # position moved by P-065 (PROVISIONAL 0036)
+    assert MIGRATIONS[-10][0] == "0029"  # position moved by P-065 (PROVISIONAL 0036)
+    assert MIGRATIONS[-11][0] == "0028"  # position moved by P-065 (PROVISIONAL 0036)
 
 
 def test_migration_0031_table_exists(tmp_path):

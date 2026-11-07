@@ -953,7 +953,7 @@ def test_migration_0036_applies_exactly_and_adds_columns(tmp_path):
     db_path = tmp_path / "m.db"
     _apply_up_to(db_path, "0035")
     assert current_revision(db_path) == "0035"
-    assert migrate_to_head(db_path) == ["0036", "0038"]
+    assert migrate_to_head(db_path) == ["0036", "0037", "0038"]
     assert current_revision(db_path) == "0038"
     conn = sqlite3.connect(db_path)
     try:

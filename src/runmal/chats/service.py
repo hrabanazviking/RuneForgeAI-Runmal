@@ -666,8 +666,13 @@ async def copy_message_to_branch(
 ) -> dict | None:
     """Copy a message to a branch (P-068).
 
-    BASE FLAG: this tree predates P-066's branch columns, so a
-    branch here is a CHAT. With no ``target_chat_id``, a new chat
+    BANKING RE-TARGET (P-068 banking): this slice's base predated
+    P-066's branch columns; at banking the fork mode was re-targeted
+    onto them -- the forked chat now carries the P-066 lineage
+    (branch_parent_id, branch_fork_message_id, branch_fork_index,
+    branch_kind='fork') and the source's settings, mirroring
+    branches.fork_chat, so branch-family listing sees it. With no
+    ``target_chat_id``, a new chat
     is forked carrying every message up to and including the
     source message (the fork-at-message shape), titled ``title``
     or ``"<source title> (branch)"``. With ``target_chat_id``, a
@@ -709,11 +714,20 @@ async def copy_message_to_branch(
         branch = Chat(
             user_id=user_id, title=branch_title,
             character_id=source_chat.character_id,
+            preset_id=getattr(source_chat, "preset_id", None),
+            backend_profile_id=getattr(source_chat, "backend_profile_id", None),
+            authors_note_json=getattr(source_chat, "authors_note_json", "{}"),
+            post_history_json=getattr(source_chat, "post_history_json", "{}"),
         )
         session.add(branch)
         await session.flush()
         upto = ordered[: [m.id for m in ordered].index(message_id) + 1]
         copies = [_copy_of(m, branch.id, i) for i, m in enumerate(upto)]
+        branch.branch_parent_id = chat_id
+        branch.branch_fork_message_id = message_id
+        branch.branch_fork_index = len(copies)
+        branch.branch_kind = "fork"
+        branch.branch_merge_of_json = "[]"
         session.add_all(copies)
         await session.flush()
         await _record_event(

@@ -437,10 +437,10 @@ def test_migration_head_is_0030_provisional_p038():
     # -> 0030 by P-038 (0029 reserved for P-037, banking first).
     # The sequence runs 0026 -> 0027 -> 0028 -> 0029 -> 0030.
     assert MIGRATIONS[-1][0] == "0038"  # head moved by P-065 (PROVISIONAL 0036)
-    assert MIGRATIONS[-8][0] == "0030"  # position moved by P-065 (PROVISIONAL 0036)
-    assert MIGRATIONS[-9][0] == "0029"  # position moved by P-065 (PROVISIONAL 0036)
-    assert MIGRATIONS[-10][0] == "0028"  # position moved by P-065 (PROVISIONAL 0036)
-    assert MIGRATIONS[-11][0] == "0027"  # position moved by P-065 (PROVISIONAL 0036)
+    assert MIGRATIONS[-9][0] == "0030"  # position moved by P-065 (PROVISIONAL 0036)
+    assert MIGRATIONS[-10][0] == "0029"  # position moved by P-065 (PROVISIONAL 0036)
+    assert MIGRATIONS[-11][0] == "0028"  # position moved by P-065 (PROVISIONAL 0036)
+    assert MIGRATIONS[-12][0] == "0027"  # position moved by P-065 (PROVISIONAL 0036)
 
 
 def test_migration_0028_column_exists_and_defaults(tmp_path):
@@ -486,7 +486,7 @@ def test_old_database_upgrades_in_place_preserving_entries(tmp_path):
     finally:
         conn.close()
     applied = migrate_to_head(db_path)
-    assert applied == ["0027", "0028", "0029", "0030", "0031", "0032", "0033", "0034", "0035", "0036", "0038"]  # PROVISIONAL 0036 appended by P-065
+    assert applied == ["0027", "0028", "0029", "0030", "0031", "0032", "0033", "0034", "0035", "0036", "0037", "0038"]  # PROVISIONAL 0036 appended by P-065
     conn = sqlite3.connect(db_path)
     try:
         row = conn.execute(

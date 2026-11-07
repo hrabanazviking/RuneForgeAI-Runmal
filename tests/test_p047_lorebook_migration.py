@@ -581,7 +581,7 @@ def test_upgrade_database_report(tmp_path):
     assert report["after_revision"] == "0038"
     assert report["applied_revisions"] == [
         "0024", "0025", "0026", "0027", "0028",
-        "0029", "0030", "0031", "0032", "0033", "0034", "0035", "0036", "0038",  # PROVISIONAL 0038 appended by P-068; 0036 by P-065
+        "0029", "0030", "0031", "0032", "0033", "0034", "0035", "0036", "0037", "0038",  # PROVISIONAL 0038 appended by P-068; 0037 by P-066; 0036 by P-065
     ]
     assert report["books_before"] == 1
     assert report["books_after"] == 1

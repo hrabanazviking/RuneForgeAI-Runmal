@@ -279,7 +279,7 @@ def test_migration_head_is_0030_provisional_p038() -> None:
     # 0030 stands as numbered. Merged sequence composed at banking.
     revisions = [m[0] for m in MIGRATIONS]
     assert revisions[-1] == "0038"
-    assert revisions[-11:] == ["0027", "0028", "0029", "0030", "0031", "0032", "0033", "0034", "0035", "0036", "0038"]  # tail moved by P-065 (PROVISIONAL 0036)
+    assert revisions[-12:] == ["0027", "0028", "0029", "0030", "0031", "0032", "0033", "0034", "0035", "0036", "0037", "0038"]  # tail moved by P-065 (PROVISIONAL 0036)
 
 
 def test_migration_0030_columns_on_fresh_db(tmp_path) -> None:
