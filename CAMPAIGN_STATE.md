@@ -5099,3 +5099,83 @@ P-079 BANKED - Quiet/greeting controls
     defect found at banking beyond
     the two heals above. Next in
     roadmap order: P-080.
+
+P-080 BANKED - Part V gate (PART V
+    COMPLETE / GATE PASSED) -
+    team-03 commit 1cff00b merged
+    (no-ff) into
+    yrsa/two-mirrors-build as ff9d8b6
+    and pushed; ls-remote verified
+    (see WAVE_PLAN update). Evidence
+    (team-03 worktree
+    hidden_files/P080_EVIDENCE.md):
+    gate battery 15 passed, gate
+    record 10 passed, surgery drill
+    PASS (10 steps, exit 0). Gate
+    verdict per area: Drill PASS,
+    Accounting PASS, Citizens PASS -
+    Part V (P-065..P-080) COMPLETES
+    at this banking. Slice:
+    tests/test_p080_part_v_gate.py
+    (15 tests: surgery drill battery
+    over the Part V contracts),
+    tests/test_p080_gate_record.py
+    (10 tests pinning this gate),
+    scripts/drill_p080_surgery.py
+    (10-step drill: branch,
+    checkpoint, swipe-storm, group
+    scene - no operation loses
+    data), docs/PART_V_GATE_2026-11-07.md
+    (the gate record), clean-room log
+    append. Migration: NONE (head
+    stays 0041; the battery and the
+    gate record pin it, 0042 absent).
+    Merge: ONE conflict, in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md,
+    resolved as an additive union -
+    the P-079 and P-080 clean-room
+    entries both kept. Counts-heal
+    note (gate doc S6): the gate
+    doc's preliminary figures
+    (1025 / 3430 / 3416) were
+    corrected to the final logs -
+    neighbours 567 passed / 1 failed
+    (F1 only), overlay full suite
+    3401 passed / 1 failed (F1) /
+    4 skipped, B = 3387 on the
+    overlay shape - in the amended
+    commit 1cff00b before banking.
+    Finding F1 was already healed at
+    P-079 banking (a4a3f73: the fork
+    expectation follows P-078's
+    full-deck _copy_message fix);
+    the gate battery's Area I
+    greeting tests pass on the
+    merged tree because P-079 is in
+    it. Finding F2: no new engine
+    defect. Carried pinned
+    limitations (gate doc S4,
+    named, not hidden): (a) fork and
+    merge copies carry the FULL
+    deck; (b) delete is intentional
+    loss, exactly scoped; (c) the
+    undo journal is bounded
+    (MAX_ENTRIES = 50 per scope);
+    (d) undo covers a named
+    operation set, not everything;
+    (e) checkpoints live outside the
+    database; (f) the group scene is
+    a transcript + activation claim;
+    (g) gate scales are drill
+    scales. Combined batteries on
+    the merged tree (P-080 gate +
+    P-080 record + P-079): 76 passed
+    / 0 failed (= 25 + 51 exact).
+    Forge confirmation suite: 3413
+    passed / 4 skipped / 0 failed
+    (= 3388 P-079 confirmation + 25
+    gate, exact; log
+    hidden_files/p080_confirmation.log).
+    No heal needed at this banking.
+    PART V COMPLETE. Next in roadmap
+    order: P-081 (Part VI).
