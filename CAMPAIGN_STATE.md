@@ -6052,3 +6052,130 @@ P-092 BANKED - Expression/sprite plugin surface (Part VI)
     /tmp/p092_forge_suite.log).
     No heal needed at this banking.
     Next in roadmap order: P-093.
+P-093 BANKED - Variables & state plugin API (Part VI)
+    - team-02 commit 776f9be merged
+    (no-ff) into
+    yrsa/two-mirrors-build as 29169f1
+    and pushed; ls-remote verified
+    29169f13e9d3e0f5b1a962fb7e9447aa8ac41c40
+    (see WAVE_PLAN update). Evidence
+    (team-02 worktree
+    hidden_files/P093_EVIDENCE.md):
+    battery 24 passed, neighbours
+    149 passed, team full suite 3847
+    passed / 4 skipped / 0 failed
+    (= 3823 + 24, exact, on its base).
+    Slice:
+    src/runmal/plugins/variables.py
+    (new - one shared per-chat
+    variables/flags store behind
+    the P-081 Plugin API),
+    src/runmal/plugins/router.py
+    (chat-variables routes appended),
+    tests/test_p093_variables.py
+    (24 tests),
+    docs/VARIABLES_STATE_API_2026-11-07.md,
+    clean-room log append. 5 files.
+    Migration: NONE (head stays
+    0041; no migration taken - the
+    store rides the P-089 durable
+    per-user file idiom,
+    data_dir()/chat_variables/
+    <user_id>.json, atomic save
+    at 0600, corrupt stores raise
+    and are never silently reset;
+    no 0042).
+    Defects: the battery's first
+    run caught the team's own wrong
+    registry call in the test (fixed
+    to the house registry.keys()
+    idiom; no product code was
+    wrong), and ruff N818 renamed
+    ChatVariableNotFound to
+    ChatVariableNotFoundError in
+    module and battery, battery
+    re-run green; ruff clean on
+    both new files (the router's
+    B008 findings are the
+    pre-existing house FastAPI
+    Depends idiom). No defect was
+    found in banked code.
+    Design honesty: ONE shared
+    per-chat store - plugins, the
+    host, Part IX scenarios and
+    the P-055 macro road all read
+    and write through the same
+    service functions; there is no
+    plugin-private silo and no
+    scenario-private store. Every
+    entry carries provenance
+    (writer kind - plugin / host /
+    scenario / macro - and writer
+    id, created/updated timestamps
+    and a version counter); no
+    anonymous write path exists.
+    Namespacing: a plugin's bare
+    keys land in its own namespace,
+    shared is the documented
+    collaboration surface, and a
+    plugin addressing another
+    plugin's namespace is refused -
+    never a silent overwrite.
+    Kinds never blur: variables
+    hold JSON scalars only, flags
+    hold bool only, reading one
+    kind through the other refuses
+    and re-kinding an existing key
+    refuses; cap 500 entries per
+    chat.
+    P-055 macro bridge:
+    load_macro_variables renders
+    the chat's shared variables as
+    macro strings and
+    apply_macro_variables persists
+    an expansion report's map back
+    with macro provenance;
+    plugin-namespaced entries never
+    leak into the macro map (P-055
+    variables are ephemeral strings
+    in a per-expansion working
+    copy; P-093 entries are typed
+    and durable - deliberate).
+    Part IX seed contract: a
+    scenario runtime seeds
+    initial_variables via
+    seed_variables - missing keys
+    only, seeding never overwrites
+    live state - and then uses the
+    same get/set/flag/increment
+    functions with scenario
+    provenance. Citizen wiring is
+    register_plugin only; the
+    sandbox grant set is EMPTY.
+    Merge conflicts in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    and src/runmal/plugins/router.py
+    (both append-vs-append),
+    resolved as true additive
+    unions keeping BOTH entries /
+    BOTH route sets exactly once;
+    py_compile clean on the merged
+    tree, and the merged router
+    verified to carry the P-092
+    expression routes and the
+    P-093 chat-variables routes
+    alongside all prior plugin
+    routes; the merged tree
+    contains both the P-092
+    expressions citizen and the
+    P-093 variables citizen.
+    Combined batteries on the
+    merged tree: 48 passed / 0
+    failed (= 24 + 24 exact).
+    Forge confirmation suite:
+    3871 passed / 4 skipped / 0
+    failed (= 3847 P-092
+    confirmation + 24, exact; log
+    hidden_files/p093_forge_confirmation.log).
+    No heal needed at this banking.
+    Next in roadmap order: P-094.
