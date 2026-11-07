@@ -3619,3 +3619,30 @@ P-043 BANKED - activation inspector: why did this entry
     runmal-p043-activation-inspection-v1 for Part XIII's
     Inspector. Next in roadmap order: P-044 (team-02,
     token accounting).
+
+P-044 BANKED - token accounting: lore's exact prompt
+    cost per turn, visible before sending - team-02
+    commit 0a0ee3b merged (no-ff) into
+    yrsa/two-mirrors-build as fc25a63 and pushed;
+    ls-remote verified
+    fc25a63d8ea678ad49c2005d272874a102ad13b3.
+    Evidence (team-02 worktree hidden_files/P044_EVIDENCE.md
+    and logs): battery 21/21, neighbours 496, full suite
+    2056 passed / 4 skipped / 0 failed on its base
+    (= 2035 + 21, exact). Forge confirmation suite at the
+    merged tree: 2081 passed / 4 skipped / 1 failed
+    (= 2061 + 21 collected, exact) - the single failure
+    is test_s503_stt.py's timing contract, solo re-run
+    4/4 green, classified contention on the shared
+    laptop, NOT a defect. Merge conflicts in preview.py
+    (imports: P-043 EntryState vs P-044 accounting) and
+    prompt/inspect.py (P-043 lorebook_inspections vs
+    P-044 lore_account) resolved as exact unions keeping
+    BOTH slices; combined batteries 62 passed. NO
+    migration taken by P-044; head stays 0032. The
+    account is built with the very counter the budget
+    pass and the composer spend with - no second
+    estimator; quality EXACT iff a counter is supplied,
+    else ESTIMATED. In-slice fix: a muted scope layer's
+    budget 0 is no longer conflated with unlimited.
+    Next in roadmap order: P-045 (team-03, book sharing).
