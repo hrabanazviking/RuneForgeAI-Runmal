@@ -172,6 +172,27 @@ def _canonical_bytes(payload: object) -> bytes:
     ).encode("utf-8")
 
 
+def _parse_payload(payload: dict) -> tuple[dict, list[dict]]:
+    """Parse + pre-validate a payload, as PackError throughout.
+
+    ``transfer.parse_import`` raises ValueError for most bad
+    shapes, but malformed ENTRIES can surface AttributeError /
+    TypeError / KeyError from its tolerant field coercions
+    (a non-object entry, a scalar ``keys``). A pack boundary
+    owes its callers one typed refusal, so all of those are
+    wrapped here -- the router's ValueError -> 422 mapping
+    then covers every malformed pack, never a bare 500.
+    """
+    try:
+        book_fields, entry_fields = transfer.parse_import(payload)
+        transfer.validate_parsed_book(book_fields, entry_fields)
+    except PackError:
+        raise
+    except Exception as exc:
+        raise PackError(f"lorebook payload is not importable: {exc}") from exc
+    return book_fields, entry_fields
+
+
 def canonical_payload(native_payload: dict) -> dict:
     """The content-identity form of a native lorebook payload.
 
@@ -179,12 +200,29 @@ def canonical_payload(native_payload: dict) -> dict:
     own parser (``transfer.parse_import``), so identity is
     defined over the (book, entries) an import would store;
     entries are then sorted by their own canonical JSON so
-    entry order is not part of identity. Raises ValueError
-    (from the parser) for an unimportable payload.
+    entry order is not part of identity. Raises PackError
+    for an unimportable payload.
+
+    The book form is the full stored field set with the
+    import path's own defaults filled in: ``parse_import``
+    returns only ``{"name"}`` for a world-info-shaped
+    payload but six fields for a native one, while the
+    store always holds the six -- without the fill, a
+    world-info-shaped pack could never checksum-match the
+    book it imported as, and exact-duplicate detection
+    would silently miss it.
     """
-    book_fields, entry_fields = transfer.parse_import(native_payload)
+    book_fields, entry_fields = _parse_payload(native_payload)
+    book = {
+        "name": book_fields.get("name"),
+        "description": book_fields.get("description", ""),
+        "scan_depth": book_fields.get("scan_depth", 4),
+        "token_budget": book_fields.get("token_budget"),
+        "scan_mode": book_fields.get("scan_mode", "depth"),
+        "scan_external_context": book_fields.get("scan_external_context", False),
+    }
     return {
-        "book": book_fields,
+        "book": book,
         "entries": sorted(entry_fields, key=_canonical_bytes),
     }
 
@@ -218,11 +256,13 @@ def build_pack_from_native_payload(
         validate_json_tree(native_payload)
     except SafetyError as exc:
         raise PackError(str(exc)) from exc
-    try:
-        book_fields, entry_fields = transfer.parse_import(native_payload)
-        transfer.validate_parsed_book(book_fields, entry_fields)
-    except ValueError as exc:
-        raise PackError(f"lorebook payload is not importable: {exc}") from exc
+    if native_payload.get("format") != "runmal-lorebook":
+        raise PackError(
+            "pack payload must be the native runmal-lorebook shape "
+            "(a world-info file packs via build_pack_from_file, "
+            "which exports the native shape first)"
+        )
+    book_fields, entry_fields = _parse_payload(native_payload)
     stamp = exported_at if exported_at is not None else _now_iso()
     checksum = content_checksum(native_payload)
     canonical_len = len(_canonical_bytes(canonical_payload(native_payload)))
@@ -245,9 +285,11 @@ def build_pack_from_native_payload(
         "payload_canonical_bytes": canonical_len,
         "exported_at": stamp,
         "app_version": __version__,
-        "payload_format": native_payload.get("format"),
-        "payload_version": native_payload.get("version"),
     }
+    if native_payload.get("format") is not None:
+        manifest["payload_format"] = native_payload["format"]
+    if native_payload.get("version") is not None:
+        manifest["payload_version"] = native_payload["version"]
     return {
         "format": PACK_FORMAT,
         "pack_version": PACK_VERSION,
@@ -358,11 +400,7 @@ def parse_pack(data: bytes | str | dict) -> dict:
     payload = pack.get("lorebook")
     if not isinstance(payload, dict):
         raise PackError("pack lorebook payload missing or not an object")
-    try:
-        book_fields, entry_fields = transfer.parse_import(payload)
-        transfer.validate_parsed_book(book_fields, entry_fields)
-    except ValueError as exc:
-        raise PackError(f"pack lorebook payload is not importable: {exc}") from exc
+    book_fields, entry_fields = _parse_payload(payload)
     entry_count = manifest.get("entry_count")
     if (
         isinstance(entry_count, bool)
@@ -396,6 +434,12 @@ def parse_pack(data: bytes | str | dict) -> dict:
         raise PackError(
             f"manifest payload_canonical_bytes {declared_len!r} does "
             f"not match canonical payload length {canonical_len}"
+        )
+    prov_sha = provenance.get("content_sha256")
+    if prov_sha is not None and prov_sha != actual:
+        raise PackError(
+            "provenance content_sha256 does not match the manifest "
+            "checksum (the provenance record was altered or forged)"
         )
     for key in ("payload_format", "payload_version"):
         if key in manifest and manifest[key] is not None:

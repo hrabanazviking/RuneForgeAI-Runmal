@@ -38,6 +38,16 @@ Contract under test:
   The two POST routes are registered before the
   ``/lorebooks/{book_id}`` family so they are not swallowed.
 - No migration: the schema head stays 0032.
+- Review fixes (builder-3): canonical identity fills the
+  stored book-field defaults, so a world-info-SHAPED pack
+  checksum-matches the book it imports as (duplicate
+  detection cannot silently miss it); malformed entries
+  (non-object entry, scalar keys) refuse as PackError --
+  the router's 422 -- never a bare 500; a provenance
+  content_sha256 that disagrees with the manifest is
+  refused; build_pack_from_native_payload requires the
+  native shape (world-info files pack via
+  build_pack_from_file).
 
 Fixtures are authored fresh here (P-005 discipline).
 """
@@ -603,3 +613,103 @@ def test_api_inspect_tampered_pack_422(tmp_path, monkeypatch):
     pack["lorebook"]["entries"][1]["keys"] = ["forged"]
     resp = client.post("/api/v1/lorebooks/pack/inspect", json=pack)
     assert resp.status_code == 422, resp.text
+# ------------------------------------------------------------------
+# Review fixes (builder-3 Mediums)
+
+
+def _hand_pack(payload):
+    """A pack envelope built by hand around any payload shape,
+    with a correct manifest -- the foreign-pack case."""
+    book_fields, entry_fields = transfer.parse_import(payload)
+    checksum = packs.content_checksum(payload)
+    return {
+        "format": "runmal-lorebook-pack",
+        "pack_version": 1,
+        "kind": "lorebook",
+        "schema": "runmal-p045-lorebook-pack-v1",
+        "manifest": {
+            "book_name": book_fields["name"],
+            "entry_count": len(entry_fields),
+            "content_sha256": checksum,
+            "payload_canonical_bytes": len(
+                packs._canonical_bytes(packs.canonical_payload(payload))
+            ),
+            "exported_at": STAMP,
+            "app_version": "0.1.0",
+        },
+        "provenance": {
+            "provenance_version": 1,
+            "source_kind": "lorebook_pack_export",
+            "source_book_name": book_fields["name"],
+            "exported_at": STAMP,
+            "content_sha256": checksum,
+        },
+        "lorebook": payload,
+    }
+
+
+def test_build_rejects_worldinfo_shaped_payload():
+    worldinfo = {
+        "name": "WI Book",
+        "entries": {"0": {"key": ["a"], "content": "A.", "comment": "A"}},
+    }
+    with pytest.raises(PackError, match="native runmal-lorebook shape"):
+        packs.build_pack_from_native_payload(worldinfo, exported_at=STAMP)
+
+
+async def test_worldinfo_shaped_pack_duplicate_detected(tmp_path):
+    factory = make_factory(tmp_path)
+    receiver = await seed_user(factory, "receiver")
+    worldinfo = {
+        "name": "Shared WI Book",
+        "entries": {
+            "0": {"key": ["mist"], "content": "Mist lore.", "comment": "Mist"}
+        },
+    }
+    pack = _hand_pack(worldinfo)
+    async with factory() as session:
+        book, report = await packs.import_pack(session, receiver, pack)
+        assert report["created"] is True
+        book2, report2 = await packs.import_pack(session, receiver, pack)
+        assert book2.id == book.id
+        assert report2["duplicate_exact"] is True
+        books = await service.list_lorebooks(session, receiver)
+        assert len(books) == 1
+
+
+def test_malformed_entries_refuse_as_packerror():
+    payload = transfer.export_book(sample_book(), sample_entries())
+    bad = copy.deepcopy(payload)
+    bad["entries"] = [42]
+    with pytest.raises(PackError):
+        packs.parse_pack(_hand_pack_loose(bad))
+    bad2 = copy.deepcopy(payload)
+    bad2["entries"][0]["keys"] = 42
+    with pytest.raises(PackError):
+        packs.content_checksum(bad2)
+
+
+def _hand_pack_loose(payload):
+    """Envelope with manifest fields copied from a valid pack
+    where possible; parse must refuse on the PAYLOAD, before
+    manifest cross-checks can pass it."""
+    pack = sample_pack()
+    pack["lorebook"] = payload
+    return pack
+
+
+def test_provenance_checksum_mismatch_refused():
+    pack = sample_pack()
+    pack["provenance"]["content_sha256"] = "0" * 64
+    with pytest.raises(PackError, match="provenance content_sha256"):
+        packs.parse_pack(pack)
+
+
+def test_api_malformed_pack_is_422_not_500(tmp_path, monkeypatch):
+    client = make_client(tmp_path, monkeypatch)
+    pack = sample_pack()
+    pack["lorebook"]["entries"] = [42]
+    resp = client.post("/api/v1/lorebooks/pack/inspect", json=pack)
+    assert resp.status_code == 422, resp.text
+    resp2 = client.post("/api/v1/lorebooks/import-pack", json=pack)
+    assert resp2.status_code == 422, resp2.text
