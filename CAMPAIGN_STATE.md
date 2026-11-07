@@ -4452,3 +4452,25 @@ P-066 BANKED - Branches (Part V) -
     created_at aware/naive asymmetry, out of
     scope for this slice). Next in roadmap
     order: P-067 (checkpoints).
+P-067 BANKED - Checkpoints (Part V) -
+    team-02 commit f8d84ea merged (no-ff) into
+    yrsa/two-mirrors-build as e9c1710 and
+    pushed; ls-remote verified (see WAVE_PLAN update).
+    Evidence (team-02 worktree
+    hidden_files/P067_EVIDENCE.md): battery 44
+    passed, neighbours 152 passed, team full
+    suite 3051 passed / 4 skipped / 0 failed.
+    Forge confirmation suite at the merged
+    tree: 3051 passed / 4 skipped / 0 failed
+    (= 3007 + 44, exact). NO migration: head
+    stays 0037; checkpoints are file-stored
+    under data_dir (installation-local, not
+    carried by portable archives or full
+    backups in this slice, recorded in the
+    slice doc). Slice: checkpoints.py - named
+    chat snapshots (sha256-sealed, payload
+    byte-identical in shape to .runmal archive
+    members), one-click restore-as-new chat
+    (never destructive), cross-user isolation
+    404. No defects found. Next in roadmap
+    order: P-068 (message actions complete).
