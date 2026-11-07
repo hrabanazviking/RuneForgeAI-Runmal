@@ -29,7 +29,8 @@ Export is Rúnmál's native shape. Import accepts two shapes:
    runmal.lorebooks.rng; an explicit useProbability=false folds
    to 100 -- the gate is off -- because the store carries the
    effective percent, not the flag; the file layer in
-   interop.py preserves the flag itself verbatim),
+   interop.py preserves the flag itself verbatim; the native
+   leg folds use_probability/useProbability the same way),
    depth->depth and role->role (P-038, via
    runmal.lorebooks.placement: depth tolerantly an int >= 0 or
    None when undeclared; the world-info role CODE maps to the
@@ -131,6 +132,17 @@ def _as_int(value: object, default: int) -> int:
 
 
 def _native_entry(raw: dict) -> dict:
+    # P-036/P-047: an explicit use_probability=false (snake wins
+    # over the useProbability alias) means the gate is off, which
+    # the store expresses as the effective percent 100.
+    use_probability = raw.get("use_probability")
+    if use_probability is None:
+        use_probability = raw.get("useProbability")
+    probability = (
+        DEFAULT_PROBABILITY
+        if use_probability is not None and not bool(use_probability)
+        else normalise_probability(raw.get("probability"))
+    )
     return {
         "name": str(raw.get("name", "")),
         "content": str(raw.get("content", "")),
@@ -139,7 +151,7 @@ def _native_entry(raw: dict) -> dict:
         "selective_logic": normalise_selective_logic(raw.get("selective_logic")),
         "inclusion_group": normalise_inclusion_group(raw.get("inclusion_group")),
         "group_weight": normalise_group_weight(raw.get("group_weight")),
-        "probability": normalise_probability(raw.get("probability")),
+        "probability": probability,
         "priority": _as_int(raw.get("priority"), 100),
         "position": str(raw.get("position", "before_char")),
         "depth": normalise_depth(raw.get("depth")),
