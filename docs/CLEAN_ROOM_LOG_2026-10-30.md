@@ -829,3 +829,27 @@ source in §0(2) and appends its entry here:
   downloaded; the slice's tests are authored fresh
   in the test module (P-005 discipline).
 - **P-085 (2026-11-07, public behaviour + own tree only):** the Vector Storage plugin — per-chat/character vector memory on the founding sqlite-vec store — is built entirely from Runmal's own contracts: the P-081 Plugin API v1 citizen pattern (as proven by the P-084 Memory Summarise citizen, read as a pattern and not imported), the P-082 empty-grant sandbox stance, the founding S401 vector-store contract with its provenance spaces, the S407 scope model (chat scope stays inside its chat, character scope stays private to its character), and the P-041 embedding-honesty law (the local hash-ngram provider is lexical-semantic and labelled `lexical_vector`; a configured profile gives `vector`; a degraded keyword scan is labelled `keyword_fallback`, never a vector hit). Scoped doc ids, the over-fetch-then-scope-filter search, and the inspectable status shape are Runmal's own design for the roadmap line. No SillyTavern or Voxta source code was read and no file was downloaded; the slice's tests are authored fresh in the test module (P-005 discipline).
+- **P-086 (2026-11-07, public behaviour + own tree only):**
+  the Translate plugin — messages in/out via local models by
+  default; provider-pluggable — is built entirely from
+  Runmal's own in-tree contracts: the P-081 Plugin API v1
+  citizen pattern as banked by P-084 (register via
+  register_plugin; build_registry/create_app untouched), the
+  P-082 sandbox rule (only v1 surface permissions, so the
+  resource grant set is empty; model access is host wiring,
+  never an uninvited network call), the chat.write reservation
+  (IN is a messages-stage prompt transform in flight; OUT is
+  an in-memory derived, inspectable view — originals never
+  change), and the continue/impersonate generation precedent
+  (plugin_events=False; an error, a non-clean finish or empty
+  output raises, and partial text is never stored). The
+  deterministic default road (a tiny authored lexicon plus a
+  [deterministic:<target>] marker, provider deterministic-1,
+  never presented as real translation), the per-chat
+  configuration with an always-configured, never-detected
+  source language, and the no-migration in-memory storage
+  stance (config and derived store lost on restart, stated
+  plainly) are Runmal's own design for the roadmap line. No
+  SillyTavern or Voxta source code was read and no file was
+  downloaded; the slice's tests are authored fresh in the test
+  module (P-005 discipline).
