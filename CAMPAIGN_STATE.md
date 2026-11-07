@@ -4945,3 +4945,74 @@ P-077 BANKED - Long-chat performance
     slice's call). No new defect found
     at banking. Next in roadmap order:
     P-078.
+P-078 BANKED - Chat import surgery
+    (Part V) - team-01 commit 975b379
+    merged (no-ff) into
+    yrsa/two-mirrors-build as 02f262d
+    and pushed; ls-remote verified
+    (see WAVE_PLAN update). Evidence
+    (team-01 worktree
+    hidden_files/P078_EVIDENCE.md):
+    battery 35 passed, neighbours 328
+    passed, team full suite 3320
+    passed / 4 skipped / 0 failed
+    (= 3285 + 35 exact on its base).
+    Slice: chats/liveimport.py
+    materialises P-020 imports into
+    live chats in ONE transaction
+    (plan_import pure +
+    materialise_import direct rows,
+    positions 0..n-1, created_at from
+    parsed send dates verbatim,
+    deterministic deck resolution,
+    branches never fabricated -
+    branch-link header keys preserved
+    as report data, new chat kind=root,
+    per-message P-075 provenance
+    origin_kind=imported, one
+    chat.created + one chat.imported
+    event, owner-scoped); NO router
+    endpoint (P-020 pattern: service
+    layer only). In-slice fixes banked
+    with it: fileimport _parse_native
+    reads the validated swipe deck +
+    swipe_id export emits; branches
+    _copy_message carries deck, active
+    index, variant history and
+    per-swipe provenance; plus the
+    post-commit independent review's
+    8 confirmed defects, each pinned
+    by a battery test (evidence
+    addendum). Migration: NONE (all
+    columns pre-exist: 0036 decks,
+    0037 lineage, 0040 provenance).
+    Merge: ONE conflict, in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md,
+    resolved as an additive union -
+    the P-077 and P-078 clean-room
+    entries both kept. Heal: the
+    battery's head pin reworked at
+    equal strength to the merged
+    truth - head 0041 exactly once,
+    0040 present exactly once and
+    still the provenance migration,
+    current_revision 0041; no
+    assertion weakened. Combined
+    affected batteries on the merged
+    tree (P-078 + P-020 + P-065..068 +
+    P-072 + P-075 + P-076 + P-077):
+    380 passed / 0 failed. Forge
+    confirmation suite: 3337 passed /
+    4 skipped / 0 failed (= 3302 + 35,
+    exact; log
+    hidden_files/p078_banking_fullsuite.log).
+    Honest limits (from the evidence):
+    no model identity for imported
+    text (provenance model unknown /
+    not_applicable, never invented),
+    no preset, no lore-scan result,
+    no live speaker ids, swipe_info
+    and extra payloads reported
+    unmappable only. No new defect
+    found at banking. Next in roadmap
+    order: P-079.
