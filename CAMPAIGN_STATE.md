@@ -5387,3 +5387,87 @@ P-083 BANKED - Plugin manager (Part VI)
     /tmp/p083_confirm.log).
     No heal needed at this banking.
     Next in roadmap order: P-084.
+P-084 BANKED - Memory Summarise plugin (Part VI)
+    - team-02 commit 3515924 merged
+    (no-ff) into
+    yrsa/two-mirrors-build as 7c415f6
+    and pushed; ls-remote verified
+    7c415f67dacf6d8a3715c607d757ba5b8a0a43f9
+    (see WAVE_PLAN update). Evidence
+    (team-02 worktree
+    hidden_files/P084_EVIDENCE.md):
+    battery 26 passed, neighbours
+    86 passed, team full suite 3523
+    passed / 4 skipped / 0 failed
+    (= 3497 P-082 confirmation +
+    26, exact). Slice:
+    src/runmal/plugins/summarise.py
+    (new - manifest id
+    runmal.summarise, SummariseConfig,
+    ExtractiveSummarizer
+    (extractive-1), refresh_summary /
+    summary_status on the founding
+    S404 roll + memory service,
+    MemorySummarisePlugin,
+    register_plugin, sandbox_grants),
+    tests/test_p084_memory_summarise.py
+    (26 tests),
+    docs/MEMORY_SUMMARISE_PLUGIN_2026-11-07.md,
+    clean-room log append. 4 files.
+    Migration: NONE (head stays
+    0041; "0042" not in MIGRATIONS,
+    pinned by battery).
+    Two defects found in the landed
+    work and fixed in-slice (evidence
+    file): (1) ExtractiveSummarizer
+    degraded under the founding
+    roll's incremental folding - each
+    re-fold re-headed the prior
+    summary, nesting "Summary of 2
+    messages:" headers and pushing
+    real message heads out of the
+    cap; fixed with segment
+    recovery (a prior summary
+    contributes its segments back).
+    (2) At the 1600-char cap the
+    tail (newest folded messages)
+    was silently truncated while
+    the header claimed them; fixed
+    with middle elision - first +
+    newest segments kept, the
+    dropped count rides in an
+    [elided N messages] marker that
+    recovery reads back; the header
+    count (kept + elided) always
+    spans every folded message,
+    pinned by a dedicated battery
+    test. Reconciliation PASS
+    (recorded before the merge):
+    build_registry / create_app
+    deliberately unchanged - the
+    empty-boot registry pin (P-081
+    battery) is intact; the citizen
+    registers through register_plugin
+    only, and the register_plugin vs
+    P-083 manager (install/enable)
+    division stands as designed.
+    Combined batteries on the merged
+    tree: 164 passed / 0 failed.
+    Forge confirmation suite, first
+    run: 3574 passed / 4 skipped /
+    1 failed - the single failure is
+    tests/test_p077_longchat_performance.py
+    ::test_longchat_tripwires, a
+    wall-clock tripwire tripped
+    under cross-campaign load; solo
+    re-run 17/17 green, classified
+    timing-contention (the s503
+    pattern), NOT a defect (log
+    /tmp/p084_confirm.log).
+    Confirmation re-run: 3575
+    passed / 4 skipped / 0 failed,
+    EXIT 0 (= 3549 P-083
+    confirmation + 26, exact; log
+    /tmp/p084_confirm2.log).
+    No heal needed at this banking.
+    Next in roadmap order: P-085.
