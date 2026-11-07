@@ -4616,3 +4616,36 @@ P-071 BANKED - Absent-character history
     digest preview and per-member presence
     list. No new defect found. Next in
     roadmap order: P-072.
+P-072 BANKED - Chat search: full-text +
+    semantic search across all chats,
+    jump-to-message (Part V) -
+    team-01 commit 26c77c7 merged (no-ff) into
+    yrsa/two-mirrors-build as 6de95de, and pushed;
+    ls-remote verified (see WAVE_PLAN update).
+    Evidence (team-01 worktree
+    hidden_files/P072_EVIDENCE.md): battery 43
+    passed, neighbours 468 passed, team full
+    suite 3178 passed / 4 skipped / 0 failed.
+    Forge confirmation suite at the merged
+    tree: 3201 passed / 4 skipped / 0 failed
+    (= 3158 + 43, exact). NO migration taken by
+    P-072; head stays 0038 (search stores
+    nothing: the full-text index is rebuilt
+    per query from stored messages and
+    semantic vectors are computed per query
+    and discarded). Merge CLEAN -
+    footprint chats-only, P-071 touched
+    groupchat/ only. Slice: full-text +
+    semantic search across all of the
+    callers chats (owned-first corpus in
+    the query itself, foreign/missing chat
+    filter -> 404), active content only,
+    titles never create hits; semantic reuses
+    the P-041 embedding road with cosine >=
+    0.30, keyword fallback always labelled;
+    GET /chats/search declared before
+    GET /chats/{chat_id}; hits carry chat +
+    message anchors for jump-to-message.
+    One doc defect found and fixed in-slice
+    (F1: phrase_score wording); no code
+    defect found. Next in roadmap order: P-073.
