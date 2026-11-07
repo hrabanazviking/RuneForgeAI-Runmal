@@ -3972,3 +3972,38 @@ P-053 BANKED - per-backend capability truth: sampler
     pretends otherwise).
     Next in roadmap order: P-054 (presets -
     save/load/share sampler+prompt bundles, team-01).
+
+P-054 BANKED - presets: save/load/share sampler+prompt
+    bundles with per-character and per-chat overrides -
+    team-01 commit 0548581 merged (no-ff, clean) into
+    yrsa/two-mirrors-build as 10f4c34 and pushed;
+    ls-remote verified
+    10f4c3447e98031524e3968d0e01339c71740c5e.
+    Evidence (team-01 worktree hidden_files/P054_EVIDENCE.md
+    + logs): battery 31 passed, neighbours 332 passed,
+    team full suite 2508 passed / 4 skipped / 0 failed;
+    forge confirmation suite at the merged tree 2508
+    passed / 4 skipped / 0 failed (exact). Migration
+    0033 TAKEN (preset_bundles + preset_overrides);
+    head now 0033. The 54 migration-head pins across
+    26 test files were moved to 0033 in-slice (the
+    established pattern, no assertion weakened).
+    Slice: presets/bundles.py - a bundle gathers the
+    full 28-key sampler bag (unknown keys preserved),
+    the P-049 layout, P-050/P-051 template selections,
+    legacy template_ref, P-021 carriage and verbatim
+    extensions; checksum-verified share envelope
+    (tamper refuses); overrides resolve bundle <
+    character < chat with per-field sources, sampler
+    null-deletion, and different-bundle shadowing
+    reported rather than layered or dropped.
+    Review fix landed before banking: the overrides
+    unique index now includes user_id and override
+    lookups are user-scoped (commit amended once,
+    suite re-verified green after the amend).
+    Carried: resolution is a data service + API (the
+    generation pipeline consumes selections through
+    the existing explicit-input resolvers); a dangling
+    override row for a deleted character/chat stays
+    listed-but-inert for its own owner (house pattern).
+    Next in roadmap order: P-055 (macros, team-02).
