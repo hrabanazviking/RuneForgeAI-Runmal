@@ -5659,3 +5659,82 @@ P-087 BANKED - Image Generation plugin (Part VI)
     /tmp/p087_confirm.log).
     No heal needed at this banking.
     Next in roadmap order: P-088.
+P-088 BANKED - Web Search plugin (Part VI)
+    - team-03 commit 0aae895 merged
+    (no-ff) into
+    yrsa/two-mirrors-build as ab0868c
+    and pushed; ls-remote verified
+    ab0868c6711cf82317bae404f1a51a138e908446
+    (see WAVE_PLAN update). Evidence
+    (team-03 worktree
+    hidden_files/P088_EVIDENCE.md):
+    battery 32 passed, neighbours
+    212 passed, team full suite 3657
+    passed / 4 skipped / 0 failed
+    (= 3625 P-086 confirmation +
+    32, exact, on its base). Slice:
+    src/runmal/plugins/web_search.py
+    (new - opt-in per-chat web
+    search, results cited into
+    context, off by default;
+    sovereignty is the default
+    state),
+    tests/test_p088_web_search.py
+    (32 tests),
+    docs/WEB_SEARCH_PLUGIN_2026-11-07.md,
+    clean-room log append. 4 files.
+    Migration: NONE (head stays
+    0041; "0042" not in MIGRATIONS,
+    pinned by battery).
+    build_registry / create_app
+    deliberately unchanged by
+    design. Defects: one found and
+    fixed in-slice - malformed
+    provider rows now raise typed
+    WebSearchError instead of
+    leaking a raw ValueError; no
+    discovered bug left unfixed.
+    Design honesty: the default
+    provider is deterministic-1,
+    URLs on example.invalid,
+    snippets self-labelled as
+    placeholders, never disguised;
+    the HTTP provider opens no
+    socket (transport is injected
+    host wiring, tested with fakes
+    only); sandbox_grants() is the
+    empty frozenset (network.access
+    is not in the v1 manifest
+    vocabulary); per-chat opt-in
+    and stored results are
+    process-local and lost on
+    restart, stated plainly; the
+    prompt hook never searches and
+    results render only with title
+    plus URL as citations.
+    Merge conflict only in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    (append-vs-append), resolved
+    keeping the P-087 and P-088
+    entries exactly once;
+    py_compile clean on the merged
+    tree. Combined batteries on the
+    merged tree: 57 passed / 0
+    failed (= 25 + 32 exact).
+    Forge confirmation suite:
+    first run 3681 passed / 4
+    skipped / 1 failed - the one
+    failure was
+    test_p077_longchat_performance
+    test_longchat_tripwires, a
+    wall-clock tripwire under
+    cross-campaign load; solo
+    re-run 17 passed / 0 failed,
+    classified timing-contention,
+    not a defect; effective total
+    3682 passed / 4 skipped / 0
+    failed (= 3650 P-087
+    confirmation + 32, exact; log
+    /tmp/p088_confirm.log).
+    No heal needed at this banking.
+    Next in roadmap order: P-089.
