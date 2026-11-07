@@ -144,6 +144,12 @@ async def _get_owned_message(
     return result.scalar_one_or_none()
 
 
+def _metadata_provenance(chat: Chat) -> dict:
+    from runmal.chats.metadata import provenance_from_chat
+
+    return provenance_from_chat(chat)
+
+
 def chat_to_dict(chat: Chat, message_count: int = 0) -> dict:
     try:
         note = note_from_data(json.loads(chat.authors_note_json or "{}"))
@@ -164,6 +170,8 @@ def chat_to_dict(chat: Chat, message_count: int = 0) -> dict:
         "post_history": instructions_to_data(ph),
         "swipe_settings": settings_to_data(_swipe_settings_from_chat(chat)),
         "branch": branch_info(chat),
+        "summary": getattr(chat, "summary", "") or "",
+        "metadata": _metadata_provenance(chat),
     }
 
 
