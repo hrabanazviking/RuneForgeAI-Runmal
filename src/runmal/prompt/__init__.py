@@ -1,5 +1,25 @@
-"""Prompt template engine public surface (S205; P-050 instruct)."""
+"""Prompt template engine public surface (S205; P-050 instruct; P-051 context)."""
 
+from runmal.prompt.context import (
+    BUILTIN_CONTEXT_TEMPLATES,
+    CONTEXT_TEMPLATE_ORDER,
+    SEGMENT_KINDS,
+    SEGMENT_ORDER,
+    ContextSegment,
+    ContextTemplate,
+    apply_context_template,
+    context_from_data,
+    context_to_data,
+    context_template_from_preset,
+    default_context_template,
+    from_story_string,
+    get_context_template,
+    list_context_templates,
+    to_story_string,
+)
+from runmal.prompt.context import (
+    DISABLED_REASON as CONTEXT_DISABLED_REASON,
+)
 from runmal.prompt.composer import (
     ComposedMessage,
     ComposedPrompt,
@@ -44,6 +64,7 @@ from runmal.prompt.slots import (
 )
 
 __all__ = [
+    "CONTEXT_TEMPLATE_ORDER", "SEGMENT_KINDS", "SEGMENT_ORDER", "BUILTIN_CONTEXT_TEMPLATES", "CONTEXT_DISABLED_REASON", "ContextSegment", "ContextTemplate", "apply_context_template", "context_from_data", "context_to_data", "context_template_from_preset", "default_context_template", "from_story_string", "get_context_template", "list_context_templates", "to_story_string",
     "TEMPLATE_ORDER",
     "RoleWrapper",
     "RenderedPrompt",
