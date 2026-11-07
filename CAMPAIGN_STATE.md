@@ -3575,3 +3575,24 @@ Last updated: 2026-10-31 ~14:15 EDT tick (P-017 banking deferred, no full run at
     cache is P-046's); fallback is whole-tick by design;
     Aesir embeddings remain unserved (P-009 D3). Next in
     roadmap order: P-042 (team-03, lorebook editor depth).
+
+P-042 BANKED - lorebook editor depth: the editor UI now
+    reaches every engine-honoured field - team-03 commit
+    5d40dda merged (no-ff, clean) into yrsa/two-mirrors-build
+    as 594a8d7 and pushed; ls-remote verified
+    594a8d7488c393d6eb2948bfcc80ca3ce0ebe940.
+    Evidence (team-03 worktree hidden_files/P042_EVIDENCE.md
+    and logs): battery 15/15, neighbours 869, full suite
+    2035 passed / 4 skipped / 0 failed on its base. Forge
+    confirmation suite at the merged tree: 2035 passed /
+    4 skipped / 0 failed (= 2020 + 15, exact); s503 did
+    not fire. NO migration taken by P-042; head stays
+    0032 (reserved 0033 unused). Census module
+    (lorebooks/editor.py) declares every engine-honoured
+    field per surface, served at GET
+    /lorebooks/editor-schema; the battery derives the
+    engine field set independently and fails on any
+    unreachable field. Gap fixed in-slice: PreviewRequest
+    now carries P-031 recursive_scan +
+    max_recursion_depth. Next in roadmap order: P-043
+    (team-01, activation inspector).
