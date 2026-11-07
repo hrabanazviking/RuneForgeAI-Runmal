@@ -4268,3 +4268,33 @@ P-060 BANKED - logit bias & stop sequences: per-preset,
     bias resolves ONLY through a caller-
     supplied token map - token ids are never
     invented. Next in roadmap order: P-061.
+P-061 BANKED - Grammar/JSON-mode as a prompt citizen:
+    structured replies for bridges/games - team-02
+    commit 82c73da merged (no-ff) into
+    yrsa/two-mirrors-build as 489e281 and pushed;
+    ls-remote verified (see WAVE_PLAN update).
+    Evidence (team-02 worktree
+    hidden_files/P061_EVIDENCE.md): battery 97
+    passed, neighbours 401 passed / 1 skipped,
+    team full suite 2806 passed / 4 skipped / 0
+    failed on its base. Forge confirmation suite
+    at the merged tree: 2839 passed / 4 skipped /
+    0 failed (= 2742 + 97, exact). NO migration:
+    the merged head stays 0035. Merge: CLEAN, no
+    conflicts. Combined batteries at the merged
+    tree (P-061 + P-060 + P-052 + P-053 + P-059 +
+    P-058 + P-057): 320 passed. Slice:
+    backends/structured.py - StructuredOutput
+    declaration as strict data (off/json_object/
+    json_schema/grammar; wrong-mode fields refuse
+    even as null); per-backend truth - openai/
+    openrouter JSON via response_format, ollama
+    via top-level format, aesir/fake refuse loudly
+    on unserved declarations, grammar greyed on
+    every backend; plan_structured clamp planner
+    degrades with one warning; validate_reply
+    client-side JSON-Schema subset validator
+    (path-addressed errors, no repair); prompt
+    inspector echo + GET /debug/structured-modes;
+    preset bundles gain a structured_output
+    section. Next in roadmap order: P-062.
