@@ -72,6 +72,8 @@ class Chat(Base):
     authors_note_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
     # Post-history instructions (P-057, PROVISIONAL 0035); one validated JSON document.
     post_history_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    # Swipe-regen settings (P-065, PROVISIONAL 0036); one validated JSON document.
+    swipe_settings_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
     created_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
 
 
@@ -84,6 +86,9 @@ class Message(Base):
     )
     role: Mapped[str] = mapped_column(String(20), nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    # Swipe deck (P-065, PROVISIONAL 0036): ordered alternates; content == swipes[swipe_id].
+    swipes_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
+    swipe_id: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     # Per-message speaker identity (S210): the speaking character's id and a
     # snapshot of its display name. The snapshot survives membership changes
     # and character renames -- history is never rewritten.

@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.chats import service
 from runmal.chats.service import chat_to_dict, event_to_dict, message_to_dict
+from runmal.chats.swipes import settings_to_data
 from runmal.db.deps import get_owner_id, get_session
 from runmal.prompt.authors_note import note_to_data
 from runmal.prompt.post_history import instructions_to_data
@@ -55,6 +56,20 @@ class ChatPostHistoryIn(BaseModel):
 
 class ChatBackendProfileIn(BaseModel):
     profile_id: str | None = None
+
+
+class SwipeCreate(BaseModel):
+    content: str = Field(min_length=1)
+
+
+class SwipeSelectIn(BaseModel):
+    action: str | None = None
+    index: int | None = None
+
+
+class SwipeSettingsIn(BaseModel):
+    enabled: bool = True
+    params: dict = {}
 
 
 @router.post("/chats", status_code=status.HTTP_201_CREATED)
@@ -174,6 +189,70 @@ async def delete_message(
     return {"deleted": True, "id": message_id}
 
 
+@router.post(
+    "/chats/{chat_id}/messages/{message_id}/swipes",
+    status_code=status.HTTP_201_CREATED,
+)
+async def add_swipe(
+    chat_id: str,
+    message_id: str,
+    body: SwipeCreate,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Append an alternate to a message's swipe deck (P-065)."""
+    try:
+        message = await service.add_swipe(
+            session, user_id, chat_id, message_id, body.content
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if message is None:
+        raise HTTPException(status_code=404, detail="message not found")
+    return message_to_dict(message)
+
+
+@router.post("/chats/{chat_id}/messages/{message_id}/swipes/select")
+async def select_swipe(
+    chat_id: str,
+    message_id: str,
+    body: SwipeSelectIn,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Select the active alternate in a message's swipe deck (P-065)."""
+    try:
+        message = await service.select_swipe(
+            session, user_id, chat_id, message_id,
+            action=body.action, index=body.index,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if message is None:
+        raise HTTPException(status_code=404, detail="message not found")
+    return message_to_dict(message)
+
+
+@router.delete("/chats/{chat_id}/messages/{message_id}/swipes/{index}")
+async def delete_swipe(
+    chat_id: str,
+    message_id: str,
+    index: int,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Delete one alternate from a message's swipe deck (P-065)."""
+    try:
+        message = await service.delete_swipe(
+            session, user_id, chat_id, message_id, index
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if message is None:
+        raise HTTPException(status_code=404, detail="message not found")
+    return message_to_dict(message)
+
+
 @router.post("/chats/{chat_id}/preset")
 async def set_chat_preset(
     chat_id: str,
@@ -255,6 +334,51 @@ async def get_chat_post_history(
     if ph is None:
         raise HTTPException(status_code=404, detail="chat not found")
     return instructions_to_data(ph)
+
+
+@router.get("/chats/{chat_id}/swipe-settings")
+async def get_chat_swipe_settings(
+    chat_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """A chat's swipe-regeneration settings (P-065)."""
+    settings = await service.get_chat_swipe_settings(session, user_id, chat_id)
+    if settings is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return settings_to_data(settings)
+
+
+@router.post("/chats/{chat_id}/swipe-settings")
+async def set_chat_swipe_settings(
+    chat_id: str,
+    body: SwipeSettingsIn,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Set a chat's swipe-regeneration settings (P-065)."""
+    try:
+        chat = await service.set_chat_swipe_settings(
+            session, user_id, chat_id, body.model_dump()
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if chat is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return chat_to_dict(chat)
+
+
+@router.get("/chats/{chat_id}/swipe-regen-params")
+async def get_swipe_regen_params(
+    chat_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Effective swipe-regeneration params for a chat (P-065)."""
+    resolved = await service.resolve_swipe_params(session, user_id, chat_id)
+    if resolved is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return {"chat_id": chat_id, "params": resolved}
 
 
 @router.post("/chats/{chat_id}/backend-profile")

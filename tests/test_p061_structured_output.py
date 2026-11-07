@@ -15,7 +15,7 @@ Honesty contract pinned here (the design's six clauses):
 5. grammar greyed everywhere is a recorded finding, with its
    reason on every row;
 6. no row claims measured; truth is per-BACKEND with declared /
-   ledger provenance only. Migration: NONE, head stays 0035.
+   ledger provenance only. Migration: NONE, head stays 0036 (P-065).
 """
 
 from __future__ import annotations
@@ -732,8 +732,8 @@ def test_capability_flag_pins(backend_key, flag):
     assert default_model(backend_key).capabilities.structured_output is flag
 
 
-def test_migration_head_stays_0035(tmp_path):
-    assert MIGRATIONS[-1][0] == "0035"
+def test_migration_head_stays_0036(tmp_path):
+    assert MIGRATIONS[-1][0] == "0036"
     db_path = tmp_path / "head.db"
     migrate_to_head(db_path)
-    assert current_revision(db_path) == "0035"
+    assert current_revision(db_path) == "0036"

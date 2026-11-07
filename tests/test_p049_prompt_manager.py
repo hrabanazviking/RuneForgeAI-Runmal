@@ -259,8 +259,8 @@ def test_block_for_kind_mapping():
     assert block_for_kind("no-such-kind") is None
 
 
-def test_migration_head_is_0035_provisional():
-    assert MIGRATIONS[-1][0] == "0035"  # PROVISIONAL 0035 (P-057); P-056 provisional 0034 banks first
+def test_migration_head_is_0036_provisional():
+    assert MIGRATIONS[-1][0] == "0036"  # PROVISIONAL 0036 (P-065); P-056 provisional 0034 banks first
 
 
 # ---------------- service ----------------

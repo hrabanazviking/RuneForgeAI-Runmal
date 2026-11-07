@@ -20,7 +20,7 @@ Honesty contract pinned here:
 - unknown-field carriage exists exactly where the owning layer
   provides it (bundle extensions, preset bag/raw, item and
   pack extensions); strict payloads refuse unknown keys;
-- migration head stays 0035: packs are file-layer artefacts.
+- migration head stays 0036 (P-065): packs are file-layer artefacts.
 """
 
 from __future__ import annotations
@@ -429,8 +429,8 @@ def test_pack_api_export_inspect_import(tmp_path, monkeypatch):
     assert resp.status_code == 422, resp.text
 
 
-def test_migration_head_stays_0035(tmp_path):
+def test_migration_head_stays_0036(tmp_path):
     db_path = tmp_path / "mig.db"
     migrate_to_head(db_path)
-    assert MIGRATIONS[-1][0] == "0035"
-    assert current_revision(db_path) == "0035"
+    assert MIGRATIONS[-1][0] == "0036"
+    assert current_revision(db_path) == "0036"

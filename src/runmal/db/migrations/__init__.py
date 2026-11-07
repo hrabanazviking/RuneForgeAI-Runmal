@@ -43,6 +43,7 @@ from runmal.db.migrations import (
     m0033_preset_bundles,
     m0034_chat_authors_note,
     m0035_chat_post_history,
+    m0036_message_swipes,
 )
 
 MIGRATIONS: list[tuple[str, str, object]] = [
@@ -216,5 +217,10 @@ MIGRATIONS: list[tuple[str, str, object]] = [
         m0035_chat_post_history.REVISION,
         m0035_chat_post_history.DESCRIPTION,
         m0035_chat_post_history,
+    ),
+    (
+        m0036_message_swipes.REVISION,
+        m0036_message_swipes.DESCRIPTION,
+        m0036_message_swipes,
     ),
 ]
