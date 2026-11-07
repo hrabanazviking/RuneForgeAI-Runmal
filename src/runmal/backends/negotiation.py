@@ -28,12 +28,13 @@ from runmal.backends.models import ModelInfo
 from runmal.backends.params import SamplingParams
 from runmal.generation.compat import BackendProfile, CompatibilityResult, filter_params
 
-# Canonical sampler/control names — the S207 bag vocabulary.
-CANONICAL_CONTROLS: tuple[str, ...] = (
-    "temperature", "top_p", "top_k", "min_p", "repetition_penalty",
-    "presence_penalty", "frequency_penalty", "max_tokens", "stop",
-    "seed", "context_length",
-)
+# Canonical sampler/control names — the S207 bag vocabulary,
+# completed by P-052: exactly the sampler catalogue as data
+# (runmal.backends.samplers), so negotiation can never drift
+# from the surface it negotiates.
+from runmal.backends.samplers import SAMPLER_NAMES as _SAMPLER_NAMES
+
+CANONICAL_CONTROLS: tuple[str, ...] = _SAMPLER_NAMES
 FEATURES: tuple[str, ...] = (
     "chat", "embeddings", "vision", "tools", "streaming", "structured_output",
 )

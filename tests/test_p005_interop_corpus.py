@@ -18,7 +18,7 @@ from pathlib import Path
 from runmal.cards import import_card
 from runmal.cards.exporter import export_json
 from runmal.lorebooks.transfer import parse_import
-from runmal.presets.service import validate_params
+from runmal.presets.interop import parse_preset
 
 CORPUS = Path(__file__).parent / "fixtures" / "interop"
 MANIFEST = json.loads((CORPUS / "manifest.json").read_text(encoding="utf-8"))
@@ -125,31 +125,26 @@ def test_dual_chunk_png_prefers_ccv3_payload() -> None:
 
 # Source fields of lorebook_worldinfo_full.json entry 0 that today's
 # importer still drops. Part III slices (selective logic P-032,
-# timed effects P-033, groups P-034, depth P-038, probability P-036)
+# timed effects P-033, depth P-038, probability P-036)
 # own most of these; a slice that lands one must remove it here.
+# Probability + useProbability landed in P-036 (mapped below);
+# depth + role landed in P-038 (mapped below).
 WORLDINFO_DROPPED_TODAY = {
     "automationId",
     "characterFilter",
     "decorators",
     "delayUntilRecursion",
-    "depth",
     "displayIndex",
     "excludeRecursion",
-    "group",
     "groupOverride",
-    "groupWeight",
     "id",
     "ignoreBudget",
     "outletName",
     "preventRecursion",
-    "probability",
-    "role",
     "scanDepth",
     "selective",
-    "selectiveLogic",
     "triggers",
     "useGroupScoring",
-    "useProbability",
     "vectorized",
 }
 WORLDINFO_MAPPED_SOURCE_FIELDS = {
@@ -157,6 +152,11 @@ WORLDINFO_MAPPED_SOURCE_FIELDS = {
     "content",
     "key",
     "keysecondary",
+    "selectiveLogic",
+    "group",
+    "groupWeight",
+    "probability",
+    "useProbability",
     "constant",
     "disable",
     "order",
@@ -166,6 +166,8 @@ WORLDINFO_MAPPED_SOURCE_FIELDS = {
     "sticky",
     "cooldown",
     "delay",
+    "depth",
+    "role",
 }
 
 
@@ -187,9 +189,14 @@ def test_worldinfo_full_mapped_fields_and_pinned_losses() -> None:
         2,
         1,
     )
-    # position 4 (at-depth in the mirror) collapses to before_char
-    # today — pinned loss, P-038 owns the real mapping
-    assert gale["position"] == "before_char"
+    # position 4 (at-depth in the mirror) maps to at_depth since
+    # P-038, with its companions: depth 4, role code 0 -> system.
+    assert gale["position"] == "at_depth"
+    assert gale["depth"] == 4 and gale["role"] == "system"
+    # P-036: probability mapped (percent); Harbour Law's explicit
+    # useProbability=false folds to the effective percent 100.
+    assert gale["probability"] == 80
+    assert entries[1]["probability"] == 100
     dropped = set(source["entries"]["0"]) - WORLDINFO_MAPPED_SOURCE_FIELDS
     assert dropped == WORLDINFO_DROPPED_TODAY
 
@@ -211,6 +218,10 @@ def test_native_rich_book_parses_fully() -> None:
         "description": "Rúnmál native shape at full stretch (the S304 export shape).",
         "scan_depth": 5,
         "token_budget": 800,
+        # P-037: book scan settings ride the native leg; the rich
+        # fixture predates them and reads as the defaults.
+        "scan_mode": "depth",
+        "scan_external_context": False,
     }
     ferry = entries[0]
     assert ferry["sticky_prompts"] == 3 and ferry["whole_word"] is False
@@ -220,23 +231,48 @@ def test_native_rich_book_parses_fully() -> None:
 # --- presets ------------------------------------------------------------
 
 
-def test_st_textcompletion_preset_shape_and_param_bag_today() -> None:
-    preset = read_json("preset_st_textcompletion.json")
-    # The mirror's own key spellings ride through validate_params as
-    # opaque unknowns today; no canonical mapping exists yet (P-021).
-    bag = validate_params(
-        {k: preset[k] for k in ("temp", "top_p", "top_k", "min_p", "rep_pen", "tfs")}
-        | {"temperature": 0.8}
-    )
-    assert bag["temp"] == preset["temp"] and bag["rep_pen"] == preset["rep_pen"]
-    assert bag["min_p"] == preset["min_p"] and bag["tfs"] == preset["tfs"]
-    assert bag["temperature"] == 0.8
+def test_st_textcompletion_preset_imports_with_real_mapping() -> None:
+    parsed = parse_preset(read("preset_st_textcompletion.json"))
+    assert parsed.name == "Corpus Community Preset"
+    assert parsed.source_format == "st-text"
+    # P-021's real mapping: mirror spellings land in the canonical bag
+    assert parsed.params == {
+        "temperature": 0.9,
+        "top_p": 0.92,
+        "top_k": 40,
+        "min_p": 0.05,
+        "repetition_penalty": 1.08,
+        "frequency_penalty": 0,
+        "presence_penalty": 0,
+        "max_tokens": 350,
+        "context_length": 8192,
+    }
+    # seed -1 is the unset sentinel: absent from the bag, kept in raw
+    assert "seed" not in parsed.params and parsed.raw["seed"] == -1
+    # mirror-only sampler keys ride in raw carriage, never in the bag
+    assert parsed.raw["tfs"] == 0.95 and "tfs" not in parsed.params
+    assert parsed.raw["dry_base"] == 1.75 and "dry_base" not in parsed.params
 
 
-def test_st_chatcompletion_preset_structure_survives_json() -> None:
-    preset = read_json("preset_st_chatcompletion.json")
-    again = json.loads(json.dumps(preset))
-    assert [p["identifier"] for p in again["prompt_order"]] == [
+def test_st_chatcompletion_preset_imports_with_bag_and_carriage() -> None:
+    parsed = parse_preset(read("preset_st_chatcompletion.json"))
+    assert parsed.source_format == "st-chat"
+    assert parsed.name == "Imported preset"
+    assert parsed.params == {
+        "temperature": 0.85,
+        "top_p": 0.95,
+        "frequency_penalty": 0,
+        "presence_penalty": 0,
+        "max_tokens": 900,
+        "context_length": 128000,
+    }
+    assert [p["identifier"] for p in parsed.prompts] == [
+        "main",
+        "worldInfoBefore",
+        "jailbreak",
+    ]
+    assert parsed.prompts[0]["content"].startswith("You are an expert actor")
+    assert [e["identifier"] for e in parsed.prompt_order] == [
         "main",
         "worldInfoBefore",
         "personaDescription",
@@ -246,7 +282,13 @@ def test_st_chatcompletion_preset_structure_survives_json() -> None:
         "chatHistory",
         "jailbreak",
     ]
-    assert again["prompts"][0]["identifier"] == "main"
+    char_entry = next(
+        e for e in parsed.prompt_order if e["identifier"] == "charDescription"
+    )
+    assert char_entry["enabled"] is False
+    # carriage: backend/model keys ride in raw, never in the bag
+    assert parsed.raw["logit_bias"] == {} and "logit_bias" not in parsed.params
+    assert parsed.raw["model"] == "corpus-model"
 
 
 # --- chat + persona (formats whose importers land later) -----------------

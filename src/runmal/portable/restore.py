@@ -29,6 +29,9 @@ from runmal.db.migrate import migrate_to_head
 from runmal.db.models import (
     BackendProfile,
     Character,
+    CharacterAsset,
+    CharacterOrganisation,
+    CharacterTag,
     CharacterVoiceProfile,
     Chat,
     ConnectionProfile,
@@ -99,6 +102,12 @@ def _row(model, payload: dict):
 _STEPS = (
     ("users", "users", (("self", User),)),
     ("characters", "characters", (("self", Character),)),
+    ("character_assets", "character_assets", (("self", CharacterAsset),)),
+    (
+        "character_library",
+        "character_tags",
+        (("organisation", CharacterOrganisation), ("tags", CharacterTag)),
+    ),
     ("lorebooks", "lorebooks", (("lorebook", Lorebook), ("entries", LoreEntry))),
     ("presets", "presets", (("self", SamplingPreset),)),
     ("profiles", "backend_profiles", (("self", BackendProfile),)),
@@ -172,9 +181,15 @@ async def import_archive(archive_path: str | Path, staging_root: str | Path) -> 
                             json.dumps(voice), encoding="utf-8"
                         )
             asset_count = 0
+            resolved_root = root.resolve()
             for name in names:
                 if name.startswith("assets/"):
                     target = root / name
+                    # Defense in depth: the validator already rejects
+                    # escapes, but never trust a name check alone before
+                    # touching the filesystem.
+                    if not target.resolve().is_relative_to(resolved_root):
+                        raise ArchiveError(f"unsafe archive name: {name!r}")
                     target.parent.mkdir(parents=True, exist_ok=True)
                     target.write_bytes(zf.read(name))
                     asset_count += 1
@@ -197,6 +212,9 @@ async def import_archive(archive_path: str | Path, staging_root: str | Path) -> 
         table_for = {
             "users": "users",
             "characters": "characters",
+            "character_assets": "character_assets",
+            "character_tags": "character_tags",
+            "character_organisation": "character_organisation",
             "chats": "chats",
             "messages": "messages",
             "lorebooks": "lorebooks",

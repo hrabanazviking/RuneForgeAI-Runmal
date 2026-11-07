@@ -14,8 +14,36 @@ from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.db.models import Lorebook, LoreEntry
+from runmal.lorebooks.groups import (
+    check_group_weight,
+    check_inclusion_group,
+    normalise_group_weight,
+    normalise_inclusion_group,
+)
+from runmal.lorebooks.logic import check_selective_logic, normalise_selective_logic
+from runmal.lorebooks.states import activation_kind_for
+from runmal.lorebooks.rng import check_probability, normalise_probability
+from runmal.lorebooks.windows import (
+    check_scan_depth,
+    check_scan_external_context,
+    check_scan_mode,
+    normalise_scan_external_context,
+    normalise_scan_mode,
+)
 
-VALID_POSITIONS = frozenset({"before_char", "after_char"})
+# Position vocabulary is owned by runmal.lorebooks.placement (P-038),
+# which admits at_depth alongside before_char / after_char; the name
+# stays importable here for existing callers.
+from runmal.lorebooks.placement import (
+    VALID_POSITIONS,  # noqa: E402,F401
+    check_depth,
+    check_position,
+    check_role,
+    normalise_depth,
+    normalise_role,
+)
+from runmal.lorebooks.rng import check_probability, normalise_probability
+from runmal.lorebooks.states import activation_kind_for
 
 
 def _now() -> datetime:
@@ -46,10 +74,9 @@ def _check_prompts(name: str, value: int) -> int:
     return value
 
 
-def _check_position(position: str) -> str:
-    if position not in VALID_POSITIONS:
-        raise ValueError(f"invalid position: {position!r} (valid: {sorted(VALID_POSITIONS)})")
-    return position
+# Backwards-compatible alias: transfer.py calls service._check_position;
+# the strict checker itself lives in placement (P-038).
+_check_position = check_position
 
 
 def lorebook_to_dict(book: Lorebook, entry_count: int = 0) -> dict:
@@ -59,6 +86,10 @@ def lorebook_to_dict(book: Lorebook, entry_count: int = 0) -> dict:
         "description": book.description,
         "scan_depth": book.scan_depth,
         "token_budget": book.token_budget,
+        "scan_mode": normalise_scan_mode(getattr(book, "scan_mode", None)),
+        "scan_external_context": normalise_scan_external_context(
+            getattr(book, "scan_external_context", None)
+        ),
         "created_at": book.created_at.isoformat(),
         "entry_count": entry_count,
     }
@@ -72,10 +103,20 @@ def entry_to_dict(entry: LoreEntry) -> dict:
         "content": entry.content,
         "keys": _decode_keys(entry.keys_json),
         "secondary_keys": _decode_keys(entry.secondary_keys_json),
+        "selective_logic": normalise_selective_logic(getattr(entry, "selective_logic", None)),
+        "inclusion_group": normalise_inclusion_group(getattr(entry, "inclusion_group", None)),
+        "group_weight": normalise_group_weight(getattr(entry, "group_weight", None)),
+        "probability": normalise_probability(getattr(entry, "probability", None)),
         "priority": entry.priority,
         "position": entry.position,
+        "depth": normalise_depth(getattr(entry, "depth", None)),
+        "role": normalise_role(getattr(entry, "role", None)),
         "enabled": bool(entry.enabled),
         "constant": bool(entry.constant),
+        "vectorised": bool(getattr(entry, "vectorised", False)),
+        "activation_kind": activation_kind_for(
+            bool(entry.constant), bool(getattr(entry, "vectorised", False))
+        ),
         "case_sensitive": bool(entry.case_sensitive),
         "whole_word": bool(entry.whole_word),
         "sticky_prompts": int(entry.sticky_prompts),
@@ -111,11 +152,12 @@ async def create_lorebook(
     description: str = "",
     scan_depth: int = 4,
     token_budget: int | None = None,
+    scan_mode: str = "depth",
+    scan_external_context: bool = False,
 ) -> Lorebook:
     if not name:
         raise ValueError("lorebook name must not be empty")
-    if scan_depth < 1:
-        raise ValueError("scan_depth must be >= 1")
+    check_scan_depth(scan_depth)
     if token_budget is not None and token_budget < 1:
         raise ValueError("token_budget must be >= 1")
     book = Lorebook(
@@ -124,6 +166,8 @@ async def create_lorebook(
         description=description,
         scan_depth=scan_depth,
         token_budget=token_budget,
+        scan_mode=check_scan_mode(scan_mode),
+        scan_external_context=check_scan_external_context(scan_external_context),
     )
     session.add(book)
     await session.commit()
@@ -153,6 +197,8 @@ async def update_lorebook(
     description: str | None = None,
     scan_depth: int | None = None,
     token_budget: int | None = None,
+    scan_mode: str | None = None,
+    scan_external_context: bool | None = None,
 ) -> Lorebook | None:
     book = await _get_owned_book(session, user_id, book_id)
     if book is None:
@@ -164,13 +210,17 @@ async def update_lorebook(
     if description is not None:
         book.description = description
     if scan_depth is not None:
-        if scan_depth < 1:
-            raise ValueError("scan_depth must be >= 1")
-        book.scan_depth = scan_depth
+        book.scan_depth = check_scan_depth(scan_depth)
     if token_budget is not None:
         if token_budget < 1:
             raise ValueError("token_budget must be >= 1")
         book.token_budget = token_budget
+    if scan_mode is not None:
+        book.scan_mode = check_scan_mode(scan_mode)
+    if scan_external_context is not None:
+        book.scan_external_context = check_scan_external_context(
+            scan_external_context
+        )
     await session.commit()
     return book
 
@@ -192,10 +242,17 @@ async def create_entry(
     content: str = "",
     keys: list[str] | None = None,
     secondary_keys: list[str] | None = None,
+    selective_logic: str = "and_any",
+    inclusion_group: str = "",
+    group_weight: int = 100,
+    probability: int = 100,
     priority: int = 100,
     position: str = "before_char",
+    depth: int | None = None,
+    role: str = "system",
     enabled: bool = True,
     constant: bool = False,
+    vectorised: bool = False,
     case_sensitive: bool = False,
     whole_word: bool = True,
     sticky_prompts: int = 0,
@@ -211,10 +268,17 @@ async def create_entry(
         content=content,
         keys_json=_encode_keys(keys),
         secondary_keys_json=_encode_keys(secondary_keys),
+        selective_logic=check_selective_logic(selective_logic),
+        inclusion_group=check_inclusion_group(inclusion_group),
+        group_weight=check_group_weight(group_weight),
+        probability=check_probability(probability),
         priority=priority,
         position=_check_position(position),
+        depth=check_depth(depth),
+        role=check_role(role),
         enabled=enabled,
         constant=constant,
+        vectorised=bool(vectorised),
         case_sensitive=case_sensitive,
         whole_word=whole_word,
         sticky_prompts=_check_prompts("sticky_prompts", sticky_prompts),
@@ -261,11 +325,23 @@ async def update_entry(
         entry.keys_json = _encode_keys(fields["keys"])
     if "secondary_keys" in fields:
         entry.secondary_keys_json = _encode_keys(fields["secondary_keys"])
+    if "selective_logic" in fields:
+        entry.selective_logic = check_selective_logic(fields["selective_logic"])
+    if "inclusion_group" in fields:
+        entry.inclusion_group = check_inclusion_group(fields["inclusion_group"])
+    if "group_weight" in fields:
+        entry.group_weight = check_group_weight(fields["group_weight"])
+    if "probability" in fields:
+        entry.probability = check_probability(fields["probability"])
     if "priority" in fields:
         entry.priority = int(fields["priority"])
     if "position" in fields:
         entry.position = _check_position(fields["position"])
-    for flag in ("enabled", "constant", "case_sensitive", "whole_word"):
+    if "depth" in fields:
+        entry.depth = check_depth(fields["depth"])
+    if "role" in fields:
+        entry.role = check_role(fields["role"])
+    for flag in ("enabled", "constant", "vectorised", "case_sensitive", "whole_word"):
         if flag in fields:
             setattr(entry, flag, bool(fields[flag]))
     for knob in ("sticky_prompts", "cooldown_prompts", "delay_prompts"):

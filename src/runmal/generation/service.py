@@ -74,6 +74,7 @@ async def generate_events(
     backend: ChatBackend | None = None,
     params: SamplingParams | None = None,
     retry_policy: RetryPolicy | None = None,
+    structured=None,
 ):
     """Yield UI-shaped SSE dicts for `request_id` through the backend seam.
 
@@ -89,7 +90,11 @@ async def generate_events(
     if retry_policy is not None:
         stream = stream_with_retry(
             backend, chat_messages, params or SamplingParams(), token,
-            request_id=request_id, policy=retry_policy)
+            request_id=request_id, policy=retry_policy, structured=structured)
+    elif structured is not None:
+        stream = backend.chat_stream(
+            chat_messages, params or SamplingParams(), token,
+            structured=structured)
     else:
         stream = backend.chat_stream(chat_messages, params or SamplingParams(), token)
     saw_done = False

@@ -108,9 +108,30 @@ UNSUPPORTED_SAMPLERS = frozenset(
         "min_p",
         "repetition_penalty",
         "stop",
+        # P-060: logit_bias joins the canonical vocabulary; the
+        # OpenAI chat route does not serve it either (P-009 D2
+        # shape: unserved controls are named, never silent).
+        "logit_bias",
         "presence_penalty",
         "frequency_penalty",
         "context_length",
+        "typical_p",
+        "top_a",
+        "tfs_z",
+        "epsilon_cutoff",
+        "eta_cutoff",
+        "dry_multiplier",
+        "dry_base",
+        "dry_allowed_length",
+        "dry_penalty_last_n",
+        "dry_sequence_breakers",
+        "xtc_probability",
+        "xtc_threshold",
+        "mirostat_mode",
+        "mirostat_tau",
+        "mirostat_eta",
+        "dynamic_temperature_range",
+        "dynamic_temperature_exponent",
     }
 )
 
@@ -192,7 +213,12 @@ class AesirChatBackend(ChatBackend):
             ),
         )
 
-    async def chat_stream(self, messages, params, cancel):
+    async def chat_stream(self, messages, params, cancel, *, structured=None):
+        if structured is not None and structured.is_active():
+            raise InvalidRequest(
+                f"aesir does not serve structured mode {structured.mode!r}: "
+                "the P-009 route matrix never recorded response_format"
+            )
         if cancel.is_set():
             raise GenerationCancelled("generation cancelled")
         wire_params, _warnings = map_params(params)

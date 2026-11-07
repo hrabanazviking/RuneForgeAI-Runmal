@@ -69,6 +69,8 @@ Contains activation metadata, content, position/order/priority, timed state conf
 
 Runtime activation state such as sticky/cooldown counters should be modeled separately from the canonical entry definition when necessary.
 
+That separate model is `chat_lore_entry_states` (migration 0025, P-033): one row per (chat, lore entry) holding the live sticky/cooldown/delay counters (`sticky_remaining`, `cooldown_remaining`, `delay_remaining`, `delay_armed`) for `lorebooks.activation.EntryState`, while the canonical entry row holds only the timing configuration (`sticky_prompts` / `cooldown_prompts` / `delay_prompts`). Absence of a row means the default (all-zero, unarmed) state, so a row exists only while a timed effect is in flight; deleting a chat or an entry cascades its state rows away. Persistence lives in `runmal.lorebooks.state` (load/save/clear plus `run_activation_tick`); preview and prompt inspection remain clean-state and never read or write these rows.
+
 ## Prompt presets
 
 Sampling and prompt-layout configuration should not require one SQL column per provider-specific knob. Canonical/variable parameter bags remain versioned and validated.

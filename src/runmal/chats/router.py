@@ -10,7 +10,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.chats import service
 from runmal.chats.service import chat_to_dict, event_to_dict, message_to_dict
+from runmal.chats.swipes import settings_to_data
 from runmal.db.deps import get_owner_id, get_session
+from runmal.prompt.authors_note import note_to_data
+from runmal.prompt.post_history import instructions_to_data
 
 router = APIRouter(tags=["chats"])
 
@@ -37,8 +40,48 @@ class ChatPresetIn(BaseModel):
     preset_id: str | None = None
 
 
+class ChatAuthorsNoteIn(BaseModel):
+    text: str = ""
+    depth: int = 4
+    frequency: int = 1
+    enabled: bool = True
+    role: str = "system"
+
+
+class ChatPostHistoryIn(BaseModel):
+    text: str = ""
+    enabled: bool = True
+    role: str = "system"
+
+
 class ChatBackendProfileIn(BaseModel):
     profile_id: str | None = None
+
+
+class SwipeCreate(BaseModel):
+    content: str = Field(min_length=1)
+
+
+class SwipeSelectIn(BaseModel):
+    action: str | None = None
+    index: int | None = None
+
+
+class SwipeSettingsIn(BaseModel):
+    enabled: bool = True
+    params: dict = {}
+class BranchCreate(BaseModel):
+    message_id: str | None = None
+    name: str | None = None
+
+
+class MergeBackIn(BaseModel):
+    target_id: str | None = None
+    name: str | None = None
+
+
+class BranchNameIn(BaseModel):
+    name: str
 
 
 @router.post("/chats", status_code=status.HTTP_201_CREATED)
@@ -158,6 +201,70 @@ async def delete_message(
     return {"deleted": True, "id": message_id}
 
 
+@router.post(
+    "/chats/{chat_id}/messages/{message_id}/swipes",
+    status_code=status.HTTP_201_CREATED,
+)
+async def add_swipe(
+    chat_id: str,
+    message_id: str,
+    body: SwipeCreate,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Append an alternate to a message's swipe deck (P-065)."""
+    try:
+        message = await service.add_swipe(
+            session, user_id, chat_id, message_id, body.content
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if message is None:
+        raise HTTPException(status_code=404, detail="message not found")
+    return message_to_dict(message)
+
+
+@router.post("/chats/{chat_id}/messages/{message_id}/swipes/select")
+async def select_swipe(
+    chat_id: str,
+    message_id: str,
+    body: SwipeSelectIn,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Select the active alternate in a message's swipe deck (P-065)."""
+    try:
+        message = await service.select_swipe(
+            session, user_id, chat_id, message_id,
+            action=body.action, index=body.index,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if message is None:
+        raise HTTPException(status_code=404, detail="message not found")
+    return message_to_dict(message)
+
+
+@router.delete("/chats/{chat_id}/messages/{message_id}/swipes/{index}")
+async def delete_swipe(
+    chat_id: str,
+    message_id: str,
+    index: int,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Delete one alternate from a message's swipe deck (P-065)."""
+    try:
+        message = await service.delete_swipe(
+            session, user_id, chat_id, message_id, index
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if message is None:
+        raise HTTPException(status_code=404, detail="message not found")
+    return message_to_dict(message)
+
+
 @router.post("/chats/{chat_id}/preset")
 async def set_chat_preset(
     chat_id: str,
@@ -175,6 +282,115 @@ async def set_chat_preset(
     if chat is None:
         raise HTTPException(status_code=404, detail="chat not found")
     return chat_to_dict(chat)
+
+
+@router.post("/chats/{chat_id}/authors-note")
+async def set_chat_authors_note(
+    chat_id: str,
+    body: ChatAuthorsNoteIn,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Set a chat's author's note (P-056)."""
+    try:
+        chat = await service.set_chat_authors_note(
+            session, user_id, chat_id, body.model_dump()
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if chat is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return chat_to_dict(chat)
+
+
+@router.get("/chats/{chat_id}/authors-note")
+async def get_chat_authors_note(
+    chat_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """A chat's author's note (P-056)."""
+    note = await service.get_chat_authors_note(session, user_id, chat_id)
+    if note is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return note_to_data(note)
+
+
+@router.post("/chats/{chat_id}/post-history")
+async def set_chat_post_history(
+    chat_id: str,
+    body: ChatPostHistoryIn,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Set a chat's post-history instructions (P-057)."""
+    try:
+        chat = await service.set_chat_post_history(
+            session, user_id, chat_id, body.model_dump()
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if chat is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return chat_to_dict(chat)
+
+
+@router.get("/chats/{chat_id}/post-history")
+async def get_chat_post_history(
+    chat_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """A chat's post-history instructions (P-057)."""
+    ph = await service.get_chat_post_history(session, user_id, chat_id)
+    if ph is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return instructions_to_data(ph)
+
+
+@router.get("/chats/{chat_id}/swipe-settings")
+async def get_chat_swipe_settings(
+    chat_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """A chat's swipe-regeneration settings (P-065)."""
+    settings = await service.get_chat_swipe_settings(session, user_id, chat_id)
+    if settings is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return settings_to_data(settings)
+
+
+@router.post("/chats/{chat_id}/swipe-settings")
+async def set_chat_swipe_settings(
+    chat_id: str,
+    body: SwipeSettingsIn,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Set a chat's swipe-regeneration settings (P-065)."""
+    try:
+        chat = await service.set_chat_swipe_settings(
+            session, user_id, chat_id, body.model_dump()
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if chat is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return chat_to_dict(chat)
+
+
+@router.get("/chats/{chat_id}/swipe-regen-params")
+async def get_swipe_regen_params(
+    chat_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Effective swipe-regeneration params for a chat (P-065)."""
+    resolved = await service.resolve_swipe_params(session, user_id, chat_id)
+    if resolved is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return {"chat_id": chat_id, "params": resolved}
 
 
 @router.post("/chats/{chat_id}/backend-profile")
@@ -235,6 +451,85 @@ async def generation_manifest(
     # the fake backend takes the canonical bag as-is
     return {"chat_id": chat.id, "preset": preset_dict, "backend": backend,
             "params": preset_dict["params"], "mapped": [], "dropped": []}
+
+
+@router.post("/chats/{chat_id}/branches", status_code=status.HTTP_201_CREATED)
+async def fork_chat(
+    chat_id: str,
+    body: BranchCreate,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Fork a chat at a message (P-066). Never destructive: the
+    source is copied, never mutated. No message_id = whole chat."""
+    from runmal.chats import branches
+
+    try:
+        branch = await branches.fork_chat(session, user_id, chat_id, body.message_id, body.name)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if branch is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    history = await service.get_history(session, user_id, branch.id) or []
+    return chat_to_dict(branch, len(history))
+
+
+@router.get("/chats/{chat_id}/branches")
+async def list_branches(
+    chat_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """A chat's branch family (P-066): root, ancestors, self,
+    children, descendants, family -- every member named."""
+    from runmal.chats import branches
+
+    family = await branches.list_branch_family(session, user_id, chat_id)
+    if family is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return family
+
+
+@router.post("/chats/{chat_id}/merge-back", status_code=status.HTTP_201_CREATED)
+async def merge_back(
+    chat_id: str,
+    body: MergeBackIn,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Merge a branch back as a NEW branch (P-066): target history
+    plus the branch's divergent suffix. Sources are never mutated.
+    target_id defaults to the branch's parent."""
+    from runmal.chats import branches
+
+    try:
+        merged = await branches.merge_back(session, user_id, chat_id, body.target_id, body.name)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if merged is None:
+        raise HTTPException(status_code=404, detail="chat or target not found")
+    history = await service.get_history(session, user_id, merged.id) or []
+    return chat_to_dict(merged, len(history))
+
+
+@router.post("/chats/{chat_id}/branch-name")
+async def rename_branch(
+    chat_id: str,
+    body: BranchNameIn,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Name a branch (P-066): sets the branch's own title only."""
+    from runmal.chats import branches
+
+    try:
+        chat = await branches.rename_branch(session, user_id, chat_id, body.name)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if chat is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    history = await service.get_history(session, user_id, chat_id) or []
+    return chat_to_dict(chat, len(history))
 
 
 @router.get("/chats/{chat_id}/export")

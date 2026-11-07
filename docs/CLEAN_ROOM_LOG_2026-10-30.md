@@ -383,3 +383,299 @@ source in §0(2) and appends its entry here:
   own prompt-composer slots (S205/S206). No persona file
   was downloaded; the slice's test personas are authored
   fresh in the test module (P-005 discipline).
+- **P-020 (2026-10-31, own tree only):** no new external
+  source and no mirror reading. The chat-file shape (ST-shaped
+  JSONL: metadata header line, then one message object per line
+  with `mes` / `swipes` / `swipe_id` / `swipe_info` / `extra` /
+  `send_date`, plus branch-linkage keys in `chat_metadata`)
+  implements the shape exactly as P-002's census already
+  recorded it from SillyTavern's official public documentation,
+  in the form P-005's authored corpus fixture
+  (`chat_st.jsonl`) already carries, plus public JSONL format
+  documentation. The native document shape is Runmal's own
+  S111 export. No SillyTavern or Voxta source code was read
+  and no chat file was downloaded; the slice's test chats are
+  authored fresh in the test modules (P-005 discipline).
+- **P-021 (2026-10-31, own tree only):** no new external
+  source and no mirror reading. The preset interop shapes
+  implement ST-34 exactly as P-002's census already recorded
+  it from SillyTavern's official public documentation (logged
+  in §2 above), in the shapes P-005's authored corpus
+  fixtures already carry; the stored carriage rides Rúnmál's
+  own S207 preset system and migration chain. No preset file
+  was downloaded; the slice's extra test presets are authored
+  inline in the test module (P-005 discipline).
+- **P-023 (2026-11-06, own tree only):** no new external
+  source and no mirror reading. Card thumbnails & assets
+  implement the v3 `assets` descriptor shapes exactly as
+  P-002's census and the public Character Card v3 spec
+  already logged them (§1/§2 above, via P-016's entry), over
+  Rúnmál's own S106 character storage and S113 CHARX asset
+  handling; image inspection is stdlib header parsing of the
+  public PNG/JPEG/GIF/WebP formats and the thumbnailer is an
+  own-tree PNG codec. No SillyTavern or Voxta source code was
+  read and no asset file was downloaded; the slice's test
+  images are authored fresh in the test module (P-005
+  discipline).
+- **P-024 (2026-11-06, own tree only):** no new external source and no mirror reading. Tag/favourite/library-organisation behaviour (per-card tags, a favourite flag, filter/search/sort over a card library) implements only the public, commonly documented library behaviour already recorded in P-002's census spirit; storage rides Rúnmál's own migration chain (0021 after banking renumber) and the card parser/exporter. No SillyTavern or Voxta source code was read and no files were downloaded; the slice's test cards are authored fresh in the test module (P-005 discipline).
+- **P-027 (2026-11-06, own tree only):** no new external source and no mirror reading. Content safety rails (imported content is data, never code; importers parse defensively) rest on the repo's own founding security model, docs/SECURITY_MODEL.md sections 9 and 13, and the roadmap P-027 line, implemented over Rúnmál's own card, lorebook, persona, preset, chat-file and portable-archive importers. No SillyTavern or Voxta source code was read and no files were downloaded; the slice's test files are authored fresh in the test module (P-005 discipline).
+- **P-028 (2026-11-06, own tree only):** no new external source and no mirror reading. The `.runmal` archive growth (cards/lorebooks/presets carried with the existing per-member SHA-256 checksum discipline, plus the P-024 library organisation that was missing) is built entirely from Rúnmál's own roadmap line, its own S801/S802 portable archive and restore code, and the in-repo P-019/P-021/P-024 slice documents. No SillyTavern or Voxta source code was read and no files were downloaded; the slice's test library is authored fresh in the test module (P-005 discipline).
+- **P-029 (2026-11-06, own tree only):** no new external source and no mirror reading. Provenance on import (a per-character record of where a card came from and when, so creator credit survives in Runmal) rests on Runmal's own P-022 bulk-import report facts and P-025 stored-form identity, plus the public Character Card v2/v3 creator-field shapes already logged in §1/§2 above (via the P-015/P-016 entries), implemented over Runmal's own character funnel, library import and migration chain. No SillyTavern or Voxta source code was read and no card file was downloaded; the slice's test cards are authored fresh in the test module (P-005 discipline).
+- **P-031 (2026-11-06, own tree only):** no new external source and no mirror reading. Recursive lorebook scanning (entries triggering entries, with depth limits and cycle safety, token budget enforced) is built entirely from Runmal's own roadmap line and its own S202 keyword scan, S203 activation and S204 budget pipeline, plus the public world-info behaviour already recorded in P-002's census. No SillyTavern or Voxta source code was read and no files were downloaded; the slice's test entries are authored fresh in the test module (P-005 discipline).
+- **P-032 (2026-11-06, own tree only):** no new external
+  source and no mirror reading. Selective logic (the four
+  public modes AND ANY / AND ALL / NOT ANY / NOT ALL combined
+  with an entry's primary keys, with the world-info
+  `selectiveLogic` integer codes 0/1/2/3 in that documented
+  order) implements ST-16 exactly as P-002's census already
+  recorded it from SillyTavern's official public documentation
+  (logged in §2 above), in the shape P-005's authored corpus
+  fixture already carries (`selectiveLogic` 0 and 1); the
+  truth table, the empty-secondary rule, and the code mapping
+  are built over Rúnmál's own S202 scanner and S201 store.
+  No SillyTavern or Voxta source code was read and no file
+  was downloaded; the slice's test entries are authored fresh
+  in the test module (P-005 discipline).
+- **P-033 (2026-11-06, own tree only):** no new external
+  source and no mirror reading. Timed effects persistence
+  (sticky/cooldown/delay counters surviving across a chat's
+  life) is built from Rúnmál's own S203 activation semantics,
+  the separate-modelling note in `docs/DATA_MODEL.md` (runtime
+  activation state modelled separately from the canonical
+  entry definition), and the public world-info behaviour
+  already recorded in P-002's census. No SillyTavern or Voxta
+  source code was read and no file was downloaded; the
+  slice's test entries are authored fresh in the test module
+  (P-005 discipline).
+- **P-034 (2026-11-06, own tree only):** no new external
+  source and no mirror reading. Inclusion groups (mutually
+  exclusive entries resolved by weight/priority,
+  deterministically) are built entirely from Rúnmál's own
+  roadmap line and its own S202/S203/S204 lorebook pipeline,
+  over the public world-info field names (`group`,
+  `groupWeight`, `groupOverride`, `useGroupScoring`) exactly
+  as P-005's authored corpus fixture already carries them
+  (the Gale-Bell entry: `weather` / 75); the deterministic
+  resolution semantics (weight, then priority, then entry
+  id; no random draw) are Rúnmál's own design for the
+  roadmap line, not a reproduction of any mirror behaviour.
+  No SillyTavern or Voxta source code was read and no file
+  was downloaded; the slice's test entries are authored fresh
+  in the test module (P-005 discipline).
+- **P-035 (2026-11-06, own tree only):** no new external
+  source and no mirror reading. Entry states (the three
+  activation kinds -- constant, selective, vectorised --
+  served by one activation engine) are built entirely from
+  Runmal's own roadmap line and its own S202/S203/S204
+  lorebook pipeline, over the public entry-strategy behaviour
+  already recorded in P-002's census (ST-17: constant =
+  always inserted, keyword-triggered, or vectorised =
+  inserted by embedding similarity subject to all other
+  checks) and the public world-info field name
+  ('vectorized') exactly as P-005's authored corpus fixture
+  already carries it (the Harbour Law entry: constant and
+  vectorized both true; the Gale-Bell entry: vectorized
+  false). The kind derivation and precedence (constant >
+  vectorised > selective), the via='vector' dispatch, and
+  the caller-supplied vector-hit seam (the embedding matcher
+  itself is P-041's road) are Runmal's own design for the
+  roadmap line. No SillyTavern or Voxta source code was read
+  and no file was downloaded; the slice's test entries are
+  authored fresh in the test module (P-005 discipline).
+- **P-036 (2026-11-06, own tree only):** no new external
+  source and no mirror reading. Probability & RNG honesty
+  (probabilistic entries use a seeded, inspectable roll)
+  is built entirely from Rúnmál's own roadmap line and its
+  own S204 budget pipeline, over the public world-info
+  field names (`probability`, `useProbability`) exactly as
+  P-005's authored corpus fixture already carries them
+  (the Gale-Bell entry: 80 / true); the roll derivation
+  (SHA-256 over seed/context/entry-id, algorithm-versioned,
+  recorded per entry) is Rúnmál's own design for the
+  roadmap line, not a reproduction of any mirror behaviour.
+  No SillyTavern or Voxta source code was read and no file
+  was downloaded; the slice's test entries are authored
+  fresh in the test module (P-005 discipline).
+- **P-037 (2026-11-06, own tree only):** no new external
+  source and no mirror reading. Scan depth & context windows
+  (per-book scan settings -- messages-deep, whole-chat,
+  external context -- as data) are built entirely from
+  Rúnmál's own roadmap line and its own S201/S202 lorebook
+  pipeline: `scan_depth` is Rúnmál's own stored book field
+  since S201 (migration 0004), and the world-info shapes the
+  slice touches are exactly those already recorded in-tree
+  (book settings riding in `originalData` and the per-entry
+  `scanDepth` field, both as P-005's authored corpus fixture
+  already carries them -- the Gale-Bell entry's explicit-null
+  `scanDepth` stays preserved-as-data, no per-entry semantics
+  claimed). The mode vocabulary (`depth` / `whole_chat`),
+  the external-segment rule (appended, uncounted against the
+  depth, governed by its own per-book flag), and the honest
+  hit provenance (`external_indices` beside `message_indices`)
+  are Rúnmál's own design for the roadmap line, not a
+  reproduction of any mirror behaviour. No SillyTavern or
+  Voxta source code was read and no file was downloaded;
+  the slice's test entries are authored fresh in the test
+  module (P-005 discipline).
+- **P-039 (2026-11-06, own tree only):** no new external
+  source and no mirror reading. Character-book binding
+  (a card's own lorebook travels with it and merges with
+  the world's by declared precedence) is built from the
+  card `character_book` field exactly as Rúnmál's own
+  P-015/P-016 public-spec import work and P-005's authored
+  corpus already record it, and from the world-info entry
+  field set P-019 recorded from public documentation.
+  The binding store, the three declared precedence modes
+  and the deterministic name-collision merge with shadowed
+  provenance are Rúnmál's own design for the roadmap line,
+  not a reproduction of any mirror behaviour. No
+  SillyTavern or Voxta source code was read and no file
+  was downloaded; the slice's test entries are authored
+  fresh in the test module (P-005 discipline).
+- **P-040 (2026-11-06, own tree only):** no new external
+  source and no mirror reading. Global + persona + chat
+  lore scopes are built from the layering behaviour the
+  P-002 census recorded from the mirrors' official public
+  documentation (a world layer applying everywhere, a
+  character layer, a per-chat layer, per-layer budgets).
+  The assignment store (one book, several scope rows), the
+  four-layer order world -> character -> persona -> chat
+  (the persona layer is Runmal's own placement: a chat's
+  persona IS a character here), the scope-budget semantics
+  (None unlimited, 0 mutes the layer, strictest assignment
+  wins), the most-specific-layer dedupe with shadowed
+  reporting, and the per-scope inspect summary are Runmal's
+  own design for the roadmap line, not a reproduction of
+  any mirror behaviour. No SillyTavern or Voxta source
+  code was read and no file was downloaded; the slice's
+  test entries are authored fresh in the test module
+  (P-005 discipline).
+- **P-043 (2026-11-06, own tree only):** no new external
+  source and no mirror reading. The activation inspector
+  (why did this entry fire -- matched keys and the recorded
+  roll shown per message) is built entirely from the roadmap
+  line and from facts the engine already records in-tree:
+  the S209/P-037 preview rows, the P-032 selective gate, the
+  P-036 recorded probability roll, the P-034 group outcome,
+  the P-033 timed counters, the P-041 matcher scores and the
+  S204 budget verdict. The explanation schema (one dict per
+  entry, per-message breakdown, tick totals, near misses as
+  first-class rows, and the explicit facts_not_recorded
+  list) is Runmal own design for the roadmap line, not a
+  reproduction of any mirror behaviour. No SillyTavern or
+  Voxta source code was read and no file was downloaded;
+  the slice test entries are authored fresh in the test
+  module (P-005 discipline).
+- **P-046 (2026-11-06, own tree only):** no new external
+  source and no mirror reading. The 10,000-entry scan
+  performance pass (a budget stated in-tree before measuring,
+  a deterministic synthetic book generated from an embedded
+  word list, a per-window token index over Runmal's own S202
+  scan core, and an in-process stored-vector cache closing
+  the in-process half of P-041's recorded debt) is built
+  entirely from the roadmap line and the P-046 scout/design
+  documents written in-tree for this slice. The budget,
+  derating method, cache key shape and equivalence-oracle
+  method are Runmal's own design for the roadmap line, not a
+  reproduction of any mirror behaviour. No SillyTavern or
+  Voxta source code was read and no file was downloaded; the
+  slice's test entries are authored fresh in the test modules
+  (P-005 discipline).
+- **Commissioned binding depth/role slice (2026-11-06,
+  own tree only):** no new external source and no mirror
+  reading. Closing gate finding F2 (character-book entries
+  carry P-038 placement into materialisation) is built
+  entirely from Runmal's own in-tree facts: the P-038
+  placement module's tolerant normalisers, the P-039
+  binding legs they were missing from, and the finding as
+  P-047's evidence and P-048's gate record state it. The
+  asymmetric degradation (bad depth to undeclared, bad
+  role to system) and the role/position code tables are
+  P-038's own, reused unchanged. No SillyTavern or Voxta
+  source code was read and no file was downloaded; the
+  slice's test entries are authored fresh in the test
+  module (P-005 discipline).
+- **P-049 (2026-11-06, own tree only):** no new external
+  source and no mirror reading. The prompt manager (ordered,
+  toggleable prompt blocks as a first-class editable
+  structure) is built entirely from the roadmap line and
+  Runmal's own prompt stack: the S205 slot kinds and baseline
+  order supply the blocks (position-faithful, so lore and
+  memory each appear at both of their baseline positions),
+  the S206 depth contract supplies the splice guard, and the
+  S214 trace supplies the disabled-block discard record. The
+  layout shape ({blocks: [{block, enabled}]}, fill-missing
+  normalisation, block-position order arithmetic) is Runmal's
+  own design for the roadmap line, not a reproduction of any
+  mirror behaviour. No SillyTavern or Voxta source code was
+  read and no file was downloaded; the slice's test entries
+  are authored fresh in the test module (P-005 discipline).
+- **P-050 (2026-11-06, public format specifications only):**
+  the instruct templates (ChatML, Llama-3, Alpaca, Vicuna) are
+  built from the formats' public specifications as generally
+  published (turn markers, header framing, section headings,
+  and each format's customary system preamble text), plus
+  Runmal's own in-tree facts: the S205 composer's structured
+  messages supply what gets rendered, the S214 trace contract
+  bounds what the inspector may echo, P-049 supplies the
+  data/validation/resolution pattern, and the presets'
+  template_ref supplies the registry's reason to exist. The
+  per-model default table, the plain (no-framing) honest
+  default, and the template data shape are Runmal's own design
+  for the roadmap line. No SillyTavern or Voxta source code
+  was read and no file was downloaded; the slice's test
+  conversations are authored fresh in the test module
+  (P-005 discipline).
+- **P-051 (2026-11-06, public behaviour census + own tree
+  only):** no new external source and no mirror reading. The
+  context templates (story-string assembly formats as
+  editable data, imported from P-021's preset carriage) are
+  built from the roadmap line, the in-tree census ST-32
+  description of the public behaviour (named anchors,
+  example/chat-start separators, separators as stop strings),
+  the P-005/P-021 fixture spellings for prompt identifiers,
+  and Runmal's own in-tree facts: the S205 slot kinds and
+  baseline order supply the anchors (position-faithful, as
+  P-049), the S206 depth contract supplies the splice guard,
+  P-049/P-050 supply the data/validation/resolution pattern,
+  and the S214 trace bounds what the inspector may echo. The
+  segment data shape, the story-string fill-disabled rule,
+  the preset identifier-to-anchor mapping, and the plain
+  honest default are Runmal's own design for the roadmap
+  line, not a reproduction of any mirror behaviour. No
+  SillyTavern or Voxta source code was read and no file was
+  downloaded; the slice's test entries are authored fresh in
+  the test module (P-005 discipline).
+- **P-052 (2026-11-06, public sampler semantics only):** the
+  complete sampler surface is built from the public sampler
+  literature and public backend documentation: DRY and XTC
+  from their public sampling descriptions, Mirostat / typical
+  / tail-free / epsilon / eta / dynamic-temperature from the
+  public sampler-research descriptions and the public
+  llama.cpp sampling documentation, and Ollama's forwarded
+  options from Ollama's public options documentation. The
+  catalogue shape, the surface/merge/resolution design, and
+  the per-backend honesty accounting are Runmal's own design
+  for the roadmap line, extending the tree's S207/S208/S301/
+  S310 contracts. No SillyTavern or Voxta source code was
+  read and no file was downloaded; the slice's tests are
+  authored fresh in the test module (P-005 discipline).
+- **P-055 (2026-11-07, public behaviour + own tree
+  only):** the text-macro engine (the {{name}} and
+  {{name::arg1::arg2}} forms and the identity / clock /
+  random / variable / transform set) is built from the
+  mirrors' publicly documented macro behaviour as
+  generally published, plus Runmal's own in-tree facts:
+  S110 substitute_macros and S307 resolve_variables
+  supply the legacy surfaces whose behaviour is preserved
+  untouched, the P-036 seeded-RNG discipline supplies
+  the recorded-roll honesty pattern, and the tools
+  router's existing registry / preview endpoints supply
+  the API shape. The single-pass rule, the unknown /
+  malformed honesty contract (preserved verbatim and
+  reported, or refused in strict mode), the variable
+  working-copy rule, and the engine data shapes are
+  Runmal's own design for the roadmap line. No
+  SillyTavern or Voxta source code was read and no file
+  was downloaded; the slice's tests are authored fresh
+  in the test module (P-005 discipline).

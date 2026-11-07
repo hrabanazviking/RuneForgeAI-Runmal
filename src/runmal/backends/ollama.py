@@ -27,17 +27,23 @@ from runmal.backends.errors import (
 from runmal.backends.events import Done, TextDelta, UsageUpdate
 from runmal.backends.models import Capabilities, HealthStatus, ModelInfo
 from runmal.backends.params import SamplingParams
+from runmal.backends.structured import wire_payload
 from runmal.tokens import TokenQuality
 
 SAMPLERS = frozenset({
     "temperature", "top_p", "top_k", "min_p", "seed", "stop",
     "max_tokens", "repetition_penalty", "context_length",
+    # P-052: Ollama's public options carry these natively; the
+    # adapter forwards them via _OPTION_NAMES below.
+    "typical_p", "tfs_z", "mirostat_mode", "mirostat_tau", "mirostat_eta",
 })
 _OPTION_NAMES = {
     "temperature": "temperature", "top_p": "top_p", "top_k": "top_k",
     "min_p": "min_p", "seed": "seed", "stop": "stop",
     "max_tokens": "num_predict", "repetition_penalty": "repeat_penalty",
-    "context_length": "num_ctx",
+    "context_length": "num_ctx", "typical_p": "typical_p", "tfs_z": "tfs_z",
+    "mirostat_mode": "mirostat", "mirostat_tau": "mirostat_tau",
+    "mirostat_eta": "mirostat_eta",
 }
 
 
@@ -88,7 +94,8 @@ class OllamaChatBackend(ChatBackend):
         return ModelInfo(
             model_id=name, display_name=name, backend_key="ollama",
             capabilities=Capabilities(
-                chat=True, streaming=True, context_length=context_length,
+                chat=True, streaming=True, structured_output=True,
+                context_length=context_length,
                 token_count_quality=TokenQuality.ESTIMATED,
                 supported_samplers=SAMPLERS))
 
@@ -97,7 +104,7 @@ class OllamaChatBackend(ChatBackend):
         return {_OPTION_NAMES[k]: v for k, v in filtered.to_bag().items()
                 if k in _OPTION_NAMES}
 
-    async def chat_stream(self, messages, params, cancel):
+    async def chat_stream(self, messages, params, cancel, *, structured=None):
         if cancel.is_set():
             raise GenerationCancelled("generation cancelled")
         payload = {
@@ -106,6 +113,9 @@ class OllamaChatBackend(ChatBackend):
             "stream": True,
             "options": self._options(params),
         }
+        if structured is not None and structured.is_active():
+            # format is a TOP-LEVEL /api/chat field, never an option.
+            payload.update(wire_payload(self.backend_key, structured))
         try:
             async with self._client.stream("POST", "/api/chat", json=payload) as resp:
                 if resp.status_code >= 400:

@@ -5,6 +5,14 @@ deterministically. Nothing is silently lost: every input parameter ends up
 either in the output ``params``, in ``mapped`` (renamed, same value), or in
 ``dropped`` (with an explicit reason). Provider quirks live here and only
 here, behind the backend seam.
+
+P-053 alignment: the profiles below are kept in exact agreement with
+the adapters' own declared sampler sets (Ollama serves ``min_p`` and
+``context_length`` — mapped to ``min_p`` / ``num_ctx`` here exactly as
+the adapter's own options mapping does; OpenAI's unserved canonical
+controls carry named reasons instead of the generic unknown-parameter
+drop). ``runmal.backends.capabilities.audit_truth`` pins the agreement
+so the two truth sources cannot drift apart again silently.
 """
 
 from __future__ import annotations
@@ -54,12 +62,32 @@ OPENAI_PROFILE = BackendProfile(
         "presence_penalty": "presence_penalty",
         "stop": "stop",
         "seed": "seed",
+        "logit_bias": "logit_bias",
     },
     unsupported={
         "top_k": "OpenAI chat completions has no top_k parameter",
+        "min_p": "OpenAI chat completions has no min_p parameter",
         "repetition_penalty": (
             "OpenAI uses frequency_penalty/presence_penalty instead"
         ),
+        "typical_p": "OpenAI chat completions has no typical_p parameter",
+        "top_a": "OpenAI chat completions has no top_a parameter",
+        "tfs_z": "OpenAI chat completions has no tfs_z parameter",
+        "epsilon_cutoff": "OpenAI chat completions has no epsilon_cutoff parameter",
+        "eta_cutoff": "OpenAI chat completions has no eta_cutoff parameter",
+        "dry_multiplier": "OpenAI chat completions has no DRY sampler",
+        "dry_base": "OpenAI chat completions has no DRY sampler",
+        "dry_allowed_length": "OpenAI chat completions has no DRY sampler",
+        "dry_penalty_last_n": "OpenAI chat completions has no DRY sampler",
+        "dry_sequence_breakers": "OpenAI chat completions has no DRY sampler",
+        "xtc_probability": "OpenAI chat completions has no XTC sampler",
+        "xtc_threshold": "OpenAI chat completions has no XTC sampler",
+        "mirostat_mode": "OpenAI chat completions has no Mirostat sampler",
+        "mirostat_tau": "OpenAI chat completions has no Mirostat sampler",
+        "mirostat_eta": "OpenAI chat completions has no Mirostat sampler",
+        "dynamic_temperature_range": "OpenAI chat completions has no dynamic temperature",
+        "dynamic_temperature_exponent": "OpenAI chat completions has no dynamic temperature",
+        "context_length": "context length is an engine property, not a per-request parameter",
     },
 )
 
@@ -69,14 +97,34 @@ OLLAMA_PROFILE = BackendProfile(
         "temperature": "temperature",
         "top_p": "top_p",
         "top_k": "top_k",
+        "min_p": "min_p",
         "seed": "seed",
         "stop": "stop",
         "max_tokens": "num_predict",
         "repetition_penalty": "repeat_penalty",
+        "typical_p": "typical_p",
+        "tfs_z": "tfs_z",
+        "mirostat_mode": "mirostat",
+        "mirostat_tau": "mirostat_tau",
+        "mirostat_eta": "mirostat_eta",
+        "context_length": "num_ctx",
     },
     unsupported={
         "frequency_penalty": "Ollama options have no frequency_penalty",
         "presence_penalty": "Ollama options have no presence_penalty",
+        "top_a": "Ollama options have no top_a parameter",
+        "epsilon_cutoff": "Ollama options have no epsilon_cutoff parameter",
+        "eta_cutoff": "Ollama options have no eta_cutoff parameter",
+        "dry_multiplier": "Ollama options have no DRY sampler",
+        "dry_base": "Ollama options have no DRY sampler",
+        "dry_allowed_length": "Ollama options have no DRY sampler",
+        "dry_penalty_last_n": "Ollama options have no DRY sampler",
+        "dry_sequence_breakers": "Ollama options have no DRY sampler",
+        "xtc_probability": "Ollama options have no XTC sampler",
+        "xtc_threshold": "Ollama options have no XTC sampler",
+        "dynamic_temperature_range": "Ollama options have no dynamic temperature",
+        "dynamic_temperature_exponent": "Ollama options have no dynamic temperature",
+        "logit_bias": "Ollama options have no logit_bias parameter",
     },
 )
 

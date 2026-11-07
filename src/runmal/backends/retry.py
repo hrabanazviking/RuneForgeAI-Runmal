@@ -99,6 +99,7 @@ async def stream_with_retry(
     fallback: ChatBackend | None = None,
     sleep: Callable[[float], Awaitable[None]] | None = None,
     on_attempt: Callable[[AttemptRecord], None] | None = None,
+    structured=None,
 ) -> AsyncIterator[Event]:
     """Yield normalized events, retrying per the §7 contract above.
 
@@ -118,7 +119,14 @@ async def stream_with_retry(
                                          active.backend_key, phase))
             yielded = False
             try:
-                stream = active.chat_stream(messages, params, cancel)
+                # Passthrough is conditional: with no declaration the
+                # call is byte-identical to pre-P-061, so backends
+                # written against the old signature keep working.
+                if structured is not None:
+                    stream = active.chat_stream(
+                        messages, params, cancel, structured=structured)
+                else:
+                    stream = active.chat_stream(messages, params, cancel)
                 try:
                     async for event in stream:
                         yielded = True

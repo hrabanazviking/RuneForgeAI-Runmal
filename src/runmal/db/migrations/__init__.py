@@ -26,6 +26,25 @@ from runmal.db.migrations import (
     m0016_bridge_credentials,
     m0017_bridge_outbox,
     m0018_bridge_idempotency,
+    m0019_preset_interop,
+    m0020_character_assets,
+    m0021_library_organisation,
+    m0022_character_versions,
+    m0023_character_provenance,
+    m0024_lorebook_selective_logic,
+    m0025_chat_lore_entry_states,
+    m0026_lorebook_inclusion_groups,
+    m0027_lorebook_entry_states,
+    m0028_lorebook_probability,
+    m0029_lorebook_scan_windows,
+    m0030_lorebook_placement,
+    m0031_character_book_binding,
+    m0032_lorebook_scopes,
+    m0033_preset_bundles,
+    m0034_chat_authors_note,
+    m0035_chat_post_history,
+    m0036_message_swipes,
+    m0037_chat_branches,
 )
 
 MIGRATIONS: list[tuple[str, str, object]] = [
@@ -114,5 +133,100 @@ MIGRATIONS: list[tuple[str, str, object]] = [
         m0018_bridge_idempotency.REVISION,
         m0018_bridge_idempotency.DESCRIPTION,
         m0018_bridge_idempotency,
+    ),
+    (
+        m0019_preset_interop.REVISION,
+        m0019_preset_interop.DESCRIPTION,
+        m0019_preset_interop,
+    ),
+    (
+        m0020_character_assets.REVISION,
+        m0020_character_assets.DESCRIPTION,
+        m0020_character_assets,
+    ),
+    (
+        m0021_library_organisation.REVISION,
+        m0021_library_organisation.DESCRIPTION,
+        m0021_library_organisation,
+    ),
+    (
+        m0022_character_versions.REVISION,
+        m0022_character_versions.DESCRIPTION,
+        m0022_character_versions,
+    ),
+    (
+        m0023_character_provenance.REVISION,
+        m0023_character_provenance.DESCRIPTION,
+        m0023_character_provenance,
+    ),
+    (
+        m0024_lorebook_selective_logic.REVISION,
+        m0024_lorebook_selective_logic.DESCRIPTION,
+        m0024_lorebook_selective_logic,
+    ),
+    (
+        m0025_chat_lore_entry_states.REVISION,
+        m0025_chat_lore_entry_states.DESCRIPTION,
+        m0025_chat_lore_entry_states,
+    ),
+    (
+        m0026_lorebook_inclusion_groups.REVISION,
+        m0026_lorebook_inclusion_groups.DESCRIPTION,
+        m0026_lorebook_inclusion_groups,
+    ),
+    (
+        m0027_lorebook_entry_states.REVISION,
+        m0027_lorebook_entry_states.DESCRIPTION,
+        m0027_lorebook_entry_states,
+    ),
+    (
+        m0028_lorebook_probability.REVISION,
+        m0028_lorebook_probability.DESCRIPTION,
+        m0028_lorebook_probability,
+    ),
+    (
+        m0029_lorebook_scan_windows.REVISION,
+        m0029_lorebook_scan_windows.DESCRIPTION,
+        m0029_lorebook_scan_windows,
+    ),
+    (
+        m0030_lorebook_placement.REVISION,
+        m0030_lorebook_placement.DESCRIPTION,
+        m0030_lorebook_placement,
+    ),
+    (
+        m0031_character_book_binding.REVISION,
+        m0031_character_book_binding.DESCRIPTION,
+        m0031_character_book_binding,
+    ),
+    (
+        m0032_lorebook_scopes.REVISION,
+        m0032_lorebook_scopes.DESCRIPTION,
+        m0032_lorebook_scopes,
+    ),
+    (
+        m0033_preset_bundles.REVISION,
+        m0033_preset_bundles.DESCRIPTION,
+        m0033_preset_bundles,
+    ),
+    (
+        m0034_chat_authors_note.REVISION,
+        m0034_chat_authors_note.DESCRIPTION,
+        m0034_chat_authors_note,
+    ),
+    (
+        m0035_chat_post_history.REVISION,
+        m0035_chat_post_history.DESCRIPTION,
+        m0035_chat_post_history,
+    ),
+    (
+        m0036_message_swipes.REVISION,
+        m0036_message_swipes.DESCRIPTION,
+        m0036_message_swipes,
+    ),
+    (
+        m0037_chat_branches.REVISION,
+        m0037_chat_branches.DESCRIPTION,
+        m0037_chat_branches,
     ),
 ]

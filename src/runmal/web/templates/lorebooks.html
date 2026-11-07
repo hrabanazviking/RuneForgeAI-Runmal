@@ -11,7 +11,8 @@
 <main id="lorebooks-main" class="page">
   <h1>Lorebooks</h1>
   <p class="hint">Book/entry editor with key editing and import/export
-     (native + world-info shapes). Token file:
+     (native + world-info shapes). Every field the lore engine honours
+     is editable here (P-042). Token file:
      <code>{{ credential_hint }}</code></p>
   <div id="error-banner" class="hidden" role="alert">
     <span id="error-text"></span>
@@ -24,10 +25,47 @@
     <a id="export-link" href="#">Export JSON</a>
     <label>Import <input id="import-file" type="file" accept=".json,application/json"></label>
   </section>
+  <form id="book-form">
+    <h2>Book settings</h2>
+    <label>Name <input id="b-name"></label>
+    <label>Description <textarea id="b-description" rows="2"></textarea></label>
+    <label>Scan depth <input id="b-scan-depth" type="number" min="1" value="4"></label>
+    <label>Token budget (blank = unlimited)
+      <input id="b-token-budget" type="number" min="1"></label>
+    <label>Scan mode
+      <select id="b-scan-mode">
+        <option value="depth">depth</option>
+        <option value="whole_chat">whole_chat</option>
+      </select>
+    </label>
+    <label>Scan external context <input id="b-scan-external" type="checkbox"></label>
+    <button type="submit">Save book</button>
+  </form>
+  <section id="scope-panel">
+    <h2>Book scope (P-040 layers)</h2>
+    <p class="hint">Assign this book to a layer: global (every chat),
+       character / persona (owner = character id) or chat (owner =
+       chat id). A scope token budget of blank is unlimited; 0 mutes
+       the layer.</p>
+    <label>Scope kind
+      <select id="s-kind">
+        <option value="global">global</option>
+        <option value="character">character</option>
+        <option value="persona">persona</option>
+        <option value="chat">chat</option>
+      </select>
+    </label>
+    <label>Owner id <input id="s-owner"></label>
+    <label>Token budget (blank = unlimited, 0 = muted)
+      <input id="s-budget" type="number" min="0"></label>
+    <label>Position <input id="s-position" type="number" value="0"></label>
+    <button id="s-assign" type="button">Assign scope</button>
+    <ul id="s-list"></ul>
+  </section>
   <table id="entry-table">
     <thead>
       <tr><th>Name</th><th>Keys</th><th>Priority</th><th>Position</th>
-          <th>Constant</th><th></th></tr>
+          <th>Constant</th><th>Kind</th><th>Enabled</th><th></th></tr>
     </thead>
     <tbody id="entry-rows"></tbody>
   </table>
@@ -38,14 +76,41 @@
     <label>Content <textarea id="e-content" rows="4"></textarea></label>
     <label>Keys (comma separated) <input id="e-keys"></label>
     <label>Secondary keys (comma separated) <input id="e-secondary"></label>
+    <label>Selective logic
+      <select id="e-selective-logic">
+        <option value="and_any">and_any</option>
+        <option value="and_all">and_all</option>
+        <option value="not_any">not_any</option>
+        <option value="not_all">not_all</option>
+      </select>
+    </label>
+    <label>Inclusion group <input id="e-inclusion-group"></label>
+    <label>Group weight <input id="e-group-weight" type="number" value="100" min="0"></label>
+    <label>Probability (0–100) <input id="e-probability" type="number" value="100" min="0" max="100"></label>
     <label>Priority <input id="e-priority" type="number" value="100"></label>
     <label>Position
       <select id="e-position">
         <option value="before_char">before_char</option>
         <option value="after_char">after_char</option>
+        <option value="at_depth">at_depth</option>
       </select>
     </label>
+    <label>Depth (at-depth only; blank = default)
+      <input id="e-depth" type="number" min="0"></label>
+    <label>Role
+      <select id="e-role">
+        <option value="system">system</option>
+        <option value="user">user</option>
+        <option value="assistant">assistant</option>
+      </select>
+    </label>
+    <label>Enabled <input id="e-enabled" type="checkbox" checked></label>
     <label>Constant <input id="e-constant" type="checkbox"></label>
+    <label>Vectorised <input id="e-vectorised" type="checkbox"></label>
+    <label>Activation kind (derived)
+      <input id="e-activation-kind" readonly value="selective"></label>
+    <label>Case sensitive <input id="e-case-sensitive" type="checkbox"></label>
+    <label>Whole word <input id="e-whole-word" type="checkbox" checked></label>
     <label>Sticky prompts <input id="e-sticky" type="number" value="0" min="0"></label>
     <label>Cooldown prompts <input id="e-cooldown" type="number" value="0" min="0"></label>
     <label>Delay prompts <input id="e-delay" type="number" value="0" min="0"></label>
@@ -61,6 +126,23 @@
       <textarea id="p-messages" rows="4"></textarea></label>
     <label>Scan depth <input id="p-depth" type="number" min="1"></label>
     <label>Token budget <input id="p-budget" type="number" min="1"></label>
+    <label>Seed <input id="p-seed" type="number"></label>
+    <label>Roll context <input id="p-roll-context"></label>
+    <label>Scan mode
+      <select id="p-scan-mode">
+        <option value="">book default</option>
+        <option value="depth">depth</option>
+        <option value="whole_chat">whole_chat</option>
+      </select>
+    </label>
+    <label>Scan external context <input id="p-scan-external" type="checkbox"></label>
+    <label>External context (one per line)
+      <textarea id="p-external" rows="2"></textarea></label>
+    <label>Recursive scan <input id="p-recursive" type="checkbox"></label>
+    <label>Max recursion depth <input id="p-max-recursion" type="number" min="0"></label>
+    <label>Vector hit ids (comma separated) <input id="p-vector-hits"></label>
+    <label>Vector threshold <input id="p-vector-threshold" type="number" step="0.01" min="-1" max="1"></label>
+    <label>Vector max entries <input id="p-vector-max" type="number" min="1"></label>
     <button id="p-run" type="button">Preview activation</button>
     <p id="p-summary" class="hint"></p>
     <ul id="p-results"></ul>

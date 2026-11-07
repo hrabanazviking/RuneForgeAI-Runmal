@@ -10,7 +10,8 @@ Contents (owner-scoped): characters, chats (+messages), lorebooks
 (+entries), memories (+sources +chunks: text and provenance, never the
 derived vectors), sampling presets, backend profiles, connection
 profiles, groups (+members), per-character voice profiles, character
-asset files, and the public voice settings.
+asset files, per-character library organisation
+(tags and favourite flags), and the public voice settings.
 
 Exclusions, by policy (manifest records them):
 
@@ -49,6 +50,9 @@ from runmal.db.migrations import MIGRATIONS
 from runmal.db.models import (
     BackendProfile,
     Character,
+    CharacterAsset,
+    CharacterOrganisation,
+    CharacterTag,
     CharacterVoiceProfile,
     Chat,
     ConnectionProfile,
@@ -64,8 +68,12 @@ from runmal.db.models import (
     SecretEntry,
     User,
 )
+from runmal.safety import SafetyError, audit_zip_members
 
 FORMAT_NAME = "runmal-archive"
+MAX_ARCHIVE_MEMBERS = 100_000
+MAX_ARCHIVE_MEMBER_BYTES = 64 * 1024 * 1024
+MAX_ARCHIVE_TOTAL_BYTES = 512 * 1024 * 1024
 FORMAT_VERSION = 1
 ARCHIVE_SUFFIX = ".runmal"
 MANIFEST_NAME = "manifest.json"
@@ -97,6 +105,12 @@ class ArchiveInfo:
 
 def _encode(value):
     if isinstance(value, datetime):
+        # All Rúnmál timestamps are UTC (_utcnow); a naive value is a
+        # UTC instant read back from SQLite, which drops tzinfo. Say
+        # so explicitly so export -> restore -> export is byte-stable
+        # (P-028 round-trip discipline).
+        if value.tzinfo is None:
+            value = value.replace(tzinfo=UTC)
         return value.isoformat()
     if isinstance(value, bytes):
         return {"__b64__": base64.b64encode(value).decode("ascii")}
@@ -155,6 +169,30 @@ async def _collect_members(
                     f"avatar {character.avatar_asset!r}"
                 )
 
+    asset_rows = list(
+        await session.scalars(
+            select(CharacterAsset)
+            .where(CharacterAsset.user_id == user_id)
+            .order_by(CharacterAsset.id)
+        )
+    )
+    counts["character_assets"] = len(asset_rows)
+    for row in asset_rows:
+        put(f"character_assets/{row.id}.json", row_to_dict(row))
+        if row.storage_relpath:
+            asset_path = (
+                base / "assets" / "characters" / row.character_id / row.storage_relpath
+            )
+            arcname = f"assets/characters/{row.character_id}/{row.storage_relpath}"
+            if asset_path.is_file():
+                members[arcname] = asset_path.read_bytes()
+                counts["assets"] = counts.get("assets", 0) + 1
+            else:
+                warnings.append(
+                    f"asset missing on disk, skipped: character {row.character_id} "
+                    f"asset {row.id}"
+                )
+
     voice_profiles = list(
         await session.scalars(
             select(CharacterVoiceProfile)
@@ -165,6 +203,40 @@ async def _collect_members(
     counts["voice_profiles"] = len(voice_profiles)
     for vp in voice_profiles:
         put(f"voice_profiles/{vp.character_id}.json", row_to_dict(vp))
+
+    tags = list(
+        await session.scalars(
+            select(CharacterTag)
+            .where(CharacterTag.user_id == user_id)
+            .order_by(CharacterTag.character_id, CharacterTag.tag_key)
+        )
+    )
+    organisation = list(
+        await session.scalars(
+            select(CharacterOrganisation)
+            .where(CharacterOrganisation.user_id == user_id)
+            .order_by(CharacterOrganisation.character_id)
+        )
+    )
+    counts["character_tags"] = len(tags)
+    counts["character_organisation"] = len(organisation)
+    tags_by_character: dict[str, list] = {}
+    for tag in tags:
+        tags_by_character.setdefault(tag.character_id, []).append(tag)
+    organisation_by_character = {row.character_id: row for row in organisation}
+    for character in characters:
+        char_tags = tags_by_character.get(character.id, [])
+        char_org = organisation_by_character.get(character.id)
+        if not char_tags and char_org is None:
+            continue
+        put(
+            f"character_library/{character.id}.json",
+            {
+                "character_id": character.id,
+                "tags": [row_to_dict(tag) for tag in char_tags],
+                "organisation": row_to_dict(char_org) if char_org is not None else None,
+            },
+        )
 
     chats = list(
         await session.scalars(select(Chat).where(Chat.user_id == user_id).order_by(Chat.id))
@@ -348,6 +420,8 @@ def _check_member_name(name: str) -> None:
 _MEMBER_SHAPES = {
     "users": ("id",),
     "characters": ("id",),
+    "character_assets": ("id",),
+    "character_library": ("character_id", "tags", "organisation"),
     "voice_profiles": ("character_id",),
     "presets": ("id",),
     "profiles": ("id",),
@@ -379,6 +453,15 @@ def validate_archive(path: str | Path) -> dict:
             raise ArchiveError("duplicate member names in archive")
         for name in names:
             _check_member_name(name)
+        try:
+            audit_zip_members(
+                zf.infolist(),
+                max_members=MAX_ARCHIVE_MEMBERS,
+                max_member_bytes=MAX_ARCHIVE_MEMBER_BYTES,
+                max_total_bytes=MAX_ARCHIVE_TOTAL_BYTES,
+            )
+        except SafetyError as exc:
+            raise ArchiveError(str(exc)) from exc
         if MANIFEST_NAME not in names:
             raise ArchiveError("manifest.json missing")
         try:

@@ -3100,3 +3100,1355 @@ Last updated: 2026-10-31 ~14:15 EDT tick (P-017 banking deferred, no full run at
     ls-remote verification after the push recorded in
     the daily log). Next slice: P-019 lorebook file
     interop, in roadmap order.
+  - BANKED P-019 (keeper tick 2026-11-06 ~07:35 EST): lorebook file
+    interop — team-01 commit 7ae20f8 fast-forward merged into
+    yrsa/two-mirrors-build and pushed; ls-remote verified
+    7ae20f8bdbc01df8e1dcca904b86f1913d3dd8bd. Evidence (team-01
+    worktree hidden_files/ logs): battery 13/13, neighbours 95
+    passed, full suite 849 passed / 4 skipped / 1 failed — the one
+    failure is test_s503_stt.py::
+    test_real_faster_whisper_meets_predeclared_contract, the known
+    contention timing contract on the shared laptop; solo re-run
+    4/4 green. Carried limitation (in slice docs): file-layer
+    preservation only; the API/DB path drops unknown fields until
+    a Part III storage-deepening slice — must close before
+    end-to-end preservation is claimed.
+  - BANKED P-020 (keeper tick 2026-11-06 ~07:38 EST): chat file
+    interop — team-02 commit b71ba98 merged (no-ff) into
+    yrsa/two-mirrors-build as 5b89d63 and pushed; ls-remote
+    verified 5b89d632d92e3f627fe2906ad729b4a89453533b. Evidence
+    (team-02 worktree hidden_files/ logs): battery 56/56,
+    neighbours 74/74, full suite 892 passed / 4 skipped / 1
+    failed — the same single failure, test_s503_stt.py::
+    test_real_faster_whisper_meets_predeclared_contract
+    (contention timing contract, shared laptop); solo re-run
+    4/4 green. Next in roadmap order: P-021 (team-03, in
+    flight), P-022 (team-04, in flight).
+  - BANKED P-021 (keeper tick 2026-11-06 ~07:55 EST): preset
+    interop — team-03 commit 14b0930 merged (no-ff) into
+    yrsa/two-mirrors-build as 08021ea and pushed. One merge
+    conflict, docs/CLEAN_ROOM_LOG_2026-10-30.md, resolved by
+    keeping BOTH the P-020 and P-021 entries (roadmap order);
+    the interop manifest auto-merged. Evidence (team-03
+    worktree hidden_files/ logs): battery 50/50, neighbours 77,
+    full suite 887 passed / 4 skipped / 0 failed. Forge
+    confirmation suite at the merged tree: 956 passed / 4
+    skipped / 0 failed. Noted as intended behaviour, not a
+    defect: S208 compat drops min_p/context_length on the
+    Ollama path (pinned by the battery + S306 manifest test).
+    Next in roadmap order: P-022 (team-04, in flight).
+  - BANKED P-022 (keeper tick 2026-11-06 ~08:05 EST): bulk
+    library import — team-04 commit 9385ee1 merged (no-ff,
+    clean) into yrsa/two-mirrors-build as efc6b8f and pushed.
+    Evidence (team-04 worktree hidden_files/ logs): battery
+    25/25, neighbours 105, full suite 862 passed / 4 skipped /
+    0 failed. Forge confirmation suite at the merged tree:
+    981 passed / 4 skipped / 0 failed. The slice's review fixed
+    real defects in-slice (chat .jsonl honestly refused as
+    unsupported_kind, HTTP dry_run typo fail-closed at 400,
+    report totals recomputed from entries, oversize refused
+    from stat before reading, content-first parse-name seam).
+    Carried limitations recorded in the slice doc (duplicate
+    hashing on normalised stored form — byte provenance is
+    P-029; card asset bytes noted but not persisted — P-023).
+    Wave 1 remaining: P-023..P-027 (teams 05-09, muster next
+    ticks). Next in roadmap order: P-023 (team-05).
+  - BANKED P-023 (keeper tick 2026-11-06 ~08:52 EST): card
+    thumbnails and assets — team-05 commit f59483e merged
+    (no-ff) into yrsa/two-mirrors-build as 2875cf0 and pushed;
+    ls-remote verified 2875cf0cf976270205de47d46d5b3517cb4ceed1.
+    Evidence (team-05 worktree hidden_files/ logs): battery
+    43/43, neighbours 122, full suite 1024 passed / 4 skipped /
+    0 failed. Forge confirmation suite at the merged tree:
+    1024 passed / 4 skipped / 0 failed (= 981 + 43, exact).
+    Asset bytes are now persisted per character (migration
+    0020 character_assets), closing the P-022 limitation.
+    Carried limitations in the slice doc: thumbnails PNG-only
+    (no image library in core deps), no per-character aggregate
+    size cap, update_character does not re-ingest assets.
+    Next in roadmap order: P-024 (team-06, built, held).
+  - BANKED P-024 (keeper tick 2026-11-06 ~09:05 EST): tags,
+    favourites, and library organisation — team-06 commit
+    ca0dce0 merged (no-ff) into yrsa/two-mirrors-build as
+    1ae96e4 and pushed; ls-remote verified
+    1ae96e434cd9e6355cc48badb464aa132c627a12. Evidence
+    (team-06 worktree hidden_files/ logs): battery 26/26
+    (incl. the 300-card scale test), neighbours 84, full
+    suite 1007 passed / 4 skipped / 0 failed. Forge
+    confirmation suite at the merged tree: 1050 passed / 4
+    skipped / 0 failed (= 1024 + 26, exact); combined
+    P-023+P-024 batteries 69/69. BANKING RENUMBER: both
+    Wave 1 teams numbered their migration 0020 from the
+    same base; P-023 banked first so its 0020 stands, and
+    the P-024 migration was renumbered 0020 to 0021 inside
+    this merge (file, registry, head pins in 9 test files,
+    slice doc and clean-room log noted). Conflicts resolved:
+    migrations registry (both kept, 0020 then 0021), models
+    (both class sets kept), clean-room log (both entries
+    kept), head-pin tests (single 0021 assertions).
+    Carried limitations in the slice doc: cards only (no
+    lorebook tagging), no UI or collections/folders.
+    Next in roadmap order: P-025 (team-07).
+  - BANKED P-025 (keeper tick 2026-11-06 ~09:45 EST): duplicate
+    and version handling — team-07 commit bd74710 merged (no-ff)
+    into yrsa/two-mirrors-build as 440ab38 and pushed; ls-remote
+    verified 440ab384dc08eabe82bb42679cd3ba9975e8320e. Evidence
+    (team-07 worktree hidden_files/ logs): battery 19/19,
+    neighbours 256, full suite 1069 passed / 4 skipped / 0
+    failed. Forge confirmation suite at the merged tree: 1069
+    passed / 4 skipped / 0 failed (= 1050 + 19, exact).
+    Same-name cards are versioned (migration 0022 adds
+    version_no, lineage_id, content_hash to characters), never
+    silently overwritten; an exact live-hash duplicate returns
+    the sibling flagged duplicate_exact. In-slice fix:
+    version-detail 404 wordings separated (character not found
+    vs version not found). Carried limitations in the slice
+    doc: dedup scans live siblings only (re-importing content
+    identical to a soft-deleted character starts a fresh v1
+    lineage), multiple pre-P-025 legacy lineages under one
+    name stay separate, no restore/merge/rollback or UI.
+    Next in roadmap order: P-026 (team-08).
+  - BANKED P-026 (keeper tick 2026-11-06 ~10:20 EST): scenario
+    content interop — team-08 commit 93c288a merged (no-ff)
+    into yrsa/two-mirrors-build as f002c00 and pushed; ls-remote
+    verified below with the record push. Evidence (team-08
+    worktree hidden_files/ logs): battery 59/59, neighbours
+    134, full suite 1109 passed / 4 skipped / 0 failed.
+    Forge confirmation suite at the merged tree: 1128 passed /
+    4 skipped / 0 failed (= 1069 + 59, exact). Voxta-shaped
+    scenario files import/export with an honest unmappable
+    report; no migration (scenario storage is Part IX).
+    BANKING PIN HEAL: the battery asserted schema head 0021
+    both ways (its base predated P-025); both assertions were
+    updated to the true head 0022 inside the merge commit —
+    each still pins the exact head, no assertion weakened.
+    Honest record: hidden_files/P026_DESIGN.md on disk was
+    truncated at 53 lines (it ends after Decisions item 5);
+    the build proceeded from those five decisions plus the
+    normative mapping doc, the fixed contracts, and sibling
+    house style. Carried limitations in the slice doc:
+    unmappable machinery round-trips Voxta to Voxta only;
+    bootstrap string-block exports in list form.
+    Next in roadmap order: P-027 (team-09, built, held).
+  - BANKED P-027 (keeper tick 2026-11-06 ~10:24 EST): content
+    safety rails — team-09 commit 55fccc7 merged (no-ff) into
+    yrsa/two-mirrors-build as c377311 and pushed; ls-remote
+    verified below with the record push. Evidence (team-09
+    worktree hidden_files/P027_EVIDENCE.md): battery 36/36,
+    neighbours 327, JS renderer tests ALL PASS, full suite
+    1086 passed / 4 skipped / 0 failed on its base. Forge
+    confirmation suite at the merged tree: 1164 passed / 4
+    skipped / 0 failed (= 1128 + 36, exact). Imported content
+    is data, never code: a new safety package bounds PNG zTXt
+    decompression, JSON depth and duplicate keys, CHARX and
+    archive members, and upload body sizes across the card,
+    lorebook, preset, persona, chat, and portable importers.
+    No migration (head stays 0022). Carried limitations in
+    the slice doc: duplicate-key refusal is guaranteed on
+    file parsers (dict-body routes get depth validation
+    only); fields whose purpose is prompt text remain prompt
+    text (rails police privilege, not wording).
+    WAVE 1 COMPLETE: P-019 through P-027 all banked in
+    roadmap order. Next in roadmap order: P-028 (Part II
+    continues), then P-029, then P-030 (Part II gate).
+  - BANKED P-028 (keeper tick 2026-11-06 ~11:02 EST): the
+    .runmal archive grows — team-01 commit 3d328a4 merged
+    (no-ff) into yrsa/two-mirrors-build as 827e80e and pushed;
+    ls-remote verified 827e80ef763c70dd8a930f40f1b940cc7c329cbc.
+    Evidence (team-01 worktree hidden_files/ logs): battery
+    10/10, neighbours 268, full suite 1174 passed / 4 skipped /
+    0 failed. Forge confirmation suite at the merged tree:
+    1174 passed / 4 skipped / 0 failed (= 1164 + 10, exact).
+    Cards, lorebooks and presets already rode the archive as
+    canonical rows; the gap closed is the P-024 library
+    organisation (character_tags + character_organisation),
+    now emitted as character_library bundles under the same
+    per-member SHA-256 manifest discipline and restored with
+    count verification. No migration (head stays 0022);
+    FORMAT_VERSION stays 1. Discovered bug fixed in-slice:
+    export-restore-export was not byte-stable for any member
+    kind (tz-aware UTC vs naive SQLite datetimes); _encode
+    now states a naive datetime UTC explicitly. Carried
+    limitations in the slice doc: new archives rejected by
+    pre-P-028 builds as unknown member kind; scenarios have
+    no DB table until Part IX; chat_events and thumbnail
+    bytes excluded (derived or regenerable).
+    Next in roadmap order: P-029 (team-02, in flight).
+  - BANKED P-029 (keeper tick 2026-11-06 ~11:30 EST): provenance
+    on import — team-02 commit 95a4a49 merged (no-ff) into
+    yrsa/two-mirrors-build as 266ca44 and pushed; ls-remote
+    verified 266ca44679769a1107854055ea08334ae2cd50dd.
+    Evidence (team-02 worktree hidden_files/P029_EVIDENCE.md):
+    battery 14/14, neighbours 207, full suite 1178 passed / 4
+    skipped / 0 failed on its base (= 1164 + 14, exact). Forge
+    confirmation suite at the merged tree: 1188 passed / 4
+    skipped / 0 failed (= 1174 + 14, exact). One merge conflict
+    (docs/CLEAN_ROOM_LOG_2026-10-30.md, append-vs-append)
+    resolved keeping BOTH P-028 and P-029 entries. Migration
+    0023 (characters.provenance_json) STANDS as numbered —
+    P-028 took no migration, so no renumber was needed; head
+    is now 0023. Provenance records source kind, filename,
+    card format/spec, creator snapshots and original-byte
+    sha256 on library paths (null, never fabricated, for
+    api_json/copy); it closes the P-022 byte-provenance
+    limitation on library paths and travels via the .runmal
+    archive, not card exports. Carried limitations in the
+    slice doc: exact-duplicate re-import stores no new record;
+    legacy rows stay null; lorebooks carry no provenance in
+    this slice. Next in roadmap order: P-030 (Part II gate,
+    team-03).
+  - BANKED P-030 (keeper tick 2026-11-06 ~12:13 EST): PART II
+    GATE PASSES — team-03 commit 6a6bee6 merged (no-ff, clean)
+    into yrsa/two-mirrors-build as 8cdc630 and pushed;
+    ls-remote verified 8cdc630c7a15c11b6c521148515c17837d264422.
+    Evidence (team-03 worktree hidden_files/P030_EVIDENCE.md +
+    logs): battery 55 passed, Part II neighbours 412 passed /
+    0 failed, team full suite 1243 passed / 4 skipped /
+    0 failed. Forge confirmation suite at the merged tree:
+    1243 passed / 4 skipped / 0 failed (= 1188 + 55, exact).
+    No migration (head stays 0023). The gate proves the P-005
+    corpus round-trips clean per type and a fresh-authored
+    19-file stranger library imports whole through the bulk
+    path with an exactly reconciling honest report, then
+    survives the .runmal archive with counts + provenance
+    intact. No defects fixed in-slice; no assertion weakened.
+    Carried findings (gate doc section 5): F1 a native
+    lorebook carrying at_depth entries cannot enter the DB
+    store (import_book_transactional raises ValueError) and
+    the lorebook DB store drops the 23 world-info fields —
+    Part III debt, at-depth carriage is P-038; F2 bulk
+    classifier takes a Voxta scenario with description/
+    scenario fields as a v1 card; F3 chat refusal reason-text
+    asymmetry (cosmetic); F4 P-005 manifest prose stale
+    (left untouched to protect hash pins); F5 provenance is
+    character-only, API path sha null by design.
+    PART II (P-015..P-030) IS COMPLETE. Next: Part III
+    (Lorebook Depth, P-031..P-048) in roadmap order.
+  - BANKED P-031 (keeper tick 2026-11-06 ~13:00 EST): Part III
+    opener - recursive lorebook scanning, entries triggering
+    entries with depth limits, cycle safety and token budget
+    enforced - team-01 commit 87aba91 merged (no-ff) into
+    yrsa/two-mirrors-build as 591e60c and pushed; ls-remote
+    verified 591e60c4c58c6dff372d257d0433ab23eac56929.
+    Evidence (team-01 worktree hidden_files/P031_EVIDENCE.md
+    and logs): battery 50/50, neighbours 134, full suite
+    1293 passed / 4 skipped / 0 failed. Forge confirmation
+    suite at the merged tree: 1293 passed / 4 skipped /
+    0 failed (= 1243 + 50, exact); s503 did not fire. No
+    migration (head stays 0023). Finished by a relaunched
+    lead continuing the interrupted lead uncommitted work;
+    five defects in that inherited implementation were found
+    and fixed in-slice (budget_exhausted at depth 0, depth
+    override leaking to non-recursive firings, recursion
+    depth above the hard cap 5 now clamped, one-shot
+    iterables materialised, duplicate entry ids fire once).
+    Next in roadmap order: P-032 (team-02, in flight).
+  - BANKED P-032 (keeper tick 2026-11-06 ~13:20 EST): selective
+    logic - AND/NOT/any-all key logic per lorebook entry, the
+    full truth table tested - team-02 commit bc26f74 merged
+    (no-ff) into yrsa/two-mirrors-build as 7604b17 and pushed;
+    ls-remote verified 7604b17a38360173e1214b8a56cac6087f75bc4e.
+    Evidence (team-02 worktree hidden_files/P032_EVIDENCE.md
+    and logs): battery 187/187, neighbours 221, full suite
+    1430 passed / 4 skipped / 0 failed on its base. Merge
+    conflicts in scan.py and the clean-room log resolved
+    keeping BOTH slices work (additive fields composed; both
+    log entries kept); combined batteries at the merged tree
+    (s202 + P-031 + P-032) 258 passed; forge confirmation
+    suite 1480 passed / 4 skipped / 0 failed (= 1293 + 187,
+    exact); s503 did not fire. Migration 0024 (lorebook
+    selective_logic) STANDS as numbered - P-031 took no
+    migration, so head is now 0024. The pinned dropped sets
+    in the P-005/P-019/P-030 tests shrank 23 to 22 by
+    deliberate pin edits now that selectiveLogic is modelled
+    on both file legs; no assertion weakened. Next in
+    roadmap order: P-033 (team-03, timed effects).
+  - BANKED P-033 (keeper tick 2026-11-06 ~14:30 EST): timed
+    effects persistence - sticky/cooldown/delay entry state
+    across a chat's life - team-03 commit 82966cd merged
+    (no-ff) into yrsa/two-mirrors-build as fc0c449 and pushed;
+    ls-remote verified fc0c449553f55d737e2e97208e1960e55c59027a.
+    Evidence (team-03 worktree hidden_files/P033_EVIDENCE.md
+    and logs): battery 69/69, neighbours 269, full suite
+    1549 passed / 4 skipped / 0 failed on its base. Forge
+    confirmation suite at the merged tree: 1549 passed /
+    4 skipped / 0 failed (= 1480 + 69, exact); s503 did not
+    fire. Migration 0025 (chat_lore_entry_states) STANDS as
+    numbered - head is now 0025. No defects found in-slice;
+    no assertion weakened. F1 remains P-038's road. Next in
+    roadmap order: P-034 (team-01, inclusion groups; built,
+    held for this banking).
+  - BANKED P-034 (keeper tick 2026-11-06 ~14:55 EST): inclusion
+    groups - mutually exclusive lorebook entries resolved by
+    weight/priority, deterministically - team-01 commit
+    f4badf3 merged (no-ff) into yrsa/two-mirrors-build as
+    81d490d and pushed; ls-remote verified
+    81d490dcaaf098fe016e76ec2e685cb9e9fd0810.
+    Evidence (team-01 worktree hidden_files/P034_EVIDENCE.md
+    and logs): battery 57/57 (incl. determinism proof over
+    all 720 permutations), neighbours 442, full suite 1537
+    passed / 4 skipped / 0 failed on its base. Merge
+    conflicts (migration registry, head pins in 13 test
+    files, clean-room log) resolved keeping BOTH slices'
+    work: chain 0024 -> 0025 -> 0026 composed, revision
+    lists unioned; four battery head pins healed at the
+    merge to the merged truth (P-021/P-023 precedent, no
+    assertion weakened). Combined batteries at the merged
+    tree 179 passed; forge confirmation suite 1605 passed /
+    4 skipped / 1 failed (= 1549 + 57, exact) - the single
+    failure is test_s503_stt.py's timing contract, solo
+    re-run 4/4 green, classified contention on the shared
+    laptop, not a defect. Migration 0026 (lorebook
+    inclusion groups) STANDS as numbered - P-033 took the
+    reserved 0025 banking first, so no renumber was needed;
+    head is now 0026. Next in roadmap order: P-035
+    (team-02, entry states).
+  - BANKED P-035 (keeper tick 2026-11-06 ~15:25 EST): entry
+    states - constant, selective, vectorised, the three
+    activation kinds, one engine - team-02 commit 52a13b5
+    merged (no-ff) into yrsa/two-mirrors-build as df0832c
+    and pushed; ls-remote verified
+    df0832c97df00edc4a77ba869969514f54740643.
+    Evidence (team-02 worktree hidden_files/P035_EVIDENCE.md
+    and logs): battery 59/59, neighbours 562, full suite
+    1665 passed / 4 skipped / 0 failed on its base. Forge
+    confirmation suite at the merged tree: 1665 passed /
+    4 skipped / 0 failed (= 1606 + 59, exact); s503 did not
+    fire. Migration 0027 (lore_entries.vectorised) STANDS
+    as numbered - head is now 0027. Kind is derived, never
+    stored (constant > vectorised > selective). Two defects
+    fixed in-slice (derived activation_kind key leaking
+    into world-info exports; duplicate vectorised column
+    block). Carried: vectorised entries dormant in live
+    paths until P-041 wires the embedding matcher;
+    world-info selective bool rides verbatim in extra.
+    Next in roadmap order: P-036 (team-03, probability &
+    RNG honesty; built, held for this banking).
+  - BANKED P-036 (keeper tick 2026-11-06 ~15:55 EST): probability
+    & RNG honesty - seeded, inspectable rolls recorded per
+    entry - team-03 commit 8029f74 merged (no-ff) into
+    yrsa/two-mirrors-build as a3c4a0a and pushed; ls-remote
+    verified a3c4a0a99f6e9e52474d3707ed00ed3c22010beb.
+    Evidence (team-03 worktree hidden_files/P036_EVIDENCE.md
+    and logs): battery 30/30, neighbours 770, full suite
+    1636 passed / 4 skipped / 0 failed on its base. Forge
+    confirmation suite at the merged tree: 1695 passed /
+    4 skipped / 0 failed (= 1665 + 30, exact); s503 did not
+    fire. Migration 0028 (lorebook probability) STANDS as
+    numbered - P-035 took the reserved 0027 banking first,
+    so no renumber was needed; head is now 0028. Merge
+    conflicts (migration registry, interop/preview/router/
+    service/transfer, clean-room log, head pins) resolved
+    keeping BOTH slices' work: chain 0026 -> 0027 -> 0028
+    composed, revision lists unioned in s103/s107,
+    dropped-field pins healed to the merged truth (17
+    fields; vectorized by P-035 and the probability pair
+    by P-036 both mapped), no assertion weakened. Combined
+    batteries at the merged tree 287 passed. Carried:
+    useProbability is not a stored column - the DB store
+    carries the effective percent; the flag survives at
+    the file layer only. Next in roadmap order: P-037
+    (team-01, scan depth & context windows).
+  - BANKED P-037 (keeper tick 2026-11-06 ~16:40 EST): scan depth
+    & context windows - per-book scan settings (messages-deep,
+    whole-chat, external context) as data - team-01 commit
+    851adf4 merged (no-ff) into yrsa/two-mirrors-build as
+    fb87008 and pushed; ls-remote verified
+    fb87008b31c4e984120720e1c8e5b44f03b54549.
+    Evidence (team-01 worktree hidden_files/P037_EVIDENCE.md
+    and logs): battery 47/47, neighbours 832, full suite
+    1742 passed / 4 skipped / 0 failed on its base. Forge
+    confirmation suite at the merged tree: 1742 passed /
+    4 skipped / 0 failed (= 1695 + 47, exact); s503 did not
+    fire. Migration 0029 (lorebook scan windows) STANDS as
+    numbered; head is now 0029. Carried: per-entry scanDepth
+    stays preserved-as-data (dropped set unchanged at 17);
+    a future slice may claim the per-entry override. Next
+    in roadmap order: P-038 (team-02, position & depth
+    control - gate finding F1's road; relaunched this tick
+    from the cancelled lead's intact uncommitted work).
+  - BANKED P-038 (keeper tick 2026-11-06 ~17:05 EST): position
+    & depth control - entries inject at declared positions/
+    depths in the prompt, gate finding F1 CLOSED (at_depth
+    entries now enter the DB store whole; transfer code 4 no
+    longer collapses to before_char) - team-02 commit b843095
+    merged (no-ff) into yrsa/two-mirrors-build as 670c989
+    and pushed; ls-remote verified
+    670c9891b383877edf4ed2754e4e547f907d02f4.
+    Evidence (team-02 worktree hidden_files/P038_EVIDENCE.md
+    and logs): battery 151/151, neighbours 1043, full suite
+    1846 passed / 4 skipped / 0 failed on its base. Forge
+    confirmation suite at the merged tree: 1901 passed /
+    4 skipped / 0 failed; s503 did not fire. Migration 0030
+    (lorebook placement) STANDS as numbered - P-037 took the
+    reserved 0029 banking first; head is now 0030. Merge
+    conflicts (migration registry, lorebooks interop/preview/
+    service, 17 head-pin test files) resolved keeping BOTH
+    slices' work: chain 0028 -> 0029 -> 0030 composed (the
+    registry union first fused the 0029/0030 triples into
+    one 6-tuple - split at merge, the P-036 defect class),
+    head pins healed at merge to the merged truth (exact
+    head/sequence pins updated to 0030, no assertion
+    weakened; combined batteries at the merged tree 906
+    passed). The slice was built by the relaunched team-02
+    lead continuing the cancelled lead's intact uncommitted
+    work - nothing restarted or discarded. Next in roadmap
+    order: P-039 (team-03, character-book binding; in
+    flight from base 1ef4ec6, provisional migration 0031).
+  - BANKED P-039 (keeper tick 2026-11-06 ~17:35 EST): character-
+    book binding - a card's own lorebook travels with it and
+    merges with the world's by declared precedence - team-03
+    commit 1beb119 merged (no-ff) into yrsa/two-mirrors-build
+    as 42db500 and pushed; ls-remote verified
+    42db50015ed666b784019fa252ab3316370a83e2.
+    Evidence (team-03 worktree hidden_files/P039_EVIDENCE.md
+    and logs): battery 35/35, neighbours 554, full suite
+    1730 passed / 4 skipped / 0 failed on its base. Forge
+    confirmation suite at the merged tree: 1941 passed /
+    4 skipped / 0 failed; s503 did not fire. Migration 0031
+    (character_book_bindings) STANDS as numbered - P-037
+    took 0029 and P-038 took 0030, both banked first; head
+    is now 0031. Merge conflicts (migration registry,
+    clean-room log, 17 head-pin test files) resolved keeping
+    BOTH slices' work: chain 0029 -> 0030 -> 0031 composed
+    (registry tuple split at merge, the recurring defect
+    class), full-sequence lists restored where the union
+    had spliced the 0028 -> 0031 tail, head pins healed at
+    merge to the merged truth (exact pins updated to 0031,
+    no assertion weakened; combined batteries at the merged
+    tree 889 passed). Carried: prompt/inspect.py still
+    previews world books per-book; wiring the bound book
+    into inspect_prompt's loop is P-040's surface. Next in
+    roadmap order: P-040 (team-01, global + persona + chat
+    lore scopes).
+  - P-040 BANKED 2026-11-06 ~18:15 EST: global + persona +
+    chat lore scopes - layered world -> character ->
+    persona -> chat with per-scope budgets - team-01
+    commit e74755d merged (no-ff, clean) into
+    yrsa/two-mirrors-build as 0a9c484 and pushed;
+    ls-remote verified
+    0a9c484366e28ea1b5e153e3fa4c7aef9ba0a70c.
+    Evidence (team-01 worktree hidden_files/P040_EVIDENCE.md
+    and logs): battery 37/37, neighbours 842, full suite
+    1978 passed / 4 skipped / 0 failed on its base. Forge
+    confirmation suite at the merged tree: 1978 passed /
+    4 skipped / 0 failed (= 1941 + 37, exact); s503 did
+    not fire. Migration 0032 (lorebook_scopes) STANDS as
+    numbered; head is now 0032. One stale negative-index
+    migration pin in the battery's first full run was
+    healed in-slice ([-7] -> [-8]); not a code defect.
+    Design note: the persona layer refines the character
+    layer (a chat's persona IS its character in Runmal);
+    the roadmap's world -> character -> chat order is
+    preserved. P-039's carried item is closed in part:
+    inspect_prompt now wires scoped layers including the
+    bound character book via the character layer. Next in
+    roadmap order: P-041 (team-02, vectorised lore).
+  - P-041 BANKED 2026-11-06 ~18:25 EST: vectorised lore -
+    embedding-matched entries for large books on the
+    founding RAG stack, with keyword fallback - team-02
+    commit 80f91ff merged (no-ff, clean) into
+    yrsa/two-mirrors-build as 657cae0, merge-heal 061075f,
+    and pushed; ls-remote verified
+    061075f74179f4540b74c990891956ef4bbfd764.
+    Evidence (team-02 worktree hidden_files/P041_EVIDENCE.md
+    and logs): battery 42/42, neighbours 892, full suite
+    1983 passed / 4 skipped / 0 failed on its base. Forge
+    confirmation suite at the merged tree: 2020 passed /
+    4 skipped / 0 failed (= 1978 + 42, exact); s503 did
+    not fire. NO migration taken by P-041; head stays
+    0032 (P-040's). Merge heal: the battery's head pin
+    (0031, true on its base) was updated to the merged
+    truth 0032 - P-041 took no migration, the pin still
+    asserts the exact head, no assertion weakened.
+    P-035's carried debt is CLOSED: vectorised entries
+    are live in preview, the lorebook preview endpoint,
+    the prompt inspector and run_activation_tick, with
+    keyword fallback labelled as fallback, never as a
+    vector hit. Bug fixed in-slice: P-039's character-book
+    normaliser dropped vectorized (entries materialised
+    as selective); binding now carries it through.
+    Carried: the built-in local provider is
+    lexical-semantic, not neural (a configured S311
+    profile gets true semantics through the same
+    matcher); entry vectors recomputed per tick (stored
+    cache is P-046's); fallback is whole-tick by design;
+    Aesir embeddings remain unserved (P-009 D3). Next in
+    roadmap order: P-042 (team-03, lorebook editor depth).
+
+P-042 BANKED - lorebook editor depth: the editor UI now
+    reaches every engine-honoured field - team-03 commit
+    5d40dda merged (no-ff, clean) into yrsa/two-mirrors-build
+    as 594a8d7 and pushed; ls-remote verified
+    594a8d7488c393d6eb2948bfcc80ca3ce0ebe940.
+    Evidence (team-03 worktree hidden_files/P042_EVIDENCE.md
+    and logs): battery 15/15, neighbours 869, full suite
+    2035 passed / 4 skipped / 0 failed on its base. Forge
+    confirmation suite at the merged tree: 2035 passed /
+    4 skipped / 0 failed (= 2020 + 15, exact); s503 did
+    not fire. NO migration taken by P-042; head stays
+    0032 (reserved 0033 unused). Census module
+    (lorebooks/editor.py) declares every engine-honoured
+    field per surface, served at GET
+    /lorebooks/editor-schema; the battery derives the
+    engine field set independently and fails on any
+    unreachable field. Gap fixed in-slice: PreviewRequest
+    now carries P-031 recursive_scan +
+    max_recursion_depth. Next in roadmap order: P-043
+    (team-01, activation inspector).
+
+P-043 BANKED - activation inspector: why did this entry
+    fire, explained as data - team-01 commit 92a8e21
+    merged (no-ff) into yrsa/two-mirrors-build as 7f97d86
+    and pushed; ls-remote verified
+    7f97d867049a833425a1b0192b8b398732000105.
+    Evidence (team-01 worktree hidden_files/P043_EVIDENCE.md
+    and logs): battery 26/26, neighbours 891, full suite
+    2046 passed / 4 skipped / 0 failed on its base
+    (= 2020 + 26, exact). Forge confirmation suite at the
+    merged tree: 2061 passed / 4 skipped / 0 failed
+    (= 2035 + 26, exact); s503 did not fire. One merge
+    conflict (lorebooks/router.py: P-042 editor-schema
+    route vs P-043 inspect route, both additive) resolved
+    keeping BOTH routes; combined batteries 41 passed.
+    NO migration taken by P-043; head stays 0032 (no 0033
+    exists in this tree; the reservation lapsed unused).
+    The slice was completed by a finisher lead continuing
+    the cancelled lead's landed uncommitted work; review
+    found no defect. Payload schema
+    runmal-p043-activation-inspection-v1 for Part XIII's
+    Inspector. Next in roadmap order: P-044 (team-02,
+    token accounting).
+
+P-044 BANKED - token accounting: lore's exact prompt
+    cost per turn, visible before sending - team-02
+    commit 0a0ee3b merged (no-ff) into
+    yrsa/two-mirrors-build as fc25a63 and pushed;
+    ls-remote verified
+    fc25a63d8ea678ad49c2005d272874a102ad13b3.
+    Evidence (team-02 worktree hidden_files/P044_EVIDENCE.md
+    and logs): battery 21/21, neighbours 496, full suite
+    2056 passed / 4 skipped / 0 failed on its base
+    (= 2035 + 21, exact). Forge confirmation suite at the
+    merged tree: 2081 passed / 4 skipped / 1 failed
+    (= 2061 + 21 collected, exact) - the single failure
+    is test_s503_stt.py's timing contract, solo re-run
+    4/4 green, classified contention on the shared
+    laptop, NOT a defect. Merge conflicts in preview.py
+    (imports: P-043 EntryState vs P-044 accounting) and
+    prompt/inspect.py (P-043 lorebook_inspections vs
+    P-044 lore_account) resolved as exact unions keeping
+    BOTH slices; combined batteries 62 passed. NO
+    migration taken by P-044; head stays 0032. The
+    account is built with the very counter the budget
+    pass and the composer spend with - no second
+    estimator; quality EXACT iff a counter is supplied,
+    else ESTIMATED. In-slice fix: a muted scope layer's
+    budget 0 is no longer conflated with unlimited.
+    Next in roadmap order: P-045 (team-03, book sharing).
+
+P-045 BANKED - book sharing: lorebooks as importable
+    packs - team-03 commits c17c827 + 7fe7caf + ba87510
+    merged (no-ff, clean) into yrsa/two-mirrors-build as
+    7245df8 and pushed; ls-remote verified
+    7245df835dbb27ebf9ad326a450b357ea0ff5eed.
+    Evidence (team-03 worktree hidden_files/P045_EVIDENCE.md
+    and logs): battery 33/33, neighbours 935, full suite
+    2094 passed / 4 skipped / 0 failed on its base
+    (= 2061 + 33, exact). Forge confirmation suite at the
+    merged tree: 2115 passed / 4 skipped / 0 failed
+    (= 2082 + 33, exact); s503 did not fire. NO migration
+    taken by P-045; head stays 0032. Pack envelope
+    runmal-lorebook-pack v1 around the unchanged
+    transfer.export_book payload, manifest with
+    normalised-content SHA-256, P-029-style honest
+    provenance (self-asserted, no implied origin chain);
+    import via the transactional P-022 path, never
+    silently overwriting (exact duplicate returns the
+    existing book; same-name/different-content creates
+    fresh or refuses under reject). Review Mediums fixed
+    in-slice: shape-independent canonical identity
+    (world-info-shaped pack dedups against its book) and
+    malformed packs refuse 422 as PackError, never 500.
+    Next in roadmap order: P-046 (team-01, performance).
+
+P-046 BANKED - performance: 10,000-entry lorebook scans
+    within the stated Pi-class budget - team-01 commits
+    b9ebe4a (slice) + 97299b2 (review fixes D1-D5) merged
+    (no-ff, clean) into yrsa/two-mirrors-build as e2b2c29
+    and pushed; ls-remote verified
+    e2b2c294c5ef5d9280556701e411c2df33cb4539.
+    Evidence (team-01 worktree hidden_files/P046_EVIDENCE.md
+    and logs): battery 27/27, neighbours 341, full suite
+    2109 passed / 4 skipped / 0 failed on its base; s503
+    passed in-run. Forge confirmation suite at the merged
+    tree: 2142 passed / 4 skipped / 0 failed
+    (= 2115 + 27, exact). NO migration; head stays 0032.
+    Budget stated before measuring (BUDGET-P046: full tick
+    <=2000 ms Pi-equiv, keyword <=1200 ms Pi-equiv; laptop
+    gates 500/300 ms, one pinned core, x4.0 derating -
+    laptop numbers, never Pi measurements). BEFORE: total
+    median 2144.8 ms, keyword 1451.4 ms - both gates FAIL.
+    AFTER (cold): total 310.1 ms (Pi-equiv 1240.6 ms),
+    keyword 14.25 ms (Pi-equiv 57 ms) - both gates PASS;
+    warm cache total 65.0 ms. Hit counts identical in
+    every run (240 keyword / 1000 vector / 1740
+    activations; --verify PASS). Design finding: the
+    compile cache alone could not meet the budget (design
+    book keys unique per entry, cache never hits) - a
+    per-window token index landed with fast paths
+    restricted to provably regex-identical domains,
+    proven byte-exact by the frozen-oracle equivalence
+    battery. Review defects D1-D5 fixed in-slice (full
+    provenance space identity incl. dims+version in the
+    vector cache key/guard, candidate-order merge, no
+    unprovenanced stores). Carried: vector cache is
+    in-process only (no persistent/DB store); no
+    production caller yet owns a long-lived cache; a
+    direct Pi 4 run remains the one-off validation.
+    Next in roadmap order: P-047 (team-02, migration),
+    then the P-048 Part III gate.
+
+P-047 BANKED - migration: existing lorebooks upgraded
+    in place, behaviour-preserving, fixture-proven -
+    team-02 commit 5a3dfd9 merged (no-ff, clean) into
+    yrsa/two-mirrors-build as c54be6c and pushed;
+    ls-remote verified
+    c54be6c711a436be5f3b42d3ad4001486c02a323.
+    Evidence (team-02 worktree hidden_files/P047_EVIDENCE.md
+    and logs): battery 15/15, neighbours 913, full suite
+    2130 passed / 4 skipped / 0 failed on its base
+    (= 2115 + 15, exact); s503 did not fire. Forge
+    confirmation suite at the merged tree: 2157 passed /
+    4 skipped / 0 failed (= 2142 + 15, exact).
+    NO new DB migration; head stays 0032.
+    Coverage: file layer - same-format in-place upgrade
+    (native files gain every current field explicitly,
+    unknown keys preserved verbatim, aliases
+    canonicalised, idempotent, input never mutated;
+    world-info files refreshed via interop export);
+    inspect reports generation + missing-field counts
+    under schema runmal-p047-lorebook-upgrade-v1.
+    DB layer - upgrade_database snapshots lore tables
+    raw, runs migrate_to_head, proves every pre-existing
+    row/column byte-identical with new columns at exact
+    0024-0032 defaults; fixture-proven on a DB frozen at
+    0023, incl. preview_activation dict equality.
+    Defects fixed in-slice: (1) transfer._native_entry
+    ignored use_probability - a native entry with the
+    gate off stored its raw probability (now folds both
+    spellings); (2) upgrade_database wrote
+    schema_migrations into a no-lorebook database via a
+    side effect (now reads the revision raw).
+    COMMISSIONED DISCOVERY (recorded in P047_EVIDENCE.md,
+    not fixed here - it changes P-039 materialisation
+    semantics and needs its own slice/battery):
+    binding.normalise_book_entry returns no depth/role
+    keys, so embedded character-book entries cannot
+    carry P-038 placement into materialisation.
+    Commissioned as the immediate slice after the
+    P-048 gate.
+    Next in roadmap order: P-048 (Part III gate).
+
+P-048 BANKED - Part III gate: the ST-shaped lore test
+    pack (logic, recursion, timing) passes on Runmal's
+    engine; inspector explains every firing - team-03
+    commit bf35322 merged (no-ff, clean) into
+    yrsa/two-mirrors-build as d92f2ca and pushed;
+    ls-remote verified
+    d92f2cac2430efbf578bf313e6795c4f2f95d5e2.
+    Evidence (team-03 worktree hidden_files/P048_EVIDENCE.md
+    and logs): gate battery 32/32 (logic+recursion 12,
+    timing 4, inspector 16), gate-record module 10/10,
+    neighbours 906 (19 Part III modules P-031..P-047),
+    team full suite 2199 passed / 4 skipped / 0 failed
+    (= 2157 + 32 + 10, exact); s503 did not fire in the
+    team run. Forge confirmation suite at the merged
+    tree: 2198 passed / 4 skipped / 1 failed - the one
+    failure is test_s503_stt.py's timing contract, solo
+    re-run 4/4 green, classified contention on the
+    shared laptop, NOT a defect. NO migration; head
+    stays 0032. PART III COMPLETE (P-031..P-048).
+    Verdict PASS in every area: logic (P-032 truth table,
+    P-034 deterministic groups, P-035 three kinds one
+    engine), recursion (chains, depth clamp 5,
+    cycle-safe, budget-gated), timing (sticky/cooldown/
+    delay exact across a chat's life and fresh sessions),
+    inspector (every firing in the 18-entry Gateworld
+    explained - 8 included / 7 not_triggered /
+    2 group_excluded / 1 disabled, reconciliation exact).
+    Cross-cutting PASS incl. placement asserted in the
+    composed prompt - P-030 finding F1 CLOSED. Findings
+    carried (gate doc section 5, none hidden): F1 P-046
+    vector cache in-process only, direct Pi 4 bench owed;
+    F2 binding.normalise_book_entry drops depth/role -
+    commissioned as the immediate next slice; F3 P-019
+    preservation file-layer only.
+    Next in roadmap order: the commissioned binding
+    depth/role slice (team-01), then Part IV (P-049..).
+
+COMMISSIONED BINDING DEPTH/ROLE SLICE BANKED - character-book
+    entries carry P-038 placement whole into materialisation -
+    team-01 finisher commit bfc4742 merged (no-ff) into
+    yrsa/two-mirrors-build as e777f1f and pushed; ls-remote
+    verified e777f1f65c07a872a989c2b0567df541e0518fee.
+    Evidence (team-01 worktree
+    hidden_files/COMMISSIONED_BINDING_DEPTH_ROLE_EVIDENCE.md
+    and logs): battery 29/29, neighbours 479, team full suite
+    2228 passed / 4 skipped / 0 failed (= 2199 + 29, exact;
+    s503 passed in-run). Forge confirmation suite at the
+    merged tree: 2228 passed / 4 skipped / 0 failed.
+    NO migration; head stays 0032. Gate finding F2 CLOSED:
+    normalise_book_entry delegates position to
+    lorebooks.placement and carries depth (bad depth degrades
+    to None, undeclared) and role (bad role degrades to
+    system); materialise stores depth/role on the LoreEntry
+    row and serialise emits them, so the character-book
+    round-trip is a fixed point. The slice was completed by
+    a finisher lead continuing the cancelled lead's intact
+    uncommitted work (reviewed leg-by-leg, kept whole).
+    Carried: F1 (P-046 vector cache in-process only, Pi 4
+    bench owed) and F3 (P-019 preservation file-layer only)
+    stand as recorded at P-048.
+    Next in roadmap order: P-049 (Part IV opener - prompt
+    manager, team-02, in flight from base 0ae13a9).
+
+P-049 BANKED - Part IV opens: prompt manager - ordered,
+    toggleable prompt blocks as first-class editable layout
+    data, honoured by the composer/inspector - team-02 commit
+    b3aeb3d merged (no-ff) into yrsa/two-mirrors-build as
+    22ccca5 and pushed; ls-remote verified
+    22ccca5ca5bee32a6771341226a98a8233c7dda3.
+    Evidence (team-02 worktree hidden_files/P049_EVIDENCE.md
+    and logs): battery 40/40, neighbours 358, team full suite
+    2239 passed / 4 skipped / 0 failed on its base
+    (= 2199 + 40, exact). Forge confirmation suite at the
+    merged tree: 2268 passed / 4 skipped / 0 failed
+    (= 2228 + 40, exact); combined batteries 69 passed.
+    Merge note: the clean-room log append conflict was
+    resolved keeping BOTH the commissioned-slice and P-049
+    entries. NO migration; head stays 0032.
+    Slice: prompt/manager.py (9 position-faithful blocks as
+    data, validated layout_from_data, apply_layout drops
+    disabled blocks incl. required ones and surfaces them in
+    the Prompt Trace as prompt_manager_disabled discards),
+    prompt/service.py resolve_layout, inspector honours the
+    layout and echoes prompt_layout; the default layout is a
+    proven exact identity. Carried: F1 tools/service.py
+    compose_preview is stateless and does not resolve layouts
+    (the inspector is the honoured path); F2 layout
+    persistence (per owner/per chat) is a named follow-up
+    slice owning its own migration - not faked here.
+    Next in roadmap order: P-050 (instruct templates,
+    team-03).
+
+P-050 BANKED - instruct templates: the public template
+    shapes (ChatML, Llama-3, Alpaca, Vicuna) as data, plus an
+    honest plain default, per-model selectable - team-03
+    commit d3f4a33 merged (no-ff, clean) into
+    yrsa/two-mirrors-build as ebefe90 and pushed; ls-remote
+    verified ebefe9098bb229bf3a58ec9cdf4eef50f209941f.
+    Evidence (team-03 worktree hidden_files/P050_EVIDENCE.md
+    and logs): battery 42/42, neighbours 157, team full suite
+    2310 passed / 4 skipped / 0 failed (= 2268 + 42, exact).
+    Forge confirmation suite at the merged tree: 2310 passed
+    / 4 skipped / 0 failed. NO migration; head stays 0032.
+    Slice: prompt/instruct.py (InstructTemplate as data -
+    bos, per-role wrappers, separator, generation prefix,
+    stop strings, preamble; strict from_data/to_data;
+    MODEL_TEMPLATE_DEFAULTS first-match per-model table),
+    prompt/render.py render_prompt (pure concatenation, bos
+    once), resolve_template precedence explicit > model
+    default > plain; the inspector honours the selection and
+    echoes metadata + rendered_tokens only (S214 held).
+    Carried: F1 tools compose_preview resolves neither
+    layouts nor templates; F2 template persistence + preset
+    template_ref wiring = named follow-up with its own
+    migration; F3 stop-string merge with sampler stops lands
+    with P-052.
+    Next in roadmap order: P-051 (context templates,
+    team-01).
+
+P-051 BANKED - context templates: story-string/context
+    assembly formats as editable data (P-021 presets land
+    here) - team-01 finisher commit b15c056 merged (no-ff,
+    clean) into yrsa/two-mirrors-build as 858447b and
+    pushed; ls-remote verified
+    858447b3a698f53cf60e68084bea0049da0069d3.
+    Evidence (team-01 worktree hidden_files/P051_EVIDENCE.md
+    + logs): battery 88 passed, neighbours 142 passed,
+    team full suite 2398 passed / 4 skipped / 0 failed;
+    forge confirmation suite at the merged tree 2398
+    passed / 4 skipped / 0 failed (exit 0). NO migration;
+    head stays 0032.
+    Slice: prompt/context.py (ContextTemplate as data -
+    segments per anchor with enabled/prefix/suffix,
+    separators, stops-from-separators; story-string
+    serialise/parse with public alias spellings; preset
+    derivation context_template > story_string >
+    prompt_order). The first lead was cancelled; a
+    finisher reconciled the inherited build to
+    P051_DESIGN (default separators empty, no second
+    render path, echo whitelist) and completed the
+    battery to the design's full shape.
+    Bug fixed in-slice: inspect_prompt echoed a
+    preset-tier template but never applied it; the apply
+    condition now keys on the resolved template, pinned
+    end-to-end by a new API test.
+    Carried: sampler wiring of derived stops is
+    P-052/P-060; template persistence is a named
+    follow-up slice owning its own migration.
+    Next in roadmap order: P-052 (sampler surface,
+    team-02, already complete as ed01f90, held for this
+    banking).
+
+P-052 BANKED - sampler surface complete: every common
+    sampler exposed as data where the backend supports
+    it, hidden honestly where not - team-02 commit
+    ed01f90 merged (no-ff) into yrsa/two-mirrors-build
+    as 9a7bd7c and pushed; ls-remote verified
+    9a7bd7c97e960e542e08e8943067a9c963c84bc9. The one
+    merge conflict (docs/CLEAN_ROOM_LOG_2026-10-30.md,
+    append-vs-append) was resolved keeping BOTH the
+    P-051 and P-052 entries; combined batteries at the
+    merged tree 127 passed (88 + 39).
+    Evidence (team-02 worktree hidden_files/P052_EVIDENCE.md
+    + logs): battery 39 passed, neighbours 253 passed /
+    1 skipped, team full suite 2348 passed / 4 skipped /
+    1 failed - the single failure is the s503 STT timing
+    contract under shared-machine contention, solo
+    re-run 4/4 green, classified contention, NOT a
+    defect. Forge confirmation suite at the merged
+    tree: 2437 passed / 4 skipped / 0 failed
+    (= 2398 + 39, exact). NO migration; head stays 0032.
+    Slice: backends/samplers.py (28-key catalogue as
+    SamplerSpec data), SamplingParams +17 fields with
+    public-range validation, honest per-backend
+    applicability (no backend declares DRY/XTC - they
+    drop with structured warnings, never faked), and
+    the P-050 F3 stop-string merge.
+    Next in roadmap order: P-053 (per-backend
+    capability truth, team-03, mustered 2026-11-06
+    23:08 EST from base 6fc65f0).
+
+P-053 BANKED - per-backend capability truth: sampler
+    controls grey by declared/ledger support, never
+    fake sliders - team-03 commit 9d1900b merged
+    (no-ff) into yrsa/two-mirrors-build as 893e745 and
+    pushed; ls-remote verified
+    893e7450a2b13503d274417c5c5c86bed5ee56cf.
+    Evidence (team-03 worktree hidden_files/P053_EVIDENCE.md
+    + logs): battery 40 passed, neighbours 127 passed,
+    team full suite 2350 passed / 4 skipped / 0 failed
+    on its base. Forge confirmation suite at the
+    merged tree: 2477 passed / 4 skipped / 0 failed
+    (= 2437 + 40, exact). NO migration; head stays 0032.
+    Merge reconciliation (the slice was built on base
+    6fc65f0, before P-052 banked): conflicts in
+    generation/compat.py (S208 profiles - union: P-052's
+    Ollama typical_p/tfs_z/Mirostat wire names PLUS
+    P-053's context_length -> num_ctx; OpenAI unsupported
+    set kept as P-052's full 28-key set) and
+    prompt/router.py (both route sets kept: P-051
+    context-templates + P-053 backend-capabilities)
+    resolved keeping BOTH slices. The team commit had
+    swept hidden_files/ bookkeeping into the tree; it
+    was removed from the merge (untracked, as always).
+    Two battery pins healed at merge to the merged
+    truth (no assertion weakened - each still pins the
+    exact set): EXPECTED_AVAILABLE[ollama] gained the
+    five controls P-052's adapter declares and forwards
+    (typical_p, tfs_z, mirostat_mode/tau/eta), verified
+    against the adapter module itself; the clamp test's
+    bag now carries the full 28-key vocabulary so its
+    dropped set compares against the whole greyed set.
+    Combined batteries at the merged tree: 219 passed.
+    Defect fixed in-slice (by the team): S208's Ollama
+    profile dropped the adapter's declared min_p and
+    context_length as unknown; the profile now maps
+    both, and OpenAI's profile names them unsupported.
+    Carried: truth is declared/ledger, never measured
+    (no live probing exists in this tree, and no row
+    pretends otherwise).
+    Next in roadmap order: P-054 (presets -
+    save/load/share sampler+prompt bundles, team-01).
+
+P-054 BANKED - presets: save/load/share sampler+prompt
+    bundles with per-character and per-chat overrides -
+    team-01 commit 0548581 merged (no-ff, clean) into
+    yrsa/two-mirrors-build as 10f4c34 and pushed;
+    ls-remote verified
+    10f4c3447e98031524e3968d0e01339c71740c5e.
+    Evidence (team-01 worktree hidden_files/P054_EVIDENCE.md
+    + logs): battery 31 passed, neighbours 332 passed,
+    team full suite 2508 passed / 4 skipped / 0 failed;
+    forge confirmation suite at the merged tree 2508
+    passed / 4 skipped / 0 failed (exact). Migration
+    0033 TAKEN (preset_bundles + preset_overrides);
+    head now 0033. The 54 migration-head pins across
+    26 test files were moved to 0033 in-slice (the
+    established pattern, no assertion weakened).
+    Slice: presets/bundles.py - a bundle gathers the
+    full 28-key sampler bag (unknown keys preserved),
+    the P-049 layout, P-050/P-051 template selections,
+    legacy template_ref, P-021 carriage and verbatim
+    extensions; checksum-verified share envelope
+    (tamper refuses); overrides resolve bundle <
+    character < chat with per-field sources, sampler
+    null-deletion, and different-bundle shadowing
+    reported rather than layered or dropped.
+    Review fix landed before banking: the overrides
+    unique index now includes user_id and override
+    lookups are user-scoped (commit amended once,
+    suite re-verified green after the amend).
+    Carried: resolution is a data service + API (the
+    generation pipeline consumes selections through
+    the existing explicit-input resolvers); a dangling
+    override row for a deleted character/chat stays
+    listed-but-inert for its own owner (house pattern).
+    Next in roadmap order: P-055 (macros, team-02).
+
+P-055 BANKED - macros: documented text-macro engine
+    (identity / clock / random / variables /
+    transforms) - team-02 commit b9c9fde merged
+    (no-ff) into yrsa/two-mirrors-build as 7e30c48
+    and pushed; ls-remote verified
+    7e30c4853566f79d4967f68593a5bdd2a9dc268b.
+    Evidence (team-02 worktree
+    hidden_files/P055_EVIDENCE.md + logs): battery
+    30 passed, neighbours 302 passed / 1 skipped,
+    team full suite 2538 passed / 4 skipped /
+    0 failed (first run 2537 + 1 s503 STT timing
+    failure under contention, solo re-run 4/4
+    green, classified contention; post-lint-fix
+    rerun fully green). Forge confirmation suite
+    at the merged tree: 2538 passed / 4 skipped /
+    0 failed (= 2508 + 30, exact). NO migration;
+    head stays 0033.
+    Slice: prompt/macros.py - the documented
+    text-macro engine ({{name}} /
+    {{name::arg1::arg2}} syntax, escape + angle
+    aliases, single-pass expansion; identity /
+    clock / random with P-036 seeded-roll
+    discipline, every roll recorded / variables
+    on a working copy, the caller map never
+    mutated / transforms; unknown + malformed
+    macros preserved verbatim and reported, or
+    refused with MacroError in strict mode) plus
+    tools/router.py MacroIn + GET /tools/macros
+    (registry) + POST /tools/macros/expand
+    (strict failures surface as 422).
+    Finisher lint fix in-slice (recorded in the
+    evidence): macros.py failed the project ruff
+    gate (11x E501 + 1x N818); the registry lines
+    were wrapped with every string value
+    byte-identical and the private exception
+    renamed _Malformed to _MalformedError; final
+    macros.py sha256 105247df... matches the
+    evidence exactly.
+    Next in roadmap order: P-056 (authors note
+    depth, team-03).
+
+P-056 BANKED - authors note depth: per-chat note
+    with depth/frequency controls honoured by the
+    composer/inspector - team-03 commit 46f20e8
+    merged (no-ff, clean) into
+    yrsa/two-mirrors-build as c1ec2f1 and pushed;
+    ls-remote verified
+    c1ec2f1662eaba74a530915a19274a44a7c760e4.
+    Evidence (team-03 worktree
+    hidden_files/P056_EVIDENCE.md + logs):
+    battery + neighbours combined 196 passed
+    (battery 59 tests), team full suite 2567
+    passed / 4 skipped / 0 failed on its base.
+    Forge confirmation suite at the merged tree:
+    2597 passed / 4 skipped / 0 failed
+    (= 2538 + 59, exact). Migration 0034 STANDS
+    as numbered (P-055 took no migration):
+    m0034_chat_authors_note adds
+    chats.authors_note_json; the merged registry
+    chain ends 0033 -> 0034 and the merged head
+    is 0034. The 30 head-pin test files moved
+    0033 -> 0034 in-slice (no assertion weakened).
+    Merge was clean: P-055 and P-056 touched
+    disjoint file sets, so no clean-room log or
+    registry conflict arose.
+    Slice: prompt/authors_note.py -
+    AuthorsNote(text, depth=4, frequency=1,
+    enabled, role) with strict note_from_data /
+    note_to_data; chats get/set authors-note
+    API (owner-checked, 422 invalid / 404
+    missing); the inspector loads the stored
+    note when chat_id is given, the slot lands
+    after history with its depth honoured, a
+    frequency-inactive note surfaces as trace
+    discard reason authors_note_frequency, and
+    the note text never appears in trace, echo,
+    or events (metadata only).
+    Carried: the inspector is the in-tree
+    composition path; no live-generation send
+    wiring is claimed. The tools compose_preview
+    ephemeral note remains a separate feature.
+    Next in roadmap order: P-057 (post-history
+    instructions).
+P-057 BANKED - post-history instructions: a
+    prompt-manager citizen, baseline-last slot -
+    team-01 commit 85f6040 merged (no-ff) into
+    yrsa/two-mirrors-build as 3490fd3 and pushed;
+    ls-remote verified
+    3490fd32359a9138b3cd66b786d41cfd4ff5a6ee.
+    Evidence (team-01 worktree
+    hidden_files/P057_EVIDENCE.md + finisher logs):
+    battery 59 passed, neighbours 160 passed,
+    team full suite 2568 passed / 4 skipped /
+    0 failed on its base. Forge confirmation
+    suite at the merged tree: 2657 passed /
+    4 skipped / 0 failed (= 2597 + 59 + 1, the
+    one extra being the finisher-reconciled
+    defect test). Migration 0035 STANDS as
+    numbered (P-056 took 0034 first):
+    m0035_chat_post_history adds
+    chats.post_history_json; the merged registry
+    chain ends 0033 -> 0034 -> 0035, both tuples
+    separate, and the merged head is 0035.
+    Merge conflicts resolved keeping BOTH
+    slices: migration registry composed
+    0034 + 0035; chats router/service and
+    prompt files took additive unions (the
+    authors-note and post-history route/service
+    blocks spliced whole, both kept); the 30
+    head-pin test files took 0035 with their
+    position/tail/list pins healed to the
+    merged truth (0034 + 0035 both in sequence),
+    and the P-056 battery head pin healed
+    0034 -> 0035 at banking. Defect found and
+    fixed at banking, never left: inspect.py
+    imported has_content/slot_for from BOTH
+    authors_note and post_history unaliased, so
+    the post-history names shadowed the note
+    ones (active-note inspect 422s); imports
+    and call sites now aliased note_/ph_.
+    Combined batteries at the merged tree
+    (battery + all healed files): 1300 passed.
+    Slice: prompt/post_history.py -
+    PostHistoryInstructions with strict
+    instructions_from_data / to_data; chats
+    get/set post-history API (owner-checked);
+    prompt-manager citizenship (default layout
+    gains the block baseline-last, disabling
+    drops the slot); inspector precedence
+    chat > character > none with a metadata-only
+    post_history echo; the instruction text
+    never enters result or events (S214).
+    Next in roadmap order: P-058 (token budget
+    governor).
+P-058 BANKED - token budget governor: the
+    composer shows the whole prompt budget by
+    section and trims by declared policy -
+    team-02 commit 669cb36 merged (no-ff) into
+    yrsa/two-mirrors-build as cfe3ec8 and pushed;
+    ls-remote verified
+    cfe3ec864e67b472e62e84f87fc5dd1ebece4776.
+    Evidence (team-02 worktree
+    hidden_files/P058_EVIDENCE.md + logs):
+    battery 33 passed, neighbours 269 passed,
+    team full suite 2630 passed / 4 skipped /
+    0 failed on its base. Forge confirmation
+    suite at the merged tree: 2690 passed /
+    4 skipped / 0 failed (= 2657 + 33, exact).
+    NO migration: the merged head stays 0035.
+    Merge: one conflict, the inspect.py module
+    docstring (P-057 paragraph vs P-058
+    paragraph), resolved as an additive union
+    keeping both; prompt/__init__.py, router
+    and service auto-merged as additive unions
+    (governor exports alongside the post-history
+    exports, both kept). Combined batteries at
+    the merged tree (battery + neighbours +
+    P-057 battery): 362 passed.
+    Slice: prompt/governor.py - SECTIONS
+    (context/lore/memory/history) with an
+    exhaustive kind mapping so the sections sum
+    to the whole prompt; budget counted only
+    via runmal.tokens (the P-044 one-counter
+    rule); BudgetPolicy as declared data
+    (section caps + trim order, strictly
+    validated, default sacrifice lore -> memory
+    -> history -> context); apply_policy trims
+    lowest-priority first, splittable history
+    oldest-first, required slots never dropped,
+    every action recorded; the inspect result
+    always carries budget plus a budget_governor
+    echo, and no content enters either payload
+    (S214).
+    Next in roadmap order: P-059.
+P-059 BANKED - prompt preview: the exact
+    final prompt per backend rendering is
+    inspectable before send - team-03 commit
+    a678b4e merged (no-ff) into
+    yrsa/two-mirrors-build as d2dfbc6 and pushed;
+    ls-remote verified
+    d2dfbc65c58f380602d8aadda67dd66c27b21719.
+    Evidence (team-03 worktree
+    hidden_files/P059_EVIDENCE.md + finisher
+    logs): battery 19 passed, neighbours 273
+    passed, team full suite 2616 passed /
+    4 skipped / 0 failed on its base. Forge
+    confirmation suite at the merged tree:
+    2709 passed / 4 skipped / 0 failed
+    (= 2690 + 19, exact). NO migration: the
+    merged head stays 0035. Merge: three
+    conflicts (prompt/__init__.py, inspect.py,
+    router.py - the P-057/P-058 overlap files),
+    all resolved as additive unions keeping
+    ALL slices' work: the preview export,
+    include_preview wiring and the
+    /debug/prompt-preview route added alongside
+    the P-057 aliased note/post-history imports
+    (note_has_content/ph_has_content - verified
+    intact, no regression of the P-057 banking
+    fix) and the P-058 governor wiring; the
+    preview endpoint also forwards
+    budget_policy so the governor applies
+    there too (banking heal). Combined
+    batteries at the merged tree (P-059 +
+    P-057 + P-058 + P-056 batteries):
+    170 passed. Slice: prompt/preview.py -
+    build_preview built ONLY from the composed
+    messages + RenderedPrompt inspect_prompt
+    already produced (one composition, one
+    render, never a second); the 11-key
+    prompt_preview payload carries structured
+    messages, wire_messages and the instruct
+    render text, with backend keys derived
+    from the capabilities matrix (an unknown
+    backend raises, router maps to 422);
+    opt-in include_preview on prompt-inspect
+    plus the dedicated /debug/prompt-preview
+    endpoint; the S214 trace itself still
+    carries no content. Carried: live
+    generation does not yet route through the
+    composer/inspector, so the preview is what
+    the composition pipeline will hand a
+    backend, not a capture of a live send.
+    Next in roadmap order: P-060.
+P-060 BANKED - logit bias & stop sequences: per-preset,
+    backend-honest - team-01 commit eef1e65
+    merged (no-ff) into yrsa/two-mirrors-
+    build as 3284bef and pushed; ls-remote
+    verified 3284befa39eca7c491fc9dcc9f2c3a0
+    7680e58d0. Evidence (team-01 worktree
+    hidden_files/P060_EVIDENCE.md): battery
+    33 passed, neighbours 290 passed / 1
+    skipped, team full suite 2723 passed / 4
+    skipped / 0 failed on its base. Forge
+    confirmation suite at the merged tree:
+    2742 passed / 4 skipped / 0 failed (=
+    2709 + 33, exact). NO migration: the
+    merged head stays 0035. Merge: CLEAN, no
+    conflicts (footprint disjoint from the
+    P-059 prompt-preview merge). Combined
+    batteries at the merged tree (P-060 +
+    P-009 + P-052 + P-053 + P-059
+    batteries): 137 passed. Slice:
+    backends/logit_bias.py - logit_bias is
+    the 29th canonical control (kind
+    bias_map, range [-100, 100]); typed
+    (token_id, bias) pairs canonical-sorted
+    by token id, duplicates refused, bag
+    round-trip canonical; openai_compat and
+    openrouter wire carries logit_bias +
+    stop, Ollama options carry stop only,
+    Aesir drops both with structured
+    warnings; resolve_generation_controls
+    merges preset stops with instruct-
+    template stops (sampler first, dedup,
+    order preserved) and degrades via
+    clamp_params with warnings; text-keyed
+    bias resolves ONLY through a caller-
+    supplied token map - token ids are never
+    invented. Next in roadmap order: P-061.
+P-061 BANKED - Grammar/JSON-mode as a prompt citizen:
+    structured replies for bridges/games - team-02
+    commit 82c73da merged (no-ff) into
+    yrsa/two-mirrors-build as 489e281 and pushed;
+    ls-remote verified (see WAVE_PLAN update).
+    Evidence (team-02 worktree
+    hidden_files/P061_EVIDENCE.md): battery 97
+    passed, neighbours 401 passed / 1 skipped,
+    team full suite 2806 passed / 4 skipped / 0
+    failed on its base. Forge confirmation suite
+    at the merged tree: 2839 passed / 4 skipped /
+    0 failed (= 2742 + 97, exact). NO migration:
+    the merged head stays 0035. Merge: CLEAN, no
+    conflicts. Combined batteries at the merged
+    tree (P-061 + P-060 + P-052 + P-053 + P-059 +
+    P-058 + P-057): 320 passed. Slice:
+    backends/structured.py - StructuredOutput
+    declaration as strict data (off/json_object/
+    json_schema/grammar; wrong-mode fields refuse
+    even as null); per-backend truth - openai/
+    openrouter JSON via response_format, ollama
+    via top-level format, aesir/fake refuse loudly
+    on unserved declarations, grammar greyed on
+    every backend; plan_structured clamp planner
+    degrades with one warning; validate_reply
+    client-side JSON-Schema subset validator
+    (path-addressed errors, no repair); prompt
+    inspector echo + GET /debug/structured-modes;
+    preset bundles gain a structured_output
+    section. Next in roadmap order: P-062.
+P-062 BANKED - Multi-model prompt profiles: one
+    chat, swappable model profiles - team-03
+    commit b5803fb merged (no-ff) into
+    yrsa/two-mirrors-build as e90a753 and pushed;
+    ls-remote verified (see WAVE_PLAN update).
+    Evidence (team-03 worktree
+    hidden_files/P062_EVIDENCE.md): battery 19
+    passed, neighbours 333 passed, team full
+    suite 2727 passed / 4 skipped / 1 failed
+    (s503 contention flake, solo 4/4) on its
+    base. Forge confirmation suite at the merged
+    tree: 2858 passed / 4 skipped / 0 failed (=
+    2839 + 19, exact). NO migration: the merged
+    head stays 0035. Merge conflicts in
+    prompt/service.py, prompt/inspect.py and
+    prompt/router.py resolved as additive unions
+    keeping BOTH slices' work: P-057 note_/ph_
+    aliasing verified surviving in inspect.py;
+    P-058 governor + P-059 preview + P-061
+    structured echo/endpoint + P-062 profile
+    echo/endpoints all present and grep-verified;
+    the shared closing brace of structured_echo's
+    return was restored after the union (the one
+    merge-resolution repair). Combined batteries
+    at the merged tree (P-062 + P-061 + P-060 +
+    P-052..P-059 prompt set): 370 passed. Slice:
+    prompt/model_profiles.py - ModelProfile binds
+    model + templates + sampler set as one
+    swappable unit; sampler bag validated by
+    presets validate_params against the P-052
+    set as it stands at merged truth (composes
+    with P-060 logit_bias as the 29th control and
+    P-061's structured bundle section - full
+    suite green proves the composition, no pin
+    heal needed); partition_profile_sampler
+    judges sampler keys by the named backend's
+    declared set; diff_profiles reports per-field
+    and per-key changes; inspect gains
+    model_profile with explicit > profile >
+    default precedence; GET /debug/model-profiles
+    + POST /debug/model-profile-diff. Next in
+    roadmap order: P-063.
+P-063 BANKED - Prompt import/export packs (Part
+    IV, with Part XII sharing) - team-01 commit
+    b4e2aa9 merged (no-ff) into
+    yrsa/two-mirrors-build as 97c6bdf and pushed;
+    ls-remote verified (see WAVE_PLAN update).
+    Evidence (team-01 worktree
+    hidden_files/P063_EVIDENCE.md): battery 17
+    passed, neighbours 333 passed, team full
+    suite 2758 passed / 4 skipped / 1 failed
+    (s503 contention flake, four solo runs 4/4)
+    on its base. Forge confirmation suite at the
+    merged tree: 2875 passed / 4 skipped / 0
+    failed (= 2858 + 17, exact). NO migration:
+    the merged head stays 0035 (pinned by the
+    battery). Merge: CLEAN, no conflicts
+    (footprint disjoint: new presets/packs.py +
+    presets/router.py routes declared before
+    /presets/{preset_id}, grep-verified at lines
+    121-137 vs 285). Combined batteries at the
+    merged tree (P-063 + P-054 + P-061 + P-062):
+    164 passed. Slice: presets/packs.py - prompt
+    packs export/inspect/import for sharing
+    presets and bundles as one portable unit.
+    Part IV now has only the P-064 gate left.
+    Next in roadmap order: P-064 (Part IV gate).
+P-064 BANKED - Part IV gate (Part IV, P-049..P-064) -
+    PART IV COMPLETE / GATE PASSED. team-02 commit
+    ed2cadd merged (no-ff) into
+    yrsa/two-mirrors-build as 619e831 and pushed;
+    ls-remote verified (see WAVE_PLAN update).
+    Evidence (team-02 worktree
+    hidden_files/P064_EVIDENCE.md): gate battery 13
+    passed + gate-record 10 passed, neighbours 699
+    passed, team full suite 2898 passed / 4 skipped
+    / 0 failed (= 2875 + 23 exact; first run lone
+    s503 failure solo-re-ran 4/4, classified
+    contention). Forge confirmation at the merged
+    tree: gate battery + gate-record 23 passed,
+    full suite 2898 passed / 4 skipped / 0 failed
+    (exact). NO migration: head stays 0035. Merge:
+    CLEAN, no conflicts (footprint tests + docs
+    only: tests/test_p064_part_iv_gate.py,
+    tests/test_p064_gate_record.py,
+    docs/PART_IV_GATE_2026-11-07.md). Gate verdict
+    PASSED; carried findings F1 (grammar served on
+    no backend) and F2 (live generation does not
+    route through the composer) - both pre-carried,
+    no new defect. Part IV (P-049..P-064) is now
+    COMPLETE. Next in roadmap order: P-065 (Part V
+    opener).
+P-065 BANKED - Swipes deepened (Part V opener) -
+    team-03 commit e654e1a merged (no-ff) into
+    yrsa/two-mirrors-build as 3b4c157 and pushed;
+    ls-remote verified (see WAVE_PLAN update).
+    Evidence (team-03 worktree
+    hidden_files/P065_EVIDENCE.md): battery 79
+    passed, neighbours 177 passed, swept-pin
+    verification 1496 passed, team full suite
+    2977 passed / 4 skipped / 0 failed
+    (= 2898 + 79 exact). Forge confirmation
+    suite at the merged tree: 2977 passed /
+    4 skipped / 0 failed (exact). Migration
+    0036 STANDS as numbered: head now 0036
+    (messages.swipes_json + messages.swipe_id
+    + chats.swipe_settings_json); neighbour
+    head pins swept 0035 -> 0036 in-commit.
+    Merge: CLEAN, no conflicts. Slice:
+    swipes.py - unlimited alternates per
+    message as a persisted deck (content ==
+    active invariant), swipe navigation
+    everywhere persisted messages live (chat
+    + group, same table) via service + REST,
+    per-chat swipe regen settings as a
+    validated document resolved over preset
+    params; GenerationSession candidates
+    importable as decks. Voice-turn limitation
+    recorded in the slice doc (voice turns
+    are ephemeral TurnRecords, never
+    persisted). Next in roadmap order: P-066
+    (branches).
+P-066 BANKED - Branches (Part V) -
+    team-01 commit 14d9116 merged (no-ff) into
+    yrsa/two-mirrors-build as 08fda03, banking
+    heal 81d4696, and pushed; ls-remote verified
+    (see WAVE_PLAN update).
+    Evidence (team-01 worktree
+    hidden_files/P066_EVIDENCE.md): battery 30
+    passed, neighbours 213 passed / 13 failed
+    (all stale provisional-head pins, healed at
+    this banking), team full suite 2855 passed /
+    4 skipped / 66 failed (all the same stale
+    head-pin class). Forge confirmation suite
+    at the merged tree: 3007 passed / 4 skipped
+    / 0 failed (= 2977 + 30, exact). Migration
+    0037 STANDS as numbered: head now 0037
+    (chats branch columns: branch_parent_id,
+    branch_fork_message_id, branch_fork_index,
+    branch_kind, branch_merge_of_json); chain
+    composed 0035 -> 0036 -> 0037 as separate
+    registry entries. Merge reconciliation:
+    additive unions in chats service, router,
+    models and the migration registry keeping
+    BOTH P-065 swipes and P-066 branches work;
+    head pins healed to merged truth 0037 in
+    81d4696 (38 test files). Slice: branches.py -
+    fork at any message, named family listing,
+    merge-back as a new branch (never
+    destructive). Findings: F1 and F2 fixed
+    in-slice; F3 carried (pre-existing app-wide
+    created_at aware/naive asymmetry, out of
+    scope for this slice). Next in roadmap
+    order: P-067 (checkpoints).

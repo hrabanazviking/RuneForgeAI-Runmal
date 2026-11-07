@@ -97,7 +97,7 @@
     },
     {
       "bytes": 727,
-      "expectation": "no ST-preset importer exists yet (P-021 is its home); corpus test pins that the file is well-formed and that validate_params carries the mirror's key spellings (temp, rep_pen, min_p, tfs) as opaque unknowns today — the gap P-021 must close deliberately",
+      "expectation": "imports via parse_preset (P-021): mirror sampler spellings map to the canonical bag (temp to temperature, rep_pen to repetition_penalty, genamt to max_tokens, min_p and context_length promoted as canonical); the seed -1 unset sentinel stays out of the bag; mirror-only keys (tfs, DRY, dynatemp, XTC) ride in raw carriage, not the bag; same-shape export is a fixed point",
       "file": "preset_st_textcompletion.json",
       "kind": "preset",
       "sha256": "8ddf0591c335bff5c4fb7407e40c5f5438a31e903cdfc804b253e72b0aea0ce8",
@@ -109,7 +109,7 @@
     },
     {
       "bytes": 1008,
-      "expectation": "no importer exists yet (P-021/P-051 homes); corpus test pins well-formedness and the prompts/prompt_order structure surviving a JSON round trip byte-semantically",
+      "expectation": "imports via parse_preset (P-021): canonical sampler keys map to the bag (openai_max_context to context_length, canonical max_tokens wins over openai_max_tokens); prompts and prompt_order are carried intact (identifiers in order, enabled flags preserved) for their P-049/P-051 homes; logit_bias, model and chat_completion_source ride in raw carriage; same-shape export is a fixed point",
       "file": "preset_st_chatcompletion.json",
       "kind": "preset",
       "sha256": "dd09bf6a2b1eed996de9766b8ae0f14f44a32451e6c10ed243a0abe80fc45a53",
@@ -121,7 +121,7 @@
     },
     {
       "bytes": 789,
-      "expectation": "no chat importer exists yet (P-020 is its home); corpus test pins JSONL well-formedness: metadata header line, swipe arrays present as data",
+      "expectation": "imports via parse_chat_jsonl (P-020 is its home); corpus test pins the pinned header/message values and a field-clean round trip via export_chat_jsonl, with the live-projection losses named by loss_report",
       "file": "chat_st.jsonl",
       "kind": "chat",
       "sha256": "158895f6d195789bd8215953dc176d2ff634eaf5a764854b775ad2e71108425b",

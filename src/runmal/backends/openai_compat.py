@@ -12,7 +12,8 @@ normalized events (INV-001/002). The connection layer's long-promised
 
 Sampler truth: ``SAMPLERS`` is exactly the S208 ``openai`` wire
 profile's key set. Canonical controls outside it (top_k, min_p,
-repetition_penalty, context_length) are cleared by
+repetition_penalty, context_length, and the P-052 sampler
+families no OpenAI-shaped wire carries) are cleared by
 ``ChatBackend.filter_params`` with structured warnings — never sent,
 never pretended honoured (INV-005). A future endpoint that serves
 more declares it through its own adapter, not through this one
@@ -53,6 +54,7 @@ from runmal.backends.errors import (
 )
 from runmal.backends.events import Done, TextDelta, UsageUpdate
 from runmal.backends.models import Capabilities, HealthStatus, ModelInfo
+from runmal.backends.structured import wire_payload
 from runmal.tokens import TokenQuality
 
 #: Default endpoint: OpenAI's own API. Any compatible endpoint is a
@@ -74,6 +76,10 @@ SAMPLERS = frozenset(
         "presence_penalty",
         "stop",
         "seed",
+        # P-060: the OpenAI-shaped wire carries logit_bias as a
+        # {token-id-string: bias} object; the adapter forwards the
+        # canonical bag form unchanged.
+        "logit_bias",
     }
 )
 #: Canonical bag key -> wire name (identity: the common shape spells
@@ -83,7 +89,25 @@ WIRE_NAMES = {key: key for key in sorted(SAMPLERS)}
 #: Canonical controls this adapter deliberately does NOT map, with
 #: SAMPLERS accounting for every canonical control (INV-005).
 UNSUPPORTED_SAMPLERS = frozenset(
-    {"top_k", "min_p", "repetition_penalty", "context_length"}
+    {"top_k", "min_p", "repetition_penalty", "context_length",
+     "typical_p",
+     "top_a",
+     "tfs_z",
+     "epsilon_cutoff",
+     "eta_cutoff",
+     "dry_multiplier",
+     "dry_base",
+     "dry_allowed_length",
+     "dry_penalty_last_n",
+     "dry_sequence_breakers",
+     "xtc_probability",
+     "xtc_threshold",
+     "mirostat_mode",
+     "mirostat_tau",
+     "mirostat_eta",
+     "dynamic_temperature_range",
+     "dynamic_temperature_exponent",
+    }
 )
 
 
@@ -133,6 +157,7 @@ class OpenAICompatibleChatBackend(ChatBackend):
             capabilities=Capabilities(
                 chat=True,
                 streaming=True,
+                structured_output=True,
                 context_length=context_length,
                 max_output_tokens=max_output,
                 token_count_quality=TokenQuality.ESTIMATED,
@@ -140,7 +165,7 @@ class OpenAICompatibleChatBackend(ChatBackend):
             ),
         )
 
-    async def chat_stream(self, messages, params, cancel):
+    async def chat_stream(self, messages, params, cancel, *, structured=None):
         if cancel.is_set():
             raise GenerationCancelled("generation cancelled")
         filtered, _warnings = self.filter_params(params)
@@ -152,6 +177,8 @@ class OpenAICompatibleChatBackend(ChatBackend):
         for key, value in filtered.to_bag().items():
             if key in WIRE_NAMES:
                 payload[WIRE_NAMES[key]] = value
+        if structured is not None and structured.is_active():
+            payload.update(wire_payload(self.backend_key, structured))
         usage: UsageUpdate | None = None
         reason: str | None = None
         saw_terminal_marker = False

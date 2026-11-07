@@ -16,6 +16,7 @@ from runmal.backends.events import Event
 from runmal.backends.messages import ChatMessage
 from runmal.backends.models import HealthStatus, ModelInfo
 from runmal.backends.params import SamplingParams
+from runmal.backends.structured import StructuredOutput
 from runmal.tokens import TokenCount, count_tokens
 
 
@@ -30,6 +31,8 @@ class ChatBackend(ABC):
         messages: list[ChatMessage],
         params: SamplingParams,
         cancel: asyncio.Event,
+        *,
+        structured: StructuredOutput | None = None,
     ) -> AsyncIterator[Event]:
         """Yield normalized events; raise BackendError subclasses on failure."""
 

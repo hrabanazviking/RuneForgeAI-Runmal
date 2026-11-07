@@ -24,6 +24,13 @@ import zlib
 from runmal.cards.archive import validate_archive_name
 from runmal.cards.errors import CardErrorKind, CardParseError
 from runmal.cards.models import CharacterCard
+from runmal.safety import (
+    SafetyError,
+    SafetyErrorKind,
+    audit_zip_members,
+    bounded_zlib_decompress,
+    safe_json_loads,
+)
 
 MAX_INPUT_BYTES = 32 * 1024 * 1024
 MAX_ASSET_BYTES = 16 * 1024 * 1024
@@ -201,15 +208,27 @@ def parse_json_card(data: bytes, source_format: str = "json") -> CharacterCard:
     if not stripped:
         raise CardParseError(CardErrorKind.INVALID_JSON, "empty card input")
     try:
-        obj = json.loads(stripped)
-    except json.JSONDecodeError as exc:
-        if exc.pos >= len(stripped) - 1 or "unterminated" in exc.msg.lower():
+        obj = safe_json_loads(stripped, limit=MAX_INPUT_BYTES)
+    except SafetyError as exc:
+        if exc.kind is SafetyErrorKind.INPUT_TOO_LARGE:
+            raise CardParseError(CardErrorKind.INPUT_TOO_LARGE, str(exc)) from exc
+        if exc.kind is SafetyErrorKind.INVALID_JSON:
+            # Re-check with the plain parser only to keep the
+            # existing truncated-vs-invalid distinction.
+            try:
+                json.loads(stripped)
+            except json.JSONDecodeError as plain:
+                if plain.pos >= len(stripped) - 1 or "unterminated" in plain.msg.lower():
+                    raise CardParseError(
+                        CardErrorKind.TRUNCATED,
+                        f"card JSON is truncated: {plain.msg}",
+                    ) from exc
+            except (UnicodeDecodeError, RecursionError):
+                pass
             raise CardParseError(
-                CardErrorKind.TRUNCATED, f"card JSON is truncated: {exc.msg}"
+                CardErrorKind.INVALID_JSON, f"card JSON is invalid: {exc}"
             ) from exc
-        raise CardParseError(
-            CardErrorKind.INVALID_JSON, f"card JSON is invalid: {exc.msg}"
-        ) from exc
+        raise CardParseError(CardErrorKind.INVALID_JSON, str(exc)) from exc
     return _normalize_card(obj, source_format)
 
 
@@ -239,9 +258,9 @@ def _decode_text_chunk(ctype: bytes, payload: bytes) -> tuple[str, str] | None:
             keyword, _, rest = payload.partition(b"\x00")
             if not rest or rest[0] != 0:
                 return None
-            text = zlib.decompress(rest[1:]).decode("latin-1")
+            text = bounded_zlib_decompress(rest[1:], limit=MAX_INPUT_BYTES).decode("latin-1")
             return keyword.decode("latin-1"), text
-    except (UnicodeDecodeError, zlib.error):
+    except (UnicodeDecodeError, zlib.error, SafetyError):
         return None
     return None
 
@@ -278,6 +297,22 @@ def parse_charx(data: bytes) -> CharacterCard:
         raise CardParseError(CardErrorKind.BAD_ARCHIVE, "not a valid zip archive") from exc
     with archive:
         names = archive.namelist()
+        try:
+            audit_zip_members(
+                archive.infolist(),
+                max_members=MAX_ARCHIVE_FILES,
+                max_member_bytes=MAX_ASSET_BYTES,
+                max_total_bytes=MAX_TOTAL_ASSET_BYTES,
+            )
+        except SafetyError as exc:
+            if exc.kind in (
+                SafetyErrorKind.ARCHIVE_MEMBER_TOO_LARGE,
+                SafetyErrorKind.ARCHIVE_TOTAL_TOO_LARGE,
+            ):
+                raise CardParseError(CardErrorKind.ASSET_TOO_LARGE, str(exc)) from exc
+            if exc.kind is SafetyErrorKind.INPUT_TOO_LARGE:
+                raise CardParseError(CardErrorKind.INPUT_TOO_LARGE, str(exc)) from exc
+            raise CardParseError(CardErrorKind.BAD_ARCHIVE, str(exc)) from exc
         if len(names) > MAX_ARCHIVE_FILES:
             raise CardParseError(
                 CardErrorKind.BAD_ARCHIVE,

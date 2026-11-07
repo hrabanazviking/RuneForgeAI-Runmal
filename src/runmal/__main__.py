@@ -180,6 +180,21 @@ def build_parser() -> argparse.ArgumentParser:
         "matrix", help="Run the self-hosted platform matrix leg here (S805)"
     )
     rmatrix.add_argument("--out", default=None, help="Write the JSON evidence report here")
+    library = sub.add_parser("library", help="Bulk library import operations (P-022)")
+    lsub = library.add_subparsers(dest="library_command")
+    limp = lsub.add_parser("import", help="Import a whole folder of cards + lorebooks as one act")
+    limp.add_argument("folder", help="Folder of card / lorebook files to import")
+    limp.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Report what would be imported without importing anything",
+    )
+    limp.add_argument("--json", action="store_true", help="Print the report as JSON")
+    limp.add_argument(
+        "--user-id",
+        default=None,
+        help="Owner user id (default: the sole local user, if exactly one)",
+    )
     return parser
 
 
@@ -204,6 +219,8 @@ def main(argv: list[str] | None = None) -> int:
         return _run_cleanup(args)
     elif args.command == "release":
         return _run_release(args)
+    elif args.command == "library":
+        return _run_library(args)
     return 0
 
 
@@ -487,6 +504,193 @@ def _run_cleanup(args: argparse.Namespace) -> int:
         for skipped in result.skipped:
             print(f"[not removed] {skipped['category']}: {skipped['reason']}")
     return 0
+
+
+def _report_total(report, payload: dict, name: str) -> int:
+    """Read one report total under either spelling: the task contract's
+    ``total_refused`` attribute style or the report's ``totals`` dict
+    style (``{total_seen, accepted, repaired, refused, skipped}``)."""
+    candidates = [name, name.removeprefix("total_")]
+    value = getattr(report, name, None)
+    if isinstance(value, int):
+        return value
+    containers = [payload]
+    report_totals = getattr(report, "totals", None)
+    if isinstance(report_totals, dict):
+        containers.append(report_totals)
+    if isinstance(payload, dict) and isinstance(payload.get("totals"), dict):
+        containers.append(payload["totals"])
+    for container in containers:
+        if isinstance(container, dict):
+            for key in candidates:
+                if isinstance(container.get(key), int):
+                    return container[key]
+    return 0
+
+
+def _entry_field(entry, *names, default=None):
+    if isinstance(entry, dict):
+        for name in names:
+            value = entry.get(name)
+            if value is not None:
+                return value
+        return default
+    for name in names:
+        value = getattr(entry, name, None)
+        if value is not None:
+            return value
+    return default
+
+
+def _repair_text(repair) -> str:
+    """One repair note as text: its detail if it has one, else its code."""
+    if isinstance(repair, dict):
+        return str(repair.get("detail") or repair.get("code") or "")
+    if isinstance(repair, str):
+        return repair
+    return str(getattr(repair, "detail", "") or getattr(repair, "code", "") or repair)
+
+
+_PATH_KEYS = ("relpath", "path", "source", "filename", "file", "relative_path")
+_NAME_KEYS = ("created_name", "name", "character_name", "title", "imported_name")
+
+
+def _library_report_rows(report, payload: dict) -> list[tuple[str, str, str]]:
+    """Normalise a bulk report's per-file entries to (status, path, detail),
+    including the report's separate skipped list."""
+    raw = None
+    for attr in ("entries", "outcomes", "results", "items", "files"):
+        value = getattr(report, attr, None)
+        if isinstance(value, list) and value:
+            raw = value
+            break
+    if raw is None and isinstance(payload, dict):
+        for key in ("entries", "outcomes", "results", "items", "files"):
+            value = payload.get(key)
+            if isinstance(value, list):
+                raw = value
+                break
+    rows = []
+    seen_paths = set()
+    for entry in raw or []:
+        status = _entry_field(entry, "outcome", "status", "kind", "result", default="unknown")
+        if hasattr(status, "value"):
+            status = status.value
+        status = str(status).lower()
+        path = _entry_field(entry, *_PATH_KEYS, default="")
+        name = _entry_field(entry, *_NAME_KEYS)
+        repairs = _entry_field(entry, "repairs", "repair", "fixes", "applied_repairs")
+        reason = _entry_field(entry, "reason", "detail", "message", "error")
+        if isinstance(repairs, (list, tuple)):
+            repairs_text = "; ".join(t for t in (_repair_text(r) for r in repairs) if t)
+        elif repairs is not None:
+            repairs_text = _repair_text(repairs)
+        else:
+            repairs_text = ""
+        if status == "accepted":
+            detail = name or reason or "imported"
+        elif status == "repaired":
+            detail = repairs_text or name or reason or "repaired"
+        else:
+            detail = reason or repairs_text or status
+        rows.append((status, str(path), str(detail)))
+        seen_paths.add(str(path))
+    skipped_raw = getattr(report, "skipped", None)
+    if not isinstance(skipped_raw, list) and isinstance(payload, dict):
+        skipped_raw = payload.get("skipped")
+    for entry in skipped_raw or []:
+        path = str(_entry_field(entry, *_PATH_KEYS, default=""))
+        if path in seen_paths:
+            continue
+        reason = _entry_field(entry, "reason", "detail", "message", "error")
+        rows.append(("skipped", path, str(reason or "skipped")))
+        seen_paths.add(path)
+    return rows
+
+
+def _print_library_report(report, folder: str, *, dry_run: bool) -> None:
+    try:
+        payload = report.to_dict()
+    except Exception:
+        payload = {}
+    if not isinstance(payload, dict):
+        payload = {}
+    seen = _report_total(report, payload, "total_seen")
+    accepted = _report_total(report, payload, "total_accepted")
+    repaired = _report_total(report, payload, "total_repaired")
+    refused = _report_total(report, payload, "total_refused")
+    skipped = _report_total(report, payload, "total_skipped")
+    header = f"runmal library import — {folder}"
+    if dry_run:
+        header += " (dry run)"
+    print(header)
+    for status, path, detail in _library_report_rows(report, payload):
+        print(f"[{status}] {path} — {detail}")
+    print(
+        f"summary: {seen} seen, {accepted} accepted, {repaired} repaired, "
+        f"{refused} refused, {skipped} skipped"
+    )
+
+
+def _run_library(args: argparse.Namespace) -> int:
+    import asyncio
+    import json
+    from pathlib import Path
+
+    if args.library_command != "import":
+        print(
+            "usage: runmal library import <folder> [--dry-run] [--json] [--user-id ID]",
+            file=sys.stderr,
+        )
+        return 2
+    root = Path(args.folder)
+    if not root.exists():
+        print(f"library import failed: folder not found: {args.folder}", file=sys.stderr)
+        return 2
+    if not root.is_dir():
+        print(f"library import failed: not a directory: {args.folder}", file=sys.stderr)
+        return 2
+
+    async def _go():
+        from sqlalchemy import select
+
+        from runmal.app import default_session_factory
+        from runmal.db.models import User
+        from runmal.library import import_library_folder
+
+        factory = default_session_factory()
+        async with factory() as session:
+            user_id = args.user_id
+            if user_id is None:
+                users = list(await session.scalars(select(User)))
+                if len(users) != 1:
+                    raise ValueError(
+                        "--user-id is required unless exactly one local "
+                        f"user exists (found {len(users)})"
+                    )
+                user_id = users[0].id
+            return await import_library_folder(
+                session, user_id, root, dry_run=args.dry_run, recursive=True
+            )
+
+    try:
+        report = asyncio.run(_go())
+    except Exception as exc:
+        # The act could not run at all (e.g. database unavailable or no
+        # resolvable owner): no report exists, so this is exit 2, not 1.
+        print(f"library import failed: {exc}", file=sys.stderr)
+        return 2
+    try:
+        payload = report.to_dict()
+    except Exception:
+        payload = {}
+    if not isinstance(payload, dict):
+        payload = {}
+    if args.json:
+        print(json.dumps(payload, indent=2))
+    else:
+        _print_library_report(report, args.folder, dry_run=args.dry_run)
+    return 0 if _report_total(report, payload, "total_refused") == 0 else 1
 
 
 def _run_doctor(args: argparse.Namespace) -> int:

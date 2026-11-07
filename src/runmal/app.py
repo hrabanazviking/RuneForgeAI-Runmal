@@ -24,6 +24,7 @@ from runmal.auth import (
     verify_browser_session,
     verify_credential,
 )
+from runmal.assets.router import router as assets_router
 from runmal.backups.router import router as backups_router
 from runmal.bridge.router import admin_router as bridge_admin_router
 from runmal.bridge.router import router as bridge_router
@@ -34,11 +35,13 @@ from runmal.db.base import create_db_engine, create_session_factory
 from runmal.db.migrate import migrate_to_head
 from runmal.generation.router import router as generation_router
 from runmal.groupchat.router import router as group_router
+from runmal.library.router import router as library_router
 from runmal.lorebooks.router import router as lorebooks_router
 from runmal.memory.router import memories_browser_page
 from runmal.memory.router import router as memories_router
 from runmal.presets.router import router as presets_router
 from runmal.prompt.router import router as prompt_router
+from runmal.scenarios.router import router as scenarios_router
 from runmal.tools.router import router as tools_router
 from runmal.voice.router import router as voice_router
 from runmal.voice.router import voice_page
@@ -139,6 +142,11 @@ def create_app(
         dependencies=[Depends(require_local_auth)],
     )
     app.include_router(
+        assets_router,
+        prefix="/api/v1",
+        dependencies=[Depends(require_local_auth)],
+    )
+    app.include_router(
         chats_router,
         prefix="/api/v1",
         dependencies=[Depends(require_local_auth)],
@@ -149,7 +157,17 @@ def create_app(
         dependencies=[Depends(require_local_auth)],
     )
     app.include_router(
+        library_router,
+        prefix="/api/v1",
+        dependencies=[Depends(require_local_auth)],
+    )
+    app.include_router(
         presets_router,
+        prefix="/api/v1",
+        dependencies=[Depends(require_local_auth)],
+    )
+    app.include_router(
+        scenarios_router,
         prefix="/api/v1",
         dependencies=[Depends(require_local_auth)],
     )
