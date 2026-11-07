@@ -3,6 +3,12 @@
 POST /api/v1/debug/prompt-inspect composes a hypothetical prompt from
 stored data and returns its S214 Prompt Trace. Read-only; the trace
 never contains prompt content or secrets (S214 safety contract).
+
+Prompt preview (P-059): POST /api/v1/debug/prompt-preview returns the
+same inspect result plus an explicit ``prompt_preview`` payload; the
+``prompt-inspect`` endpoint can also include it via ``include_preview``.
+The preview is a separate owner-scoped payload — the trace itself
+still carries no content.
 """
 
 from __future__ import annotations
@@ -51,6 +57,8 @@ class InspectRequest(BaseModel):
     context_template: dict | str | None = None
     context_preset: dict | None = None
     budget_policy: dict | None = None
+    include_preview: bool = False
+    backend_key: str | None = None
 
 
 @router.post("/debug/prompt-inspect")
@@ -76,6 +84,48 @@ async def prompt_inspect(
             instruct_template=body.instruct_template,
             context_template=body.context_template,
             context_preset=body.context_preset,
+            budget_policy=body.budget_policy,
+            include_preview=body.include_preview,
+            backend_key=body.backend_key,
+        )
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=str(exc),
+        ) from exc
+    if result is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="character or lorebook not found",
+        )
+    return result
+
+
+@router.post("/debug/prompt-preview")
+async def prompt_preview_endpoint(
+    body: InspectRequest,
+    session: AsyncSession = Depends(get_session),
+    owner_id: str = Depends(get_owner_id),
+) -> dict:
+    try:
+        result = await inspect_prompt(
+            session,
+            owner_id,
+            character_id=body.character_id,
+            chat_id=body.chat_id,
+            persona_character_id=body.persona_character_id,
+            lorebook_ids=body.lorebook_ids,
+            include_activation_inspection=body.include_activation_inspection,
+            messages=body.messages,
+            context_limit=body.context_limit,
+            reserve_response=body.reserve_response,
+            prompt_layout=body.prompt_layout,
+            model_id=body.model_id,
+            instruct_template=body.instruct_template,
+            context_template=body.context_template,
+            context_preset=body.context_preset,
+            include_preview=True,
+            backend_key=body.backend_key,
             budget_policy=body.budget_policy,
         )
     except ValueError as exc:

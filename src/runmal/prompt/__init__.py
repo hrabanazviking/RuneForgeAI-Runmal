@@ -87,6 +87,7 @@ from runmal.prompt.post_history import (
 )
 from runmal.prompt.post_history import has_content as post_history_has_content
 from runmal.prompt.post_history import slot_for as post_history_slot_for
+from runmal.prompt.preview import build_preview
 from runmal.prompt.render import RenderedPrompt, render_prompt
 from runmal.prompt.slots import (
     BASELINE_ORDER,
@@ -129,7 +130,7 @@ __all__ = [
     "compose",
     "template_to_data",
     "template_from_data",
-    "render_prompt",
+    "render_prompt", "build_preview",
     "list_templates",
     "get_template",
     "default_template_for_model",
