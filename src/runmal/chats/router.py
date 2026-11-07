@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field, StrictBool, StrictInt
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.chats import metadata as metadata_mod
+from runmal.chats.greetings import GreetingChoice
 from runmal.chats import service
 from runmal.chats.service import chat_to_dict, event_to_dict, message_to_dict
 from runmal.chats.swipes import settings_to_data
@@ -22,6 +23,15 @@ router = APIRouter(tags=["chats"])
 class ChatCreate(BaseModel):
     title: str = ""
     character_id: str | None = None
+    greeting_mode: str = "first"
+    greeting_index: StrictInt | None = None
+    greeting_seed: StrictInt | None = None
+
+
+class GreetingSeedIn(BaseModel):
+    mode: str = "first"
+    index: StrictInt | None = None
+    seed: StrictInt | None = None
 
 
 class ChatUpdate(BaseModel):
@@ -166,10 +176,42 @@ async def create_chat(
     session: AsyncSession = Depends(get_session),
 ):
     try:
-        chat = await service.create_chat(session, user_id, body.title, body.character_id)
+        choice = GreetingChoice(
+            mode=body.greeting_mode, index=body.greeting_index, seed=body.greeting_seed
+        )
+        chat = await service.create_chat(
+            session, user_id, body.title, body.character_id, greeting=choice
+        )
     except KeyError:
         raise HTTPException(status_code=404, detail="character not found") from None
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     return chat_to_dict(chat)
+
+
+@router.post("/chats/{chat_id}/greeting")
+async def seed_greeting(
+    chat_id: str,
+    body: GreetingSeedIn,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Seed a character greeting into an existing EMPTY chat (P-079).
+
+    The seeded message carries the card's whole greeting deck as
+    its swipes. A quiet choice (or a greetingless card) seeds
+    nothing and reports ``seeded: false``.
+    """
+    try:
+        choice = GreetingChoice(mode=body.mode, index=body.index, seed=body.seed)
+        message = await service.seed_greeting(session, user_id, chat_id, choice)
+    except KeyError:
+        raise HTTPException(status_code=404, detail="chat not found") from None
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if message is None:
+        return {"seeded": False, "message": None}
+    return {"seeded": True, "message": message_to_dict(message)}
 
 
 @router.get("/chats")

@@ -196,7 +196,9 @@ def test_metadata_defaults_then_regenerate(tmp_path, monkeypatch):
     body = got.json()
     assert body["summary"] == "" and body["tags"] == []
     assert body["is_favourite"] is False
-    assert body["message_count"] == 3
+    # P-079: the fixture card carries greetings, so chat creation
+    # seeds the greeting as a first message -- 3 posted + 1 seeded.
+    assert body["message_count"] == 4
     assert body["metadata"]["title_source"] == "unset"
     assert body["metadata"]["generator"] is None
 
@@ -214,7 +216,7 @@ def test_metadata_defaults_then_regenerate(tmp_path, monkeypatch):
     prov = body["metadata"]
     assert prov["title_source"] == prov["summary_source"] == prov["tags_source"] == "auto"
     assert prov["generator"] == "extractive-v1"
-    assert prov["generated_from"] == 3
+    assert prov["generated_from"] == 4  # P-079: greeting + 3 posted
     assert prov["generated_at"]
 
     chat = client.get(f"/api/v1/chats/{chat_id}").json()

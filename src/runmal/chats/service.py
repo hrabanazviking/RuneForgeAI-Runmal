@@ -10,8 +10,11 @@ from datetime import UTC, datetime
 from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from runmal.cards import import_card
 from runmal.characters.service import get_character as get_char
 from runmal.chats import actions as action_mod
+from runmal.chats import greetings as greeting_mod
+from runmal.chats.greetings import GreetingChoice
 from runmal.chats import provenance as prov_mod
 from runmal.chats import swipes as swipe_mod
 from runmal.chats.swipes import (
@@ -308,22 +311,190 @@ async def _get_owned_chat(session: AsyncSession, user_id: str, chat_id: str) -> 
     return result.scalar_one_or_none()
 
 
+def _greeting_record(character, entry: dict, preset: dict) -> dict:
+    """The P-075 provenance record for one greeting alternate.
+
+    The text is card-authored, placed by the append road: origin
+    ``manual`` with the card-greeting facts recorded plainly (the
+    entry's kind and its card-side index); no model produced it
+    and no lore ran, so both sections say not_applicable.
+    """
+    return prov_mod.build_record(
+        origin_kind="manual",
+        origin={
+            "source": "card_greeting",
+            "greeting_kind": entry["kind"],
+            "greeting_index": entry["source_index"],
+        },
+        model=prov_mod.model_section(status="not_applicable"),
+        preset=preset,
+        lore=prov_mod.lore_section(status="not_applicable"),
+        speaker={"speaker_id": character.id, "speaker_name": character.name},
+    )
+
+
+async def _seed_greeting_message(
+    session: AsyncSession,
+    user_id: str,
+    chat: Chat,
+    character,
+    choice: GreetingChoice,
+) -> Message | None:
+    """Seed a chat's greeting as its first message (P-079).
+
+    The card's greeting deck becomes the message's swipe deck and
+    the choice picks the active alternate, so the opening line is
+    swiped exactly like any other message (P-065), with one
+    provenance record per alternate (P-075). Returns None when
+    the choice resolves to no greeting (quiet mode, or a card
+    with no usable greeting). Event data carries metadata only,
+    never greeting text. The caller owns the commit.
+    """
+    card = import_card(character.card_json.encode(), "card.json")
+    entries = greeting_mod.greeting_entries(card.first_mes, card.alternate_greetings)
+    deck = [entry["text"] for entry in entries]
+    index = choice.resolve(deck)
+    if index is None:
+        return None
+    preset = await _preset_snapshot(session, user_id, chat)
+    document = prov_mod.build_document(
+        _greeting_record(character, entries[index], preset), swipe_index=index
+    )
+    for other, entry in enumerate(entries):
+        if other != index:
+            document = prov_mod.with_record_for_swipe(
+                document, other, _greeting_record(character, entry, preset)
+            )
+    message = Message(
+        chat_id=chat.id,
+        role="assistant",
+        content=deck[index],
+        speaker_id=character.id,
+        speaker_name=character.name,
+        swipes_json=json.dumps(deck),
+        swipe_id=index,
+        position=0,
+        provenance_json=prov_mod.dump_document(document),
+    )
+    session.add(message)
+    await session.flush()
+    await _record_event(
+        session,
+        chat.id,
+        EVENT_MESSAGE_APPENDED,
+        message_id=message.id,
+        data={
+            "role": "assistant",
+            "greeting": True,
+            "greeting_mode": choice.mode,
+            "greeting_kind": entries[index]["kind"],
+            "greeting_index": entries[index]["source_index"],
+            "swipe_id": index,
+            "swipe_count": len(deck),
+        },
+    )
+    return message
+
+
 async def create_chat(
     session: AsyncSession,
     user_id: str,
     title: str = "",
     character_id: str | None = None,
+    *,
+    greeting: GreetingChoice | None = None,
 ) -> Chat:
-    if character_id is not None and await get_char(session, user_id, character_id) is None:
-        raise KeyError(character_id)
+    character = None
+    if character_id is not None:
+        character = await get_char(session, user_id, character_id)
+        if character is None:
+            raise KeyError(character_id)
     chat = Chat(user_id=user_id, title=title, character_id=character_id)
     session.add(chat)
     await session.flush()
+    choice = greeting if greeting is not None else GreetingChoice()
     await _record_event(
-        session, chat.id, EVENT_CHAT_CREATED, data={"title": title, "character_id": character_id}
+        session,
+        chat.id,
+        EVENT_CHAT_CREATED,
+        data={
+            "title": title,
+            "character_id": character_id,
+            "greeting_mode": choice.mode,
+        },
     )
+    if character is not None:
+        await _seed_greeting_message(session, user_id, chat, character, choice)
     await session.commit()
     return chat
+
+
+async def seed_greeting(
+    session: AsyncSession,
+    user_id: str,
+    chat_id: str,
+    choice: GreetingChoice | None = None,
+) -> Message | None:
+    """Seed the greeting into an existing EMPTY chat (P-079).
+
+    For chats created quiet, or before their character was bound
+    (set_chat_persona). Raises KeyError for a missing/foreign
+    chat and ValueError when the chat has no character, the
+    character is gone, the deck choice is invalid for the card,
+    or the chat already has messages -- a greeting is an opening
+    line, never an insertion. Returns None when the choice
+    resolves to no greeting (quiet mode / greetingless card).
+    """
+    chat = await _get_owned_chat(session, user_id, chat_id)
+    if chat is None:
+        raise KeyError(chat_id)
+    if chat.character_id is None:
+        raise ValueError("chat has no character to greet with")
+    character = await get_char(session, user_id, chat.character_id)
+    if character is None:
+        raise ValueError("the chat's character no longer exists")
+    if await _ordered_messages(session, chat_id):
+        raise ValueError("chat already has messages; a greeting opens an empty chat")
+    resolved = choice if choice is not None else GreetingChoice()
+    card = import_card(character.card_json.encode(), "card.json")
+    deck = greeting_mod.greeting_deck(card.first_mes, card.alternate_greetings)
+    resolved.resolve(deck)  # strict: a bad explicit index fails BEFORE the journal
+    await _journal(
+        session, user_id, chat_id, "message.append", {"role": "assistant", "greeting": True}
+    )
+    message = await _seed_greeting_message(session, user_id, chat, character, resolved)
+    await session.commit()
+    return message
+
+
+async def get_character_greetings(
+    session: AsyncSession, user_id: str, character_id: str
+) -> dict | None:
+    """A card's greeting deck as the API presents it (P-079).
+
+    Ordered usable greetings with their deck index, kind and
+    card-side source index; None when the character is missing
+    or foreign. The deck a new chat would seed from, exactly.
+    """
+    character = await get_char(session, user_id, character_id)
+    if character is None:
+        return None
+    card = import_card(character.card_json.encode(), "card.json")
+    entries = greeting_mod.greeting_entries(card.first_mes, card.alternate_greetings)
+    return {
+        "character_id": character.id,
+        "character_name": character.name,
+        "greetings": [
+            {
+                "index": index,
+                "kind": entry["kind"],
+                "source_index": entry["source_index"],
+                "text": entry["text"],
+            }
+            for index, entry in enumerate(entries)
+        ],
+        "count": len(entries),
+    }
 
 
 async def list_chats(session: AsyncSession, user_id: str) -> list[tuple[Chat, int]]:

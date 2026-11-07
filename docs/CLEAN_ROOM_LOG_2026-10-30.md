@@ -694,3 +694,21 @@ source in §0(2) and appends its entry here:
   No SillyTavern or Voxta source code was read and no file
   was downloaded; the slice's tests are authored fresh in
   the test module (P-005 discipline).
+- **P-079 (2026-11-07, public behaviour + own tree only):**
+  quiet/greeting controls are built from the mirrors'
+  publicly known behaviour -- a new chat opens on the
+  character's greeting and alternate greetings are swiped
+  through on that first message -- plus Runmal's own facts:
+  the card model's `first_mes` / `alternate_greetings`
+  fields and the S212 editor that already maintained them,
+  the P-065 swipe-deck contract (deck invariant, strict
+  `select_index`, non-empty alternates), the P-075
+  per-swipe provenance document, the P-036 seeded-RNG
+  honesty discipline, and the P-076 journal pattern. The
+  deck/choice contract (labelled entries with card-side
+  source indexes, the four modes first/index/random/quiet,
+  strict choice decode), the seed-into-empty road, and the
+  deck-view shape are Runmal's own design for the roadmap
+  line. No SillyTavern or Voxta source code was read and
+  no file was downloaded; the slice's tests are authored
+  fresh in the test module (P-005 discipline).
