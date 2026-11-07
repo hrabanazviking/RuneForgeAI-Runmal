@@ -140,6 +140,32 @@ async def list_chats(
     return [chat_to_dict(chat, count) for chat, count in await service.list_chats(session, user_id)]
 
 
+@router.get("/chats/search")
+async def search_chats_route(
+    q: str,
+    mode: str = "auto",
+    limit: int = 20,
+    chat_id: str | None = None,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Search the caller's chats (P-072): full-text + semantic,
+    jump-to-message. Declared BEFORE get_chat on purpose: the
+    literal "search" must not be captured as a chat_id by
+    GET /chats/{chat_id}, so this route must stay above it."""
+    from runmal.chats import search as search_mod
+
+    try:
+        result = await search_mod.search_chats(
+            session, user_id, q, mode=mode, limit=limit, chat_id=chat_id
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if result is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return result
+
+
 @router.get("/chats/{chat_id}")
 async def get_chat(
     chat_id: str,

@@ -1,6 +1,7 @@
 """Chat service + API (S107) + chat file interop (P-020)
 + branches (P-066)
 + continue & impersonate (P-069).
++ chat search (P-072).
 
 The file-interop surface parses ST-shaped chat JSONL and
 Runmal native export documents into the typed contract in
@@ -26,6 +27,14 @@ from runmal.chats.continue_impersonate import (
     discard_impersonate,
     impersonate_draft,
     resolve_continue_mode,
+)
+from runmal.chats.search import (
+    SearchError,
+    make_snippet,
+    rank_hits,
+    score_fulltext,
+    search_chats,
+    tokenise,
 )
 from runmal.chats.filebridge import (
     field_diff,
@@ -55,6 +64,12 @@ __all__ = [
     "discard_impersonate",
     "impersonate_draft",
     "resolve_continue_mode",
+    "SearchError",
+    "make_snippet",
+    "rank_hits",
+    "score_fulltext",
+    "search_chats",
+    "tokenise",
     "branch_info",
     "fork_chat",
     "list_branch_family",
