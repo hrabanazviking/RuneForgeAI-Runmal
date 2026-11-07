@@ -16,6 +16,7 @@ from __future__ import annotations
 import random
 
 import pytest
+from sqlalchemy import select
 from fastapi.testclient import TestClient
 
 from runmal.app import create_app
@@ -30,7 +31,8 @@ from runmal.chats.service import event_to_dict, message_to_dict
 from runmal.db.base import create_db_engine, create_session_factory
 from runmal.db.migrate import current_revision, migrate_to_head
 from runmal.db.migrations import MIGRATIONS
-from runmal.db.models import User
+from runmal.db.models import Chat, User
+from runmal.groupchat.store import create_group
 
 FIRST = "Hail, wanderer."
 ALTS = ["The fire is lit; sit.", "You look half-frozen. Come in."]
@@ -597,3 +599,28 @@ def test_api_undo_removes_seeded_greeting(app_client):
     undone = app_client.post(f"/api/v1/chats/{chat['id']}/undo", json={})
     assert undone.status_code == 200, undone.text
     assert _api_messages(app_client, chat["id"]) == []
+
+
+# ---------------- banking heal: group rooms refuse explicitly ----------------
+
+async def test_seed_greeting_refuses_group_room_with_bound_character(tmp_path):
+    factory = make_factory(tmp_path)
+    user = await make_user(factory)
+    char_id = await make_char(factory, user)
+    async with factory() as session:
+        group = await create_group(session, user, "Mead Hall", [char_id])
+        group_id = group.id
+    async with factory() as session:
+        room = (await session.execute(
+            select(Chat).where(Chat.group_id == group_id))).scalar_one()
+        room_id = room.id
+        assert room.character_id is None  # rooms bind no greeter at birth
+    async with factory() as session:
+        await svc.set_chat_persona(session, user, room_id, char_id)
+    async with factory() as session:
+        # Even with a character bound, a room has no single greeter:
+        # the refusal is the explicit group guard, not the incidental
+        # no-character refusal a room used to fall through to.
+        with pytest.raises(ValueError, match="group room"):
+            await svc.seed_greeting(session, user, room_id)
+    assert await history(factory, user, room_id) == []

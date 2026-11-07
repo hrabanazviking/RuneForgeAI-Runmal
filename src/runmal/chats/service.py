@@ -439,7 +439,8 @@ async def seed_greeting(
 
     For chats created quiet, or before their character was bound
     (set_chat_persona). Raises KeyError for a missing/foreign
-    chat and ValueError when the chat has no character, the
+    chat and ValueError when the chat is a group room, has no
+    character, the
     character is gone, the deck choice is invalid for the card,
     or the chat already has messages -- a greeting is an opening
     line, never an insertion. Returns None when the choice
@@ -448,6 +449,8 @@ async def seed_greeting(
     chat = await _get_owned_chat(session, user_id, chat_id)
     if chat is None:
         raise KeyError(chat_id)
+    if chat.group_id is not None:
+        raise ValueError("group rooms have no single greeter; a greeting seeds only a one-to-one chat")
     if chat.character_id is None:
         raise ValueError("chat has no character to greet with")
     character = await get_char(session, user_id, chat.character_id)
