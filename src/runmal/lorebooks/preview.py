@@ -71,10 +71,20 @@ Entry states (P-035): vector-fired rows honestly report
 matched) with ``via="vector"``; the caller supplies
 ``vector_hit_ids`` (the embedding matcher is P-041). Every row
 also reports ``vectorised`` and the derived ``activation_kind``.
+
+Token account (P-044): every preview carries ``token_account`` --
+the per-turn lore cost, visible before sending because preview
+never sends. It is built from the final rows via
+``account_from_rows``: its ``tokens_used`` equals the sum of the
+included rows and equals ``budget.tokens_used``, with
+``by_status`` / ``by_book`` breakdowns. Untriggered would-be
+costs are counted from stored content with the same counter
+(see ``preview_activation`` for the counter recount rule).
 """
 
 from __future__ import annotations
 
+from runmal.lorebooks.accounting import account_from_rows, count_lore_tokens
 from runmal.lorebooks.activation import ActivatableEntry, activate
 from runmal.lorebooks.budget import BudgetCandidate, resolve_budget
 from runmal.lorebooks.groups import normalise_group_weight, normalise_inclusion_group
@@ -91,9 +101,9 @@ from runmal.lorebooks.scan import (
     scan_entries_recursive,
     scan_entries_windowed,
 )
-from runmal.lorebooks.windows import ScanSettings, build_scan_window
 from runmal.lorebooks.states import activation_kind_for, normalise_vectorised
 from runmal.lorebooks.vector_match import match_vectorised_sync
+from runmal.lorebooks.windows import ScanSettings, build_scan_window
 
 
 def preview_activation(
@@ -103,6 +113,7 @@ def preview_activation(
     token_budget: int | None,
     seed: int | None = None,
     *,
+    counter=None,
     roll_context: str = "",
     recursive_scan: bool = False,
     max_recursion_depth: int = MAX_RECURSIVE_SCAN_DEPTH,
@@ -145,6 +156,16 @@ def preview_activation(
     vectorised candidates, every row gains ``vector_score`` (the
     candidate's cosine, or None), and keyword-fallback rows report
     their real matched keys with ``via="vector_fallback"``.
+
+    Token account (P-044): with a ``counter``, the account
+    recounts every entry with that counter (the same counter
+    ``compose(counter=...)`` would spend with); the budget pass
+    itself still resolved with the canonical estimator, so
+    ``row["tokens"]`` keeps the budget-pass numbers and only
+    ``token_account`` reflects the counter. Without a counter,
+    the account derives purely from row tokens plus
+    estimate-based would-be counts for untriggered rows
+    (contents fill) -- quality ESTIMATED.
     """
     if scan_depth < 1:
         raise ValueError("scan_depth must be >= 1")
@@ -326,6 +347,22 @@ def preview_activation(
                 row["discard_reason"] = dropped.reason
         rows.append(row)
 
+    contents = {str(e.id): str(e.content or "") for e in entries}
+    if counter is not None:
+        account_rows = [
+            dict(r, tokens=count_lore_tokens(contents[r["entry_id"]], counter))
+            if r["entry_id"] in contents
+            else r
+            for r in rows
+        ]
+        account = account_from_rows(
+            account_rows, token_budget=token_budget, counter=counter, contents=contents
+        )
+    else:
+        account = account_from_rows(
+            rows, token_budget=token_budget, counter=counter, contents=contents
+        )
+
     preview: dict = {
         "scan_depth": scan_depth,
         "scan_mode": settings.scan_mode,
@@ -336,6 +373,7 @@ def preview_activation(
         "seed": seed,
         "roll_context": roll_context,
         "entries": rows,
+        "token_account": account.to_dict(),
     }
     if vector_match is not None:
         preview["vector_match"] = vector_match.to_dict()

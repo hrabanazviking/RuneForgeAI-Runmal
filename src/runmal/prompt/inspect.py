@@ -30,6 +30,13 @@ keep kind lore_before (the trace still groups them as lore) but
 take the baseline order of the depth-injection position
 (authors_note) as explicit slot data. Ordering stays data,
 never a hidden branch (PROMPT_COMPOSER.md section 2).
+
+Lore token account (P-044): the trace now carries
+``lore_account`` -- lore's exact share of this composed prompt
+(tokens, share of input + budget, per-provenance), summed from
+the composer's own manifest via the trace, so it reconciles
+with the ledger by construction; visible before sending
+because the inspector never sends.
 """
 
 from __future__ import annotations
@@ -41,6 +48,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from runmal.characters import service as character_service
 from runmal.lorebooks import scopes as lore_scopes
 from runmal.lorebooks import service as lore_service
+from runmal.lorebooks.accounting import account_from_trace
 from runmal.lorebooks.preview import preview_activation
 from runmal.lorebooks.windows import ScanSettings
 from runmal.prompt.composer import compose
@@ -288,4 +296,5 @@ async def inspect_prompt(
     result = trace_to_dict(trace)
     if lore_scope_summary is not None:
         result["lore_scopes"] = lore_scope_summary
+    result["lore_account"] = account_from_trace(result)
     return result
