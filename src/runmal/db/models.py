@@ -239,6 +239,46 @@ class SamplingPreset(Base):
     updated_at: Mapped[datetime | None] = mapped_column(nullable=True, default=None)
 
 
+class PresetBundle(Base):
+    """Preset bundle (P-054): sampler + prompt selections as one unit.
+
+    The whole validated bundle lives in ``bundle_json`` (canonical
+    JSON): the bundle is an aggregate and splitting it across
+    columns would invite partial writes that lose carried fields.
+    """
+
+    __tablename__ = "preset_bundles"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_new_id)
+    user_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    bundle_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    created_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
+    updated_at: Mapped[datetime | None] = mapped_column(nullable=True, default=None)
+
+
+class PresetOverride(Base):
+    """Preset override (P-054): one bundle assigned to one character
+    or chat, with a partial delta. Unique per (scope_kind, owner_id)."""
+
+    __tablename__ = "preset_overrides"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_new_id)
+    user_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    bundle_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("preset_bundles.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    scope_kind: Mapped[str] = mapped_column(String(20), nullable=False, default="chat")
+    owner_id: Mapped[str] = mapped_column(String(36), nullable=False, default="")
+    overrides_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    created_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
+    updated_at: Mapped[datetime | None] = mapped_column(nullable=True, default=None)
+
+
 class ConnectionProfile(Base):
     """Backend connection profile (S211). Secrets are never stored here."""
 

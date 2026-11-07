@@ -202,10 +202,10 @@ def test_migration_0020_present_and_applied(tmp_path):
     applied = migrate_to_head(db_path)
     assert "0020" in [m[0] for m in MIGRATIONS]
     assert "0020" in applied
-    assert applied[-1] == "0032"  # head pin moved by P-039 (0031; P-038 took 0030 before it)
-    assert current_revision(db_path) == "0032"
-    assert applied[-1] == "0032"  # head pin moved by P-036 (0027 reserved for P-035)
-    assert current_revision(db_path) == "0032"
+    assert applied[-1] == "0033"  # head pin moved by P-039 (0031; P-038 took 0030 before it)
+    assert current_revision(db_path) == "0033"
+    assert applied[-1] == "0033"  # head pin moved by P-036 (0027 reserved for P-035)
+    assert current_revision(db_path) == "0033"
 
 
 def test_character_assets_table_exists_with_contracted_columns(tmp_path):

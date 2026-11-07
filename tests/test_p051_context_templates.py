@@ -619,7 +619,7 @@ def test_api_context_registry_endpoints(tmp_path, monkeypatch):
 
 def test_migration_head_still_0032():
     from runmal.db.migrations import MIGRATIONS
-    assert MIGRATIONS[-1][0] == "0032"
+    assert MIGRATIONS[-1][0] == "0033"  # head moved by P-054 (0033)
 
 # ---------------- 9. extra apply / story pins ----------------
 
