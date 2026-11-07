@@ -412,3 +412,97 @@ async def group_run(
     if result is None:
         raise HTTPException(status_code=404, detail="group not found")
     return result
+
+
+# -- Absent-character presence + history digest (P-071) -------------------
+# Appended at end of file by design: P-070 works the member routes
+# above; this block adds new surface only and touches no existing
+# handler. Presence state + digest semantics live in
+# runmal.groupchat.presence (metadata-only events, no migration).
+
+from fastapi import Query
+
+from runmal.groupchat import presence
+
+
+class ReturnIn(BaseModel):
+    max_entries: int = Field(default=presence.DEFAULT_MAX_ENTRIES, ge=1, le=500)
+    excerpt_chars: int = Field(default=presence.DEFAULT_EXCERPT_CHARS, ge=20, le=5000)
+
+
+@router.post("/groups/{group_id}/members/{character_id}/leave")
+async def mark_member_absent(
+    group_id: str,
+    character_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    try:
+        record = await presence.mark_absent(session, user_id, group_id, character_id)
+    except ValueError as exc:
+        raise _unprocessable(exc) from exc
+    if record is None:
+        raise HTTPException(status_code=404, detail="group not found")
+    return record
+
+
+@router.post("/groups/{group_id}/members/{character_id}/return")
+async def return_member(
+    group_id: str,
+    character_id: str,
+    body: ReturnIn | None = None,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    caps = body if body is not None else ReturnIn()
+    try:
+        digest = await presence.mark_returned(
+            session,
+            user_id,
+            group_id,
+            character_id,
+            max_entries=caps.max_entries,
+            excerpt_chars=caps.excerpt_chars,
+        )
+    except ValueError as exc:
+        raise _unprocessable(exc) from exc
+    if digest is None:
+        raise HTTPException(status_code=404, detail="group not found")
+    return digest
+
+
+@router.get("/groups/{group_id}/members/{character_id}/digest")
+async def preview_member_digest(
+    group_id: str,
+    character_id: str,
+    max_entries: int = Query(default=presence.DEFAULT_MAX_ENTRIES, ge=1, le=500),
+    excerpt_chars: int = Query(default=presence.DEFAULT_EXCERPT_CHARS, ge=20, le=5000),
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    try:
+        digest = await presence.missed_digest(
+            session,
+            user_id,
+            group_id,
+            character_id,
+            max_entries=max_entries,
+            excerpt_chars=excerpt_chars,
+        )
+    except ValueError as exc:
+        raise _unprocessable(exc) from exc
+    if digest is None:
+        raise HTTPException(status_code=404, detail="group not found")
+    return digest
+
+
+@router.get("/groups/{group_id}/presence")
+async def get_group_presence(
+    group_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    records = await presence.list_presence(session, user_id, group_id)
+    if records is None:
+        raise HTTPException(status_code=404, detail="group not found")
+    return records
