@@ -16,15 +16,16 @@ from runmal.backends.capabilities import (
     capability_matrix,
 )
 from runmal.db.deps import get_owner_id, get_session
-from runmal.prompt.inspect import inspect_prompt
 from runmal.prompt.context import (
     context_to_data,
     default_context_template,
     list_context_templates,
     to_story_string,
 )
-from runmal.prompt.manager import default_layout, layout_to_data
+from runmal.prompt.governor import default_policy, policy_to_data
+from runmal.prompt.inspect import inspect_prompt
 from runmal.prompt.instruct import list_templates, template_to_data
+from runmal.prompt.manager import default_layout, layout_to_data
 from runmal.prompt.service import (
     context_echo,
     resolve_context_template,
@@ -49,6 +50,7 @@ class InspectRequest(BaseModel):
     instruct_template: dict | str | None = None
     context_template: dict | str | None = None
     context_preset: dict | None = None
+    budget_policy: dict | None = None
 
 
 @router.post("/debug/prompt-inspect")
@@ -74,6 +76,7 @@ async def prompt_inspect(
             instruct_template=body.instruct_template,
             context_template=body.context_template,
             context_preset=body.context_preset,
+            budget_policy=body.budget_policy,
         )
     except ValueError as exc:
         raise HTTPException(
@@ -86,6 +89,11 @@ async def prompt_inspect(
             detail="character or lorebook not found",
         )
     return result
+
+
+@router.get("/debug/budget-policy/default")
+async def budget_policy_default() -> dict:
+    return {"policy": policy_to_data(default_policy()), "source": "default"}
 
 
 @router.get("/debug/prompt-manager/default")

@@ -84,6 +84,20 @@ carries an ``authors_note`` echo -- metadata only (present / active /
 depth / frequency / enabled / message count / source); the note text
 never enters the result. With no chat the echo reports source
 ``none`` and the pipeline is exactly the pre-P-056 pipeline.
+
+Token budget governor (P-058): every result carries ``budget``
+-- the whole-prompt budget, always present whether or not a
+policy was declared. A declared ``budget_policy`` is resolved
+via ``resolve_policy`` and applied before compose, trimming
+the slot list the composer would otherwise have received;
+slots the governor drops surface in the trace as discards with
+the governor reasons (``governor_section_cap`` /
+``governor_total_budget``), and a trimmed history slot is
+composed from its trimmed parts rather than discarded. The
+result also carries a ``budget_governor`` echo (applied /
+source / policy / actions). No content ever enters a budget
+or governor payload: ids, kinds, sections, token counts,
+statuses and reasons only (S214).
 """
 
 from __future__ import annotations
@@ -110,13 +124,16 @@ from runmal.prompt.authors_note import (
 from runmal.prompt.composer import compose
 from runmal.prompt.context import DISABLED_REASON as CONTEXT_DISABLED_REASON
 from runmal.prompt.context import apply_context_template
+from runmal.prompt.governor import apply_policy, budget_from_trace
 from runmal.prompt.manager import DISABLED_REASON, apply_layout
 from runmal.prompt.render import render_prompt
 from runmal.prompt.service import (
     context_echo,
     layout_echo,
+    policy_echo,
     resolve_context_template,
     resolve_layout,
+    resolve_policy,
     resolve_template,
     template_echo,
 )
@@ -205,6 +222,7 @@ async def inspect_prompt(
     instruct_template: object | None = None,
     context_template: object | None = None,
     context_preset: object | None = None,
+    budget_policy: object | None = None,
 ) -> dict | None:
     """Build the trace dict for a hypothetical prompt, or None when a
     referenced character/lorebook does not exist."""
@@ -213,6 +231,8 @@ async def inspect_prompt(
     ctx_template, ctx_source = resolve_context_template(
         context_template, preset=context_preset
     )
+    policy, policy_source = resolve_policy(budget_policy)
+    governor_actions: tuple = ()
     messages = list(messages or [])
     note = AuthorsNote()
     authors_note_active = False
@@ -480,6 +500,31 @@ async def inspect_prompt(
                 )
             )
         slots_for_compose = kept
+    if policy is not None:
+        governed = apply_policy(
+            slots_for_compose,
+            policy,
+            input_budget=context_limit - reserve_response,
+        )
+        governor_actions = governed.actions
+        _pre_governor_by_id = {slot.id: slot for slot in slots_for_compose}
+        for action in governor_actions:
+            if action.action == "dropped":
+                slot = _pre_governor_by_id.get(action.slot_id)
+                if slot is not None:
+                    extras.append(
+                        TraceSlot(
+                            slot_id=slot.id,
+                            kind=slot.kind,
+                            role=slot.role,
+                            status="discarded",
+                            tokens=action.tokens_before,
+                            reason=action.reason,
+                            trigger=slot.trigger or None,
+                            provenance=slot.provenance,
+                        )
+                    )
+        slots_for_compose = list(governed.kept)
     composed = compose(
         slots_for_compose, context_limit=context_limit, reserve_response=reserve_response
     )
@@ -496,4 +541,10 @@ async def inspect_prompt(
     if include_activation_inspection:
         result["lorebook_inspections"] = lorebook_inspections
     result["lore_account"] = account_from_trace(result)
+    result["budget"] = budget_from_trace(result)
+    result["budget_governor"] = {
+        "applied": policy is not None,
+        **policy_echo(policy, policy_source),
+        "actions": [a.to_dict() for a in governor_actions],
+    }
     return result

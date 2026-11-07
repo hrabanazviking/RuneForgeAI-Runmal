@@ -1,4 +1,4 @@
-"""Prompt template engine public surface (S205; P-050 instruct; P-051 context)."""
+"""Prompt template engine public surface (S205; P-050 instruct; P-051 context; P-058 governor)."""
 
 from runmal.prompt.authors_note import (
     FREQUENCY_REASON,
@@ -9,6 +9,15 @@ from runmal.prompt.authors_note import (
     note_to_data,
     slot_for,
 )
+from runmal.prompt.composer import (
+    ComposedMessage,
+    ComposedPrompt,
+    ImpossiblePromptError,
+    PromptManifest,
+    SlotDiscard,
+    SlotUsage,
+    compose,
+)
 from runmal.prompt.context import (
     BUILTIN_CONTEXT_TEMPLATES,
     CONTEXT_TEMPLATE_ORDER,
@@ -18,8 +27,8 @@ from runmal.prompt.context import (
     ContextTemplate,
     apply_context_template,
     context_from_data,
-    context_to_data,
     context_template_from_preset,
+    context_to_data,
     default_context_template,
     from_story_string,
     get_context_template,
@@ -29,14 +38,23 @@ from runmal.prompt.context import (
 from runmal.prompt.context import (
     DISABLED_REASON as CONTEXT_DISABLED_REASON,
 )
-from runmal.prompt.composer import (
-    ComposedMessage,
-    ComposedPrompt,
-    ImpossiblePromptError,
-    PromptManifest,
-    SlotDiscard,
-    SlotUsage,
-    compose,
+from runmal.prompt.governor import (
+    DEFAULT_TRIM_ORDER,
+    SECTION_CAP_REASON,
+    SECTIONS,
+    TOTAL_BUDGET_REASON,
+    BudgetPolicy,
+    GovernedSlots,
+    GovernorAction,
+    SectionBudget,
+    WholePromptBudget,
+    apply_policy,
+    budget_from_slots,
+    budget_from_trace,
+    default_policy,
+    policy_from_data,
+    policy_to_data,
+    section_for_kind,
 )
 from runmal.prompt.instruct import (
     BUILTIN_TEMPLATES,
@@ -110,4 +128,10 @@ __all__ = [
     "make_slot",
     "slot_text",
     "slot_tokens",
+    "SECTIONS", "SECTION_CAP_REASON", "TOTAL_BUDGET_REASON",
+    "DEFAULT_TRIM_ORDER", "section_for_kind", "SectionBudget",
+    "WholePromptBudget", "budget_from_slots", "budget_from_trace",
+    "BudgetPolicy", "default_policy", "policy_from_data",
+    "policy_to_data", "GovernorAction", "GovernedSlots",
+    "apply_policy",
 ]
