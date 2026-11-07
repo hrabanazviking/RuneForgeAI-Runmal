@@ -3930,3 +3930,45 @@ P-052 BANKED - sampler surface complete: every common
     Next in roadmap order: P-053 (per-backend
     capability truth, team-03, mustered 2026-11-06
     23:08 EST from base 6fc65f0).
+
+P-053 BANKED - per-backend capability truth: sampler
+    controls grey by declared/ledger support, never
+    fake sliders - team-03 commit 9d1900b merged
+    (no-ff) into yrsa/two-mirrors-build as 893e745 and
+    pushed; ls-remote verified
+    893e7450a2b13503d274417c5c5c86bed5ee56cf.
+    Evidence (team-03 worktree hidden_files/P053_EVIDENCE.md
+    + logs): battery 40 passed, neighbours 127 passed,
+    team full suite 2350 passed / 4 skipped / 0 failed
+    on its base. Forge confirmation suite at the
+    merged tree: 2477 passed / 4 skipped / 0 failed
+    (= 2437 + 40, exact). NO migration; head stays 0032.
+    Merge reconciliation (the slice was built on base
+    6fc65f0, before P-052 banked): conflicts in
+    generation/compat.py (S208 profiles - union: P-052's
+    Ollama typical_p/tfs_z/Mirostat wire names PLUS
+    P-053's context_length -> num_ctx; OpenAI unsupported
+    set kept as P-052's full 28-key set) and
+    prompt/router.py (both route sets kept: P-051
+    context-templates + P-053 backend-capabilities)
+    resolved keeping BOTH slices. The team commit had
+    swept hidden_files/ bookkeeping into the tree; it
+    was removed from the merge (untracked, as always).
+    Two battery pins healed at merge to the merged
+    truth (no assertion weakened - each still pins the
+    exact set): EXPECTED_AVAILABLE[ollama] gained the
+    five controls P-052's adapter declares and forwards
+    (typical_p, tfs_z, mirostat_mode/tau/eta), verified
+    against the adapter module itself; the clamp test's
+    bag now carries the full 28-key vocabulary so its
+    dropped set compares against the whole greyed set.
+    Combined batteries at the merged tree: 219 passed.
+    Defect fixed in-slice (by the team): S208's Ollama
+    profile dropped the adapter's declared min_p and
+    context_length as unknown; the profile now maps
+    both, and OpenAI's profile names them unsupported.
+    Carried: truth is declared/ledger, never measured
+    (no live probing exists in this tree, and no row
+    pretends otherwise).
+    Next in roadmap order: P-054 (presets -
+    save/load/share sampler+prompt bundles, team-01).
