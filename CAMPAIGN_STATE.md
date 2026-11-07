@@ -3786,3 +3786,29 @@ P-048 BANKED - Part III gate: the ST-shaped lore test
     preservation file-layer only.
     Next in roadmap order: the commissioned binding
     depth/role slice (team-01), then Part IV (P-049..).
+
+COMMISSIONED BINDING DEPTH/ROLE SLICE BANKED - character-book
+    entries carry P-038 placement whole into materialisation -
+    team-01 finisher commit bfc4742 merged (no-ff) into
+    yrsa/two-mirrors-build as e777f1f and pushed; ls-remote
+    verified e777f1f65c07a872a989c2b0567df541e0518fee.
+    Evidence (team-01 worktree
+    hidden_files/COMMISSIONED_BINDING_DEPTH_ROLE_EVIDENCE.md
+    and logs): battery 29/29, neighbours 479, team full suite
+    2228 passed / 4 skipped / 0 failed (= 2199 + 29, exact;
+    s503 passed in-run). Forge confirmation suite at the
+    merged tree: 2228 passed / 4 skipped / 0 failed.
+    NO migration; head stays 0032. Gate finding F2 CLOSED:
+    normalise_book_entry delegates position to
+    lorebooks.placement and carries depth (bad depth degrades
+    to None, undeclared) and role (bad role degrades to
+    system); materialise stores depth/role on the LoreEntry
+    row and serialise emits them, so the character-book
+    round-trip is a fixed point. The slice was completed by
+    a finisher lead continuing the cancelled lead's intact
+    uncommitted work (reviewed leg-by-leg, kept whole).
+    Carried: F1 (P-046 vector cache in-process only, Pi 4
+    bench owed) and F3 (P-019 preservation file-layer only)
+    stand as recorded at P-048.
+    Next in roadmap order: P-049 (Part IV opener - prompt
+    manager, team-02, in flight from base 0ae13a9).
