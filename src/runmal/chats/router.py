@@ -67,6 +67,15 @@ class SwipeSelectIn(BaseModel):
     index: int | None = None
 
 
+class MessageMoveIn(BaseModel):
+    to_index: int
+
+
+class MessageCopyIn(BaseModel):
+    target_chat_id: str | None = None
+    title: str | None = None
+
+
 class SwipeSettingsIn(BaseModel):
     enabled: bool = True
     params: dict = {}
@@ -207,6 +216,113 @@ async def delete_message(
     if not await service.delete_message(session, user_id, chat_id, message_id):
         raise HTTPException(status_code=404, detail="message not found")
     return {"deleted": True, "id": message_id}
+
+
+@router.get("/chats/{chat_id}/messages/{message_id}/variants")
+async def get_message_variants(
+    chat_id: str,
+    message_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """A message's variant history: replaced contents, edit order (P-068)."""
+    variants = await service.get_message_variants(session, user_id, chat_id, message_id)
+    if variants is None:
+        raise HTTPException(status_code=404, detail="message not found")
+    return {"message_id": message_id, "variants": variants,
+            "variant_count": len(variants)}
+
+
+@router.post("/chats/{chat_id}/messages/{message_id}/move")
+async def move_message(
+    chat_id: str,
+    message_id: str,
+    body: MessageMoveIn,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Move a message to a strict target index within its chat (P-068)."""
+    try:
+        message = await service.move_message(
+            session, user_id, chat_id, message_id, body.to_index
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if message is None:
+        raise HTTPException(status_code=404, detail="message not found")
+    return message_to_dict(message)
+
+
+@router.post("/chats/{chat_id}/messages/{message_id}/copy-to-branch",
+             status_code=status.HTTP_201_CREATED)
+async def copy_message_to_branch(
+    chat_id: str,
+    message_id: str,
+    body: MessageCopyIn,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Copy a message to a branch chat (P-068): fork a new chat up to
+    and including the message, or copy it into an existing owned chat."""
+    try:
+        result = await service.copy_message_to_branch(
+            session, user_id, chat_id, message_id,
+            target_chat_id=body.target_chat_id, title=body.title,
+        )
+    except KeyError:
+        raise HTTPException(status_code=404, detail="target chat not found") from None
+    if result is None:
+        raise HTTPException(status_code=404, detail="message not found")
+    return {
+        "target_chat": chat_to_dict(result["target_chat"]),
+        "copied_message": message_to_dict(result["copied_message"]),
+        "copied_count": result["copied_count"],
+        "mode": result["mode"],
+    }
+
+
+@router.post("/chats/{chat_id}/messages/{message_id}/pin",
+             status_code=status.HTTP_201_CREATED)
+async def pin_message(
+    chat_id: str,
+    message_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Pin a message to memory (P-068): a real pinned Memory record."""
+    from runmal.memory.models import memory_to_dict
+
+    memory = await service.pin_message_to_memory(session, user_id, chat_id, message_id)
+    if memory is None:
+        raise HTTPException(status_code=404, detail="message not found")
+    return memory_to_dict(memory)
+
+
+@router.delete("/chats/{chat_id}/messages/{message_id}/pin")
+async def unpin_message(
+    chat_id: str,
+    message_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Unpin a message (P-068): removes its pin Memory record."""
+    removed = await service.unpin_message_from_memory(session, user_id, chat_id, message_id)
+    if removed is None:
+        raise HTTPException(status_code=404, detail="message not found")
+    return {"unpinned": removed, "id": message_id}
+
+
+@router.get("/chats/{chat_id}/pinned-messages")
+async def list_pinned_messages(
+    chat_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """A chat's pinned messages, in display order (P-068)."""
+    pinned = await service.list_pinned_messages(session, user_id, chat_id)
+    if pinned is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return [message_to_dict(m) for m in pinned]
 
 
 @router.post(

@@ -192,11 +192,11 @@ def test_activation_kind_for_truth_table(constant, vectorised, expected):
 
 
 def test_migration_head_is_0030_and_sequence_tail():
-    assert MIGRATIONS[-1][0] == "0037"  # head moved by P-066 (PROVISIONAL 0037)
-    assert [m[0] for m in MIGRATIONS[-12:]] == ["0026", "0027", "0028", "0029", "0030", "0031", "0032", "0033", "0034", "0035", "0036", "0037"]  # tail moved by P-066 (PROVISIONAL 0037)
+    assert MIGRATIONS[-1][0] == "0038"  # head moved by P-065 (PROVISIONAL 0036)
+    assert [m[0] for m in MIGRATIONS[-12:]] == ["0026", "0027", "0028", "0029", "0030", "0031", "0032", "0033", "0034", "0035", "0036", "0038"]  # tail moved by P-065 (PROVISIONAL 0036)
 def test_migration_head_is_0028_and_sequence_tail():
-    assert MIGRATIONS[-1][0] == "0037"  # head moved by P-066 (PROVISIONAL 0037)
-    assert [m[0] for m in MIGRATIONS[-12:]] == ["0026", "0027", "0028", "0029", "0030", "0031", "0032", "0033", "0034", "0035", "0036", "0037"]  # tail moved by P-066 (PROVISIONAL 0037)
+    assert MIGRATIONS[-1][0] == "0038"  # head moved by P-065 (PROVISIONAL 0036)
+    assert [m[0] for m in MIGRATIONS[-12:]] == ["0026", "0027", "0028", "0029", "0030", "0031", "0032", "0033", "0034", "0035", "0036", "0038"]  # tail moved by P-065 (PROVISIONAL 0036)
 
 
 def test_fresh_database_has_vectorised_column(tmp_path):

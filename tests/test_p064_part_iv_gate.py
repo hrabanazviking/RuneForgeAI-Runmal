@@ -681,4 +681,4 @@ def test_c_comp_4_profile_switch_moves_only_what_it_owns(tmp_path, monkeypatch):
 
 
 def test_gate_hygiene_migration_head_stays_0036():
-    assert MIGRATIONS[-1][0] == "0037"
+    assert MIGRATIONS[-1][0] == "0038"

@@ -97,6 +97,13 @@ class Message(Base):
     # Swipe deck (P-065, PROVISIONAL 0036): ordered alternates; content == swipes[swipe_id].
     swipes_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
     swipe_id: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    # Message actions (P-068, PROVISIONAL 0038): replaced contents in
+    # edit order (runmal.chats.actions), the pin flag (the pin Memory
+    # row lives in memories), and explicit in-chat order once
+    # materialised (NULL = legacy created_at order).
+    variant_history_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
+    pinned: Mapped[bool] = mapped_column(nullable=False, default=False)
+    position: Mapped[int | None] = mapped_column(Integer, nullable=True, default=None)
     # Per-message speaker identity (S210): the speaking character's id and a
     # snapshot of its display name. The snapshot survives membership changes
     # and character renames -- history is never rewritten.

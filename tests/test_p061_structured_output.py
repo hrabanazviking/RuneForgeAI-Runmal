@@ -733,7 +733,7 @@ def test_capability_flag_pins(backend_key, flag):
 
 
 def test_migration_head_stays_0036(tmp_path):
-    assert MIGRATIONS[-1][0] == "0037"
+    assert MIGRATIONS[-1][0] == "0038"
     db_path = tmp_path / "head.db"
     migrate_to_head(db_path)
-    assert current_revision(db_path) == "0037"
+    assert current_revision(db_path) == "0038"

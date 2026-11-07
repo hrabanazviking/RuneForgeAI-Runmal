@@ -621,15 +621,15 @@ def test_inspect_disabled_chat_echo_reports_chat_candidate(tmp_path, monkeypatch
 # ---------------- migration: PROVISIONAL 0035 ----------------
 
 def test_migration_head_is_0035_provisional(tmp_path):
-    # Head pin healed at P-066 banking: head moved 0036 -> 0037.
-    assert MIGRATIONS[-1][0] == "0037"
+    # Head pin healed at P-065 banking: head moved 0035 -> 0036.
+    assert MIGRATIONS[-1][0] == "0038"
     assert "PROVISIONAL" in MIGRATIONS[-1][1]
     db_path = tmp_path / "m.db"
     applied = migrate_to_head(db_path)
-    assert applied[-1] == "0037"
-    assert current_revision(db_path) == "0037"
+    assert applied[-1] == "0038"
+    assert current_revision(db_path) == "0038"
     assert migrate_to_head(db_path) == []  # idempotent
-    assert current_revision(db_path) == "0037"
+    assert current_revision(db_path) == "0038"
 
 
 def test_migration_0035_adds_post_history_column(tmp_path):
