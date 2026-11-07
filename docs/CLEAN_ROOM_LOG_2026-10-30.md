@@ -710,3 +710,22 @@ source in §0(2) and appends its entry here:
   code was read and no file was downloaded; the slice's
   tests are authored fresh in the test module (P-005
   discipline).
+- **P-080 (2026-11-07, public behaviour + own tree
+  only):** the Part V gate -- a surgery drill script
+  (branch, checkpoint, swipe-storm, group scene) runs
+  green; no operation loses data -- is built entirely
+  from Runmal's own in-tree contracts: the P-030 / P-048 /
+  P-064 gate discipline (battery + gate record + pinned
+  limitations + numbered findings), the P-065 deck
+  invariant, the P-066 lineage and merge law, the P-067
+  checksum-sealed restore-as-new snapshots, the P-068
+  variant-history rule, the P-070 room road, the P-076
+  sealed journal, the P-077 paged history road, the P-078
+  full-deck copy contract, and the P-079 greeting deck.
+  The account discipline (a multiset over every deck
+  string plus variant-history contents, read through
+  message_to_dict) and the Surgeryhall world are Runmal's
+  own design for the roadmap line. No SillyTavern or
+  Voxta source code was read and no file was downloaded;
+  the slice's tests are authored fresh in the test
+  module (P-005 discipline).
