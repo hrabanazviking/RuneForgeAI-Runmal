@@ -83,16 +83,20 @@ did not (the equivalence battery below is the proof).
     an opt-in, per-process, bounded LRU (default 20,000)
     accepted via `cache=` by both matchers. Keys carry the
     embedding space — (entry id, sha256(embed text), provider,
-    model, dims) — so a space switch misses structurally and
-    spaces never mix (INV-019); an entry edit changes its
-    embed text, hence its hash, hence its key (invalidation by
-    content hash, no hooks). The query vector is NEVER cached.
-    A warm tick embeds only the query plus cache misses in ONE
-    batched call; if the embedder ANSWERS from a different
-    space than the cache was read under, the cached vectors
-    are discarded and everything is re-embedded rather than
-    mixed. Vector component on the bench: 281 ms cold ->
-    35 ms warm; whole tick 310 ms -> 65 ms.
+    model, dims, version), the codebase's own
+    ``EmbeddingProvenance.key()`` identity — so a space switch
+    misses structurally and spaces never mix (INV-019); an
+    entry edit changes its embed text, hence its hash, hence
+    its key (invalidation by content hash, no hooks). The
+    query vector is NEVER cached. A warm tick embeds only the
+    query plus cache misses in ONE batched call; if the
+    embedder ANSWERS from a different space than the cache
+    was read under (provider, model, version, or dims), or a
+    cached vector's length contradicts the answered query,
+    the cached vectors are discarded and everything is
+    re-embedded rather than mixed. Vector component on the
+    bench: 281 ms cold -> 35 ms warm; whole tick 310 ms ->
+    65 ms.
   - Query-norm hoist: `match_with_vectors` computes the query
     norm once per tick (was: once per candidate, inside
     cosine_similarity); the arithmetic is identical (same dot
@@ -134,10 +138,26 @@ did not (the equivalence battery below is the proof).
   here rather than silently exceeding the design: C1 is kept
   (it serves the regex fallback paths and repeated keys in
   real books), but the index is what closes the budget.
-- No product-code defect was found in the landed C1/C2 code:
-  the cache's space-mismatch discard branch, LRU eviction and
-  dims inference are battery-covered and outcome-identical to
-  the uncached path on every test. One harness artefact in
+- Review defects D1–D5 (found by the independent reviewer
+  AFTER the slice's first commit, all fixed in-slice in the
+  follow-up review-fix commit; the keeper banks both): the
+  landed cache key and space tuples dropped the provenance
+  `version` (D1 — a version bump scored stale vectors against
+  a new-version query; reproduced before fixing), the
+  space-mismatch guard compared only provider/model and
+  never dims (D2 — an answered dims change silently dropped
+  every cached candidate's score and degraded the tick to a
+  fallback the uncached path never takes; reproduced), the
+  dims=None lookup guess that fed it (D3 — now backstopped
+  by an answered-query length check that needs no
+  provenance), duplicate candidate ids resolving in the
+  wrong order on the cached path (D4 — now candidate-order,
+  last-wins like the uncached build), and re-embedded
+  vectors from an unprovenanced second call being stored
+  under the discarded space (D5 — now never stored). Five
+  battery tests pin the fixes; the pre-fix versions of the
+  D1/D2 scenarios fail against the landed code and pass
+  after. One harness artefact in
   the predecessor's BEFORE profile (a stray /tmp/inspect.py
   shadowed the stdlib module and crashed the profiler
   preamble; its counts still printed) is a profiling-environment

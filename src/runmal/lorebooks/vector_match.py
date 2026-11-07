@@ -71,8 +71,12 @@ per-process bounded LRU the matchers accept via ``cache=``.
 On a cache hit only the query and changed/new candidate texts
 are embedded; cached candidate vectors are reused. Cache keys
 carry the embedding space (entry id, embed-text hash,
-provider, model, dims), so a space switch misses structurally
-and spaces never mix (INV-019). The query vector is never
+provider, model, dims, version -- the full
+``EmbeddingProvenance.key()`` identity), so a space switch
+misses structurally and spaces never mix (INV-019); an
+answered space that contradicts the declared one, or cached
+vectors whose length contradicts the answered query, are
+discarded and re-embedded, never mixed. The query vector is never
 cached. This is deliberately only the in-process half of the
 debt: there is NO persistent or database-backed vector store
 in this slice (no migration was added); a cache dies with
@@ -258,9 +262,11 @@ def _embed_text_sha256(text: str) -> str:
 class EntryVectorCache:
     """In-memory stored-vector cache (P-046; P-041 debt, partial).
 
-    Key shape (design-fixed): ``(entry_id, sha256(embed_text),
-    provider, model, dims)``. Provenance is IN the key, so a
-    provider/model/dims switch misses instead of ever mixing
+    Key shape: ``(entry_id, sha256(embed_text), provider,
+    model, dims, version)`` -- the embedding space is the
+    codebase's own ``EmbeddingProvenance.key()`` identity.
+    Provenance is IN the key, so a provider/model/dims/version
+    switch misses instead of ever mixing
     spaces (INV-019); an edit to an entry's name/keys/content
     changes its embed text, hence its hash, hence its key --
     invalidation is by content hash, with no explicit hooks.
@@ -294,16 +300,17 @@ class EntryVectorCache:
         self.hits = 0
         self.misses = 0
 
-    def _key(self, entry_id, embed_text, provider, model, dims):
+    def _key(self, entry_id, embed_text, provider, model, dims, version=""):
         return (
             str(entry_id),
             _embed_text_sha256(embed_text),
             str(provider),
             str(model),
             int(dims),
+            str(version),
         )
 
-    def get(self, entry_id, embed_text, provider, model, dims=None):
+    def get(self, entry_id, embed_text, provider, model, dims=None, version=""):
         """Cached vector for one entry in one space, or None.
 
         ``dims`` may be omitted when the caller does not know
@@ -313,19 +320,20 @@ class EntryVectorCache:
         used. A dims mismatch when dims IS given is a miss.
         """
         if dims:
-            key = self._key(entry_id, embed_text, provider, model, dims)
+            key = self._key(entry_id, embed_text, provider, model, dims, version)
         else:
             idx = (
                 str(entry_id),
                 _embed_text_sha256(embed_text),
                 str(provider),
                 str(model),
+                str(version),
             )
             known = self._dims_by_space.get(idx)
             if known is None:
                 self.misses += 1
                 return None
-            key = self._key(entry_id, embed_text, provider, model, known)
+            key = self._key(entry_id, embed_text, provider, model, known, version)
         vector = self._store.get(key)
         if vector is None:
             self.misses += 1
@@ -334,16 +342,20 @@ class EntryVectorCache:
         self.hits += 1
         return vector
 
-    def put(self, entry_id, embed_text, vector, provider, model, dims=None):
+    def put(self, entry_id, embed_text, vector, provider, model, dims=None, version=""):
         """Store one candidate vector under its space-tagged key."""
         vec = tuple(vector)
-        key = self._key(entry_id, embed_text, provider, model, dims or len(vec))
+        # A vector's true dims are its length; a declared dims
+        # that disagrees is never trusted over the vector itself.
+        if not dims or int(dims) != len(vec):
+            dims = len(vec)
+        key = self._key(entry_id, embed_text, provider, model, dims, version)
         self._store[key] = vec
         self._store.move_to_end(key)
-        self._dims_by_space[(key[0], key[1], key[2], key[3])] = key[4]
+        self._dims_by_space[(key[0], key[1], key[2], key[3], key[5])] = key[4]
         while len(self._store) > self._maxsize:
             old_key, _ = self._store.popitem(last=False)
-            idx = (old_key[0], old_key[1], old_key[2], old_key[3])
+            idx = (old_key[0], old_key[1], old_key[2], old_key[3], old_key[5])
             if self._dims_by_space.get(idx) == old_key[4]:
                 del self._dims_by_space[idx]
         return vec
@@ -356,17 +368,31 @@ def _space_from_provenance_dict(provenance) -> tuple | None:
     model = provenance.get("model")
     if not provider or not model:
         return None
-    return (str(provider), str(model), provenance.get("dims") or None)
+    return (
+        str(provider),
+        str(model),
+        provenance.get("dims") or None,
+        str(provenance.get("version") or ""),
+    )
 
 
 def _declared_space(owner) -> tuple | None:
-    """(provider, model, dims|None) an embedder/backend declares."""
+    """(provider, model, dims|None, version) an embedder declares.
+
+    The space identity is ``EmbeddingProvenance.key()``:
+    provider, model, dims, version -- all four, always.
+    """
     if owner is None:
         return None
     prov = getattr(owner, "provenance", None)
     if prov is not None:
         try:
-            return (str(prov.provider), str(prov.model), prov.dims or None)
+            return (
+                str(prov.provider),
+                str(prov.model),
+                prov.dims or None,
+                str(getattr(prov, "version", "") or ""),
+            )
         except Exception:
             pass
     try:
@@ -375,11 +401,38 @@ def _declared_space(owner) -> tuple | None:
         return None
     if info is None or not getattr(info, "provider", None) or not getattr(info, "model_id", None):
         return None
-    return (str(info.provider), str(info.model_id), getattr(info, "dims", None) or None)
+    return (
+        str(info.provider),
+        str(info.model_id),
+        getattr(info, "dims", None) or None,
+        str(getattr(info, "version", "") or ""),
+    )
 
 
 def _sync_embedder_space(embed_texts) -> tuple | None:
     return _declared_space(getattr(embed_texts, "__self__", None))
+
+
+def _cache_space_mismatch(space, actual, query_vector, cached_by_idx) -> bool:
+    """True when cached vectors must be discarded (INV-019).
+
+    The embedder's ANSWER is the authority: cached vectors are
+    unusable when the answered space differs from the space the
+    cache was read under in provider, model or version, or in
+    dims when both sides state them -- or when any cached
+    vector's length differs from the answered query vector's
+    length (the dims check that needs no provenance at all, and
+    the backstop for backends that declare dims=0).
+    """
+    if not cached_by_idx:
+        return False
+    if actual is not None and space is not None:
+        if actual[0] != space[0] or actual[1] != space[1] or actual[3] != space[3]:
+            return True
+        if actual[2] and space[2] and actual[2] != space[2]:
+            return True
+    query_len = len(query_vector)
+    return any(len(vec) != query_len for vec in cached_by_idx.values())
 
 
 # --- Scoring (pure) ----------------------------------------------------------
@@ -636,7 +689,7 @@ def match_vectorised_sync(
     if cache is not None and space is not None:
         miss_idx = []
         for i, cand in enumerate(candidates):
-            vec = cache.get(cand.id, texts[i], space[0], space[1], space[2])
+            vec = cache.get(cand.id, texts[i], space[0], space[1], space[2], space[3])
             if vec is None:
                 miss_idx.append(i)
             else:
@@ -664,7 +717,7 @@ def match_vectorised_sync(
             provenance=provenance, scores={}, ranked=(), candidates=len(candidates),
         )
     actual = _space_from_provenance_dict(provenance) or space
-    if cached_by_idx and actual is not None and space is not None and actual[:2] != space[:2]:
+    if _cache_space_mismatch(space, actual, vectors[0], cached_by_idx):
         # Embedder answered from a different space than the cache
         # was read under: never mix -- discard, re-embed all.
         cached_by_idx = {}
@@ -691,13 +744,19 @@ def match_vectorised_sync(
                 keyword_fallback=keyword_fallback, reason="vector_count_mismatch",
                 provenance=provenance, scores={}, ranked=(), candidates=len(candidates),
             )
-        actual = _space_from_provenance_dict(provenance) or actual
+        actual = _space_from_provenance_dict(provenance)  # never the discarded space
     if cache is not None and actual is not None:
         for j, i in enumerate(miss_idx):
-            cache.put(candidates[i].id, texts[i], vectors[j + 1], actual[0], actual[1], actual[2])
-    entry_vectors = {candidates[i].id: vec for i, vec in cached_by_idx.items()}
-    for j, i in enumerate(miss_idx):
-        entry_vectors[candidates[i].id] = vectors[j + 1]
+            cache.put(candidates[i].id, texts[i], vectors[j + 1], actual[0], actual[1], actual[2], actual[3])
+    fresh_by_idx = {i: vectors[j + 1] for j, i in enumerate(miss_idx)}
+    entry_vectors = {}
+    for i, cand in enumerate(candidates):
+        # Candidate order, so a duplicate id resolves last-wins
+        # exactly as the uncached dict build does.
+        if i in cached_by_idx:
+            entry_vectors[cand.id] = cached_by_idx[i]
+        elif i in fresh_by_idx:
+            entry_vectors[cand.id] = fresh_by_idx[i]
     return match_with_vectors(
         entries, messages, vectors[0], entry_vectors, provenance=provenance,
         threshold=threshold, max_entries=max_entries, settings=settings,
@@ -753,7 +812,7 @@ async def match_vectorised(
     if cache is not None and space is not None:
         miss_idx = []
         for i, cand in enumerate(candidates):
-            vec = cache.get(cand.id, texts[i], space[0], space[1], space[2])
+            vec = cache.get(cand.id, texts[i], space[0], space[1], space[2], space[3])
             if vec is None:
                 miss_idx.append(i)
             else:
@@ -786,7 +845,7 @@ async def match_vectorised(
             provenance=provenance, scores={}, ranked=(), candidates=len(candidates),
         )
     actual = _space_from_provenance_dict(provenance) or space
-    if cached_by_idx and actual is not None and space is not None and actual[:2] != space[:2]:
+    if _cache_space_mismatch(space, actual, vectors[0], cached_by_idx):
         cached_by_idx = {}
         miss_idx = list(range(len(candidates)))
         try:
@@ -814,13 +873,19 @@ async def match_vectorised(
                 keyword_fallback=keyword_fallback, reason="vector_count_mismatch",
                 provenance=provenance, scores={}, ranked=(), candidates=len(candidates),
             )
-        actual = _space_from_provenance_dict(provenance) or actual
+        actual = _space_from_provenance_dict(provenance)  # never the discarded space
     if cache is not None and actual is not None:
         for j, i in enumerate(miss_idx):
-            cache.put(candidates[i].id, texts[i], vectors[j + 1], actual[0], actual[1], actual[2])
-    entry_vectors = {candidates[i].id: vec for i, vec in cached_by_idx.items()}
-    for j, i in enumerate(miss_idx):
-        entry_vectors[candidates[i].id] = vectors[j + 1]
+            cache.put(candidates[i].id, texts[i], vectors[j + 1], actual[0], actual[1], actual[2], actual[3])
+    fresh_by_idx = {i: vectors[j + 1] for j, i in enumerate(miss_idx)}
+    entry_vectors = {}
+    for i, cand in enumerate(candidates):
+        # Candidate order, so a duplicate id resolves last-wins
+        # exactly as the uncached dict build does.
+        if i in cached_by_idx:
+            entry_vectors[cand.id] = cached_by_idx[i]
+        elif i in fresh_by_idx:
+            entry_vectors[cand.id] = fresh_by_idx[i]
     return match_with_vectors(
         entries, messages, vectors[0], entry_vectors, provenance=provenance,
         threshold=threshold, max_entries=max_entries, settings=settings,
