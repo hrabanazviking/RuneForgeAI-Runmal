@@ -5314,3 +5314,76 @@ P-082 BANKED - Plugin sandbox (Part VI)
     hidden_files/p082_forge_fullsuite.log).
     No heal needed at this banking.
     Next in roadmap order: P-083.
+P-083 BANKED - Plugin manager (Part VI)
+    - team-01 commit ce7c02a merged
+    (no-ff) into
+    yrsa/two-mirrors-build as acf8cd3
+    and pushed; ls-remote verified
+    acf8cd37b1f22ed460b01aca3d0ea4c575b4c1f3
+    (see WAVE_PLAN update). Evidence
+    (team-01 worktree
+    hidden_files/P083_EVIDENCE.md):
+    battery 52 passed, neighbours
+    55 passed, team full suite 3494
+    passed / 4 skipped / 1 failed
+    - the single failure is the
+    test_s503 STT timing contract
+    under shared-machine contention,
+    solo re-run 4/4 green, classified
+    contention, NOT a defect. Slice:
+    src/runmal/plugins/ manager
+    surface (manager - PluginManager
+    + file ledger; packs - plugin
+    pack envelope with content_sha256
+    over normalised manifest; cards -
+    permission cards; router +
+    service + __init__ updates),
+    tests/test_p083_plugin_manager.py
+    (52 tests),
+    docs/PLUGIN_MANAGER_2026-11-07.md,
+    clean-room log append. 9 files,
+    +2039/-19. Migration: NONE (head
+    stays 0041; "0042" not in
+    MIGRATIONS, pinned by battery).
+    Two defects found in the landed
+    work and fixed in-slice (evidence
+    file): (1) router KeyError->404
+    mapping - manager update()/
+    uninstall() raise KeyError for
+    unknown plugins but the router
+    except clauses did not catch it,
+    so unknown-id update/uninstall
+    would have answered 500; KeyError
+    added to the except tuples of all
+    three manager endpoints, pinned
+    by battery tests. (2) Manager
+    install atomicity - install was
+    not atomic in its enable path
+    (ledger saved, then enable, then
+    save again; failures left a
+    mis-stated or orphaned
+    registration); fixed to enable
+    first with ONE ledger save and
+    rollback (disable + unregister,
+    best-effort) on ledger-write
+    failure, pinned by battery test.
+    Merge: ONE conflict, in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    (append-vs-append, as briefed),
+    resolved keeping BOTH entries
+    exactly once - the P-082 and
+    P-083 clean-room entries both
+    kept; no .py conflicts;
+    py_compile clean on the merged
+    tree. Combined batteries on the
+    merged tree (P-083 + P-081 +
+    P-080 gate + P-080 gate record):
+    107 passed / 0 failed
+    (= 52 + 55 exact). Forge
+    confirmation suite: 3549
+    passed / 4 skipped / 0 failed
+    (= 3497 P-082 confirmation +
+    52, exact; log
+    /tmp/p083_confirm.log).
+    No heal needed at this banking.
+    Next in roadmap order: P-084.
