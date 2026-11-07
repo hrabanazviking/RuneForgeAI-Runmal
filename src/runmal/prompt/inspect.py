@@ -84,6 +84,13 @@ carries an ``authors_note`` echo -- metadata only (present / active /
 depth / frequency / enabled / message count / source); the note text
 never enters the result. With no chat the echo reports source
 ``none`` and the pipeline is exactly the pre-P-056 pipeline.
+
+Prompt preview (P-059): with ``include_preview=True`` the result gains
+``prompt_preview`` built by ``preview.build_preview`` from the VERY
+composed messages + RenderedPrompt this call already computed (one
+composition, one render — never a second); default off, pipeline and
+trace byte-identical to pre-P-059; the preview is a separate explicit
+owner-scoped payload — the S214 trace itself still carries no content.
 """
 
 from __future__ import annotations
@@ -111,6 +118,7 @@ from runmal.prompt.composer import compose
 from runmal.prompt.context import DISABLED_REASON as CONTEXT_DISABLED_REASON
 from runmal.prompt.context import apply_context_template
 from runmal.prompt.manager import DISABLED_REASON, apply_layout
+from runmal.prompt.preview import build_preview
 from runmal.prompt.render import render_prompt
 from runmal.prompt.service import (
     context_echo,
@@ -205,6 +213,8 @@ async def inspect_prompt(
     instruct_template: object | None = None,
     context_template: object | None = None,
     context_preset: object | None = None,
+    include_preview: bool = False,
+    backend_key: str | None = None,
 ) -> dict | None:
     """Build the trace dict for a hypothetical prompt, or None when a
     referenced character/lorebook does not exist."""
@@ -496,4 +506,8 @@ async def inspect_prompt(
     if include_activation_inspection:
         result["lorebook_inspections"] = lorebook_inspections
     result["lore_account"] = account_from_trace(result)
+    if include_preview:
+        result["prompt_preview"] = build_preview(
+            composed.messages, rendered, backend_key=backend_key, model_id=model_id
+        )
     return result
