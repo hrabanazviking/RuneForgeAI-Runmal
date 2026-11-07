@@ -4232,3 +4232,39 @@ P-059 BANKED - prompt preview: the exact
     the composition pipeline will hand a
     backend, not a capture of a live send.
     Next in roadmap order: P-060.
+P-060 BANKED - logit bias & stop sequences: per-preset,
+    backend-honest - team-01 commit eef1e65
+    merged (no-ff) into yrsa/two-mirrors-
+    build as 3284bef and pushed; ls-remote
+    verified 3284befa39eca7c491fc9dcc9f2c3a0
+    7680e58d0. Evidence (team-01 worktree
+    hidden_files/P060_EVIDENCE.md): battery
+    33 passed, neighbours 290 passed / 1
+    skipped, team full suite 2723 passed / 4
+    skipped / 0 failed on its base. Forge
+    confirmation suite at the merged tree:
+    2742 passed / 4 skipped / 0 failed (=
+    2709 + 33, exact). NO migration: the
+    merged head stays 0035. Merge: CLEAN, no
+    conflicts (footprint disjoint from the
+    P-059 prompt-preview merge). Combined
+    batteries at the merged tree (P-060 +
+    P-009 + P-052 + P-053 + P-059
+    batteries): 137 passed. Slice:
+    backends/logit_bias.py - logit_bias is
+    the 29th canonical control (kind
+    bias_map, range [-100, 100]); typed
+    (token_id, bias) pairs canonical-sorted
+    by token id, duplicates refused, bag
+    round-trip canonical; openai_compat and
+    openrouter wire carries logit_bias +
+    stop, Ollama options carry stop only,
+    Aesir drops both with structured
+    warnings; resolve_generation_controls
+    merges preset stops with instruct-
+    template stops (sampler first, dedup,
+    order preserved) and degrades via
+    clamp_params with warnings; text-keyed
+    bias resolves ONLY through a caller-
+    supplied token map - token ids are never
+    invented. Next in roadmap order: P-061.
