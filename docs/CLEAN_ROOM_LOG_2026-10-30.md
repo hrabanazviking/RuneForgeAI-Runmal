@@ -581,3 +581,18 @@ source in §0(2) and appends its entry here:
   Voxta source code was read and no file was downloaded; the
   slice's test entries are authored fresh in the test modules
   (P-005 discipline).
+- **P-049 (2026-11-06, own tree only):** no new external
+  source and no mirror reading. The prompt manager (ordered,
+  toggleable prompt blocks as a first-class editable
+  structure) is built entirely from the roadmap line and
+  Runmal's own prompt stack: the S205 slot kinds and baseline
+  order supply the blocks (position-faithful, so lore and
+  memory each appear at both of their baseline positions),
+  the S206 depth contract supplies the splice guard, and the
+  S214 trace supplies the disabled-block discard record. The
+  layout shape ({blocks: [{block, enabled}]}, fill-missing
+  normalisation, block-position order arithmetic) is Runmal's
+  own design for the roadmap line, not a reproduction of any
+  mirror behaviour. No SillyTavern or Voxta source code was
+  read and no file was downloaded; the slice's test entries
+  are authored fresh in the test module (P-005 discipline).
