@@ -6,6 +6,10 @@ complete common sampler set (DRY, XTC, typical/top-a/tail-free, epsilon/eta,
 Mirostat, dynamic temperature -- the catalogue is data in
 :mod:`runmal.backends.samplers`). None means unset.
 ``to_bag()`` emits S207 bag key names (``max_tokens`` for max_output_tokens).
+Since P-060 the bag also carries ``logit_bias``: a JSON object mapping
+decimal token-id strings to bias values in [-100, 100]; the typed form
+is a tuple of (token_id, bias) pairs. Token ids are never derived from
+text inside this layer (see runmal.backends.logit_bias).
 """
 
 from __future__ import annotations
@@ -51,6 +55,7 @@ class SamplingParams:
     stop: tuple[str, ...] | None = None
     seed: int | None = None
     context_length: int | None = None
+    logit_bias: tuple[tuple[int, float], ...] | None = None
 
     def __post_init__(self) -> None:
         checks = [
@@ -100,6 +105,35 @@ class SamplingParams:
                 raise ValueError(
                     "param 'dry_sequence_breakers' must be a tuple of "
                     "non-empty strings")
+        if self.logit_bias is not None:
+            if not isinstance(self.logit_bias, tuple):
+                raise ValueError(
+                    "param 'logit_bias' must be a tuple of "
+                    "(token_id, bias) pairs")
+            seen_ids: set[int] = set()
+            for pair in self.logit_bias:
+                if not isinstance(pair, tuple) or len(pair) != 2:
+                    raise ValueError(
+                        "param 'logit_bias' entries must be "
+                        "(token_id, bias) pairs")
+                token_id, bias = pair
+                if not _is_int(token_id) or token_id < 0:
+                    raise ValueError(
+                        "param 'logit_bias' token ids must be "
+                        "non-negative ints")
+                if token_id in seen_ids:
+                    raise ValueError(
+                        "param 'logit_bias' has a duplicate token id: "
+                        f"{token_id}")
+                seen_ids.add(token_id)
+                if not _is_num(bias) or not -100 <= bias <= 100:
+                    raise ValueError(
+                        "param 'logit_bias' values must be numbers "
+                        "in [-100, 100]")
+            # Canonical form: pairs sorted by token id, so the typed
+            # form and the bag form are the same value either way.
+            object.__setattr__(
+                self, "logit_bias", tuple(sorted(self.logit_bias)))
 
     def with_merged_stops(self, extra) -> SamplingParams:
         """Return a copy with ``extra`` stop strings merged in (P-052).
@@ -123,7 +157,12 @@ class SamplingParams:
             if value is None:
                 continue
             key = "max_tokens" if f.name == "max_output_tokens" else f.name
-            out[key] = list(value) if f.name in ("stop", "dry_sequence_breakers") else value
+            if f.name == "logit_bias":
+                out[key] = {str(tid): b for tid, b in sorted(value)}
+            elif f.name in ("stop", "dry_sequence_breakers"):
+                out[key] = list(value)
+            else:
+                out[key] = value
         return out
 
     @classmethod
@@ -133,6 +172,15 @@ class SamplingParams:
             name = "max_output_tokens" if key == "max_tokens" else key
             if name in ("stop", "dry_sequence_breakers") and isinstance(value, list):
                 value = tuple(value)
+            if name == "logit_bias" and isinstance(value, dict):
+                pairs = []
+                for raw_id, raw_bias in value.items():
+                    if not isinstance(raw_id, str) or not raw_id.isdigit():
+                        raise ValueError(
+                            "param 'logit_bias' bag keys must be decimal "
+                            f"token-id strings, got {raw_id!r}")
+                    pairs.append((int(raw_id), raw_bias))
+                value = tuple(sorted(pairs))
             if name in {f.name for f in fields(cls)}:
                 kwargs[name] = value
         return cls(**kwargs)

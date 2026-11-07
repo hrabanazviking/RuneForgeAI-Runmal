@@ -58,12 +58,12 @@ EXPECTED_AVAILABLE = {
     },
     "openrouter": {
         "temperature", "top_p", "max_tokens", "frequency_penalty",
-        "presence_penalty", "stop", "seed",
+        "presence_penalty", "stop", "seed", "logit_bias",  # P-060
     },
     "aesir": {"temperature", "top_p", "max_tokens", "seed"},
     "openai": {
         "temperature", "top_p", "max_tokens", "frequency_penalty",
-        "presence_penalty", "stop", "seed",
+        "presence_penalty", "stop", "seed", "logit_bias",  # P-060
     },
 }
 
@@ -150,13 +150,14 @@ def test_aesir_ledger_rows():
     ledger = {entry.route: entry for entry in AESIR_LEDGER}
     assert set(ledger) == {"openai-chat", "native-generate"}
     assert ledger["openai-chat"].served == aesir_mod.SAMPLERS
-    assert ledger["native-generate"].served == CANONICAL
+    # P-060 carve-out: native logit_bias service is unverified in-tree.
+    assert ledger["native-generate"].served == CANONICAL - {"logit_bias"}
     assert all(entry.note for entry in AESIR_LEDGER)
 
 
 def test_aesir_native_route_shows_full_set_without_changing_adapter():
     rows = truth_for_backend("aesir", aesir_route="native-generate")
-    assert {r.name for r in rows if r.state == AVAILABLE} == CANONICAL
+    assert {r.name for r in rows if r.state == AVAILABLE} == CANONICAL - {"logit_bias"}  # P-060 carve-out
     assert all(r.route == "native-generate" for r in rows)
     # The adapter's own declaration is untouched by the ledger view.
     assert aesir_mod.SAMPLERS == EXPECTED_AVAILABLE["aesir"]
@@ -235,7 +236,7 @@ def test_clamp_drops_exactly_the_greyed_set(backend):
 
     model = default_model(backend)
     # Banking heal (P-052 merged first): the bag now carries the
-    # full 28-key canonical vocabulary P-052 landed, so clamp's
+    # full canonical vocabulary (28 keys at P-052, 29 since P-060), so clamp's
     # dropped set is comparable to the whole greyed set.
     full = SamplingParams(
         temperature=0.7, top_p=0.9, top_k=40, min_p=0.1,
@@ -248,7 +249,7 @@ def test_clamp_drops_exactly_the_greyed_set(backend):
         dry_sequence_breakers=("x",), xtc_probability=0.1,
         xtc_threshold=0.1, mirostat_mode=2, mirostat_tau=5.0,
         mirostat_eta=0.1, dynamic_temperature_range=0.5,
-        dynamic_temperature_exponent=1.0,
+        dynamic_temperature_exponent=1.0, logit_bias=((42, 1.0),),
     )
     _filtered, warnings = clamp_params(full, model)
     dropped = {w.rsplit(": ", 1)[-1] for w in warnings
@@ -315,7 +316,7 @@ def test_api_native_route_view(client):
         "/api/v1/debug/backend-capabilities/aesir",
         params={"aesir_route": "native-generate"})
     assert resp.status_code == 200
-    assert set(resp.json()["available"]) == CANONICAL
+    assert set(resp.json()["available"]) == CANONICAL - {"logit_bias"}  # P-060 carve-out
 
 
 def test_api_unknown_backend_404(client):

@@ -32,11 +32,14 @@ from runmal.tokens import TokenQuality
 SAMPLERS = frozenset({
     "temperature", "top_p", "max_tokens", "frequency_penalty",
     "presence_penalty", "stop", "seed",
+    # P-060: OpenRouter's OpenAI-shaped wire carries logit_bias.
+    "logit_bias",
 })
 _WIRE_NAMES = {
     "temperature": "temperature", "top_p": "top_p", "max_tokens": "max_tokens",
     "frequency_penalty": "frequency_penalty",
     "presence_penalty": "presence_penalty", "stop": "stop", "seed": "seed",
+    "logit_bias": "logit_bias",
 }
 
 

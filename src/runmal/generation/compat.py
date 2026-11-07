@@ -62,6 +62,7 @@ OPENAI_PROFILE = BackendProfile(
         "presence_penalty": "presence_penalty",
         "stop": "stop",
         "seed": "seed",
+        "logit_bias": "logit_bias",
     },
     unsupported={
         "top_k": "OpenAI chat completions has no top_k parameter",
@@ -123,6 +124,7 @@ OLLAMA_PROFILE = BackendProfile(
         "xtc_threshold": "Ollama options have no XTC sampler",
         "dynamic_temperature_range": "Ollama options have no dynamic temperature",
         "dynamic_temperature_exponent": "Ollama options have no dynamic temperature",
+        "logit_bias": "Ollama options have no logit_bias parameter",
     },
 )
 
