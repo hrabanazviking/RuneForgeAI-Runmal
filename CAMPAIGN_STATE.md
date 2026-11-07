@@ -4007,3 +4007,44 @@ P-054 BANKED - presets: save/load/share sampler+prompt
     override row for a deleted character/chat stays
     listed-but-inert for its own owner (house pattern).
     Next in roadmap order: P-055 (macros, team-02).
+
+P-055 BANKED - macros: documented text-macro engine
+    (identity / clock / random / variables /
+    transforms) - team-02 commit b9c9fde merged
+    (no-ff) into yrsa/two-mirrors-build as 7e30c48
+    and pushed; ls-remote verified
+    7e30c4853566f79d4967f68593a5bdd2a9dc268b.
+    Evidence (team-02 worktree
+    hidden_files/P055_EVIDENCE.md + logs): battery
+    30 passed, neighbours 302 passed / 1 skipped,
+    team full suite 2538 passed / 4 skipped /
+    0 failed (first run 2537 + 1 s503 STT timing
+    failure under contention, solo re-run 4/4
+    green, classified contention; post-lint-fix
+    rerun fully green). Forge confirmation suite
+    at the merged tree: 2538 passed / 4 skipped /
+    0 failed (= 2508 + 30, exact). NO migration;
+    head stays 0033.
+    Slice: prompt/macros.py - the documented
+    text-macro engine ({{name}} /
+    {{name::arg1::arg2}} syntax, escape + angle
+    aliases, single-pass expansion; identity /
+    clock / random with P-036 seeded-roll
+    discipline, every roll recorded / variables
+    on a working copy, the caller map never
+    mutated / transforms; unknown + malformed
+    macros preserved verbatim and reported, or
+    refused with MacroError in strict mode) plus
+    tools/router.py MacroIn + GET /tools/macros
+    (registry) + POST /tools/macros/expand
+    (strict failures surface as 422).
+    Finisher lint fix in-slice (recorded in the
+    evidence): macros.py failed the project ruff
+    gate (11x E501 + 1x N818); the registry lines
+    were wrapped with every string value
+    byte-identical and the private exception
+    renamed _Malformed to _MalformedError; final
+    macros.py sha256 105247df... matches the
+    evidence exactly.
+    Next in roadmap order: P-056 (authors note
+    depth, team-03).
