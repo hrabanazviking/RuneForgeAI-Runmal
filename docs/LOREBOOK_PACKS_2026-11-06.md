@@ -96,7 +96,13 @@ native export:
   verbatim in the import report — carried, never
   interpreted. Provenance is NOT stored on the lorebook
   row (no migration; head stays 0032): its carriers are
-  the pack itself and the import report.
+  the pack itself and the import report. Provenance is
+  self-asserted: the checksum seals the lorebook payload,
+  not the provenance record, so a receiver reads origin as
+  the pack’s own claim, never as an attested fact; signing
+  is Part XII work. Re-export of an imported book stamps
+  fresh provenance (its source is the new stored book); no
+  origin chain is implied.
 - Never silently overwriting (the P-025 precedent,
   adapted): lorebooks have no version lineage, so import
   NEVER merges into or overwrites an existing book. An
@@ -124,7 +130,13 @@ under the lorebook file cap (32 MiB,
 `validate_json_tree`; the payload passes the import path's
 own validation before any write, and the write is the
 transactional import, so a pack that fails anywhere leaves
-nothing behind.
+nothing behind. One approximation, stated plainly: the
+import-pack route takes a decoded JSON body (the existing
+import route’s pattern), so the 32 MiB cap binds the
+re-serialised pack and the tree depth, not the raw upload
+bytes — the P-027 recorded limitation for dict-body
+routes; the file layer’s byte-exact cap applies when a
+pack is parsed from bytes/str via parse_pack.
 
 ## What deliberately did not change
 
