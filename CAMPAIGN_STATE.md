@@ -5179,3 +5179,75 @@ P-080 BANKED - Part V gate (PART V
     No heal needed at this banking.
     PART V COMPLETE. Next in roadmap
     order: P-081 (Part VI).
+P-081 BANKED - Plugin API v1 (Part VI
+    opener) - team-01 commit 628ca34
+    merged (no-ff) into
+    yrsa/two-mirrors-build as b20d7a0
+    and pushed; ls-remote verified
+    (see WAVE_PLAN update). Evidence
+    (team-01 worktree
+    hidden_files/P081_EVIDENCE.md):
+    battery 30 passed, neighbours
+    518 passed / 1 skipped, team
+    full suite 3418 passed /
+    4 skipped / 0 failed
+    (= 3388 + 30 exact). Slice:
+    src/runmal/plugins/ package
+    (api, manifest, events,
+    registry, hooks, service,
+    router, __init__ - versioned
+    manifest + lifecycle,
+    failure-isolated chat events,
+    prompt hooks at the P-057
+    composition choke point, UI
+    slot registry), wiring in
+    app.py, chats/service.py,
+    generation service + router,
+    bridge/conversation.py,
+    groupchat router + deepening,
+    prompt inspect + router;
+    tests/test_p081_plugin_api.py
+    (30 tests),
+    docs/PLUGIN_API_V1_2026-11-07.md
+    (the public contract doc),
+    clean-room log append. 20
+    files, +3685/-8. Migration:
+    NONE (head stays 0041, pinned
+    by battery test 29; provisional
+    0042 bequeathed to P-083 per
+    design section 7). Nine defects
+    found in the landed work and
+    fixed in-slice (evidence file):
+    slot hooks moved to after the
+    governor (HIGH), prompt router
+    registry threading, generation
+    event payload threading
+    (model_id, chat_id, usage),
+    group-chat opt-out, error-Done
+    firing generation.failed,
+    foreign slot namespace
+    rejection, and one CRITICAL
+    self-introduced conditional-
+    shadow break caught by the
+    tester + neighbour battery and
+    fixed before commit. Merge:
+    ONE conflict, in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    (append-vs-append, as briefed),
+    resolved keeping BOTH entries
+    exactly once - the P-080 and
+    P-081 clean-room entries both
+    kept; no .py conflicts;
+    py_compile clean on the merged
+    tree. Combined batteries on the
+    merged tree (P-081 + P-080 gate
+    + P-080 gate record): 55 passed
+    / 0 failed (= 30 + 25 exact).
+    Forge confirmation suite: 3443
+    passed / 4 skipped / 0 failed
+    (= 3413 P-080 confirmation +
+    30, exact; log
+    hidden_files/p081_confirm_fullsuite.log).
+    No heal needed at this banking.
+    PART VI OPENED. Next in roadmap
+    order: P-082.
