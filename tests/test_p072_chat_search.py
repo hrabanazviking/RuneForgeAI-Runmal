@@ -6,8 +6,10 @@ ordinal). Design: hidden_files/P072_DESIGN.md.
 
 Search is a READ over the existing message store: no new
 table, no stored index, no stored vectors, NO migration
-(head stays 0038; the provisional 0039 is NOT used by this
-slice). Full-text is deterministic token/phrase scoring over
+(on this slice's base the head was 0038 and the provisional
+0039 was NOT used by this slice; at P-073 banking the merged
+head became 0039 -- P-073's chat-metadata migration, never
+from P-072). Full-text is deterministic token/phrase scoring over
 the ACTIVE message content only (content == swipes[swipe_id];
 inactive swipes and variant history are never searched, and
 chat titles never create a hit). Semantic reuses the P-041
@@ -208,12 +210,15 @@ class DimsMismatchBackend(EmbeddingBackend):
 # ---------------- migration: none taken ----------------
 
 
-def test_migration_head_stays_0038_no_0039_from_p072(tmp_path):
-    assert MIGRATIONS[-1][0] == "0038"
-    assert all(rev != "0039" for rev, _desc, _mod in MIGRATIONS)
+def test_migration_head_is_0039_from_p073_none_from_p072(tmp_path):
+    assert MIGRATIONS[-1][0] == "0039"
+    # The single 0039 in the registry is P-073's chat-metadata
+    # migration; P-072 took no migration of its own.
+    assert [rev for rev, _desc, _mod in MIGRATIONS].count("0039") == 1
+    assert MIGRATIONS[-1][2].__name__.endswith("m0039_chat_metadata")
     db_path = tmp_path / "m.db"
     applied = migrate_to_head(db_path)
-    assert applied[-1] == "0038"
+    assert applied[-1] == "0039"
 
 
 # ---------------- pure: tokenise ----------------

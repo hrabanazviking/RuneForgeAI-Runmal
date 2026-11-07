@@ -577,13 +577,13 @@ def _apply_up_to(db_path, revision):
         conn.close()
 
 
-def test_migration_head_is_0038_provisional(tmp_path):
-    assert MIGRATIONS[-1][0] == "0038"
+def test_migration_head_is_0039_p073(tmp_path):
+    assert MIGRATIONS[-1][0] == "0039"
     assert "PROVISIONAL" in MIGRATIONS[-1][1]
     db_path = tmp_path / "m.db"
     applied = migrate_to_head(db_path)
-    assert applied[-1] == "0038"
-    assert current_revision(db_path) == "0038"
+    assert applied[-1] == "0039"
+    assert current_revision(db_path) == "0039"
     assert migrate_to_head(db_path) == []  # idempotent
 
 
@@ -591,8 +591,8 @@ def test_migration_0038_applies_exactly_and_adds_columns(tmp_path):
     db_path = tmp_path / "m.db"
     _apply_up_to(db_path, "0036")
     assert current_revision(db_path) == "0036"
-    assert migrate_to_head(db_path) == ["0037", "0038"]
-    assert current_revision(db_path) == "0038"
+    assert migrate_to_head(db_path) == ["0037", "0038", "0039"]
+    assert current_revision(db_path) == "0039"
     conn = sqlite3.connect(db_path)
     try:
         columns = {row[1] for row in conn.execute("PRAGMA table_info(messages)")}

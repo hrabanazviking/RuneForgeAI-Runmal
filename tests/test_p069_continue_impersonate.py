@@ -19,8 +19,9 @@ Discarding a draft stores nothing.
 
 No migration taken by P-069: provisional 0040 is NOT used.
 On this slice's base the head was 0037; at banking, P-068's
-0038 (message actions) banked ahead of this slice, so the
-merged head is 0038 -- from P-068, never from P-069.
+0038 (message actions) banked ahead of this slice; at
+P-073 banking the merged head became 0039 (P-073 chat
+metadata) -- never from P-069.
 
 Generation in these tests runs on the deterministic fake
 backend: through the API it yields the stub text; at the
@@ -138,12 +139,12 @@ async def seed_chat(factory, user, turns):
 # ---------------- migration: none taken ----------------
 
 
-def test_migration_head_is_0038_from_p068_none_from_p069_no_0040(tmp_path):
-    assert MIGRATIONS[-1][0] == "0038"
+def test_migration_head_is_0039_from_p073_none_from_p069_no_0040(tmp_path):
+    assert MIGRATIONS[-1][0] == "0039"
     assert all(rev != "0040" for rev, _desc, _mod in MIGRATIONS)
     db_path = tmp_path / "m.db"
     applied = migrate_to_head(db_path)
-    assert applied[-1] == "0038"
+    assert applied[-1] == "0039"
 
 
 # ---------------- pure: mode resolution ----------------

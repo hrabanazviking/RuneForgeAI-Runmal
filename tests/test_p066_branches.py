@@ -77,19 +77,21 @@ def _seed_chat(client, title="Saga", contents=("one", "two", "three", "four")):
 # ---------------- migration: PROVISIONAL 0037 ----------------
 
 def test_migration_head_is_0037_provisional(tmp_path):
-    # Banking heal (P-068 banking): 0037 stands at [-2] beneath the
-    # new head 0038 (P-068, renumbered from provisional 0039); the
+    # Banking heal (P-068 banking): 0037 stood at [-2] beneath the
+    # then-head 0038 (P-068, renumbered from provisional 0039);
+    # P-073 banking heal: 0037 now stands at [-3] beneath the
+    # new head 0039 (P-073 chat metadata); the
     # 0037 pins are kept at their merged positions and the head is
     # pinned too, so nothing is left unasserted.
-    assert MIGRATIONS[-2][0] == "0037"
-    assert "PROVISIONAL" in MIGRATIONS[-2][1]
-    assert MIGRATIONS[-1][0] == "0038"
+    assert MIGRATIONS[-3][0] == "0037"
+    assert "PROVISIONAL" in MIGRATIONS[-3][1]
+    assert MIGRATIONS[-1][0] == "0039"
     db_path = tmp_path / "m.db"
     applied = migrate_to_head(db_path)
-    assert applied[-2] == "0037"
-    assert applied[-3] == "0036"
+    assert applied[-3] == "0037"
+    assert applied[-4] == "0036"
     assert "0036" in applied  # P-065 banked first; 0036 stands beneath 0037
-    assert current_revision(db_path) == "0038"
+    assert current_revision(db_path) == "0039"
     assert migrate_to_head(db_path) == []  # idempotent
 
 
@@ -141,7 +143,7 @@ def test_migration_0037_upgrades_from_0035_with_root_defaults(tmp_path):
         conn.commit()
     finally:
         conn.close()
-    assert migrate_to_head(db_path) == ["0036", "0037", "0038"]
+    assert migrate_to_head(db_path) == ["0036", "0037", "0038", "0039"]
     conn = sqlite3.connect(db_path)
     try:
         row = conn.execute(

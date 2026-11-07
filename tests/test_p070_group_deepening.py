@@ -4,7 +4,8 @@ handling (delta census ST-11 depth, ST-13, ST-14).
 
 Contract under test:
 - The deepening document lives in groups.speaker_config under "p070"
-  (no migration; head stays 0038; S211 keys order/seed untouched),
+  (no migration taken by P-070; head was 0038 on its base and
+  is 0039 in the merged tree after P-073; S211 keys order/seed untouched),
   is validated (bad mode/activation/max_turns/unknown keys -> 422),
   and defaults are complete.
 - select via POST /groups/{id}/next honours the stored strategy:
@@ -59,7 +60,7 @@ def make_client(tmp_path, monkeypatch):
     monkeypatch.setenv("RUNMAL_DATA_DIR", str(tmp_path))
     db_path = tmp_path / "test.db"
     applied = migrate_to_head(db_path)
-    assert applied[-1] == "0038"  # P-070 takes no migration
+    assert applied[-1] == "0039"  # P-070 takes no migration; head is P-073's 0039
     engine = create_db_engine(db_path)
     client = TestClient(create_app(create_session_factory(engine)))
     token = get_or_create_credential()

@@ -195,17 +195,18 @@ async def _svc_chat(factory, user_id, title="Hall", contents=("one", "two")):
 def test_migration_head_is_0037_provisional(tmp_path):
     # Banking heal (P-068 banking): this slice took NO migration --
     # 0037 was the head when the battery was written; in the merged
-    # tree 0037 stands at [-2] and the head is P-068's 0038 (the only
-    # 0038 in the registry, landed after this slice). Pins reworked
+    # tree 0037 stood at [-2] beneath P-068's 0038; P-073 banking
+    # heal: 0037 now stands at [-3] and the head is P-073's 0039.
+    # Pins reworked
     # to merged truth at the merged positions.
-    assert MIGRATIONS[-2][0] == "0037"
-    assert "PROVISIONAL" in MIGRATIONS[-2][1]
-    assert MIGRATIONS[-1][0] == "0038"
+    assert MIGRATIONS[-3][0] == "0037"
+    assert "PROVISIONAL" in MIGRATIONS[-3][1]
+    assert MIGRATIONS[-1][0] == "0039"
     db_path = tmp_path / "m.db"
     applied = migrate_to_head(db_path)
-    assert applied[-2] == "0037"
-    assert applied[-1] == "0038"
-    assert current_revision(db_path) == "0038"
+    assert applied[-3] == "0037"
+    assert applied[-1] == "0039"
+    assert current_revision(db_path) == "0039"
 
 
 # ---------------- A. create / list / get round-trip ----------------
