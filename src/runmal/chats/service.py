@@ -28,6 +28,10 @@ EVENT_MESSAGE_EDITED = "message.edited"
 EVENT_MESSAGE_DELETED = "message.deleted"
 EVENT_AUTHORS_NOTE_CHANGED = "authors_note.changed"
 EVENT_POST_HISTORY_CHANGED = "post_history.changed"
+EVENT_BRANCH_CREATED = "branch.created"
+EVENT_BRANCH_FORKED = "branch.forked"
+EVENT_BRANCH_MERGED = "branch.merged"
+EVENT_BRANCH_RENAMED = "branch.renamed"
 
 
 def _now() -> datetime:
@@ -49,6 +53,8 @@ def chat_to_dict(chat: Chat, message_count: int = 0) -> dict:
     except (json.JSONDecodeError, ValueError, TypeError):
         note = AuthorsNote()
     ph = _post_history_from_chat(chat)
+    from runmal.chats.branches import branch_info
+
     return {
         "id": chat.id,
         "title": chat.title,
@@ -59,6 +65,7 @@ def chat_to_dict(chat: Chat, message_count: int = 0) -> dict:
         "message_count": message_count,
         "authors_note": note_to_data(note),
         "post_history": instructions_to_data(ph),
+        "branch": branch_info(chat),
     }
 
 

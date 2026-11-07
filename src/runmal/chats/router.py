@@ -57,6 +57,20 @@ class ChatBackendProfileIn(BaseModel):
     profile_id: str | None = None
 
 
+class BranchCreate(BaseModel):
+    message_id: str | None = None
+    name: str | None = None
+
+
+class MergeBackIn(BaseModel):
+    target_id: str | None = None
+    name: str | None = None
+
+
+class BranchNameIn(BaseModel):
+    name: str
+
+
 @router.post("/chats", status_code=status.HTTP_201_CREATED)
 async def create_chat(
     body: ChatCreate,
@@ -315,6 +329,85 @@ async def generation_manifest(
     # the fake backend takes the canonical bag as-is
     return {"chat_id": chat.id, "preset": preset_dict, "backend": backend,
             "params": preset_dict["params"], "mapped": [], "dropped": []}
+
+
+@router.post("/chats/{chat_id}/branches", status_code=status.HTTP_201_CREATED)
+async def fork_chat(
+    chat_id: str,
+    body: BranchCreate,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Fork a chat at a message (P-066). Never destructive: the
+    source is copied, never mutated. No message_id = whole chat."""
+    from runmal.chats import branches
+
+    try:
+        branch = await branches.fork_chat(session, user_id, chat_id, body.message_id, body.name)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if branch is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    history = await service.get_history(session, user_id, branch.id) or []
+    return chat_to_dict(branch, len(history))
+
+
+@router.get("/chats/{chat_id}/branches")
+async def list_branches(
+    chat_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """A chat's branch family (P-066): root, ancestors, self,
+    children, descendants, family -- every member named."""
+    from runmal.chats import branches
+
+    family = await branches.list_branch_family(session, user_id, chat_id)
+    if family is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return family
+
+
+@router.post("/chats/{chat_id}/merge-back", status_code=status.HTTP_201_CREATED)
+async def merge_back(
+    chat_id: str,
+    body: MergeBackIn,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Merge a branch back as a NEW branch (P-066): target history
+    plus the branch's divergent suffix. Sources are never mutated.
+    target_id defaults to the branch's parent."""
+    from runmal.chats import branches
+
+    try:
+        merged = await branches.merge_back(session, user_id, chat_id, body.target_id, body.name)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if merged is None:
+        raise HTTPException(status_code=404, detail="chat or target not found")
+    history = await service.get_history(session, user_id, merged.id) or []
+    return chat_to_dict(merged, len(history))
+
+
+@router.post("/chats/{chat_id}/branch-name")
+async def rename_branch(
+    chat_id: str,
+    body: BranchNameIn,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Name a branch (P-066): sets the branch's own title only."""
+    from runmal.chats import branches
+
+    try:
+        chat = await branches.rename_branch(session, user_id, chat_id, body.name)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if chat is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    history = await service.get_history(session, user_id, chat_id) or []
+    return chat_to_dict(chat, len(history))
 
 
 @router.get("/chats/{chat_id}/export")
