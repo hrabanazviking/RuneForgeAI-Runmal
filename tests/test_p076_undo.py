@@ -2,7 +2,7 @@
 
 Pins the undo contract from hidden_files/P076_DESIGN.md: a
 sealed per-chat journal (files, NO new migration -- head
-stays 0039) captures the chat's whole restorable state
+stayed 0039 on its base, re-pinned to 0040 at P-076 banking) captures the chat's whole restorable state
 BEFORE each covered operation; undo pops the newest entry
 and restores it in place, byte/state-exactly, consuming the
 entry. Areas: A recording + no-op exclusions, B message ops
@@ -571,11 +571,14 @@ async def test_journal_metadata_never_carries_content(tmp_path):
 # ---------------- H. pins: head, seal, cap, deletion ----------------
 
 
-def test_migration_head_stays_0039(tmp_path):
-    assert MIGRATIONS[-1][0] == "0039"
+def test_migration_head_stays_0040(tmp_path):
+    assert MIGRATIONS[-1][0] == "0040"  # re-pinned at P-076 banking: 0040 is exactly P-075 m0040_message_provenance; P-076 took no migration
+    revisions = [r for r, _d, _m in MIGRATIONS]
+    assert revisions.count("0040") == 1
+    assert MIGRATIONS[-1][2].__name__.endswith("m0040_message_provenance")
     db_path = tmp_path / "head.db"
     migrate_to_head(db_path)
-    assert current_revision(db_path) == "0039"
+    assert current_revision(db_path) == "0040"
 
 
 async def test_entry_file_is_sealed_and_matches_state(tmp_path):
