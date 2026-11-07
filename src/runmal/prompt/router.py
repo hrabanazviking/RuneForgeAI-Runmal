@@ -22,6 +22,7 @@ class InspectRequest(BaseModel):
     chat_id: str | None = None
     persona_character_id: str | None = None
     lorebook_ids: list[str] = Field(default_factory=list)
+    include_activation_inspection: bool = False
     messages: list[str] = Field(default_factory=list)
     context_limit: int = Field(default=4096, ge=64)
     reserve_response: int = Field(default=512, ge=0)
@@ -40,6 +41,7 @@ async def prompt_inspect(
         chat_id=body.chat_id,
         persona_character_id=body.persona_character_id,
         lorebook_ids=body.lorebook_ids,
+        include_activation_inspection=body.include_activation_inspection,
         messages=body.messages,
         context_limit=body.context_limit,
         reserve_response=body.reserve_response,

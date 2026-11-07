@@ -10,6 +10,16 @@ ones with their trigger, excluded ones with their stage and reason.
 Nothing here writes state: lore activation runs from a clean runtime
 state, exactly like the S209 editor preview.
 
+Activation inspector (P-043): with
+``include_activation_inspection=True`` the result gains
+``lorebook_inspections`` -- one P-043 explanation payload per
+explicitly named lorebook, built by explain_preview over the
+VERY preview dict this function already computed for the book
+(never a second tick, so a gated entry's recorded roll here is
+the roll that decided the trace). Scoped (chat_id) layers are
+not separately explained in this slice; their rows keep the
+trace treatment.
+
 Position & depth control (P-038): lore slots honour each entry's
 declared placement via the preview row's placement fields --
 before_char entries become lore_before slots, after_char entries
@@ -120,12 +130,14 @@ async def inspect_prompt(
     messages: list[str] | None = None,
     chat_id: str | None = None,
     persona_character_id: str | None = None,
+    include_activation_inspection: bool = False,
     context_limit: int = 4096,
     reserve_response: int = 512,
 ) -> dict | None:
     """Build the trace dict for a hypothetical prompt, or None when a
     referenced character/lorebook does not exist."""
     messages = list(messages or [])
+    lorebook_inspections: dict = {}
     lore_scope_summary: dict | None = None
     slots: list[Slot] = [
         make_slot("main_system", "system", MAIN_SYSTEM_TEXT, required=True, id="system/main")
@@ -184,6 +196,35 @@ async def inspect_prompt(
             # its own scan_external_context setting admits it.
             external_context=[persona_text] if persona_text else [],
         )
+        if include_activation_inspection:
+            from runmal.lorebooks.inspector import explain_preview
+            from runmal.lorebooks.scan import (
+                ScanEntry,
+                scan_entries_windowed,
+                scan_near_misses,
+            )
+
+            _scan_view = [ScanEntry.from_orm(e) for e in entries]
+            _hits = {
+                h.entry_id: h
+                for h in scan_entries_windowed(
+                    _scan_view, messages, book_settings,
+                    [persona_text] if persona_text else [],
+                )
+            }
+            if vector_outcome is not None:
+                for _fb in vector_outcome.keyword_hits:
+                    _hits.setdefault(_fb.entry_id, _fb)
+            lorebook_inspections[book.id] = explain_preview(
+                preview,
+                entries,
+                hits=list(_hits.values()),
+                near_misses=scan_near_misses(
+                    _scan_view, messages, book_settings,
+                    [persona_text] if persona_text else [],
+                ),
+                lorebook_id=book.id,
+            )
         for row in preview["entries"]:
             slot_id = f"lore/{row['entry_id']}"
             provenance = f"lorebook:{book.name}"
@@ -288,4 +329,6 @@ async def inspect_prompt(
     result = trace_to_dict(trace)
     if lore_scope_summary is not None:
         result["lore_scopes"] = lore_scope_summary
+    if include_activation_inspection:
+        result["lorebook_inspections"] = lorebook_inspections
     return result

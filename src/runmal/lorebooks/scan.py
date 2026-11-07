@@ -47,6 +47,14 @@ Hits are returned in the input entry order (callers pass entries in
 priority order; see S204 for budget/priority resolution). Matching is fully
 deterministic: same inputs always produce the same hits.
 
+Near misses (P-043): :func:`scan_near_misses` reports the one
+scan-level near miss the plain scan otherwise drops silently --
+an entry whose primary key matched but whose secondary gate
+(P-032 selective logic) refused the hit. It returns the matched
+keys and counts so an inspector can explain the refusal without
+re-running matching. Entries with no primary match are not near
+misses, and gate-passing entries are hits, not near misses.
+
 Recursive scanning (``scan_entries_recursive``) extends the plain scan
 breadth-first: round 0 is exactly ``scan_entries`` over the chat
 messages, and each later round scans the *content* of the entries
@@ -299,6 +307,106 @@ def scan_entries_windowed(
             )
         )
     return hits
+
+
+@dataclass(frozen=True)
+class NearMiss:
+    """One secondary-gate near miss (P-043): primary matched, gate refused."""
+
+    entry_id: str
+    matched_primary: tuple[str, ...] = ()
+    matched_secondary: tuple[str, ...] = ()
+    secondary_count: int = 0
+    selective_logic: str = "and_any"
+    # 0-based indices into the FULL message list (chat matches).
+    message_indices: tuple[int, ...] = ()
+    # P-037: indices into the external-context list.
+    external_indices: tuple[int, ...] = ()
+
+
+def _near_misses_texts(
+    entries: list[ScanEntry],
+    texts: list[str],
+) -> list[NearMiss]:
+    """Near misses over one window; indices are window positions."""
+    out: list[NearMiss] = []
+    for entry in entries:
+        if not entry.enabled or entry.constant or entry.vectorised:
+            continue
+        primaries = _usable(entry.keys)
+        if not primaries:
+            continue
+        matched_p, idx_p = _match_keys(
+            primaries, texts, 0, entry.whole_word, entry.case_sensitive
+        )
+        if not matched_p:
+            continue
+        secondaries = _usable(entry.secondary_keys)
+        if not secondaries:
+            continue
+        matched_s, idx_s = _match_keys(
+            secondaries, texts, 0, entry.whole_word, entry.case_sensitive
+        )
+        if secondary_gate(
+            entry.selective_logic,
+            secondary_count=len(secondaries),
+            matched_count=len(matched_s),
+        ):
+            continue
+        out.append(
+            NearMiss(
+                entry_id=entry.id,
+                matched_primary=matched_p,
+                matched_secondary=matched_s,
+                secondary_count=len(secondaries),
+                selective_logic=entry.selective_logic,
+                message_indices=tuple(sorted(set(idx_p) | set(idx_s))),
+            )
+        )
+    return out
+
+
+def scan_near_misses(
+    entries: list[ScanEntry],
+    messages: list[str],
+    settings: ScanSettings,
+    external_context=(),
+) -> list[NearMiss]:
+    """Secondary-gate near misses over the window ``settings`` resolves.
+
+    Same matching semantics as :func:`scan_entries_windowed` (the
+    shared ``_match_keys`` core plus P-032's ``secondary_gate``);
+    an entry appears here exactly when it has at least one usable
+    primary key matched in the window, defines usable secondary
+    keys, and the gate refuses. Chat matches report indices into
+    the FULL ``messages`` list; external matches report
+    ``external_indices``. Deterministic, input order.
+    """
+    if not entries:
+        return []
+    window = build_scan_window(settings, list(messages), external_context)
+    if not window.texts:
+        return []
+    out: list[NearMiss] = []
+    for miss in _near_misses_texts(entries, list(window.texts)):
+        chat_idx: set[int] = set()
+        ext_idx: set[int] = set()
+        for pos in miss.message_indices:
+            msg_i = window.message_indices[pos]
+            if msg_i is not None:
+                chat_idx.add(msg_i)
+            else:
+                ext_i = window.external_indices[pos]
+                assert ext_i is not None
+                ext_idx.add(ext_i)
+        out.append(
+            replace(
+                miss,
+                message_indices=tuple(sorted(chat_idx)),
+                external_indices=tuple(sorted(ext_idx)),
+            )
+        )
+    return out
 
 
 @dataclass(frozen=True)

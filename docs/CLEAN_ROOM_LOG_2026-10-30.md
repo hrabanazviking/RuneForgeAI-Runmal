@@ -550,3 +550,19 @@ source in §0(2) and appends its entry here:
   code was read and no file was downloaded; the slice's
   test entries are authored fresh in the test module
   (P-005 discipline).
+- **P-043 (2026-11-06, own tree only):** no new external
+  source and no mirror reading. The activation inspector
+  (why did this entry fire -- matched keys and the recorded
+  roll shown per message) is built entirely from the roadmap
+  line and from facts the engine already records in-tree:
+  the S209/P-037 preview rows, the P-032 selective gate, the
+  P-036 recorded probability roll, the P-034 group outcome,
+  the P-033 timed counters, the P-041 matcher scores and the
+  S204 budget verdict. The explanation schema (one dict per
+  entry, per-message breakdown, tick totals, near misses as
+  first-class rows, and the explicit facts_not_recorded
+  list) is Runmal own design for the roadmap line, not a
+  reproduction of any mirror behaviour. No SillyTavern or
+  Voxta source code was read and no file was downloaded;
+  the slice test entries are authored fresh in the test
+  module (P-005 discipline).

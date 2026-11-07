@@ -100,6 +100,13 @@ class PreviewRequest(BaseModel):
     max_recursion_depth: int | None = Field(default=None, ge=0)
 
 
+class InspectRequest(PreviewRequest):
+    """P-043 activation-inspector request: the preview fields
+    plus opt-in recursive scanning."""
+
+    recursive_scan: bool = False
+
+
 def _service_error(exc: ValueError) -> HTTPException:
     return HTTPException(status_code=422, detail=str(exc))
 
@@ -272,6 +279,78 @@ async def lorebook_editor_schema(
     from runmal.lorebooks.editor import editor_schema
 
     return editor_schema()
+@router.post("/lorebooks/{book_id}/inspect")
+async def inspect_lorebook(
+    book_id: str,
+    body: InspectRequest,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Activation inspector (P-043): like the preview, but every
+    entry's outcome is explained as data -- matched keys and
+    where they matched, the selective-logic gate, the recorded
+    probability roll, group exclusion, recursion, vector vs
+    keyword-fallback, placement and the budget verdict, plus the
+    near misses (secondary-gate refusals above all). Part XIII's
+    Inspector consumes this payload (``schema``
+    runmal-p043-activation-inspection-v1)."""
+    book = await service.get_lorebook(session, user_id, book_id)
+    if book is None:
+        raise HTTPException(status_code=404, detail="lorebook not found")
+    entries = await service.list_entries(session, user_id, book_id) or []
+    book_settings = ScanSettings.from_book(book)
+    scan_depth = body.scan_depth if body.scan_depth is not None else book_settings.scan_depth
+    token_budget = body.token_budget if body.token_budget is not None else book.token_budget
+    scan_mode = body.scan_mode if body.scan_mode is not None else book_settings.scan_mode
+    scan_external = (
+        body.scan_external_context
+        if body.scan_external_context is not None
+        else book_settings.scan_external_context
+    )
+    try:
+        check_scan_mode(scan_mode)
+        vector_match = None
+        if not body.vector_hit_ids:
+            from runmal.lorebooks.vector_match import (
+                match_vectorised,
+                resolve_lore_embedding_backend,
+            )
+            from runmal.lorebooks.windows import ScanSettings as _ScanSettings
+
+            backend = await resolve_lore_embedding_backend(session, user_id)
+            outcome = await match_vectorised(
+                entries,
+                body.messages,
+                backend=backend,
+                threshold=body.vector_threshold,
+                max_entries=body.vector_max_entries,
+                settings=_ScanSettings.normalised(
+                    scan_depth=scan_depth,
+                    scan_mode=scan_mode,
+                    scan_external_context=scan_external,
+                ),
+                external_context=body.external_context,
+            )
+            if outcome.candidates:
+                vector_match = outcome
+        from runmal.lorebooks.inspector import inspect_activation
+
+        result = inspect_activation(
+            entries, body.messages, scan_depth, token_budget, seed=body.seed,
+            vector_hit_ids=set(body.vector_hit_ids) if body.vector_hit_ids else None,
+            vector_match=vector_match,
+            vector_threshold=body.vector_threshold,
+            roll_context=body.roll_context,
+            recursive_scan=body.recursive_scan,
+            scan_mode=scan_mode,
+            scan_external_context=scan_external,
+            external_context=body.external_context,
+            lorebook_id=book.id,
+        )
+    except ValueError as exc:
+        raise _service_error(exc) from exc
+    result["book_id"] = book.id
+    return result
 
 
 @router.get("/lorebooks/{book_id}")
