@@ -82,7 +82,8 @@ text — the slice claims the machinery, not literary quality.
 
 ## Storage and the event log
 
-No migration is taken (the head stays at 0037; provisional
+No migration is taken by P-069 (the head was 0037 on this
+slice's base and is 0038 at banking, from P-068; provisional
 0040 is not used). Continue needs no new storage: extend
 grows an existing message, next appends one. A draft needs
 no storage by design: candidate state lives with the
