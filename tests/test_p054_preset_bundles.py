@@ -16,7 +16,7 @@ Honesty contract pinned here:
 - overrides layer bundle < character < chat with per-field
   sources, sampler null deletes a base key, an override typo
   refuses, different-bundle shadowing is reported not dropped;
-- migration head is 0033; ownership is scoped throughout.
+- migration head is PROVISIONAL 0035 (P-057); ownership is scoped throughout.
 """
 
 from __future__ import annotations
@@ -127,7 +127,7 @@ def test_full_bundle_round_trips_every_field():
     assert out["extensions"] == {"foreign_future_field": {"x": [True, None, 1.5]}}
     blocks = {b["block"]: b["enabled"] for b in out["prompt_layout"]["blocks"]}
     assert blocks["history"] is False and blocks["system"] is True
-    assert len(blocks) == 9  # missing blocks filled, none lost
+    assert len(blocks) == 10  # missing blocks filled, none lost (post_history block added by P-057)
 
 
 def test_normalisation_is_a_fixed_point():
@@ -224,11 +224,11 @@ def test_override_unknown_key_refuses():
 
 # ---------------- API: CRUD + share ----------------
 
-def test_migration_head_is_0033(tmp_path):
+def test_migration_head_is_0035_provisional(tmp_path):
     db_path = tmp_path / "m.db"
     migrate_to_head(db_path)
-    assert MIGRATIONS[-1][0] == "0034"
-    assert current_revision(db_path) == "0034"
+    assert MIGRATIONS[-1][0] == "0035"  # head moved by P-057 (PROVISIONAL 0035)
+    assert current_revision(db_path) == "0035"
     assert migrate_to_head(db_path) == []  # idempotent
 
 

@@ -431,16 +431,16 @@ def test_migration_head_is_0029_p037():
     # 0027 is reserved for P-035 (entry states, concurrent, banks
     # first); the merged sequence runs 0026 -> 0027 -> 0028, and
     # P-037's 0029 moved the head after this slice banked.
-    assert MIGRATIONS[-1][0] == "0034"
+    assert MIGRATIONS[-1][0] == "0035"  # head moved by P-057 (PROVISIONAL 0035)
 def test_migration_head_is_0030_provisional_p038():
     # 0027 was P-035's reserved number (banked first); head moved
     # -> 0030 by P-038 (0029 reserved for P-037, banking first).
     # The sequence runs 0026 -> 0027 -> 0028 -> 0029 -> 0030.
-    assert MIGRATIONS[-1][0] == "0034"
-    assert MIGRATIONS[-5][0] == "0030"  # position moved by P-056 (0034)
-    assert MIGRATIONS[-6][0] == "0029"  # position moved by P-056 (0034)
-    assert MIGRATIONS[-7][0] == "0028"  # position moved by P-056 (0034)
-    assert MIGRATIONS[-8][0] == "0027"  # position moved by P-056 (0034)
+    assert MIGRATIONS[-1][0] == "0035"  # head moved by P-057 (PROVISIONAL 0035)
+    assert MIGRATIONS[-6][0] == "0030"  # position moved by P-057 (PROVISIONAL 0035)
+    assert MIGRATIONS[-7][0] == "0029"  # position moved by P-057 (PROVISIONAL 0035)
+    assert MIGRATIONS[-8][0] == "0028"  # position moved by P-057 (PROVISIONAL 0035)
+    assert MIGRATIONS[-9][0] == "0027"  # position moved by P-057 (PROVISIONAL 0035)
 
 
 def test_migration_0028_column_exists_and_defaults(tmp_path):
@@ -486,7 +486,7 @@ def test_old_database_upgrades_in_place_preserving_entries(tmp_path):
     finally:
         conn.close()
     applied = migrate_to_head(db_path)
-    assert applied == ["0027", "0028", "0029", "0030", "0031", "0032", "0033", "0034"]  # 0034 appended by P-056
+    assert applied == ["0027", "0028", "0029", "0030", "0031", "0032", "0033", "0034", "0035"]  # PROVISIONAL 0035 appended by P-057
     conn = sqlite3.connect(db_path)
     try:
         row = conn.execute(

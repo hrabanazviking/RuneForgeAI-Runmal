@@ -630,17 +630,17 @@ def test_migration_head_is_0029_p037():
     # 0025 was reserved for P-033 and P-033 took it, banking first;
     # head moved 0026 -> 0028 by P-036 (0027 is P-035's reserved
     # number, banked first), then -> 0029 by P-037. 0026 stands.
-    assert MIGRATIONS[-1][0] == "0034"
-    assert MIGRATIONS[-5][0] == "0030"  # position moved by P-056 (0034)
-    assert MIGRATIONS[-6][0] == "0029"  # position moved by P-056 (0034)
-    assert MIGRATIONS[-7][0] == "0028"  # position moved by P-056 (0034)
-    assert MIGRATIONS[-8][0] == "0027"  # position moved by P-056 (0034)
-    assert MIGRATIONS[-9][0] == "0026"  # position moved by P-056 (0034)
+    assert MIGRATIONS[-1][0] == "0035"  # head moved by P-057 (PROVISIONAL 0035)
+    assert MIGRATIONS[-6][0] == "0030"  # position moved by P-057 (PROVISIONAL 0035)
+    assert MIGRATIONS[-7][0] == "0029"  # position moved by P-057 (PROVISIONAL 0035)
+    assert MIGRATIONS[-8][0] == "0028"  # position moved by P-057 (PROVISIONAL 0035)
+    assert MIGRATIONS[-9][0] == "0027"  # position moved by P-057 (PROVISIONAL 0035)
+    assert MIGRATIONS[-10][0] == "0026"  # position moved by P-057 (PROVISIONAL 0035)
 def test_migration_head_is_0030_provisional_p038():
     # number, banked first), then -> 0030 by P-038 (0029 is
     # P-037's reserved number, banking first). 0026 stands.
-    assert MIGRATIONS[-1][0] == "0034"
-    assert MIGRATIONS[-10][0] == "0025"  # position moved by P-056 (0034)
+    assert MIGRATIONS[-1][0] == "0035"  # head moved by P-057 (PROVISIONAL 0035)
+    assert MIGRATIONS[-11][0] == "0025"  # position moved by P-057 (PROVISIONAL 0035)
 
 
 def test_migration_0026_columns_exist_and_default(tmp_path):
@@ -694,7 +694,7 @@ def test_old_database_upgrades_in_place_preserving_entries(tmp_path):
     finally:
         conn.close()
     applied = migrate_to_head(db_path)
-    assert applied == ["0025", "0026", "0027", "0028", "0029", "0030", "0031", "0032", "0033", "0034"]  # 0034 appended by P-056
+    assert applied == ["0025", "0026", "0027", "0028", "0029", "0030", "0031", "0032", "0033", "0034", "0035"]  # PROVISIONAL 0035 appended by P-057
     conn = sqlite3.connect(db_path)
     try:
         row = conn.execute(

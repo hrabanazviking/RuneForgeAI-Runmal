@@ -84,6 +84,15 @@ carries an ``authors_note`` echo -- metadata only (present / active /
 depth / frequency / enabled / message count / source); the note text
 never enters the result. With no chat the echo reports source
 ``none`` and the pipeline is exactly the pre-P-056 pipeline.
+Post-history instructions (P-057): resolution precedence is
+chat > character > none -- chat-stored instructions with content
+win, else the character card's ``post_history_instructions``
+field becomes the slot with source ``character``, else there is
+no slot. The slot composes after history at its baseline-last
+position. The result carries a ``post_history`` echo -- metadata
+only (present / enabled / role / source); the instruction text
+never enters the result (S214). Corrupt stored JSON reads as
+empty.
 """
 
 from __future__ import annotations
@@ -102,15 +111,21 @@ from runmal.lorebooks.windows import ScanSettings
 from runmal.prompt.authors_note import (
     FREQUENCY_REASON,
     AuthorsNote,
-    has_content,
     is_active_for,
     note_from_data,
-    slot_for,
 )
+from runmal.prompt.authors_note import has_content as note_has_content
+from runmal.prompt.authors_note import slot_for as note_slot_for
 from runmal.prompt.composer import compose
 from runmal.prompt.context import DISABLED_REASON as CONTEXT_DISABLED_REASON
 from runmal.prompt.context import apply_context_template
 from runmal.prompt.manager import DISABLED_REASON, apply_layout
+from runmal.prompt.post_history import (
+    PostHistoryInstructions,
+    instructions_from_data,
+)
+from runmal.prompt.post_history import has_content as ph_has_content
+from runmal.prompt.post_history import slot_for as ph_slot_for
 from runmal.prompt.render import render_prompt
 from runmal.prompt.service import (
     context_echo,
@@ -140,6 +155,38 @@ def _persona_text(character) -> str:
         if isinstance(value, str) and value.strip():
             parts.append(value.strip())
     return "\n".join(parts)
+
+
+def _post_history_from_json(raw) -> PostHistoryInstructions:
+    """Parse stored post-history JSON defensively (P-057).
+
+    Corrupt JSON, None, and invalid documents all read as the
+    default (empty) instructions rather than failing.
+    """
+    try:
+        parsed = json.loads(raw) if raw else None
+        return instructions_from_data(parsed)
+    except (json.JSONDecodeError, ValueError, TypeError):
+        return PostHistoryInstructions()
+
+
+def _character_post_history_text(character) -> str:
+    """The character card's post_history_instructions text (P-057).
+
+    Parses ``card_json`` exactly like :func:`_persona_text` (dict
+    with a ``data`` envelope unwrap); returns "" when the field
+    is absent or not a string.
+    """
+    try:
+        card = json.loads(character.card_json or "{}")
+    except (json.JSONDecodeError, TypeError, AttributeError):
+        return ""
+    if isinstance(card, dict) and isinstance(card.get("data"), dict):
+        card = card["data"]
+    if not isinstance(card, dict):
+        return ""
+    value = card.get("post_history_instructions")
+    return value if isinstance(value, str) else ""
 
 
 def _lore_slot(row: dict, slot_id: str, provenance: str) -> Slot:
@@ -224,6 +271,8 @@ async def inspect_prompt(
     extras: list[TraceSlot] = []
 
     persona_text = ""
+    character = None
+    chat_ph: PostHistoryInstructions | None = None
     if character_id is not None:
         character = await character_service.get_character(session, user_id, character_id)
         if character is None:
@@ -340,6 +389,9 @@ async def inspect_prompt(
             note = note_from_data(json.loads(chat.authors_note_json or "{}"))
         except (json.JSONDecodeError, ValueError, TypeError):
             note = AuthorsNote()
+        chat_ph = _post_history_from_json(
+            getattr(chat, "post_history_json", None)
+        )
         # P-040: scoped lore layers for this chat (world ->
         # character -> persona -> chat), each with its own
         # budget, composed per scope and reported per scope.
@@ -411,9 +463,9 @@ async def inspect_prompt(
         )
 
     message_count = len(messages)
-    if has_content(note):
+    if note_has_content(note):
         if is_active_for(note, message_count):
-            an_slot = slot_for(note, message_count)
+            an_slot = note_slot_for(note, message_count)
             if an_slot is not None:
                 slots.append(an_slot)
                 authors_note_active = True
@@ -438,7 +490,7 @@ async def inspect_prompt(
                 )
             )
     authors_note_echo = {
-        "present": has_content(note),
+        "present": note_has_content(note),
         "active": authors_note_active,
         "depth": note.depth,
         "frequency": note.frequency,
@@ -446,6 +498,48 @@ async def inspect_prompt(
         "message_count": message_count,
         "source": "chat" if chat_id else "none",
     }
+    # P-057: post-history resolution -- chat with content wins;
+    # a disabled/blank chat falls through to the character card;
+    # otherwise none. Appended after history (baseline-last order
+    # does the positioning) and before layout/context stages so
+    # the slot flows through them like every other slot.
+    winning_ph: PostHistoryInstructions | None = None
+    ph_source = "none"
+    if chat_ph is not None and ph_has_content(chat_ph):
+        winning_ph = chat_ph
+        ph_source = "chat"
+    elif character is not None:
+        card_text = _character_post_history_text(character)
+        if card_text.strip():
+            winning_ph = PostHistoryInstructions(text=card_text)
+            ph_source = "character"
+    if winning_ph is not None:
+        ph_slot = ph_slot_for(winning_ph, ph_source)
+        if ph_slot is not None:
+            slots.append(ph_slot)
+    if winning_ph is None and chat_ph is not None:
+        # No content winner, but a chat was loaded: the echo
+        # reports the chat candidate itself (P057_DESIGN S5 rule
+        # (3)) -- present False with the chat's enabled/role. A
+        # corrupt stored document already read as the default
+        # chat candidate above, so it lands here too. No slot
+        # behaviour changes: nothing is appended for this case.
+        winning_ph = chat_ph
+        ph_source = "chat"
+    if ph_source == "none":
+        post_history_echo = {
+            "present": False,
+            "enabled": True,
+            "role": "system",
+            "source": "none",
+        }
+    else:
+        post_history_echo = {
+            "present": ph_has_content(winning_ph),
+            "enabled": winning_ph.enabled,
+            "role": winning_ph.role,
+            "source": ph_source,
+        }
 
     slots_for_compose = slots
     if layout is not None:
@@ -491,6 +585,7 @@ async def inspect_prompt(
     result["context_template"] = context_echo(ctx_template, ctx_source)
     result["rendered_tokens"] = estimate_tokens(rendered.text)
     result["authors_note"] = authors_note_echo
+    result["post_history"] = post_history_echo
     if lore_scope_summary is not None:
         result["lore_scopes"] = lore_scope_summary
     if include_activation_inspection:

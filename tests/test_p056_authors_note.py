@@ -506,13 +506,14 @@ def test_inspect_no_chat_echo_source_none(tmp_path, monkeypatch):
 # ---------------- migration: PROVISIONAL 0034 ----------------
 
 def test_migration_head_is_0034_provisional(tmp_path):
-    assert MIGRATIONS[-1][0] == "0034"
+    # Head pin healed at P-057 banking: head moved 0034 -> 0035.
+    assert MIGRATIONS[-1][0] == "0035"
     db_path = tmp_path / "m.db"
     applied = migrate_to_head(db_path)
-    assert applied[-1] == "0034"
-    assert current_revision(db_path) == "0034"
+    assert applied[-1] == "0035"
+    assert current_revision(db_path) == "0035"
     assert migrate_to_head(db_path) == []  # idempotent
-    assert current_revision(db_path) == "0034"
+    assert current_revision(db_path) == "0035"
 
 
 def test_migration_0034_adds_authors_note_column(tmp_path):

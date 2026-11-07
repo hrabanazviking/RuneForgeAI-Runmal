@@ -192,11 +192,11 @@ def test_activation_kind_for_truth_table(constant, vectorised, expected):
 
 
 def test_migration_head_is_0030_and_sequence_tail():
-    assert MIGRATIONS[-1][0] == "0034"
-    assert [m[0] for m in MIGRATIONS[-8:]] == ["0027", "0028", "0029", "0030", "0031", "0032", "0033", "0034"]  # tail moved by P-056 (0034)
+    assert MIGRATIONS[-1][0] == "0035"  # head moved by P-057 (PROVISIONAL 0035)
+    assert [m[0] for m in MIGRATIONS[-10:]] == ["0026", "0027", "0028", "0029", "0030", "0031", "0032", "0033", "0034", "0035"]  # tail moved by P-057 (PROVISIONAL 0035)
 def test_migration_head_is_0028_and_sequence_tail():
-    assert MIGRATIONS[-1][0] == "0034"
-    assert [m[0] for m in MIGRATIONS[-8:]] == ["0027", "0028", "0029", "0030", "0031", "0032", "0033", "0034"]  # tail moved by P-056 (0034)
+    assert MIGRATIONS[-1][0] == "0035"  # head moved by P-057 (PROVISIONAL 0035)
+    assert [m[0] for m in MIGRATIONS[-10:]] == ["0026", "0027", "0028", "0029", "0030", "0031", "0032", "0033", "0034", "0035"]  # tail moved by P-057 (PROVISIONAL 0035)
 
 
 def test_fresh_database_has_vectorised_column(tmp_path):
