@@ -156,7 +156,9 @@ from runmal.prompt.service import (
     resolve_context_template,
     resolve_layout,
     resolve_policy,
+    resolve_structured,
     resolve_template,
+    structured_echo,
     template_echo,
 )
 from runmal.prompt.slots import Slot, baseline_order, make_slot, slot_tokens
@@ -277,6 +279,7 @@ async def inspect_prompt(
     context_template: object | None = None,
     context_preset: object | None = None,
     budget_policy: object | None = None,
+    structured_output: object | None = None,
     include_preview: bool = False,
     backend_key: str | None = None,
 ) -> dict | None:
@@ -288,6 +291,7 @@ async def inspect_prompt(
         context_template, preset=context_preset
     )
     policy, policy_source = resolve_policy(budget_policy)
+    structured, structured_source = resolve_structured(structured_output)
     governor_actions: tuple = ()
     messages = list(messages or [])
     note = AuthorsNote()
@@ -651,6 +655,10 @@ async def inspect_prompt(
         **policy_echo(policy, policy_source),
         "actions": [a.to_dict() for a in governor_actions],
     }
+    result["structured_output"] = structured_echo(
+        structured, structured_source,
+        backend_key=backend_key, model_id=model_id,
+    )
     if include_preview:
         result["prompt_preview"] = build_preview(
             composed.messages, rendered, backend_key=backend_key, model_id=model_id

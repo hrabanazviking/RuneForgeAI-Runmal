@@ -27,6 +27,7 @@ from runmal.backends.errors import (
 )
 from runmal.backends.events import Done, TextDelta, UsageUpdate
 from runmal.backends.models import Capabilities, HealthStatus, ModelInfo
+from runmal.backends.structured import wire_payload
 from runmal.tokens import TokenQuality
 
 SAMPLERS = frozenset({
@@ -80,12 +81,13 @@ class OpenRouterChatBackend(ChatBackend):
         return ModelInfo(
             model_id=model_id, display_name=name, backend_key="openrouter",
             capabilities=Capabilities(
-                chat=True, streaming=True, context_length=context_length,
+                chat=True, streaming=True, structured_output=True,
+                context_length=context_length,
                 max_output_tokens=max_output,
                 token_count_quality=TokenQuality.PROVIDER,
                 supported_samplers=SAMPLERS))
 
-    async def chat_stream(self, messages, params, cancel):
+    async def chat_stream(self, messages, params, cancel, *, structured=None):
         if cancel.is_set():
             raise GenerationCancelled("generation cancelled")
         filtered, _w = self.filter_params(params)
@@ -98,6 +100,8 @@ class OpenRouterChatBackend(ChatBackend):
         for key, value in filtered.to_bag().items():
             if key in _WIRE_NAMES:
                 payload[_WIRE_NAMES[key]] = value
+        if structured is not None and structured.is_active():
+            payload.update(wire_payload(self.backend_key, structured))
         usage: UsageUpdate | None = None
         reason = "stop"
         try:

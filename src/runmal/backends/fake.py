@@ -12,7 +12,7 @@ import asyncio
 from collections.abc import AsyncIterator
 
 from runmal.backends.base import ChatBackend
-from runmal.backends.errors import BackendError, GenerationCancelled
+from runmal.backends.errors import BackendError, GenerationCancelled, InvalidRequest
 from runmal.backends.events import Done, Event, TextDelta, UsageUpdate
 from runmal.backends.messages import ChatMessage
 from runmal.backends.models import Capabilities, HealthStatus, ModelInfo
@@ -60,7 +60,14 @@ class FakeChatBackend(ChatBackend):
         messages: list[ChatMessage],
         params: SamplingParams,
         cancel: asyncio.Event,
+        *,
+        structured=None,
     ) -> AsyncIterator[Event]:
+        if structured is not None and structured.is_active():
+            raise InvalidRequest(
+                f"fake does not serve structured mode {structured.mode!r}: "
+                "scripted text cannot enforce a structured mode"
+            )
         _ = (messages, params)
         if self._fail_with is not None and self._fail_after is None:
             raise self._fail_with
