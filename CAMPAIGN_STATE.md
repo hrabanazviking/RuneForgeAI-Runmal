@@ -4857,3 +4857,91 @@ P-076 BANKED - Undo for chat
     entries per chat. No new defect
     found at banking. Next in roadmap
     order: P-077.
+P-077 BANKED - Long-chat performance
+    (Part V) - team-03 commit d882d5d
+    merged (no-ff) into
+    yrsa/two-mirrors-build as d0935d3,
+    banking heal 7fdbead, and pushed;
+    ls-remote verified (see WAVE_PLAN
+    update). Evidence (team-03 worktree
+    hidden_files/P077_EVIDENCE.md):
+    battery 17 passed, neighbours 316
+    passed / 25 failed (all 25 the
+    provisional-head pin class), team
+    full suite 3158 passed / 116 failed
+    / 4 skipped (all 116 the pin class:
+    103x '0041' == '0040', the rest
+    applied-list / positional revision
+    pins; zero behavioural, no s503).
+    Bench BUDGET-P077 (seed 77077):
+    ALL 8 GATES PASS - A latest page
+    130.12 ms (<=150), B deepest page
+    21.72 ms (<=200), B ratio 0.167
+    (<=1.5), C list_chats 6.41 ms
+    (<=300), D in-chat search 398.70 ms
+    (<=500), E composer trim 3.36 ms
+    (<=500), F append at 10k 5.14 ms
+    (<=200), F ratio 1.785 (<=2.0).
+    F_ratio was solved honestly via
+    the 0041 covering index (the append
+    density aggregate became a
+    covering-index stream); the budget
+    was NOT relaxed or re-worded.
+    Migration PROVISIONAL 0041 STANDS
+    as numbered (P-076 and P-078 took
+    none): m0041_message_order_index
+    adds ix_messages_chat_position on
+    messages(chat_id, position,
+    created_at, id); head now 0041,
+    chain 0039 -> 0040 -> 0041 as
+    separate registry tuples, 41
+    migrations, registry loads clean.
+    Merge: ONE conflict, in
+    chats/service.py append_message,
+    resolved as an additive union -
+    P-076 journal-before-mutate now
+    runs first, then P-077's density
+    aggregate fast path (the fast path
+    does NOT bypass journal or
+    provenance recording; composition
+    read and verified at banking).
+    Router auto-merged; grep-verified
+    get_history_page + paged
+    limit/offset/tail route, P-075
+    provenance routes, P-076 undo
+    routes, P-072 /chats/search, P-073
+    library/tags, P-074 databank
+    routes all coexist; py_compile
+    clean. Heal: 48 test files
+    re-pinned honestly to 0041 (exact
+    head pinned, positional pins
+    shifted, revision lists extended;
+    no-migration / absence asserts
+    reworked at equal strength to pin
+    0041 exactly-once as P-077's
+    m0041_message_order_index; P-075's
+    own shape test now pins 0040 at
+    [-2] plus the 0041 head - no
+    assertion weakened). Pre-heal
+    merged-tree suite: 3184 passed /
+    118 failed / 4 skipped - 117 the
+    pin class plus one s503 STT timing
+    failure (RTF under contention;
+    the confirmation run below was
+    clean on s503). Combined batteries
+    on the merged tree (P-077 battery +
+    every heal-affected file): 1900
+    passed / 0 failed. Forge
+    confirmation suite: 3302 passed /
+    4 skipped / 0 failed (= 3285 + 17,
+    exact). Honest limits: the
+    Pi-equivalents are the laptop x4.0
+    derating, NOT a Pi measurement - a
+    direct Pi bench run is still owed;
+    streamGeneration's full-history
+    fetch is deliberately left as the
+    generation context (product
+    semantics, reported-only, not this
+    slice's call). No new defect found
+    at banking. Next in roadmap order:
+    P-078.
