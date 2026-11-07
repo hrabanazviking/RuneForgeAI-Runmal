@@ -5471,3 +5471,60 @@ P-084 BANKED - Memory Summarise plugin (Part VI)
     /tmp/p084_confirm2.log).
     No heal needed at this banking.
     Next in roadmap order: P-085.
+P-085 BANKED - Vector Storage plugin (Part VI)
+    - team-03 commit 0289061 merged
+    (no-ff) into
+    yrsa/two-mirrors-build as 309e280
+    and pushed; ls-remote verified
+    309e2808aab5a936dbef273192e189de388fd444
+    (see WAVE_PLAN update). Evidence
+    (team-03 worktree
+    hidden_files/P085_EVIDENCE.md):
+    battery 24 passed, neighbours
+    213 passed, team full suite 3573
+    passed / 4 skipped / 0 failed
+    (= 3549 P-083 confirmation +
+    24, exact, on its base). Slice:
+    src/runmal/plugins/vector_storage.py
+    (new - per-chat/character vector
+    memory on the founding sqlite-vec
+    store, scoped doc ids,
+    over-fetch-then-scope-filter
+    search, inspectable status),
+    tests/test_p085_vector_storage.py
+    (24 tests),
+    docs/VECTOR_STORAGE_PLUGIN_2026-11-07.md,
+    clean-room log append. 4 files.
+    Migration: NONE (head stays
+    0041; "0042" not in MIGRATIONS,
+    pinned by battery).
+    build_registry / create_app
+    deliberately unchanged by
+    design. Defects: none in
+    pre-existing code found; no
+    discovered bug left unfixed.
+    Design honesty: the slots hook
+    carries no query text, so it
+    offers the scoped indexed-count /
+    provenance slot rather than fake
+    retrieval; the search API does
+    real retrieval. Keyword fallback
+    labelled keyword_fallback with
+    provenance None; local provider
+    labelled lexical_vector.
+    Merge conflict only in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    (append-vs-append), resolved
+    keeping BOTH the P-084 and
+    P-085 entries exactly once;
+    py_compile clean on the merged
+    tree. Combined batteries on the
+    merged tree: 102 passed / 0
+    failed (= 24 + 26 + 52 exact).
+    Forge confirmation suite:
+    3599 passed / 4 skipped / 0
+    failed, EXIT 0 (= 3575 P-084
+    confirmation + 24, exact; log
+    /tmp/p085_confirm.log).
+    No heal needed at this banking.
+    Next in roadmap order: P-086.
