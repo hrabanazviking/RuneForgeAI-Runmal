@@ -5528,3 +5528,67 @@ P-085 BANKED - Vector Storage plugin (Part VI)
     /tmp/p085_confirm.log).
     No heal needed at this banking.
     Next in roadmap order: P-086.
+P-086 BANKED - Translate plugin (Part VI)
+    - team-01 commit 99b759d merged
+    (no-ff) into
+    yrsa/two-mirrors-build as 24621f1
+    and pushed; ls-remote verified
+    24621f1d4fadd98f6a0dc9508c5b93faee4b0a82
+    (see WAVE_PLAN update). Evidence
+    (team-01 worktree
+    hidden_files/P086_EVIDENCE.md):
+    battery 26 passed, neighbours
+    239 passed, banked P-084 / P-085
+    batteries 50 passed read-only in
+    the forge, team full suite 3575
+    passed / 4 skipped / 0 failed
+    (= 3549 P-083 confirmation +
+    26, exact, on its base). Slice:
+    src/runmal/plugins/translate.py
+    (new - per-chat translation in
+    flight via a messages-stage
+    prompt hook and as a derived
+    inspectable view, deterministic
+    road labelled deterministic-1,
+    model road via the generation
+    service with plugin_events=False,
+    originals never changed),
+    tests/test_p086_translate_plugin.py
+    (26 tests),
+    docs/TRANSLATE_PLUGIN_2026-11-07.md,
+    clean-room log append. 4 files.
+    Migration: NONE (head stays
+    0041; "0042" not in MIGRATIONS,
+    pinned by battery).
+    build_registry / create_app
+    deliberately unchanged by
+    design. Defects: none found in
+    the finisher review; no
+    discovered bug left unfixed.
+    Design honesty: the deterministic
+    default road is a tiny authored
+    lexicon over es/fr/de with a
+    [deterministic:<target>] marker,
+    provider deterministic-1, never
+    presented as real translation;
+    the source language is always
+    configured, never detected;
+    config and the derived store are
+    in-memory and lost on restart,
+    stated plainly.
+    Merge conflict only in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    (append-vs-append), resolved
+    keeping the P-084, P-085 and
+    P-086 entries exactly once;
+    py_compile clean on the merged
+    tree. Combined batteries on the
+    merged tree: 76 passed / 0
+    failed (= 26 + 24 + 26 exact).
+    Forge confirmation suite:
+    3625 passed / 4 skipped / 0
+    failed, EXIT 0 (= 3599 P-085
+    confirmation + 26, exact; log
+    /tmp/p086_confirm.log).
+    No heal needed at this banking.
+    Next in roadmap order: P-087.
