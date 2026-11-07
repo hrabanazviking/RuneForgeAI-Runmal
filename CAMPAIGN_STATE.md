@@ -5251,3 +5251,66 @@ P-081 BANKED - Plugin API v1 (Part VI
     No heal needed at this banking.
     PART VI OPENED. Next in roadmap
     order: P-082.
+P-082 BANKED - Plugin sandbox (Part VI)
+    - team-02 commit 0737e4e merged
+    (no-ff) into
+    yrsa/two-mirrors-build as 6b77c19
+    and pushed; ls-remote verified
+    (see WAVE_PLAN update). Evidence
+    (team-02 worktree
+    hidden_files/P082_EVIDENCE.md):
+    battery 54 passed, neighbours
+    87 passed, team full suite 3467
+    passed / 4 skipped / 0 failed
+    (= 3413 P-080 confirmation + 54
+    exact). Slice:
+    src/runmal/sandbox/ package
+    (policy - grant derivation from
+    manifest-shaped data; guard -
+    guarded context; __init__),
+    tests/test_p082_plugin_sandbox.py
+    (54 tests),
+    docs/PLUGIN_SANDBOX_2026-11-07.md,
+    docs/adr/0008-plugin-sandbox.md
+    (new ADR), clean-room log
+    append. 7 files, +1372/-0.
+    Migration: NONE (head stays
+    0041; battery pins 0042 not in
+    MIGRATIONS, import-only).
+    Design note: the slice was built
+    on the P-080 base (a53c37a) by
+    design, pre-P-081 banking, and
+    deliberately does NOT import
+    runmal.plugins - it derives
+    grants from manifest-shaped
+    data; v1 surface permissions
+    grant NO resource access, so a
+    v1 plugin's resource grant set
+    is empty by construction.
+    Reconciliation at banking
+    verified a no-op: no cross
+    imports in either direction at
+    the merged tree (only a
+    docstring mention in
+    policy.py). Ruff clean (the
+    evidence ruff log tail is the
+    pre-fix run; live re-check at
+    banking: all checks passed).
+    Merge: ONE conflict, in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    (append-vs-append, as briefed),
+    resolved keeping BOTH entries
+    exactly once - the P-081 and
+    P-082 clean-room entries both
+    kept; no .py conflicts.
+    Combined batteries on the
+    merged tree (P-082 + P-081):
+    84 passed / 0 failed
+    (= 54 + 30 exact). Forge
+    confirmation suite: 3497
+    passed / 4 skipped / 0 failed
+    (= 3443 P-081 confirmation +
+    54, exact; log
+    hidden_files/p082_forge_fullsuite.log).
+    No heal needed at this banking.
+    Next in roadmap order: P-083.
