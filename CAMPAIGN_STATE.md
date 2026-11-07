@@ -5592,3 +5592,70 @@ P-086 BANKED - Translate plugin (Part VI)
     /tmp/p086_confirm.log).
     No heal needed at this banking.
     Next in roadmap order: P-087.
+
+P-087 BANKED - Image Generation plugin (Part VI)
+    - team-02 commit 41611f3 merged
+    (no-ff) into
+    yrsa/two-mirrors-build as 6108b89
+    and pushed; ls-remote verified
+    6108b8982605aaa5a9be2d0a6f7980c10033f920
+    (see WAVE_PLAN update). Evidence
+    (team-02 worktree
+    hidden_files/P087_EVIDENCE.md):
+    battery 25 passed, neighbours
+    229 passed, team full suite 3624
+    passed / 4 skipped / 0 failed
+    (= 3599 P-085 confirmation +
+    25, exact, on its base). Slice:
+    src/runmal/plugins/image_generation.py
+    (new - prompt-from-scene plus
+    manual prompt image generation,
+    local diffusion endpoints first,
+    per-chat opt-in enablement,
+    deterministic provider labelled
+    deterministic_local, landed
+    images ride the P-023 character
+    asset machinery),
+    tests/test_p087_image_generation.py
+    (25 tests),
+    docs/IMAGE_GENERATION_PLUGIN_2026-11-07.md,
+    clean-room log append. 4 files.
+    Migration: NONE (head stays
+    0041; "0042" not in MIGRATIONS,
+    pinned by battery).
+    build_registry / create_app
+    deliberately unchanged by
+    design. Defects: none found in
+    the slice; no discovered bug
+    left unfixed.
+    Design honesty: the deterministic
+    provider is the default only
+    because no diffusion endpoint
+    is configured in-tree and is
+    labelled road=deterministic_local
+    everywhere; the local provider
+    was tested solely through an
+    injected fake transport, no
+    socket touched; landing requires
+    a character-bound chat (P-023 is
+    character-scoped) and unlanded
+    records state the reason;
+    enablement and the generation
+    ledger are process-local and
+    lost on restart, stated plainly.
+    Merge conflict only in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    (append-vs-append), resolved
+    keeping the P-086 and P-087
+    entries exactly once;
+    py_compile clean on the merged
+    tree. Combined batteries on the
+    merged tree: 51 passed / 0
+    failed (= 26 + 25 exact).
+    Forge confirmation suite:
+    3650 passed / 4 skipped / 0
+    failed, EXIT 0 (= 3625 P-086
+    confirmation + 25, exact; log
+    /tmp/p087_confirm.log).
+    No heal needed at this banking.
+    Next in roadmap order: P-088.
