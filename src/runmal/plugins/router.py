@@ -30,8 +30,10 @@ HTTP enable/disable survives a restart like a manager call.
 
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from runmal.db.deps import get_owner_id, get_session
 from runmal.plugins import service
 from runmal.plugins.api import UI_SLOTS
 from runmal.plugins.cards import permission_card
@@ -240,3 +242,149 @@ async def plugin_acknowledge(plugin_id: str):
         raise _visible(exc) from exc
     _sync(plugin_id)
     return service.record_detail_to_dict(record, registry)
+
+
+# -- Quick Replies surface (P-089) ---------------------------------------
+# Stored, owner-scoped quick-reply definitions + one-tap
+# execution, in the house router idiom (session + owner deps,
+# ValueError -> 422 via _visible, unknown ids -> 404, create
+# -> 201). The store and the execution road live in
+# runmal.plugins.quick_replies; imports are lazy so this
+# router's import graph is unchanged at module load.
+
+
+
+@router.get("/quick-replies")
+async def quick_replies_list(
+    chat_id: str | None = None,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    from runmal.plugins import quick_replies as qr
+
+    try:
+        return qr.list_replies(user_id, chat_id=chat_id)
+    except ValueError as exc:
+        raise _visible(exc) from exc
+
+
+@router.post("/quick-replies", status_code=status.HTTP_201_CREATED)
+async def quick_replies_create(
+    body: dict,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    from runmal.chats import service as chats_svc
+    from runmal.plugins import quick_replies as qr
+
+    chat_id = body.get("chat_id") if isinstance(body, dict) else None
+    if chat_id is not None:
+        if await chats_svc.get_chat(session, user_id, chat_id) is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"unknown chat: {chat_id}")
+    try:
+        return qr.create_reply(user_id, body)
+    except ValueError as exc:
+        raise _visible(exc) from exc
+
+
+@router.get("/quick-replies/executions")
+async def quick_replies_executions(
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    from runmal.plugins import quick_replies as qr
+
+    try:
+        return qr.list_executions(user_id)
+    except ValueError as exc:
+        raise _visible(exc) from exc
+
+
+@router.get("/quick-replies/{reply_id}")
+async def quick_replies_detail(
+    reply_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    from runmal.plugins import quick_replies as qr
+
+    try:
+        reply = qr.get_reply(user_id, reply_id)
+    except ValueError as exc:
+        raise _visible(exc) from exc
+    if reply is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"unknown quick reply: {reply_id}")
+    return reply
+
+
+@router.put("/quick-replies/{reply_id}")
+async def quick_replies_update(
+    reply_id: str,
+    body: dict,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    from runmal.chats import service as chats_svc
+    from runmal.plugins import quick_replies as qr
+
+    chat_id = body.get("chat_id") if isinstance(body, dict) else None
+    if chat_id is not None:
+        if await chats_svc.get_chat(session, user_id, chat_id) is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"unknown chat: {chat_id}")
+    try:
+        reply = qr.update_reply(user_id, reply_id, body)
+    except ValueError as exc:
+        raise _visible(exc) from exc
+    if reply is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"unknown quick reply: {reply_id}")
+    return reply
+
+
+@router.delete("/quick-replies/{reply_id}")
+async def quick_replies_delete(
+    reply_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    from runmal.plugins import quick_replies as qr
+
+    try:
+        deleted = qr.delete_reply(user_id, reply_id)
+    except ValueError as exc:
+        raise _visible(exc) from exc
+    if not deleted:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"unknown quick reply: {reply_id}")
+    return {"deleted": True, "id": reply_id}
+
+
+@router.post("/quick-replies/{reply_id}/execute")
+async def quick_replies_execute(
+    reply_id: str,
+    body: dict,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    from runmal.plugins import quick_replies as qr
+
+    chat_id = body.get("chat_id") if isinstance(body, dict) else None
+    if not chat_id:
+        raise _visible(ValueError("request body must carry a 'chat_id'"))
+    try:
+        record = await qr.execute_reply(session, user_id, chat_id, reply_id)
+    except ValueError as exc:
+        raise _visible(exc) from exc
+    if record is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="unknown quick reply or chat")
+    return record
