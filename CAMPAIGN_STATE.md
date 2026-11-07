@@ -4048,3 +4048,46 @@ P-055 BANKED - macros: documented text-macro engine
     evidence exactly.
     Next in roadmap order: P-056 (authors note
     depth, team-03).
+
+P-056 BANKED - authors note depth: per-chat note
+    with depth/frequency controls honoured by the
+    composer/inspector - team-03 commit 46f20e8
+    merged (no-ff, clean) into
+    yrsa/two-mirrors-build as c1ec2f1 and pushed;
+    ls-remote verified
+    c1ec2f1662eaba74a530915a19274a44a7c760e4.
+    Evidence (team-03 worktree
+    hidden_files/P056_EVIDENCE.md + logs):
+    battery + neighbours combined 196 passed
+    (battery 59 tests), team full suite 2567
+    passed / 4 skipped / 0 failed on its base.
+    Forge confirmation suite at the merged tree:
+    2597 passed / 4 skipped / 0 failed
+    (= 2538 + 59, exact). Migration 0034 STANDS
+    as numbered (P-055 took no migration):
+    m0034_chat_authors_note adds
+    chats.authors_note_json; the merged registry
+    chain ends 0033 -> 0034 and the merged head
+    is 0034. The 30 head-pin test files moved
+    0033 -> 0034 in-slice (no assertion weakened).
+    Merge was clean: P-055 and P-056 touched
+    disjoint file sets, so no clean-room log or
+    registry conflict arose.
+    Slice: prompt/authors_note.py -
+    AuthorsNote(text, depth=4, frequency=1,
+    enabled, role) with strict note_from_data /
+    note_to_data; chats get/set authors-note
+    API (owner-checked, 422 invalid / 404
+    missing); the inspector loads the stored
+    note when chat_id is given, the slot lands
+    after history with its depth honoured, a
+    frequency-inactive note surfaces as trace
+    discard reason authors_note_frequency, and
+    the note text never appears in trace, echo,
+    or events (metadata only).
+    Carried: the inspector is the in-tree
+    composition path; no live-generation send
+    wiring is claimed. The tools compose_preview
+    ephemeral note remains a separate feature.
+    Next in roadmap order: P-057 (post-history
+    instructions).
