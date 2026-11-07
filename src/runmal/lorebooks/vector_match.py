@@ -64,6 +64,20 @@ activation), :func:`resolve_lore_embedding_backend` builds THAT
 profile's backend instead (Ollama / OpenAI-compatible / Aesir /
 fake, per ``backends.profiles.build_embedding_backend``); the
 local backend is only the no-profile default.
+
+Stored entry-vector cache (P-046, closing the P-041 debt in
+part): :class:`EntryVectorCache` is an opt-in, in-memory,
+per-process bounded LRU the matchers accept via ``cache=``.
+On a cache hit only the query and changed/new candidate texts
+are embedded; cached candidate vectors are reused. Cache keys
+carry the embedding space (entry id, embed-text hash,
+provider, model, dims), so a space switch misses structurally
+and spaces never mix (INV-019). The query vector is never
+cached. This is deliberately only the in-process half of the
+debt: there is NO persistent or database-backed vector store
+in this slice (no migration was added); a cache dies with
+its process, and a cold cache behaves exactly like the
+uncached path.
 """
 
 from __future__ import annotations
@@ -71,7 +85,9 @@ from __future__ import annotations
 import hashlib
 import math
 import re
+from collections import OrderedDict
 from dataclasses import dataclass, field, replace
+from functools import lru_cache
 
 from runmal.backends.embeddings import (
     EmbeddingBackend,
@@ -114,6 +130,7 @@ __all__ = [
     "match_with_vectors",
     "match_vectorised",
     "match_vectorised_sync",
+    "EntryVectorCache",
     "resolve_lore_embedding_backend",
 ]
 
@@ -230,6 +247,141 @@ def vector_candidates(entries) -> list[VectorCandidate]:
     return out
 
 
+
+# --- Stored entry-vector cache (P-046) ---------------------------------------
+
+
+def _embed_text_sha256(text: str) -> str:
+    return hashlib.sha256(str(text).encode("utf-8")).hexdigest()
+
+
+class EntryVectorCache:
+    """In-memory stored-vector cache (P-046; P-041 debt, partial).
+
+    Key shape (design-fixed): ``(entry_id, sha256(embed_text),
+    provider, model, dims)``. Provenance is IN the key, so a
+    provider/model/dims switch misses instead of ever mixing
+    spaces (INV-019); an edit to an entry's name/keys/content
+    changes its embed text, hence its hash, hence its key --
+    invalidation is by content hash, with no explicit hooks.
+    The query vector is NEVER stored here: callers only ever
+    ``put`` candidate vectors. Bounded LRU (default 20,000
+    vectors, per the P-046 design): eviction never changes
+    outcomes, only speed. In-memory and per-process ONLY: no
+    DB/persistent store exists yet (the recorded remainder
+    of the P-041 debt). ``hits``/``misses`` count ``get`` calls.
+    """
+
+    def __init__(self, maxsize: int = 20000):
+        if isinstance(maxsize, bool) or not isinstance(maxsize, int) or maxsize < 1:
+            raise ValueError("cache maxsize must be an int >= 1")
+        self._maxsize = maxsize
+        self._store: OrderedDict = OrderedDict()
+        self._dims_by_space: dict = {}
+        self.hits = 0
+        self.misses = 0
+
+    @property
+    def maxsize(self) -> int:
+        return self._maxsize
+
+    def __len__(self) -> int:
+        return len(self._store)
+
+    def clear(self) -> None:
+        self._store.clear()
+        self._dims_by_space.clear()
+        self.hits = 0
+        self.misses = 0
+
+    def _key(self, entry_id, embed_text, provider, model, dims):
+        return (
+            str(entry_id),
+            _embed_text_sha256(embed_text),
+            str(provider),
+            str(model),
+            int(dims),
+        )
+
+    def get(self, entry_id, embed_text, provider, model, dims=None):
+        """Cached vector for one entry in one space, or None.
+
+        ``dims`` may be omitted when the caller does not know
+        the space's dims up front (some backends report dims=0
+        in ``model_info``); the dims of the last vector stored
+        for the same (entry, text, provider, model) are then
+        used. A dims mismatch when dims IS given is a miss.
+        """
+        if dims:
+            key = self._key(entry_id, embed_text, provider, model, dims)
+        else:
+            idx = (
+                str(entry_id),
+                _embed_text_sha256(embed_text),
+                str(provider),
+                str(model),
+            )
+            known = self._dims_by_space.get(idx)
+            if known is None:
+                self.misses += 1
+                return None
+            key = self._key(entry_id, embed_text, provider, model, known)
+        vector = self._store.get(key)
+        if vector is None:
+            self.misses += 1
+            return None
+        self._store.move_to_end(key)
+        self.hits += 1
+        return vector
+
+    def put(self, entry_id, embed_text, vector, provider, model, dims=None):
+        """Store one candidate vector under its space-tagged key."""
+        vec = tuple(vector)
+        key = self._key(entry_id, embed_text, provider, model, dims or len(vec))
+        self._store[key] = vec
+        self._store.move_to_end(key)
+        self._dims_by_space[(key[0], key[1], key[2], key[3])] = key[4]
+        while len(self._store) > self._maxsize:
+            old_key, _ = self._store.popitem(last=False)
+            idx = (old_key[0], old_key[1], old_key[2], old_key[3])
+            if self._dims_by_space.get(idx) == old_key[4]:
+                del self._dims_by_space[idx]
+        return vec
+
+
+def _space_from_provenance_dict(provenance) -> tuple | None:
+    if not provenance:
+        return None
+    provider = provenance.get("provider")
+    model = provenance.get("model")
+    if not provider or not model:
+        return None
+    return (str(provider), str(model), provenance.get("dims") or None)
+
+
+def _declared_space(owner) -> tuple | None:
+    """(provider, model, dims|None) an embedder/backend declares."""
+    if owner is None:
+        return None
+    prov = getattr(owner, "provenance", None)
+    if prov is not None:
+        try:
+            return (str(prov.provider), str(prov.model), prov.dims or None)
+        except Exception:
+            pass
+    try:
+        info = owner.model_info()
+    except Exception:
+        return None
+    if info is None or not getattr(info, "provider", None) or not getattr(info, "model_id", None):
+        return None
+    return (str(info.provider), str(info.model_id), getattr(info, "dims", None) or None)
+
+
+def _sync_embedder_space(embed_texts) -> tuple | None:
+    return _declared_space(getattr(embed_texts, "__self__", None))
+
+
 # --- Scoring (pure) ----------------------------------------------------------
 
 
@@ -239,6 +391,22 @@ def cosine_similarity(a, b) -> float:
         raise ValueError(f"vector dims differ: {len(a)} != {len(b)}")
     dot = sum(x * y for x, y in zip(a, b, strict=True))
     norm_a = math.sqrt(sum(x * x for x in a))
+    norm_b = math.sqrt(sum(y * y for y in b))
+    if norm_a == 0 or norm_b == 0:
+        return 0.0
+    return dot / (norm_a * norm_b)
+
+
+def _cosine_precomputed_query_norm(a, norm_a: float, b) -> float:
+    """``cosine_similarity`` with the query norm hoisted (P-046).
+
+    Arithmetic identical to :func:`cosine_similarity` (same dot
+    order, same norm_b, same ``dot / (norm_a * norm_b)``);
+    ``match_with_vectors`` uses this so the query norm is
+    computed once per tick, not once per candidate (scout-
+    indicted). Callers guarantee ``len(a) == len(b)``.
+    """
+    dot = sum(x * y for x, y in zip(a, b, strict=True))
     norm_b = math.sqrt(sum(y * y for y in b))
     if norm_a == 0 or norm_b == 0:
         return 0.0
@@ -373,11 +541,14 @@ def match_with_vectors(
     if not candidates:
         return VectorMatchOutcome(candidates=0)
     scores: dict[str, float] = {}
+    query_norm = math.sqrt(sum(x * x for x in query_vector))
     for candidate in candidates:
         vector = entry_vectors.get(candidate.id)
         if vector is None or len(vector) != len(query_vector):
             continue
-        scores[candidate.id] = cosine_similarity(query_vector, vector)
+        scores[candidate.id] = _cosine_precomputed_query_norm(
+            query_vector, query_norm, vector
+        )
     if not scores:
         return _fallback_outcome(
             entries, messages, settings=settings, external_context=external_context,
@@ -428,6 +599,7 @@ def match_vectorised_sync(
     settings=None,
     external_context=(),
     keyword_fallback: bool = True,
+    cache: EntryVectorCache | None = None,
 ) -> VectorMatchOutcome:
     """Sync matcher for the sync preview path.
 
@@ -436,6 +608,19 @@ def match_vectorised_sync(
     ``EmbeddingResult`` or a plain sequence of vectors; returning
     None or raising means embeddings are unavailable and the tick
     degrades to the keyword fallback.
+
+    ``cache`` (P-046): optional :class:`EntryVectorCache`. When
+    the embedder's space is known up front (a bound backend
+    method such as ``LocalEmbeddingBackend.embed_sync`` declares
+    one), cached candidate vectors are reused and only the query
+    plus cache-miss candidate texts are embedded, in ONE batched
+    call; the result provenance is checked against the cache
+    space and a mismatch discards the cached vectors and
+    re-embeds everything rather than mixing spaces (INV-019).
+    When the space cannot be known up front, nothing is reused
+    (fresh vectors are still stored, tagged with the result
+    provenance when it carries one). ``cache=None`` (the
+    default) is exactly the pre-P-046 behaviour.
     """
     settings = settings or ScanSettings.normalised()
     candidates = vector_candidates(entries)
@@ -444,8 +629,20 @@ def match_vectorised_sync(
     query_text = _window_query_text(messages, settings, external_context)
     if not query_text.strip():
         return VectorMatchOutcome(candidates=len(candidates))
+    texts = [c.embed_text for c in candidates]
+    space = _sync_embedder_space(embed_texts) if cache is not None else None
+    cached_by_idx: dict[int, tuple] = {}
+    miss_idx: list[int] = list(range(len(candidates)))
+    if cache is not None and space is not None:
+        miss_idx = []
+        for i, cand in enumerate(candidates):
+            vec = cache.get(cand.id, texts[i], space[0], space[1], space[2])
+            if vec is None:
+                miss_idx.append(i)
+            else:
+                cached_by_idx[i] = vec
     try:
-        result = embed_texts([query_text] + [c.embed_text for c in candidates])
+        result = embed_texts([query_text] + [texts[i] for i in miss_idx])
     except Exception:
         result = None
     if result is None:
@@ -460,18 +657,53 @@ def match_vectorised_sync(
     else:
         vectors = result
         provenance = None
-    if len(vectors) != 1 + len(candidates):
+    if len(vectors) != 1 + len(miss_idx):
         return _fallback_outcome(
             entries, messages, settings=settings, external_context=external_context,
             keyword_fallback=keyword_fallback, reason="vector_count_mismatch",
             provenance=provenance, scores={}, ranked=(), candidates=len(candidates),
         )
-    entry_vectors = {c.id: vectors[i + 1] for i, c in enumerate(candidates)}
+    actual = _space_from_provenance_dict(provenance) or space
+    if cached_by_idx and actual is not None and space is not None and actual[:2] != space[:2]:
+        # Embedder answered from a different space than the cache
+        # was read under: never mix -- discard, re-embed all.
+        cached_by_idx = {}
+        miss_idx = list(range(len(candidates)))
+        try:
+            result = embed_texts([query_text] + texts)
+        except Exception:
+            result = None
+        if result is None:
+            return _fallback_outcome(
+                entries, messages, settings=settings, external_context=external_context,
+                keyword_fallback=keyword_fallback, reason="embeddings_unavailable",
+                provenance=None, scores={}, ranked=(), candidates=len(candidates),
+            )
+        if isinstance(result, EmbeddingResult):
+            vectors = result.vectors
+            provenance = result.provenance.to_dict()
+        else:
+            vectors = result
+            provenance = None
+        if len(vectors) != 1 + len(candidates):
+            return _fallback_outcome(
+                entries, messages, settings=settings, external_context=external_context,
+                keyword_fallback=keyword_fallback, reason="vector_count_mismatch",
+                provenance=provenance, scores={}, ranked=(), candidates=len(candidates),
+            )
+        actual = _space_from_provenance_dict(provenance) or actual
+    if cache is not None and actual is not None:
+        for j, i in enumerate(miss_idx):
+            cache.put(candidates[i].id, texts[i], vectors[j + 1], actual[0], actual[1], actual[2])
+    entry_vectors = {candidates[i].id: vec for i, vec in cached_by_idx.items()}
+    for j, i in enumerate(miss_idx):
+        entry_vectors[candidates[i].id] = vectors[j + 1]
     return match_with_vectors(
         entries, messages, vectors[0], entry_vectors, provenance=provenance,
         threshold=threshold, max_entries=max_entries, settings=settings,
         external_context=external_context, keyword_fallback=keyword_fallback,
     )
+
 
 
 async def match_vectorised(
@@ -484,6 +716,7 @@ async def match_vectorised(
     settings=None,
     external_context=(),
     keyword_fallback: bool = True,
+    cache: EntryVectorCache | None = None,
 ) -> VectorMatchOutcome:
     """Async matcher on the founding RAG stack (S304 seam).
 
@@ -492,6 +725,13 @@ async def match_vectorised(
     (or any backend exception) degrades to the keyword fallback
     with the reason recorded -- never a crash, never a silently
     mixed space (all compared vectors come from this one call).
+
+    ``cache`` (P-046): optional :class:`EntryVectorCache`; the
+    same contract as :func:`match_vectorised_sync` -- only the
+    query and cache-miss candidates are embedded, the backend's
+    declared space (``model_info``) keys the cache, and the
+    result provenance is verified before any cached vector is
+    used. ``cache=None`` (default) is pre-P-046 behaviour.
     """
     settings = settings or ScanSettings.normalised()
     candidates = vector_candidates(entries)
@@ -506,9 +746,21 @@ async def match_vectorised(
     query_text = _window_query_text(messages, settings, external_context)
     if not query_text.strip():
         return VectorMatchOutcome(candidates=len(candidates))
+    texts = [c.embed_text for c in candidates]
+    space = _declared_space(backend) if cache is not None else None
+    cached_by_idx: dict[int, tuple] = {}
+    miss_idx: list[int] = list(range(len(candidates)))
+    if cache is not None and space is not None:
+        miss_idx = []
+        for i, cand in enumerate(candidates):
+            vec = cache.get(cand.id, texts[i], space[0], space[1], space[2])
+            if vec is None:
+                miss_idx.append(i)
+            else:
+                cached_by_idx[i] = vec
     try:
         result = await embed_or_fallback(
-            backend, [query_text] + [c.embed_text for c in candidates]
+            backend, [query_text] + [texts[i] for i in miss_idx]
         )
     except Exception as exc:  # a broken backend degrades, never crashes lore
         return _fallback_outcome(
@@ -527,18 +779,54 @@ async def match_vectorised(
         )
     vectors = result.vectors
     provenance = result.provenance.to_dict()
-    if len(vectors) != 1 + len(candidates):
+    if len(vectors) != 1 + len(miss_idx):
         return _fallback_outcome(
             entries, messages, settings=settings, external_context=external_context,
             keyword_fallback=keyword_fallback, reason="vector_count_mismatch",
             provenance=provenance, scores={}, ranked=(), candidates=len(candidates),
         )
-    entry_vectors = {c.id: vectors[i + 1] for i, c in enumerate(candidates)}
+    actual = _space_from_provenance_dict(provenance) or space
+    if cached_by_idx and actual is not None and space is not None and actual[:2] != space[:2]:
+        cached_by_idx = {}
+        miss_idx = list(range(len(candidates)))
+        try:
+            result = await embed_or_fallback(backend, [query_text] + texts)
+        except Exception as exc:
+            return _fallback_outcome(
+                entries, messages, settings=settings, external_context=external_context,
+                keyword_fallback=keyword_fallback,
+                reason=f"backend_error:{type(exc).__name__}",
+                provenance=None, scores={}, ranked=(), candidates=len(candidates),
+            )
+        if isinstance(result, FtsFallbackResult):
+            return _fallback_outcome(
+                entries, messages, settings=settings, external_context=external_context,
+                keyword_fallback=keyword_fallback,
+                reason=result.reason or "embeddings_unavailable",
+                provenance=result.provenance.to_dict() if result.provenance else None,
+                scores={}, ranked=(), candidates=len(candidates),
+            )
+        vectors = result.vectors
+        provenance = result.provenance.to_dict()
+        if len(vectors) != 1 + len(candidates):
+            return _fallback_outcome(
+                entries, messages, settings=settings, external_context=external_context,
+                keyword_fallback=keyword_fallback, reason="vector_count_mismatch",
+                provenance=provenance, scores={}, ranked=(), candidates=len(candidates),
+            )
+        actual = _space_from_provenance_dict(provenance) or actual
+    if cache is not None and actual is not None:
+        for j, i in enumerate(miss_idx):
+            cache.put(candidates[i].id, texts[i], vectors[j + 1], actual[0], actual[1], actual[2])
+    entry_vectors = {candidates[i].id: vec for i, vec in cached_by_idx.items()}
+    for j, i in enumerate(miss_idx):
+        entry_vectors[candidates[i].id] = vectors[j + 1]
     return match_with_vectors(
         entries, messages, vectors[0], entry_vectors, provenance=provenance,
         threshold=threshold, max_entries=max_entries, settings=settings,
         external_context=external_context, keyword_fallback=keyword_fallback,
     )
+
 
 
 # --- Deterministic local provider ----------------------------------------------
@@ -578,6 +866,9 @@ def _tokens(text: str) -> list[str]:
     ]
 
 
+# P-046: memoised -- this pure sha256 projection was called per
+# token/trigram per text per tick (scout-indicted hot spot).
+@lru_cache(maxsize=65536)
 def _feature_bucket(feature: str, dims: int) -> tuple[int, float]:
     digest = hashlib.sha256(feature.encode("utf-8")).digest()
     bucket = int.from_bytes(digest[:4], "little") % dims

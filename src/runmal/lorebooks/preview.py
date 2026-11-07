@@ -133,6 +133,7 @@ def preview_activation(
     vector_hit_ids: set[str] | None = None,
     vector_match=None,
     vector_embedder=None,
+    vector_cache=None,
     vector_threshold=None,
     vector_max_entries=None,
     scan_mode: str | None = None,
@@ -164,7 +165,10 @@ def preview_activation(
     built-in) runs the matcher over this tick's window, honouring
     ``vector_threshold`` / ``vector_max_entries``. Async callers
     precompute the outcome with ``match_vectorised`` and pass it
-    as ``vector_match``. Either way the result gains a
+    as ``vector_match``. ``vector_cache`` (P-046) is an optional
+    EntryVectorCache forwarded to the sync matcher; the default
+    None keeps the pre-P-046 behaviour exactly. Either way the
+    result gains a
     ``vector_match`` summary (mode, degraded, fallback reason,
     provenance, ranked scores, cap count) when the book holds
     vectorised candidates, every row gains ``vector_score`` (the
@@ -216,6 +220,7 @@ def preview_activation(
             max_entries=vector_max_entries,
             settings=settings,
             external_context=external_texts,
+            cache=vector_cache,
         )
         vector_hit_ids = set(vector_match.hit_ids)
         vector_fallback_ids = set(vector_match.fallback_ids)

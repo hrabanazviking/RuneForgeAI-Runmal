@@ -566,3 +566,18 @@ source in §0(2) and appends its entry here:
   Voxta source code was read and no file was downloaded;
   the slice test entries are authored fresh in the test
   module (P-005 discipline).
+- **P-046 (2026-11-06, own tree only):** no new external
+  source and no mirror reading. The 10,000-entry scan
+  performance pass (a budget stated in-tree before measuring,
+  a deterministic synthetic book generated from an embedded
+  word list, a per-window token index over Runmal's own S202
+  scan core, and an in-process stored-vector cache closing
+  the in-process half of P-041's recorded debt) is built
+  entirely from the roadmap line and the P-046 scout/design
+  documents written in-tree for this slice. The budget,
+  derating method, cache key shape and equivalence-oracle
+  method are Runmal's own design for the roadmap line, not a
+  reproduction of any mirror behaviour. No SillyTavern or
+  Voxta source code was read and no file was downloaded; the
+  slice's test entries are authored fresh in the test modules
+  (P-005 discipline).
