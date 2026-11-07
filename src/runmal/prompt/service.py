@@ -274,3 +274,91 @@ def structured_echo(
         "truth": truth,
         "warnings": warnings,
     }
+# ---------------- P-062: model profile resolution ----------------
+
+from runmal.prompt.model_profiles import (  # noqa: E402
+    ModelProfile,
+    get_profile,
+    partition_profile_sampler,
+    profile_from_data,
+)
+
+
+def resolve_model_profile(
+    explicit: object | None = None,
+) -> tuple[ModelProfile | None, str]:
+    """Resolve the model profile for a composition.
+
+    - ``explicit`` as a string names a builtin profile
+      (ValueError on an unknown name propagates to the caller,
+      which maps it to 422);
+    - ``explicit`` as a dict is full profile data, validated by
+      profile_from_data;
+    - otherwise no profile is in play: ``(None, "none")``.
+
+    Returns ``(profile, source)`` with source "explicit" | "none"
+    (a supplied profile is always an explicit act; there is no
+    stored tier in P-062, so no other source exists yet).
+    """
+    if isinstance(explicit, str):
+        return get_profile(explicit), "explicit"
+    if explicit is not None:
+        return profile_from_data(explicit), "explicit"
+    return None, "none"
+
+
+def model_profile_echo(
+    profile: ModelProfile | None,
+    source: str,
+    *,
+    field_sources: dict | None = None,
+) -> dict:
+    """The ``model_profile`` echo for an inspect result.
+
+    Metadata only (S214): profile name/source, the effective
+    model/backend NAMES, per-field resolution sources, extension
+    KEY names, and the sampler partition as key names plus greyed
+    truth rows. No prompt content, no sampler values and no
+    extension values ever enter the echo.
+    """
+    if profile is None:
+        return {
+            "applied": False,
+            "name": None,
+            "source": source,
+            "model_id": None,
+            "backend_key": None,
+            "fields": {},
+            "extension_keys": [],
+            "sampler": {
+                "partitioned": False,
+                "offered": [],
+                "greyed": [],
+                "carried_unknown": [],
+                "unpartitioned": [],
+            },
+        }
+    part = partition_profile_sampler(profile)
+    return {
+        "applied": True,
+        "name": profile.name,
+        "source": source,
+        "model_id": profile.model_id,
+        "backend_key": profile.backend_key,
+        "fields": dict(field_sources or {}),
+        "extension_keys": sorted(profile.extensions),
+        "sampler": {
+            "partitioned": part["partitioned"],
+            "offered": part["offered"],
+            "greyed": [
+                {
+                    "name": row["name"],
+                    "reason_code": row["reason_code"],
+                    "reason": row["reason"],
+                }
+                for row in part["greyed"]
+            ],
+            "carried_unknown": part["carried_unknown"],
+            "unpartitioned": part["unpartitioned"],
+        },
+    }
