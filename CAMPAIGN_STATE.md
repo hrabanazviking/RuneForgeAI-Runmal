@@ -4420,3 +4420,35 @@ P-065 BANKED - Swipes deepened (Part V opener) -
     are ephemeral TurnRecords, never
     persisted). Next in roadmap order: P-066
     (branches).
+P-066 BANKED - Branches (Part V) -
+    team-01 commit 14d9116 merged (no-ff) into
+    yrsa/two-mirrors-build as 08fda03, banking
+    heal 81d4696, and pushed; ls-remote verified
+    (see WAVE_PLAN update).
+    Evidence (team-01 worktree
+    hidden_files/P066_EVIDENCE.md): battery 30
+    passed, neighbours 213 passed / 13 failed
+    (all stale provisional-head pins, healed at
+    this banking), team full suite 2855 passed /
+    4 skipped / 66 failed (all the same stale
+    head-pin class). Forge confirmation suite
+    at the merged tree: 3007 passed / 4 skipped
+    / 0 failed (= 2977 + 30, exact). Migration
+    0037 STANDS as numbered: head now 0037
+    (chats branch columns: branch_parent_id,
+    branch_fork_message_id, branch_fork_index,
+    branch_kind, branch_merge_of_json); chain
+    composed 0035 -> 0036 -> 0037 as separate
+    registry entries. Merge reconciliation:
+    additive unions in chats service, router,
+    models and the migration registry keeping
+    BOTH P-065 swipes and P-066 branches work;
+    head pins healed to merged truth 0037 in
+    81d4696 (38 test files). Slice: branches.py -
+    fork at any message, named family listing,
+    merge-back as a new branch (never
+    destructive). Findings: F1 and F2 fixed
+    in-slice; F3 carried (pre-existing app-wide
+    created_at aware/naive asymmetry, out of
+    scope for this slice). Next in roadmap
+    order: P-067 (checkpoints).
