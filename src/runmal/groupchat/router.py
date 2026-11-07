@@ -280,3 +280,135 @@ async def get_group_messages(
     if messages is None:
         raise HTTPException(status_code=404, detail="group not found")
     return [store.message_to_dict(m) for m in messages]
+
+
+# -- Group deepening (roadmap P-070): activation on the room road,
+# per-member overrides, group lore/persona handling -------------------
+
+
+class NextIn(BaseModel):
+    user_text: str | None = None
+    manual_speaker_id: str | None = None
+    generate: bool = False
+
+
+class RunIn(BaseModel):
+    turns: int = 1
+    generate: bool = False
+
+
+@router.get("/groups/{group_id}/deepening")
+async def get_group_deepening(
+    group_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    from runmal.groupchat import deepening
+
+    payload = await deepening.get_deepening(session, user_id, group_id)
+    if payload is None:
+        raise HTTPException(status_code=404, detail="group not found")
+    return payload
+
+
+@router.put("/groups/{group_id}/deepening")
+async def put_group_deepening(
+    group_id: str,
+    payload: dict,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    from runmal.groupchat import deepening
+
+    try:
+        result = await deepening.put_deepening(session, user_id, group_id, payload)
+    except ValueError as exc:
+        raise _unprocessable(exc) from exc
+    if result is None:
+        raise HTTPException(status_code=404, detail="group not found")
+    return result
+
+
+@router.get("/groups/{group_id}/members/{character_id}/peek")
+async def peek_group_member(
+    group_id: str,
+    character_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    from runmal.groupchat import deepening
+
+    payload = await deepening.member_peek(session, user_id, group_id, character_id)
+    if payload is None:
+        raise HTTPException(status_code=404, detail="member not found")
+    return payload
+
+
+@router.patch("/groups/{group_id}/members/{character_id}/override")
+async def patch_group_member_override(
+    group_id: str,
+    character_id: str,
+    payload: dict,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    from runmal.groupchat import deepening
+
+    try:
+        result = await deepening.patch_member_override(
+            session, user_id, group_id, character_id, payload
+        )
+    except ValueError as exc:
+        raise _unprocessable(exc) from exc
+    if result is None:
+        raise HTTPException(status_code=404, detail="member not found")
+    return result
+
+
+@router.post("/groups/{group_id}/next")
+async def group_next(
+    group_id: str,
+    body: NextIn,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    from runmal.groupchat import deepening
+
+    try:
+        result = await deepening.next_turn(
+            session,
+            user_id,
+            group_id,
+            user_text=body.user_text,
+            manual_speaker_id=body.manual_speaker_id,
+            generate=body.generate,
+        )
+    except ValueError as exc:
+        raise _unprocessable(exc) from exc
+    except deepening.GenerationFailedError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    if result is None:
+        raise HTTPException(status_code=404, detail="group not found")
+    return result
+
+
+@router.post("/groups/{group_id}/run")
+async def group_run(
+    group_id: str,
+    body: RunIn,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    from runmal.groupchat import deepening
+
+    try:
+        result = await deepening.run_turns(
+            session, user_id, group_id, turns=body.turns, generate=body.generate
+        )
+    except ValueError as exc:
+        raise _unprocessable(exc) from exc
+    except deepening.GenerationFailedError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    if result is None:
+        raise HTTPException(status_code=404, detail="group not found")
+    return result
