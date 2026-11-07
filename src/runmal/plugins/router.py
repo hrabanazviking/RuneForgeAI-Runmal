@@ -388,3 +388,103 @@ async def quick_replies_execute(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="unknown quick reply or chat")
     return record
+
+
+# -- Chat Variables surface (P-093) --------------------------------------
+# The one shared per-chat variables/flags store, in the
+# house router idiom (owner dep, chat ownership verified
+# before acting, ValueError -> 422 via _visible, missing
+# entries -> 404). The store lives in
+# runmal.plugins.variables; imports are lazy so this
+# router's import graph is unchanged at module load. HTTP
+# writes carry host provenance: the caller is the owner
+# acting through the host, recorded as exactly that.
+
+
+async def _owned_chat(session, user_id: str, body):
+    from runmal.chats import service as chats_svc
+
+    chat_id = body.get("chat_id") if isinstance(body, dict) else None
+    if not chat_id:
+        raise _visible(ValueError("request must carry a 'chat_id'"))
+    if await chats_svc.get_chat(session, user_id, chat_id) is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"unknown chat: {chat_id}")
+    return chat_id
+
+
+@router.get("/chat-variables")
+async def chat_variables_list(
+    chat_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    from runmal.chats import service as chats_svc
+    from runmal.plugins import variables as vars_mod
+
+    if await chats_svc.get_chat(session, user_id, chat_id) is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"unknown chat: {chat_id}")
+    try:
+        return vars_mod.snapshot_chat(user_id, chat_id)
+    except ValueError as exc:
+        raise _visible(exc) from exc
+
+
+@router.post("/chat-variables/set")
+async def chat_variables_set(
+    body: dict,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    from runmal.plugins import variables as vars_mod
+
+    chat_id = await _owned_chat(session, user_id, body)
+    key = body.get("key")
+    try:
+        if "flag" in body:
+            return vars_mod.set_flag(user_id, chat_id, key, body.get("flag"))
+        if "value" not in body:
+            raise vars_mod.ChatVariableError(
+                "request must carry a 'value' or a 'flag'")
+        return vars_mod.set_variable(user_id, chat_id, key, body.get("value"))
+    except ValueError as exc:
+        raise _visible(exc) from exc
+
+
+@router.post("/chat-variables/unset")
+async def chat_variables_unset(
+    body: dict,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    from runmal.plugins import variables as vars_mod
+
+    chat_id = await _owned_chat(session, user_id, body)
+    try:
+        deleted = vars_mod.delete_variable(user_id, chat_id, body.get("key"))
+    except ValueError as exc:
+        raise _visible(exc) from exc
+    if not deleted:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"unknown chat variable: {body.get('key')}")
+    return {"deleted": True, "key": body.get("key")}
+
+
+@router.post("/chat-variables/clear")
+async def chat_variables_clear(
+    body: dict,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    from runmal.plugins import variables as vars_mod
+
+    chat_id = await _owned_chat(session, user_id, body)
+    try:
+        removed = vars_mod.clear_chat(user_id, chat_id)
+    except ValueError as exc:
+        raise _visible(exc) from exc
+    return {"cleared": True, "chat_id": chat_id, "removed": removed}
