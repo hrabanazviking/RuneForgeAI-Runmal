@@ -3901,3 +3901,32 @@ P-051 BANKED - context templates: story-string/context
     Next in roadmap order: P-052 (sampler surface,
     team-02, already complete as ed01f90, held for this
     banking).
+
+P-052 BANKED - sampler surface complete: every common
+    sampler exposed as data where the backend supports
+    it, hidden honestly where not - team-02 commit
+    ed01f90 merged (no-ff) into yrsa/two-mirrors-build
+    as 9a7bd7c and pushed; ls-remote verified
+    9a7bd7c97e960e542e08e8943067a9c963c84bc9. The one
+    merge conflict (docs/CLEAN_ROOM_LOG_2026-10-30.md,
+    append-vs-append) was resolved keeping BOTH the
+    P-051 and P-052 entries; combined batteries at the
+    merged tree 127 passed (88 + 39).
+    Evidence (team-02 worktree hidden_files/P052_EVIDENCE.md
+    + logs): battery 39 passed, neighbours 253 passed /
+    1 skipped, team full suite 2348 passed / 4 skipped /
+    1 failed - the single failure is the s503 STT timing
+    contract under shared-machine contention, solo
+    re-run 4/4 green, classified contention, NOT a
+    defect. Forge confirmation suite at the merged
+    tree: 2437 passed / 4 skipped / 0 failed
+    (= 2398 + 39, exact). NO migration; head stays 0032.
+    Slice: backends/samplers.py (28-key catalogue as
+    SamplerSpec data), SamplingParams +17 fields with
+    public-range validation, honest per-backend
+    applicability (no backend declares DRY/XTC - they
+    drop with structured warnings, never faked), and
+    the P-050 F3 stop-string merge.
+    Next in roadmap order: P-053 (per-backend
+    capability truth, team-03, mustered 2026-11-06
+    23:08 EST from base 6fc65f0).
