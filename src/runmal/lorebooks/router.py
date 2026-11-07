@@ -218,6 +218,39 @@ async def inspect_lorebook_pack(
         ) from exc
 
 
+@router.post("/lorebooks/upgrade/inspect")
+async def inspect_lorebook_upgrade(
+    body: dict,
+    user_id: str = Depends(get_owner_id),
+):
+    """Report what an in-place P-047 upgrade would do; writes nothing."""
+    from runmal.lorebooks import upgrade as lore_upgrade
+
+    try:
+        return lore_upgrade.inspect_lorebook(body)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)
+        ) from exc
+
+
+@router.post("/lorebooks/upgrade")
+async def upgrade_lorebook_file(
+    body: dict,
+    user_id: str = Depends(get_owner_id),
+):
+    """Upgrade one lorebook file in place (same format); returns file + report, writes nothing."""
+    from runmal.lorebooks import upgrade as lore_upgrade
+
+    try:
+        upgraded, report = lore_upgrade.upgrade_lorebook(body)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)
+        ) from exc
+    return {"lorebook": upgraded, "upgrade": report}
+
+
 @router.get("/lorebooks/{book_id}/export")
 async def export_lorebook(
     book_id: str,
