@@ -668,7 +668,7 @@ async def _generate(prompt_messages: list[dict]) -> str:
     prompt_text = "\n".join(m["content"] for m in prompt_messages)
     text = ""
     request_id = generation.new_request_id()
-    async for event in generation.generate_events(request_id, prompt_text):
+    async for event in generation.generate_events(request_id, prompt_text, plugin_events=False):
         if event.get("type") == "token":
             text += event["text"]
         elif event.get("type") == "error":

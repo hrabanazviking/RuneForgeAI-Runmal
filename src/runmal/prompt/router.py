@@ -13,7 +13,7 @@ still carries no content.
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -79,6 +79,7 @@ class InspectRequest(BaseModel):
 @router.post("/debug/prompt-inspect")
 async def prompt_inspect(
     body: InspectRequest,
+    request: Request,
     session: AsyncSession = Depends(get_session),
     owner_id: str = Depends(get_owner_id),
 ) -> dict:
@@ -104,6 +105,7 @@ async def prompt_inspect(
             include_preview=body.include_preview,
             backend_key=body.backend_key,
             model_profile=body.model_profile,
+            plugin_registry=getattr(request.app.state, "plugin_registry", None),
         )
     except ValueError as exc:
         raise HTTPException(
@@ -121,6 +123,7 @@ async def prompt_inspect(
 @router.post("/debug/prompt-preview")
 async def prompt_preview_endpoint(
     body: InspectRequest,
+    request: Request,
     session: AsyncSession = Depends(get_session),
     owner_id: str = Depends(get_owner_id),
 ) -> dict:
@@ -146,6 +149,7 @@ async def prompt_preview_endpoint(
             budget_policy=body.budget_policy,
             structured_output=body.structured_output,
             model_profile=body.model_profile,
+            plugin_registry=getattr(request.app.state, "plugin_registry", None),
         )
     except ValueError as exc:
         raise HTTPException(

@@ -87,7 +87,8 @@ async def group_turn(
             prompt_text = "\n".join(m["content"] for m in prompt)
             text = ""
             request_id = generation.new_request_id()
-            async for event in generation.generate_events(request_id, prompt_text):
+            async for event in generation.generate_events(
+                    request_id, prompt_text, plugin_events=False):
                 if event.get("type") == "token":
                     text += event["text"]
                     yield _event({"type": "token", "author": speaker.name, "text": event["text"]})

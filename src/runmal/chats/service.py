@@ -58,6 +58,19 @@ def _now() -> datetime:
     return datetime.now(UTC)
 
 
+async def _dispatch_plugin(name, *, chat_id=None, message_id=None, data=None):
+    """Fire-and-observe plugin dispatch (P-081): lazy import (the
+    delete_chat cleanup pattern; no import cycle), never raises --
+    plugins.service.dispatch_event already never raises, and the
+    import itself is guarded here too."""
+    try:
+        from runmal.plugins.service import dispatch_event
+
+        await dispatch_event(name, chat_id=chat_id, message_id=message_id, data=data)
+    except Exception:
+        pass
+
+
 def _post_history_from_chat(chat: Chat) -> PostHistoryInstructions:
     try:
         raw = getattr(chat, "post_history_json", None)
@@ -426,6 +439,11 @@ async def create_chat(
     if character is not None:
         await _seed_greeting_message(session, user_id, chat, character, choice)
     await session.commit()
+    await _dispatch_plugin(
+        "chat.created",
+        chat_id=chat.id,
+        data={"chat_id": chat.id, "character_id": chat.character_id, "title": chat.title},
+    )
     return chat
 
 
@@ -731,6 +749,9 @@ async def rename_chat(session: AsyncSession, user_id: str, chat_id: str, title: 
     chat.title = title
     await _record_event(session, chat.id, EVENT_CHAT_RENAMED, data={"title": title})
     await session.commit()
+    await _dispatch_plugin(
+        "chat.renamed", chat_id=chat_id, data={"chat_id": chat_id, "title": title}
+    )
     return chat
 
 
@@ -759,6 +780,7 @@ async def delete_chat(session: AsyncSession, user_id: str, chat_id: str) -> bool
         remove_chat_undo(user_id, chat_id)
     except Exception:
         pass
+    await _dispatch_plugin("chat.deleted", chat_id=chat_id, data={"chat_id": chat_id})
     return True
 
 
@@ -830,6 +852,18 @@ async def append_message(
         data.update(event_data)
     await _record_event(session, chat_id, EVENT_MESSAGE_APPENDED, message_id=message.id, data=data)
     await session.commit()
+    await _dispatch_plugin(
+        "message.created",
+        chat_id=chat_id,
+        message_id=message.id,
+        data={
+            "chat_id": chat_id,
+            "message_id": message.id,
+            "role": message.role,
+            "content": message.content,
+            "content_chars": len(message.content),
+        },
+    )
     return message
 
 
@@ -917,6 +951,18 @@ async def edit_message(
 
             await memory_svc.index_fts(session, memory)
     await session.commit()
+    await _dispatch_plugin(
+        "message.edited",
+        chat_id=chat_id,
+        message_id=message.id,
+        data={
+            "chat_id": chat_id,
+            "message_id": message.id,
+            "role": message.role,
+            "content": message.content,
+            "content_chars": len(message.content),
+        },
+    )
     return message
 
 
@@ -960,6 +1006,12 @@ async def delete_message(
     if was_materialised:
         _renumber(await _ordered_messages(session, chat_id))
     await session.commit()
+    await _dispatch_plugin(
+        "message.deleted",
+        chat_id=chat_id,
+        message_id=message_id,
+        data={"chat_id": chat_id, "message_id": message_id},
+    )
     return True
 
 
@@ -1317,6 +1369,12 @@ async def select_swipe(
         data={"swipe_id": new_id, "swipe_count": len(deck)},
     )
     await session.commit()
+    await _dispatch_plugin(
+        "message.swipe_selected",
+        chat_id=chat_id,
+        message_id=message.id,
+        data={"chat_id": chat_id, "message_id": message.id, "swipe_id": new_id},
+    )
     return message
 
 
