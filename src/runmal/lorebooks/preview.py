@@ -66,6 +66,19 @@ Placement is data only here -- preview does not reorder or
 splice content; the composer honours it (prompt/inspect.py
 builds the slots from these fields).
 
+Timed effects (P-043): with ``entry_states`` supplied (a
+mapping of entry id -> EntryState, e.g. a chat's persisted
+P-033 counters), the tick runs against a COPY of those states
+(the caller's mapping is never mutated, nothing is persisted)
+and every row gains a ``timed`` block: the entry's sticky /
+cooldown / delay config, the counters before and after the
+tick, and the derived ``effect`` (``sticky_carryover``,
+``delay_fired``, ``cooldown_suppressed`` -- a real hit refused
+by a running cooldown -- ``delay_armed``, ``delay_pending``,
+``fired``, or None). Without ``entry_states`` the rows are
+byte-identical to the pre-P-043 shape: the preview stays a
+clean-state tick, and no timed block is invented.
+
 Entry states (P-035): vector-fired rows honestly report
 ``matched_primary`` / ``matched_secondary`` empty (no keyword
 matched) with ``via="vector"``; the caller supplies
@@ -75,7 +88,7 @@ also reports ``vectorised`` and the derived ``activation_kind``.
 
 from __future__ import annotations
 
-from runmal.lorebooks.activation import ActivatableEntry, activate
+from runmal.lorebooks.activation import ActivatableEntry, EntryState, activate
 from runmal.lorebooks.budget import BudgetCandidate, resolve_budget
 from runmal.lorebooks.groups import normalise_group_weight, normalise_inclusion_group
 from runmal.lorebooks.placement import (
@@ -114,6 +127,7 @@ def preview_activation(
     scan_mode: str | None = None,
     scan_external_context: bool | None = None,
     external_context: list[str] | None = None,
+    entry_states: dict | None = None,
 ) -> dict:
     """Preview one activation tick for ``entries`` (ORM rows, service order).
 
@@ -187,6 +201,30 @@ def preview_activation(
     if vector_match is not None and not vector_match.candidates:
         vector_match = None
 
+    # P-043: a supplied timed-state mapping runs the tick against
+    # a copy (callers keep their counters; preview persists none).
+    timed_before: dict[str, dict] | None = None
+    states_arg: dict[str, EntryState] | None = None
+    if entry_states is not None:
+        states_arg = {
+            str(eid): EntryState(
+                sticky_remaining=int(st.sticky_remaining),
+                cooldown_remaining=int(st.cooldown_remaining),
+                delay_remaining=int(st.delay_remaining),
+                delay_armed=bool(st.delay_armed),
+            )
+            for eid, st in entry_states.items()
+        }
+        timed_before = {
+            eid: {
+                "sticky_remaining": st.sticky_remaining,
+                "cooldown_remaining": st.cooldown_remaining,
+                "delay_remaining": st.delay_remaining,
+                "delay_armed": st.delay_armed,
+            }
+            for eid, st in states_arg.items()
+        }
+
     scan_view = [ScanEntry.from_orm(e) for e in entries]
     act_view = [ActivatableEntry.from_orm(e) for e in entries]
     by_id = {str(e.id): e for e in entries}
@@ -207,6 +245,7 @@ def preview_activation(
         result = activate(
             act_view,
             set(hit_by_id),
+            states_arg,
             recursive_hit_ids={h.entry_id for h in hits if h.depth > 0},
             hit_depths={h.entry_id: h.depth for h in hits if h.depth > 0},
             vector_hit_ids=vector_hit_ids,
@@ -220,6 +259,7 @@ def preview_activation(
         result = activate(
             act_view,
             set(hit_by_id),
+            states_arg,
             vector_hit_ids=vector_hit_ids,
             vector_fallback_ids=vector_fallback_ids,
         )
@@ -324,6 +364,58 @@ def preview_activation(
                 row["status"] = "discarded"
                 row["tokens"] = dropped.tokens
                 row["discard_reason"] = dropped.reason
+        if timed_before is not None:
+            before = timed_before.get(
+                entry_id,
+                {
+                    "sticky_remaining": 0,
+                    "cooldown_remaining": 0,
+                    "delay_remaining": 0,
+                    "delay_armed": False,
+                },
+            )
+            after_state = (states_arg or {}).get(entry_id)
+            after = (
+                {
+                    "sticky_remaining": int(after_state.sticky_remaining),
+                    "cooldown_remaining": int(after_state.cooldown_remaining),
+                    "delay_remaining": int(after_state.delay_remaining),
+                    "delay_armed": bool(after_state.delay_armed),
+                }
+                if after_state is not None
+                else dict(before)
+            )
+            had_trigger = (
+                hit is not None
+                or entry_id in (vector_hit_ids or set())
+                or entry_id in (vector_fallback_ids or set())
+            )
+            if row["via"] == "sticky":
+                effect = "sticky_carryover"
+            elif row["via"] == "delay":
+                effect = "delay_fired"
+            elif activation is None and entry_id in group_loser_by_id:
+                effect = "fired"
+            elif activation is None and before["cooldown_remaining"] > 0 and had_trigger:
+                effect = "cooldown_suppressed"
+            elif activation is None and after["delay_armed"] and not before["delay_armed"]:
+                effect = "delay_armed"
+            elif activation is None and before["delay_armed"] and after["delay_armed"]:
+                effect = "delay_pending"
+            elif activation is not None or entry_id in group_loser_by_id:
+                effect = "fired"
+            else:
+                effect = None
+            row["timed"] = {
+                "config": {
+                    "sticky_prompts": int(getattr(entry, "sticky_prompts", 0) or 0),
+                    "cooldown_prompts": int(getattr(entry, "cooldown_prompts", 0) or 0),
+                    "delay_prompts": int(getattr(entry, "delay_prompts", 0) or 0),
+                },
+                "state_before": before,
+                "state_after": after,
+                "effect": effect,
+            }
         rows.append(row)
 
     preview: dict = {
@@ -345,6 +437,8 @@ def preview_activation(
         preview["inclusion_group_winners"] = {
             row.inclusion_group: row.winner_id for row in result.group_losers
         }
+    if timed_before is not None:
+        preview["timed_states_supplied"] = True
     if recursive_scan:
         assert recursive_result is not None
         preview["recursive_scan"] = True
