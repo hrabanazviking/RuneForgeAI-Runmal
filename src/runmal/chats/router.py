@@ -135,6 +135,10 @@ class CheckpointRestoreIn(BaseModel):
     name: str | None = None
 
 
+class UndoIn(BaseModel):
+    entry_id: str | None = None
+
+
 class DataBankAttachIn(BaseModel):
     name: str
     content: str = ""
@@ -972,6 +976,86 @@ async def delete_checkpoint(
     if not result:
         raise HTTPException(status_code=404, detail="checkpoint not found")
     return {"deleted": True, "id": checkpoint_id}
+
+
+@router.get("/chats/{chat_id}/undo")
+async def list_undo_journal(
+    chat_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """A chat's undo journal (P-076), top of stack first.
+    Metadata only -- entry payloads are never returned."""
+    from runmal.chats import undo as undo_mod
+
+    try:
+        entries = await undo_mod.list_journal(session, user_id, chat_id)
+    except (undo_mod.UndoError, ValueError) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if entries is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return {"entries": entries, "count": len(entries), "can_undo": bool(entries)}
+
+
+@router.get("/chats/{chat_id}/undo/{entry_id}")
+async def get_undo_entry(
+    chat_id: str,
+    entry_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """One journal entry's metadata (P-076): a verified read,
+    so a tampered entry file 422s here, not only at undo."""
+    from runmal.chats import undo as undo_mod
+
+    try:
+        entry = await undo_mod.get_entry(session, user_id, chat_id, entry_id)
+    except (undo_mod.UndoError, ValueError) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if entry is None:
+        raise HTTPException(status_code=404, detail="chat or undo entry not found")
+    return entry
+
+
+@router.post("/chats/{chat_id}/undo")
+async def undo_last_operation(
+    chat_id: str,
+    body: UndoIn | None = None,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Undo the most recent journaled chat operation (P-076):
+    restores the operation's before-image in place and
+    consumes the entry. An explicit entry_id must be the top
+    entry -- out-of-order undo is refused with 422."""
+    from runmal.chats import undo as undo_mod
+
+    try:
+        result = await undo_mod.undo_last(
+            session, user_id, chat_id, body.entry_id if body else None
+        )
+    except (undo_mod.UndoError, ValueError) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if result is None:
+        raise HTTPException(status_code=404, detail="chat not found or nothing to undo")
+    return result
+
+
+@router.delete("/chats/{chat_id}/undo")
+async def clear_undo_journal(
+    chat_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Clear a chat's whole undo journal (P-076). The escape
+    hatch for a stack blocked by a corrupt entry; the chat
+    itself is untouched."""
+    from runmal.chats import undo as undo_mod
+
+    result = await undo_mod.clear_journal(session, user_id, chat_id)
+    if result is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return {"cleared": result}
 
 
 @router.post("/chats/{chat_id}/impersonate", status_code=status.HTTP_201_CREATED)
