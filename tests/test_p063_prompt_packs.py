@@ -432,5 +432,5 @@ def test_pack_api_export_inspect_import(tmp_path, monkeypatch):
 def test_migration_head_stays_0036(tmp_path):
     db_path = tmp_path / "mig.db"
     migrate_to_head(db_path)
-    assert MIGRATIONS[-1][0] == "0040"
-    assert current_revision(db_path) == "0040"
+    assert MIGRATIONS[-1][0] == "0041"
+    assert current_revision(db_path) == "0041"

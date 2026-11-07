@@ -48,7 +48,7 @@ def make_client(tmp_path, monkeypatch):
     monkeypatch.setenv("RUNMAL_DATA_DIR", str(tmp_path))
     db_path = tmp_path / "test.db"
     applied = migrate_to_head(db_path)
-    assert applied[-1] == "0040"
+    assert applied[-1] == "0041"
     engine = create_db_engine(db_path)
     client = TestClient(create_app(create_session_factory(engine)))
     token = get_or_create_credential()
@@ -116,16 +116,18 @@ def room_events(client, chat_id):
 
 
 def test_no_migration_head_pin(tmp_path, monkeypatch):
-    assert MIGRATIONS[-1][0] == "0040"
+    assert MIGRATIONS[-1][0] == "0041"
     # P-075 banking heal: 0040 now exists exactly once and is P-075's
     # m0040_message_provenance -- still none from P-071.
     assert [rev for rev, _desc, _mod in MIGRATIONS].count("0040") == 1
-    assert MIGRATIONS[-1][2].__name__.endswith("m0040_message_provenance")
+    # P-077 banking heal: 0040 now stands at [-2] beneath P-077's 0041.
+    assert MIGRATIONS[-2][2].__name__.endswith("m0040_message_provenance")
+    assert MIGRATIONS[-1][2].__name__.endswith("m0041_message_order_index")
     client = make_client(tmp_path, monkeypatch)  # asserts applied head internally
     assert client is not None
     db_path = tmp_path / "again.db"
     applied = migrate_to_head(db_path)
-    assert applied[-1] == "0040"
+    assert applied[-1] == "0041"
 
 
 # ---------------- 2. pure builder ----------------

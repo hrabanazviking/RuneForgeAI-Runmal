@@ -508,13 +508,13 @@ def test_inspect_no_chat_echo_source_none(tmp_path, monkeypatch):
 def test_migration_head_is_0034_provisional(tmp_path):
     # Head pin healed at P-057 banking: head moved 0034 -> 0035.
     # Head pin healed at P-065 banking: head moved 0035 -> 0036.
-    assert MIGRATIONS[-1][0] == "0040"
+    assert MIGRATIONS[-1][0] == "0041"
     db_path = tmp_path / "m.db"
     applied = migrate_to_head(db_path)
-    assert applied[-1] == "0040"
-    assert current_revision(db_path) == "0040"
+    assert applied[-1] == "0041"
+    assert current_revision(db_path) == "0041"
     assert migrate_to_head(db_path) == []  # idempotent
-    assert current_revision(db_path) == "0040"
+    assert current_revision(db_path) == "0041"
 
 
 def test_migration_0034_adds_authors_note_column(tmp_path):
