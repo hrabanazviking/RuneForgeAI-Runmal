@@ -4142,3 +4142,43 @@ P-057 BANKED - post-history instructions: a
     never enters result or events (S214).
     Next in roadmap order: P-058 (token budget
     governor).
+P-058 BANKED - token budget governor: the
+    composer shows the whole prompt budget by
+    section and trims by declared policy -
+    team-02 commit 669cb36 merged (no-ff) into
+    yrsa/two-mirrors-build as cfe3ec8 and pushed;
+    ls-remote verified
+    cfe3ec864e67b472e62e84f87fc5dd1ebece4776.
+    Evidence (team-02 worktree
+    hidden_files/P058_EVIDENCE.md + logs):
+    battery 33 passed, neighbours 269 passed,
+    team full suite 2630 passed / 4 skipped /
+    0 failed on its base. Forge confirmation
+    suite at the merged tree: 2690 passed /
+    4 skipped / 0 failed (= 2657 + 33, exact).
+    NO migration: the merged head stays 0035.
+    Merge: one conflict, the inspect.py module
+    docstring (P-057 paragraph vs P-058
+    paragraph), resolved as an additive union
+    keeping both; prompt/__init__.py, router
+    and service auto-merged as additive unions
+    (governor exports alongside the post-history
+    exports, both kept). Combined batteries at
+    the merged tree (battery + neighbours +
+    P-057 battery): 362 passed.
+    Slice: prompt/governor.py - SECTIONS
+    (context/lore/memory/history) with an
+    exhaustive kind mapping so the sections sum
+    to the whole prompt; budget counted only
+    via runmal.tokens (the P-044 one-counter
+    rule); BudgetPolicy as declared data
+    (section caps + trim order, strictly
+    validated, default sacrifice lore -> memory
+    -> history -> context); apply_policy trims
+    lowest-priority first, splittable history
+    oldest-first, required slots never dropped,
+    every action recorded; the inspect result
+    always carries budget plus a budget_governor
+    echo, and no content enters either payload
+    (S214).
+    Next in roadmap order: P-059.
