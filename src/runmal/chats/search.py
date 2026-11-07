@@ -160,6 +160,23 @@ def _collapse(text: str) -> str:
     return " ".join(str(text).split())
 
 
+def _could_match(query_tokens, content, pattern=None) -> bool:
+    """Necessary condition for score_fulltext to score non-None:
+    some content token stems to a query token, and a token stems
+    to t only if the raw word equals t or starts with t (stemming
+    strips a suffix). A C-speed regex word-prefix scan; False
+    means score_fulltext would certainly return None."""
+    if not query_tokens:
+        return False
+    if pattern is None:
+        pattern = re.compile(
+            r"(?i)(?<![^\W_])(?:"
+            + "|".join(re.escape(t) for t in query_tokens)
+            + ")"
+        )
+    return pattern.search(str(content)) is not None
+
+
 def score_fulltext(query_tokens, content):
     """Score one message's content against deduped query tokens.
 
@@ -313,8 +330,15 @@ async def search_chats(session: AsyncSession, user_id: str, q, *,
 
     def fulltext_ranked():
         qtokens = _dedup(tokenise(query))
+        prefilter = None
+        if qtokens:
+            prefilter = re.compile(
+                r"(?i)(?<![^\W_])(?:" + "|".join(re.escape(t) for t in qtokens) + ")"
+            )
         hits = []
         for chat, message, ordinal in corpus:
+            if not _could_match(qtokens, message.content, prefilter):
+                continue
             scored = score_fulltext(qtokens, message.content)
             if scored is not None:
                 score, matched = scored

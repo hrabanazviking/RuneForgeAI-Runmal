@@ -236,6 +236,7 @@ def chat_to_dict(chat: Chat, message_count: int = 0) -> dict:
 
 def message_to_dict(message: Message) -> dict:
     deck, swipe_id = _deck(message)
+    variants = _variants(message)
     return {
         "id": message.id,
         "chat_id": message.chat_id,
@@ -244,8 +245,8 @@ def message_to_dict(message: Message) -> dict:
         "swipes": deck,
         "swipe_id": swipe_id,
         "swipe_count": len(deck),
-        "variant_history": _variants(message),
-        "variant_count": len(_variants(message)),
+        "variant_history": variants,
+        "variant_count": len(variants),
         "pinned": bool(getattr(message, "pinned", False)),
         "position": getattr(message, "position", None),
         "speaker_id": message.speaker_id,
@@ -574,11 +575,32 @@ async def append_message(
         raise ValueError(f"invalid role: {role!r}")
     if not content:
         raise ValueError("message content must not be empty")
-    existing = await _ordered_messages(session, chat_id)
+    agg = await session.execute(
+        select(
+            func.count(),
+            func.count(Message.position),
+            func.min(Message.position),
+            func.max(Message.position),
+            func.count(Message.position.distinct()),
+        ).where(Message.chat_id == chat_id)
+    )
+    total_count, position_count, min_position, max_position, distinct_count = agg.one()
     new_position: int | None = None
-    if any(m.position is not None for m in existing):
-        _renumber(existing)
-        new_position = len(existing)
+    if (
+        total_count > 0
+        and position_count == total_count
+        and distinct_count == total_count
+        and min_position == 0
+        and max_position == total_count - 1
+    ):
+        new_position = total_count
+    elif position_count == 0:
+        new_position = None
+    else:
+        existing = await _ordered_messages(session, chat_id)
+        if any(m.position is not None for m in existing):
+            _renumber(existing)
+            new_position = len(existing)
     if provenance is None:
         provenance = await _default_record(
             session, user_id, chat, role, speaker_id, speaker_name)
@@ -608,6 +630,36 @@ async def get_history(session: AsyncSession, user_id: str, chat_id: str) -> list
     if await _get_owned_chat(session, user_id, chat_id) is None:
         return None
     return await _ordered_messages(session, chat_id)
+
+
+async def get_history_page(session, user_id, chat_id, *, limit=100, offset=0, tail=False):
+    """One page of a chat's history in display order + total count.
+    Returns (messages, total, effective_offset, effective_limit) or None when the chat is not owned.
+    Same ORDER BY as _ordered_messages; SQL LIMIT/OFFSET does the
+    paging so a page never materialises the whole chat."""
+    if await _get_owned_chat(session, user_id, chat_id) is None:
+        return None
+    limit = max(1, min(500, int(limit)))
+    offset = max(0, int(offset))
+    total_result = await session.execute(
+        select(func.count()).select_from(Message).where(Message.chat_id == chat_id)
+    )
+    total = int(total_result.scalar_one())
+    if tail:
+        offset = max(0, total - limit)
+    result = await session.execute(
+        select(Message)
+        .where(Message.chat_id == chat_id)
+        .order_by(
+            Message.position.is_(None),
+            Message.position,
+            Message.created_at,
+            Message.id,
+        )
+        .offset(offset)
+        .limit(limit)
+    )
+    return list(result.scalars().all()), total, offset, limit
 
 
 async def edit_message(
