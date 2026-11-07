@@ -38,6 +38,25 @@ _CANONICAL: dict[str, tuple[tuple[type, ...], object]] = {
     # Promoted by P-021: S301 already models both fields.
     "min_p": ((int, float), lambda v: 0 <= v <= 1),
     "context_length": ((int,), lambda v: v >= 1),
+    # P-052: the complete sampler set joins the canonical bag
+    # (ranges mirror SamplingParams validation exactly).
+    "typical_p": ((int, float), lambda v: 0 < v <= 1),
+    "top_a": ((int, float), lambda v: 0 <= v <= 1),
+    "tfs_z": ((int, float), lambda v: 0 <= v <= 1),
+    "epsilon_cutoff": ((int, float), lambda v: 0 <= v <= 1),
+    "eta_cutoff": ((int, float), lambda v: 0 <= v <= 1),
+    "dry_multiplier": ((int, float), lambda v: v >= 0),
+    "dry_base": ((int, float), lambda v: v >= 1),
+    "dry_allowed_length": ((int,), lambda v: v >= 0),
+    "dry_penalty_last_n": ((int,), lambda v: v >= 0),
+    "dry_sequence_breakers": ((list,), lambda v: all(isinstance(s, str) and s for s in v)),
+    "xtc_probability": ((int, float), lambda v: 0 <= v <= 1),
+    "xtc_threshold": ((int, float), lambda v: 0 <= v <= 1),
+    "mirostat_mode": ((int,), lambda v: 0 <= v <= 2),
+    "mirostat_tau": ((int, float), lambda v: v > 0),
+    "mirostat_eta": ((int, float), lambda v: v > 0),
+    "dynamic_temperature_range": ((int, float), lambda v: v >= 0),
+    "dynamic_temperature_exponent": ((int, float), lambda v: v > 0),
 }
 
 

@@ -94,6 +94,14 @@ def test_declared_sampler_sets_are_pinned() -> None:
         "presence_penalty",
         "frequency_penalty",
         "context_length",
+        # P-052: the new sampler families join the declared-
+        # unsupported remainder (the OpenAI route serves none).
+        "typical_p", "top_a", "tfs_z", "epsilon_cutoff", "eta_cutoff",
+        "dry_multiplier", "dry_base", "dry_allowed_length",
+        "dry_penalty_last_n", "dry_sequence_breakers",
+        "xtc_probability", "xtc_threshold",
+        "mirostat_mode", "mirostat_tau", "mirostat_eta",
+        "dynamic_temperature_range", "dynamic_temperature_exponent",
     }
 
 

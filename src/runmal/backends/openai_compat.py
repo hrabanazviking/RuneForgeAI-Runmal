@@ -12,7 +12,8 @@ normalized events (INV-001/002). The connection layer's long-promised
 
 Sampler truth: ``SAMPLERS`` is exactly the S208 ``openai`` wire
 profile's key set. Canonical controls outside it (top_k, min_p,
-repetition_penalty, context_length) are cleared by
+repetition_penalty, context_length, and the P-052 sampler
+families no OpenAI-shaped wire carries) are cleared by
 ``ChatBackend.filter_params`` with structured warnings — never sent,
 never pretended honoured (INV-005). A future endpoint that serves
 more declares it through its own adapter, not through this one
@@ -83,7 +84,25 @@ WIRE_NAMES = {key: key for key in sorted(SAMPLERS)}
 #: Canonical controls this adapter deliberately does NOT map, with
 #: SAMPLERS accounting for every canonical control (INV-005).
 UNSUPPORTED_SAMPLERS = frozenset(
-    {"top_k", "min_p", "repetition_penalty", "context_length"}
+    {"top_k", "min_p", "repetition_penalty", "context_length",
+     "typical_p",
+     "top_a",
+     "tfs_z",
+     "epsilon_cutoff",
+     "eta_cutoff",
+     "dry_multiplier",
+     "dry_base",
+     "dry_allowed_length",
+     "dry_penalty_last_n",
+     "dry_sequence_breakers",
+     "xtc_probability",
+     "xtc_threshold",
+     "mirostat_mode",
+     "mirostat_tau",
+     "mirostat_eta",
+     "dynamic_temperature_range",
+     "dynamic_temperature_exponent",
+    }
 )
 
 

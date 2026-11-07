@@ -19,6 +19,14 @@ from runmal.backends.messages import ChatMessage
 from runmal.backends.models import Capabilities, HealthStatus, ModelInfo
 from runmal.backends.params import SamplingParams
 from runmal.backends.retry import AttemptRecord, RetryPolicy, stream_with_retry
+from runmal.backends.samplers import (
+    SAMPLER_NAMES,
+    SAMPLER_SPECS,
+    SamplerSpec,
+    merge_stop_strings,
+    resolve_sampler_params,
+    sampler_surface,
+)
 
 __all__ = [
     "AttemptRecord",
@@ -42,6 +50,12 @@ __all__ = [
     "ProviderError",
     "RateLimited",
     "RetryPolicy",
+    "SAMPLER_NAMES",
+    "SAMPLER_SPECS",
+    "SamplerSpec",
+    "merge_stop_strings",
+    "resolve_sampler_params",
+    "sampler_surface",
     "SamplingParams",
     "TextDelta",
     "UsageUpdate",
