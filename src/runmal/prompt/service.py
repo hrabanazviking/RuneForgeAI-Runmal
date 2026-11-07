@@ -1,4 +1,4 @@
-"""Prompt resolution services (P-049 layout; P-050 instruct; P-051 context).
+"""Prompt resolution services (P-049 layout; P-050 instruct; P-051 context; P-058 governor).
 
 Precedence for a composition is explicit (a layout supplied with
 the request) > default -- there is deliberately no stored tier in
@@ -157,4 +157,36 @@ def context_echo(template: ContextTemplate | None, source: str) -> dict:
             for seg in active.segments
         ],
         "stop_strings": list(active.stop_strings()),
+    }
+
+
+# ---------------- P-058: budget policy resolution ----------------
+
+from runmal.prompt.governor import (  # noqa: E402
+    BudgetPolicy,
+    default_policy,
+    policy_from_data,
+    policy_to_data,
+)
+
+
+def resolve_policy(explicit: object | None) -> tuple[BudgetPolicy | None, str]:
+    """Resolve the budget policy for a composition.
+
+    Returns ``(policy, source)``: an explicit policy is validated
+    by policy_from_data (ValueError propagates to the caller,
+    which maps it to 422) and returned with source ``"explicit"``;
+    ``None`` yields ``(None, "default")`` -- no policy in play, so
+    the pipeline composes exactly as it did before P-058.
+    """
+    if explicit is not None:
+        return policy_from_data(explicit), "explicit"
+    return None, "default"
+
+
+def policy_echo(policy: BudgetPolicy | None, source: str) -> dict:
+    """The ``budget_governor`` policy echo for an inspect result."""
+    return {
+        "source": source,
+        "policy": policy_to_data(policy if policy is not None else default_policy()),
     }
