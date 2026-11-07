@@ -1,4 +1,4 @@
-"""Prompt template engine public surface (S205)."""
+"""Prompt template engine public surface (S205; P-050 instruct)."""
 
 from runmal.prompt.composer import (
     ComposedMessage,
@@ -8,6 +8,18 @@ from runmal.prompt.composer import (
     SlotDiscard,
     SlotUsage,
     compose,
+)
+from runmal.prompt.instruct import (
+    BUILTIN_TEMPLATES,
+    MODEL_TEMPLATE_DEFAULTS,
+    TEMPLATE_ORDER,
+    InstructTemplate,
+    RoleWrapper,
+    default_template_for_model,
+    get_template,
+    list_templates,
+    template_from_data,
+    template_to_data,
 )
 from runmal.prompt.manager import (
     BLOCK_KINDS,
@@ -21,6 +33,7 @@ from runmal.prompt.manager import (
     layout_from_data,
     layout_to_data,
 )
+from runmal.prompt.render import RenderedPrompt, render_prompt
 from runmal.prompt.slots import (
     BASELINE_ORDER,
     Slot,
@@ -31,6 +44,12 @@ from runmal.prompt.slots import (
 )
 
 __all__ = [
+    "TEMPLATE_ORDER",
+    "RoleWrapper",
+    "RenderedPrompt",
+    "MODEL_TEMPLATE_DEFAULTS",
+    "InstructTemplate",
+    "BUILTIN_TEMPLATES",
     "BASELINE_ORDER",
     "BLOCK_KINDS",
     "BLOCK_ORDER",
@@ -51,6 +70,12 @@ __all__ = [
     "layout_to_data",
     "baseline_order",
     "compose",
+    "template_to_data",
+    "template_from_data",
+    "render_prompt",
+    "list_templates",
+    "get_template",
+    "default_template_for_model",
     "make_slot",
     "slot_text",
     "slot_tokens",

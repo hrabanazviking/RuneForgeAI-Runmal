@@ -5,9 +5,12 @@ an optional prompt-template reference. Canonical fields are validated
 (types and ranges); unknown fields are preserved verbatim so backends with
 extra knobs keep working -- the bag is canonical in shape, not closed.
 
-``template_ref`` names a prompt template. The stored-template registry is
-a future slice's work; for now it is an opaque string reference carried
-alongside the parameters.
+``template_ref`` names a prompt template. Since P-050 the name
+resolves against the instruct-template registry
+(:mod:`runmal.prompt.instruct` -- builtin names, or a custom
+template supplied as data at render time); the preset itself
+still carries the reference as a plain string alongside the
+parameters, and resolving it stays the render path's job.
 """
 
 from __future__ import annotations

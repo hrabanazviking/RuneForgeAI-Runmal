@@ -48,6 +48,15 @@ the composer's own manifest via the trace, so it reconciles
 with the ledger by construction; visible before sending
 because the inspector never sends.
 
+Instruct templates (P-050): the composed messages are rendered
+through the resolved instruct template (explicit name/data >
+per-model default > plain); the result carries an
+``instruct_template`` echo (name/source/stop strings) and
+``rendered_tokens`` -- the rendered string's own token estimate,
+so the cost of the template's framing is visible before sending.
+The rendered TEXT never enters the result: the S214 contract
+(traces carry no prompt content) outranks the convenience.
+
 Prompt manager (P-049): ``prompt_layout`` is honoured via
 ``manager.apply_layout`` before compose; disabled blocks surface
 in the trace as discards with reason ``prompt_manager_disabled``;
@@ -69,9 +78,11 @@ from runmal.lorebooks.preview import preview_activation
 from runmal.lorebooks.windows import ScanSettings
 from runmal.prompt.composer import compose
 from runmal.prompt.manager import DISABLED_REASON, apply_layout
-from runmal.prompt.service import layout_echo, resolve_layout
+from runmal.prompt.render import render_prompt
+from runmal.prompt.service import layout_echo, resolve_layout, resolve_template, template_echo
 from runmal.prompt.slots import Slot, baseline_order, make_slot, slot_tokens
 from runmal.prompt.trace import TraceSlot, build_trace, trace_to_dict
+from runmal.tokens import estimate_tokens
 
 MAIN_SYSTEM_TEXT = "You are Rúnmál, a sovereign local chat companion."
 
@@ -150,10 +161,13 @@ async def inspect_prompt(
     context_limit: int = 4096,
     reserve_response: int = 512,
     prompt_layout: object | None = None,
+    model_id: str | None = None,
+    instruct_template: object | None = None,
 ) -> dict | None:
     """Build the trace dict for a hypothetical prompt, or None when a
     referenced character/lorebook does not exist."""
     layout, layout_source = resolve_layout(prompt_layout)
+    template, template_source = resolve_template(instruct_template, model_id)
     messages = list(messages or [])
     lorebook_inspections: dict = {}
     lore_scope_summary: dict | None = None
@@ -366,6 +380,9 @@ async def inspect_prompt(
     trace = build_trace(composed, slots, extra_discards=tuple(extras))
     result = trace_to_dict(trace)
     result["prompt_layout"] = layout_echo(layout, layout_source)
+    rendered = render_prompt(composed.messages, template)
+    result["instruct_template"] = template_echo(template, template_source)
+    result["rendered_tokens"] = estimate_tokens(rendered.text)
     if lore_scope_summary is not None:
         result["lore_scopes"] = lore_scope_summary
     if include_activation_inspection:

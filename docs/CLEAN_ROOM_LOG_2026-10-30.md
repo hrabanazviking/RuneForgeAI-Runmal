@@ -610,3 +610,19 @@ source in §0(2) and appends its entry here:
   mirror behaviour. No SillyTavern or Voxta source code was
   read and no file was downloaded; the slice's test entries
   are authored fresh in the test module (P-005 discipline).
+- **P-050 (2026-11-06, public format specifications only):**
+  the instruct templates (ChatML, Llama-3, Alpaca, Vicuna) are
+  built from the formats' public specifications as generally
+  published (turn markers, header framing, section headings,
+  and each format's customary system preamble text), plus
+  Runmal's own in-tree facts: the S205 composer's structured
+  messages supply what gets rendered, the S214 trace contract
+  bounds what the inspector may echo, P-049 supplies the
+  data/validation/resolution pattern, and the presets'
+  template_ref supplies the registry's reason to exist. The
+  per-model default table, the plain (no-framing) honest
+  default, and the template data shape are Runmal's own design
+  for the roadmap line. No SillyTavern or Voxta source code
+  was read and no file was downloaded; the slice's test
+  conversations are authored fresh in the test module
+  (P-005 discipline).
