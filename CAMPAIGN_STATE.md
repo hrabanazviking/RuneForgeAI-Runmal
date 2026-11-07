@@ -4577,3 +4577,42 @@ P-070 BANKED - Group chats deepened (Part V) -
     scoped layered preview, member peek;
     metadata-only events. No new defect
     found. Next in roadmap order: P-071.
+P-071 BANKED - Absent-character history
+    digest for group scenes (Part V) -
+    team-03 commit 0c26902 merged (no-ff) into
+    yrsa/two-mirrors-build as d093b27, and pushed;
+    ls-remote verified (see WAVE_PLAN update).
+    Evidence (team-03 worktree
+    hidden_files/P071_EVIDENCE.md): battery 23
+    passed, neighbours 77 passed, team full
+    suite 3143 passed / 4 skipped / 0 failed.
+    Forge confirmation suite at the merged
+    tree: 3158 passed / 4 skipped / 0 failed
+    (= 3135 + 23, exact). Combined P-071 +
+    P-070 + neighbour batteries at the merged
+    tree: 115 passed. NO migration taken by
+    P-071; head stays 0038 (presence rides
+    the existing chat_events log; the digest
+    is derived on demand, never stored).
+    Merge CONFLICT in groupchat/router.py
+    only - both slices appended at EOF;
+    resolved as an additive union keeping
+    BOTH blocks (P-070 deepening first, P-071
+    presence appended after; py_compile OK,
+    every handler present). Slice: a group
+    member marked absent receives on return
+    an extractive digest of what it missed,
+    built on demand from the real stored
+    transcript over the absence window
+    (anchor by last-seen message id;
+    from_start for an empty room;
+    by_count_fallback when the anchor was
+    deleted while away, a labelled documented
+    approximation); capped entries and
+    excerpts with omitted_count always
+    stated; by-speaker counts excluding the
+    returning character; metadata-only
+    presence.left / presence.returned events;
+    digest preview and per-member presence
+    list. No new defect found. Next in
+    roadmap order: P-072.
