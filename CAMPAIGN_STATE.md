@@ -3841,3 +3841,30 @@ P-049 BANKED - Part IV opens: prompt manager - ordered,
     slice owning its own migration - not faked here.
     Next in roadmap order: P-050 (instruct templates,
     team-03).
+
+P-050 BANKED - instruct templates: the public template
+    shapes (ChatML, Llama-3, Alpaca, Vicuna) as data, plus an
+    honest plain default, per-model selectable - team-03
+    commit d3f4a33 merged (no-ff, clean) into
+    yrsa/two-mirrors-build as ebefe90 and pushed; ls-remote
+    verified ebefe9098bb229bf3a58ec9cdf4eef50f209941f.
+    Evidence (team-03 worktree hidden_files/P050_EVIDENCE.md
+    and logs): battery 42/42, neighbours 157, team full suite
+    2310 passed / 4 skipped / 0 failed (= 2268 + 42, exact).
+    Forge confirmation suite at the merged tree: 2310 passed
+    / 4 skipped / 0 failed. NO migration; head stays 0032.
+    Slice: prompt/instruct.py (InstructTemplate as data -
+    bos, per-role wrappers, separator, generation prefix,
+    stop strings, preamble; strict from_data/to_data;
+    MODEL_TEMPLATE_DEFAULTS first-match per-model table),
+    prompt/render.py render_prompt (pure concatenation, bos
+    once), resolve_template precedence explicit > model
+    default > plain; the inspector honours the selection and
+    echoes metadata + rendered_tokens only (S214 held).
+    Carried: F1 tools compose_preview resolves neither
+    layouts nor templates; F2 template persistence + preset
+    template_ref wiring = named follow-up with its own
+    migration; F3 stop-string merge with sampler stops lands
+    with P-052.
+    Next in roadmap order: P-051 (context templates,
+    team-01).
