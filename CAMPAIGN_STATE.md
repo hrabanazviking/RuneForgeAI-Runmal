@@ -4474,3 +4474,38 @@ P-067 BANKED - Checkpoints (Part V) -
     (never destructive), cross-user isolation
     404. No defects found. Next in roadmap
     order: P-068 (message actions complete).
+P-068 BANKED - Message actions complete (Part V) -
+    team-03 commit 62c804d merged (no-ff) into
+    yrsa/two-mirrors-build as d90e619, banking
+    heal e39d73d, and pushed; ls-remote verified
+    (see WAVE_PLAN update).
+    Evidence (team-03 worktree
+    hidden_files/P068_EVIDENCE.md): battery 35
+    passed, neighbours 251 passed, team full
+    suite 3012 passed / 4 skipped / 0 failed.
+    Forge confirmation suite at the merged
+    tree: 3086 passed / 4 skipped / 0 failed
+    (= 3051 + 35, exact). Migration RENUMBERED
+    at banking: provisional 0039 -> 0038 (file,
+    REVISION, registry, head pins swept); head
+    now 0038, chain composed 0036 -> 0037 ->
+    0038 as separate registry entries. Merge
+    reconciliation: event-constant union in
+    chats service (P-066 branch events + P-068
+    message events), P-067 checkpoint cleanup
+    and P-066 branch_info kept; copy-to-branch
+    RE-TARGETED onto P-066 branch columns in
+    the heal (fork chats now carry branch
+    lineage + source settings, mirroring
+    branches.fork_chat); head/index/tail pins
+    healed to merged truth in the heal (the
+    four Part V batteries + 17 pins across
+    p033-p039/p047/s103/s107, all the stale
+    negative-index class, none weakened).
+    Slice: edit with variant history, delete
+    (pin-Memory cleanup, renumbering), move
+    (position materialisation), copy-to-branch,
+    pin-to-memory through the existing
+    retrieval road; message.edited events carry
+    data={variant_count}. No new defect found.
+    Next in roadmap order: P-069.
