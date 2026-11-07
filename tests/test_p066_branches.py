@@ -8,9 +8,9 @@ never-destructive law (no operation mutates or deletes a source;
 a branch outlives its deleted parent).
 
 Migration: PROVISIONAL 0037 (chats branch lineage columns).
-0036 is RESERVED for P-065 (banks first); this battery pins the
-head at 0037 accordingly and pins that 0036 is absent on this
-base -- the keeper inserts P-065's 0036 beneath it at banking.
+0036 (P-065) banked first and stands beneath 0037 in the chain;
+this battery pins the head at 0037 and pins that 0036 is present
+in the applied chain (pins healed at P-066 banking).
 """
 
 from __future__ import annotations
@@ -81,8 +81,8 @@ def test_migration_head_is_0037_provisional(tmp_path):
     db_path = tmp_path / "m.db"
     applied = migrate_to_head(db_path)
     assert applied[-1] == "0037"
-    assert applied[-2] == "0035"
-    assert "0036" not in applied  # reserved for P-065; keeper inserts at banking
+    assert applied[-2] == "0036"
+    assert "0036" in applied  # P-065 banked first; 0036 stands beneath 0037
     assert current_revision(db_path) == "0037"
     assert migrate_to_head(db_path) == []  # idempotent
 
@@ -135,7 +135,7 @@ def test_migration_0037_upgrades_from_0035_with_root_defaults(tmp_path):
         conn.commit()
     finally:
         conn.close()
-    assert migrate_to_head(db_path) == ["0037"]
+    assert migrate_to_head(db_path) == ["0036", "0037"]
     conn = sqlite3.connect(db_path)
     try:
         row = conn.execute(

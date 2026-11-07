@@ -260,7 +260,7 @@ def test_block_for_kind_mapping():
 
 
 def test_migration_head_is_0036_provisional():
-    assert MIGRATIONS[-1][0] == "0036"  # PROVISIONAL 0036 (P-065); P-056 provisional 0034 banks first
+    assert MIGRATIONS[-1][0] == "0037"  # head moved by P-066 (PROVISIONAL 0037)
 
 
 # ---------------- service ----------------

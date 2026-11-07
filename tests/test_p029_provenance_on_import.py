@@ -209,18 +209,18 @@ def test_migration_head_is_0029_p037() -> None:
     """Head pin: the head moved with P-036's provisional 0028
     (0027 reserved for P-035), then with P-037's 0029; the keeper
     may renumber at banking, in which case this pin moves."""
-    assert MIGRATIONS[-1][0] == "0036"  # head moved by P-065 (PROVISIONAL 0036)
+    assert MIGRATIONS[-1][0] == "0037"  # head moved by P-066 (PROVISIONAL 0037)
 def test_migration_head_is_0030_provisional_p038() -> None:
     """Head pin: the head moved with P-038's provisional 0030
     (0029 reserved for P-037); the keeper may renumber at banking,
     in which case this pin moves with it."""
-    assert MIGRATIONS[-1][0] == "0036"  # head moved by P-065 (PROVISIONAL 0036)
+    assert MIGRATIONS[-1][0] == "0037"  # head moved by P-066 (PROVISIONAL 0037)
 
 
 def test_migration_0023_column_exists(tmp_path) -> None:
     db_path = tmp_path / "m.db"
     migrate_to_head(db_path)
-    assert current_revision(db_path) == "0036"
+    assert current_revision(db_path) == "0037"
     conn = sqlite3.connect(db_path)
     try:
         columns = {

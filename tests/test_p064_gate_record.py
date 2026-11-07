@@ -141,4 +141,4 @@ def test_migration_note_and_head_0035() -> None:
     assert "committed on yrsa/runmal-team-02 for the keeper to bank in roadmap order" in text
     from runmal.db.migrations import MIGRATIONS
 
-    assert MIGRATIONS[-1][0] == "0036"
+    assert MIGRATIONS[-1][0] == "0037"
