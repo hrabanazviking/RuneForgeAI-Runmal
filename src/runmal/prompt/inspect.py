@@ -57,6 +57,18 @@ so the cost of the template's framing is visible before sending.
 The rendered TEXT never enters the result: the S214 contract
 (traces carry no prompt content) outranks the convenience.
 
+Context templates (P-051): ``context_template`` is honoured
+via ``context.apply_context_template`` AFTER the P-049 layout
+(the layout governs block order/toggles; the context template
+governs the story-string assembly segments, their order, and
+their literal framing); segments a template disables surface
+in the trace as discards with reason
+``context_template_disabled``; the result carries a
+``context_template`` echo (metadata only). With no context
+template in play the pipeline is exactly the pre-P-051
+pipeline, and the default template's application is an exact
+identity on the baseline assembly.
+
 Prompt manager (P-049): ``prompt_layout`` is honoured via
 ``manager.apply_layout`` before compose; disabled blocks surface
 in the trace as discards with reason ``prompt_manager_disabled``;
@@ -77,9 +89,18 @@ from runmal.lorebooks.accounting import account_from_trace
 from runmal.lorebooks.preview import preview_activation
 from runmal.lorebooks.windows import ScanSettings
 from runmal.prompt.composer import compose
+from runmal.prompt.context import DISABLED_REASON as CONTEXT_DISABLED_REASON
+from runmal.prompt.context import apply_context_template
 from runmal.prompt.manager import DISABLED_REASON, apply_layout
 from runmal.prompt.render import render_prompt
-from runmal.prompt.service import layout_echo, resolve_layout, resolve_template, template_echo
+from runmal.prompt.service import (
+    context_echo,
+    layout_echo,
+    resolve_context_template,
+    resolve_layout,
+    resolve_template,
+    template_echo,
+)
 from runmal.prompt.slots import Slot, baseline_order, make_slot, slot_tokens
 from runmal.prompt.trace import TraceSlot, build_trace, trace_to_dict
 from runmal.tokens import estimate_tokens
@@ -163,11 +184,16 @@ async def inspect_prompt(
     prompt_layout: object | None = None,
     model_id: str | None = None,
     instruct_template: object | None = None,
+    context_template: object | None = None,
+    context_preset: object | None = None,
 ) -> dict | None:
     """Build the trace dict for a hypothetical prompt, or None when a
     referenced character/lorebook does not exist."""
     layout, layout_source = resolve_layout(prompt_layout)
     template, template_source = resolve_template(instruct_template, model_id)
+    ctx_template, ctx_source = resolve_context_template(
+        context_template, preset=context_preset
+    )
     messages = list(messages or [])
     lorebook_inspections: dict = {}
     lore_scope_summary: dict | None = None
@@ -356,6 +382,7 @@ async def inspect_prompt(
             )
         )
 
+    slots_for_compose = slots
     if layout is not None:
         kept, dropped = apply_layout(slots, layout)
         for slot in dropped:
@@ -372,8 +399,22 @@ async def inspect_prompt(
                 )
             )
         slots_for_compose = kept
-    else:
-        slots_for_compose = slots
+    if ctx_template is not None:
+        kept, dropped = apply_context_template(slots_for_compose, ctx_template)
+        for slot in dropped:
+            extras.append(
+                TraceSlot(
+                    slot_id=slot.id,
+                    kind=slot.kind,
+                    role=slot.role,
+                    status="discarded",
+                    tokens=slot_tokens(slot),
+                    reason=CONTEXT_DISABLED_REASON,
+                    trigger=slot.trigger or None,
+                    provenance=slot.provenance,
+                )
+            )
+        slots_for_compose = kept
     composed = compose(
         slots_for_compose, context_limit=context_limit, reserve_response=reserve_response
     )
@@ -382,6 +423,7 @@ async def inspect_prompt(
     result["prompt_layout"] = layout_echo(layout, layout_source)
     rendered = render_prompt(composed.messages, template)
     result["instruct_template"] = template_echo(template, template_source)
+    result["context_template"] = context_echo(ctx_template, ctx_source)
     result["rendered_tokens"] = estimate_tokens(rendered.text)
     if lore_scope_summary is not None:
         result["lore_scopes"] = lore_scope_summary

@@ -626,3 +626,23 @@ source in §0(2) and appends its entry here:
   was read and no file was downloaded; the slice's test
   conversations are authored fresh in the test module
   (P-005 discipline).
+- **P-051 (2026-11-06, public behaviour census + own tree
+  only):** no new external source and no mirror reading. The
+  context templates (story-string assembly formats as
+  editable data, imported from P-021's preset carriage) are
+  built from the roadmap line, the in-tree census ST-32
+  description of the public behaviour (named anchors,
+  example/chat-start separators, separators as stop strings),
+  the P-005/P-021 fixture spellings for prompt identifiers,
+  and Runmal's own in-tree facts: the S205 slot kinds and
+  baseline order supply the anchors (position-faithful, as
+  P-049), the S206 depth contract supplies the splice guard,
+  P-049/P-050 supply the data/validation/resolution pattern,
+  and the S214 trace bounds what the inspector may echo. The
+  segment data shape, the story-string fill-disabled rule,
+  the preset identifier-to-anchor mapping, and the plain
+  honest default are Runmal's own design for the roadmap
+  line, not a reproduction of any mirror behaviour. No
+  SillyTavern or Voxta source code was read and no file was
+  downloaded; the slice's test entries are authored fresh in
+  the test module (P-005 discipline).

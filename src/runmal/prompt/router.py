@@ -13,9 +13,20 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.db.deps import get_owner_id, get_session
 from runmal.prompt.inspect import inspect_prompt
+from runmal.prompt.context import (
+    context_to_data,
+    default_context_template,
+    list_context_templates,
+    to_story_string,
+)
 from runmal.prompt.manager import default_layout, layout_to_data
 from runmal.prompt.instruct import list_templates, template_to_data
-from runmal.prompt.service import resolve_template, template_echo
+from runmal.prompt.service import (
+    context_echo,
+    resolve_context_template,
+    resolve_template,
+    template_echo,
+)
 
 router = APIRouter(tags=["debug"])
 
@@ -32,6 +43,8 @@ class InspectRequest(BaseModel):
     prompt_layout: dict | None = None
     model_id: str | None = None
     instruct_template: dict | str | None = None
+    context_template: dict | str | None = None
+    context_preset: dict | None = None
 
 
 @router.post("/debug/prompt-inspect")
@@ -55,6 +68,8 @@ async def prompt_inspect(
             prompt_layout=body.prompt_layout,
             model_id=body.model_id,
             instruct_template=body.instruct_template,
+            context_template=body.context_template,
+            context_preset=body.context_preset,
         )
     except ValueError as exc:
         raise HTTPException(
@@ -83,3 +98,20 @@ async def instruct_templates() -> dict:
 async def instruct_template_default(model: str | None = None) -> dict:
     template, source = resolve_template(None, model)
     return {"template": template_echo(template, source), "model": model}
+
+
+@router.get("/debug/context-templates")
+async def context_templates() -> dict:
+    return {
+        "templates": [context_to_data(t) for t in list_context_templates()]
+    }
+
+
+@router.get("/debug/context-templates/default")
+async def context_template_default() -> dict:
+    template, source = resolve_context_template(None)
+    active = template if template is not None else default_context_template()
+    return {
+        "template": context_echo(active, source),
+        "story_string": to_story_string(active),
+    }

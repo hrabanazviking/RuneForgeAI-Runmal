@@ -1,4 +1,4 @@
-"""Prompt resolution services (P-049 layout; P-050 instruct).
+"""Prompt resolution services (P-049 layout; P-050 instruct; P-051 context).
 
 Precedence for a composition is explicit (a layout supplied with
 the request) > default -- there is deliberately no stored tier in
@@ -85,4 +85,76 @@ def template_echo(template: InstructTemplate, source: str) -> dict:
         "name": template.name,
         "source": source,
         "stop_strings": list(template.stop_strings),
+    }
+
+
+# ---------------- P-051: context template resolution ----------------
+
+from runmal.prompt.context import (  # noqa: E402
+    ContextTemplate,
+    context_from_data,
+    context_template_from_preset,
+    default_context_template,
+    from_story_string,
+    get_context_template,
+)
+
+
+def resolve_context_template(
+    explicit: object | None = None, preset: object | None = None
+) -> tuple[ContextTemplate | None, str]:
+    """Resolve the context template for a composition.
+
+    Precedence, explicit first (mirrors resolve_template):
+
+    - ``explicit`` as a string containing ``{{`` is a story
+      string, parsed by from_story_string;
+    - ``explicit`` as any other string names a builtin context
+      template (ValueError on an unknown name propagates);
+    - ``explicit`` as a dict is a full custom template,
+      validated by context_from_data;
+    - otherwise a preset (an ImportedPreset or a stored preset
+      dict) contributes the template its P-021 carriage implies
+      (source "preset") when it carries one;
+    - otherwise nothing is in play: ``(None, "default")`` (the
+      P-049 resolve_layout shape), so the no-template pipeline
+      stays byte-identical to pre-P-051; the caller echoes the
+      default template, whose application is an exact identity
+      on the baseline assembly anyway.
+
+    Returns ``(template, source)`` with source one of
+    "explicit" | "preset" | "default".
+    """
+    if isinstance(explicit, str):
+        if "{{" in explicit:
+            return from_story_string(explicit), "explicit"
+        return get_context_template(explicit), "explicit"
+    if explicit is not None:
+        return context_from_data(explicit), "explicit"
+    if preset is not None:
+        derived = context_template_from_preset(preset)
+        if derived is not None:
+            return derived, "preset"
+    return None, "default"
+
+
+def context_echo(template: ContextTemplate | None, source: str) -> dict:
+    """The ``context_template`` echo for an inspect result.
+
+    Metadata only, whitelist-pinned: the source, one
+    ``{anchor, enabled}`` row per segment in assembly order,
+    and the derived stop strings. No prefix / suffix /
+    separator literals and no slot content ever enter an
+    inspect result (S214 trace safety contract). A ``None``
+    template echoes the default template (the layout_echo
+    precedent).
+    """
+    active = template if template is not None else default_context_template()
+    return {
+        "source": source,
+        "segments": [
+            {"anchor": seg.anchor, "enabled": seg.enabled}
+            for seg in active.segments
+        ],
+        "stop_strings": list(active.stop_strings()),
     }
