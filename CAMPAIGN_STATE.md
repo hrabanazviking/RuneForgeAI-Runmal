@@ -10349,3 +10349,80 @@ P-134 BANKED - Scenario Library Organisation (Part IX)
     PART IX OPEN (P-131..P-154).
     Next in roadmap order: P-135
     (Part IX, in roadmap order).
+P-135 BANKED - Binding Lifecycle Read Surface (Part IX)
+    Part IX fifth slice.
+    - team-02 commit 752482b merged
+    (no-ff) into yrsa/two-mirrors-build
+    as aa3e500 (parents 589065a +
+    752482b); merge pushed and
+    ls-remote verified at aa3e500
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only
+    its part line (P-131..P-154), no
+    per-slice entries; the slice scope
+    is derived from the in-tree record
+    (P-132 pinned the binding store
+    list verbs with no HTTP road;
+    P-134 named this read surface a
+    future candidate), stated plainly
+    as derived in the slice doc and
+    the evidence.
+    Evidence (team-02 worktree
+    hidden_files/P135_EVIDENCE.md):
+    battery 16 passed / 0 failed;
+    neighbours 145 passed / 0 failed
+    (P-131 + P-132 + P-133 + P-134
+    + P-026 batteries); team full suite
+    4706 passed / 5 skipped / 0 failed.
+    Arithmetic: 4690 (base) + 16
+    = 4706 - exact.
+    Combined batteries on the merged
+    tree: 161 passed / 0 failed
+    (P-131 29 + P-132 18 + P-133 24
+    + P-134 12 + P-135 16 + P-026 62).
+    Forge confirmation suite on the
+    merged tree: 4706 passed /
+    5 skipped / 0 failed - a clean
+    run in 268.19s with no contention
+    re-runs needed. Expectation check:
+    4690 + 16 = 4706 - exact match,
+    as counted from the log. Log
+    hidden_files/P135_FORGE_CONFIRM.log
+    on purplelongship.
+    Slice scope: owner-scoped binding
+    list/inspect roads over the P-132
+    store verbs; scenarios/binding.py
+    summary() plus list services
+    (additive), scenarios/router.py
+    GET /scenarios/bindings and GET
+    /scenarios/{definition_id}/bindings
+    (additive), scenarios/__init__.py
+    (additive),
+    tests/test_p135_binding_read_surface.py
+    (new),
+    docs/SCENARIO_BINDING_READ_SURFACE_2026-11-08.md
+    (new), clean-room log append (+1).
+    Summaries name definition_exists
+    honestly.
+    Honest limitations: summaries carry
+    counts not seeded content, orphan
+    bindings stay listed with
+    definition_exists false until
+    unbound, no filters/sorts/paging.
+    Migration: NONE (head stays 0041).
+    Merge: clean, no conflicts;
+    merged router grep-verified
+    carrying P-131 CRUD + P-132 binding
+    + P-133 export + P-134 organisation
+    + P-135 binding-read roads
+    (GET /scenarios/bindings before
+    the {definition_id} roads);
+    py_compile clean; merged diff
+    exactly the team slice.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-136
+    (Part IX, in roadmap order).
