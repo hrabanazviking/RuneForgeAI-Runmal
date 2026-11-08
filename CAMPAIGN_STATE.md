@@ -9449,3 +9449,121 @@ P-126 BANKED - Describe-on-Attach Opt-In (Part VIII)
     camera.
     Next in roadmap order: P-127
     (Part VIII continues).
+P-127 BANKED - Watcher History & Search (Part VIII)
+    PART VIII continues (eleventh slice).
+    - team-03 commit 630ee50 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as bb8b103 (parents 0be09f6 +
+    630ee50); merge pushed and
+    ls-remote verified at bb8b103
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Evidence (team-03 worktree
+    hidden_files/P127_EVIDENCE.md):
+    battery 18 passed / 0 failed;
+    neighbours 149 passed / 1 skipped
+    / 0 failed (P-117..P-125 + s307);
+    team full suite 4522 passed /
+    5 skipped / 0 failed on its base
+    f29b712 (P-125 banking record;
+    P-126 is NOT in that base,
+    reconciled at this merge in
+    roadmap order).
+    Expectation check: 4504 (banked
+    base) + 18 new = 4522 - exact
+    match. Combined vision fence on
+    the merged tree (P-117 through
+    P-127): 175 passed / 1 skipped /
+    0 failed (157 P-126 fence + 18).
+    Forge confirmation suite on the
+    merged tree: 4536 passed /
+    5 skipped / 0 failed - a clean run
+    with no contention re-runs needed.
+    Expectation check: 4518 (P-126
+    banking confirmation) + 18 new =
+    4536 - exact match. Log
+    hidden_files/P127_FORGE_CONFIRM.log
+    on purplelongship.
+    Slice scope (DERIVED, as Part
+    VIII per-slice definitions are
+    derived - the filed roadmap gives
+    Part VIII only its part line):
+    the watcher store - the third and
+    last vision store - gains the
+    P-122/P-125 parity surface:
+    WatchStore.search plus
+    list_ingested_for_owner and
+    search_ingested, owner-scoped
+    first, literal substring matching
+    over the folder path and the
+    ingested records source_path +
+    sha256 only, never semantic,
+    never ranked; and the router
+    gains GET /vision/watch-folders/
+    history and GET /vision/watch-
+    folders/ingested/history, both
+    declared BEFORE the {watch_id}
+    roads so the literal segments are
+    not captured as ids. This slice
+    reads already-persisted ingested
+    records and persists nothing new.
+    Slice: src/runmal/vision/
+    watcher.py, src/runmal/vision/
+    router.py, src/runmal/vision/
+    __init__.py,
+    tests/test_p127_watcher_history_
+    search.py (new, 18 tests),
+    docs/VISION_WATCHER_HISTORY_
+    2026-11-08.md (new), clean-room
+    log append (+1).
+    6 files, +785/-0.
+    Migration: NONE (head stays 0041;
+    the provisional 0042 was NOT
+    needed and NOT taken - both new
+    surfaces ride the existing v1
+    watcher JSON document, format
+    unchanged).
+    Merge conflicts in the clean-room
+    log (append-vs-append; P-124,
+    P-125, P-126, and P-127 entries
+    kept, each exactly once) and
+    vision/router.py (additive union:
+    the P-126 describe opt-in
+    paragraph and the P-127 watcher
+    history paragraph both kept;
+    watch-folders history roads
+    declared before the {watch_id}
+    roads, the attachments history
+    road, the describe opt-in fields,
+    and list_for_owner/search plus
+    search_ingested all verified
+    present; py_compile clean),
+    resolved as additive unions by
+    the banking coordinator before
+    this banking. vision/__init__.py
+    auto-merged carrying both the
+    P-126 and P-127 map bullets.
+    Merged diff vs the forge head is
+    purely additive (+785/-0).
+    Derived scope ACCEPTED as
+    banked. Declined plainly, with
+    evidence in the scout and slice
+    doc: watcher scan-report
+    persistence - declined a fourth
+    time, on unchanged evidence, and
+    distinct from this slice, which
+    reads the already-persisted
+    ingested records and persists
+    nothing new; vision settings, a
+    semantic caption provider, OCR,
+    capture / camera, a watcher
+    daemon, describe-batch, and
+    fork-carry.
+    Named-open carried items (not
+    dropped): a real local semantic
+    caption provider; OCR; capture /
+    camera; portable-archive
+    inclusion of the vision stores.
+    Next in roadmap order: P-128
+    (Part VIII continues).
