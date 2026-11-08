@@ -61,6 +61,16 @@
   standing honesty notes (P-139, Part IX, DERIVED
   scope).
 - ``replacepreview`` — definition replace-impact preview: for one stored definition, the bindings a replace would leave pinning a superseded revision (split by pinned revision against the current one), the organisation row that stays live, and the next revision, read before any replace is committed (P-140, Part IX, DERIVED scope).
+- ``chatdeletepreview`` - chat delete-impact
+  preview: what deleting one chat would orphan on the
+  scenario side - its standing binding, which chat
+  deletion does not cascade into and which would
+  afterwards read as if the chat lived - judged on
+  both custody axes (the chat's existence, and the
+  binding's P-144 definition-axis state) before the
+  irreversible act, with the delete_chat cascade
+  weighed and expressly not taken (P-149, Part IX,
+  DERIVED scope).
 - ``candidatepreview`` - candidate replace preview: a
   candidate body for one stored definition, judged
   through the store door's own parser (P-026) exactly as
@@ -152,6 +162,9 @@ from runmal.scenarios.candidatechatpreview import (
     preview_candidate_for_chat,
 )
 from runmal.scenarios.deletepreview import preview_delete_impact
+from runmal.scenarios.chatdeletepreview import (
+    preview_chat_delete_impact,
+)
 from runmal.scenarios.replacepreview import preview_replace_impact
 from runmal.scenarios.candidatepreview import (
     preview_candidate_replace,
@@ -294,6 +307,7 @@ __all__ = [
     "preview_bind_for_chat",
     "preview_candidate_for_chat",
     "preview_delete_impact",
+    "preview_chat_delete_impact",
     "preview_replace_impact",
     "preview_candidate_replace",
     "preview_pack_import",

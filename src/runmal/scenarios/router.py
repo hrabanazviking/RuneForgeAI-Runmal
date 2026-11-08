@@ -11,6 +11,7 @@
 + candidate replace preview (P-146).
 + chat-scoped candidate bind preview (P-147).
 + binding chat-custody census (P-148).
++ chat delete-impact preview (P-149).
 
 P-026 roads (stateless): parse a scenario file and report
 honestly, and re-export it. Those roads are unchanged.
@@ -172,6 +173,9 @@ from runmal.scenarios.candidatepreview import (
 )
 from runmal.scenarios.bindingcensus import census_bindings
 from runmal.scenarios.chatcensus import census_binding_chats
+from runmal.scenarios.chatdeletepreview import (
+    preview_chat_delete_impact,
+)
 from runmal.scenarios.reportcensus import census_unmappable
 from runmal.scenarios.storedexport import (
     DEFAULT_FORMAT,
@@ -805,6 +809,49 @@ async def delete_scenario_binding(
         "unbound": True,
         "seeded_content_kept": True,
     }
+
+
+# ---------------------- chat delete-impact preview (P-149)
+
+
+@router.get(
+    "/scenarios/bindings/{chat_id}/delete-impact",
+    status_code=status.HTTP_200_OK,
+)
+async def preview_scenario_chat_delete_impact(
+    chat_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """What deleting THIS chat WOULD orphan (P-149).
+
+    The scenario side of a chat deletion, named before
+    the irreversible act: the chat's existence judged
+    owner-scoped against the live Chat table, its
+    standing binding as P-132's full record, that
+    binding's definition-axis state under P-144's law
+    (current, superseded, ahead or stale), and the
+    impact read from the record itself - a standing
+    binding on a living chat would be orphaned, because
+    chat deletion does not cascade into the binding
+    store. Declared after the per-chat binding roads as
+    a two-segment suffix no one-segment road can
+    capture. An owned unbound chat answers the honest
+    zero at 200; a caller's own already-orphaned binding
+    still answers at 200; a chat the caller neither owns
+    nor holds a binding for answers 404 ("chat not
+    found") - existence never leaks on either side.
+    Pure read: the DELETE chat road remains the only
+    deleter, and it is untouched by this slice.
+    """
+    envelope = await preview_chat_delete_impact(
+        session, _bindings(), _store(), user_id, chat_id)
+    if envelope is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="chat not found",
+        )
+    return envelope
 
 
 @router.get(
