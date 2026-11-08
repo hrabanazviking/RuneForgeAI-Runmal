@@ -12098,3 +12098,166 @@ P-146 BANKED - Candidate Replace Preview (Part IX)
     PART IX OPEN (P-131..P-154).
     Next in roadmap order: P-147 (Part
     IX, in roadmap order).
+
+P-147 BANKED - Chat-Scoped Candidate Bind Preview (Part IX)
+    Part IX seventeenth slice.
+    - team-02 commit b8d72c0 merged (no-
+    ff) into yrsa/two-mirrors-build as
+    e3dc1d4 (parents 3ff4555 + b8d72c0);
+    merge pushed and ls-remote verified
+    at e3dc1d4 before this record;
+    banking record commit follows this
+    entry and is pushed after it.
+    Cross-base banking: team-02 built on
+    0de6465 (the P-145 banking record);
+    P-146 is NOT in its base by design,
+    so reconciliation at banking was the
+    keeper's (below).
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only its
+    part line (P-131..P-154), no per-
+    slice entries; the slice scope is
+    derived from Runmal's own in-tree
+    record (the Part IX preview matrix
+    had exactly one empty cell - stored
+    x definition-side = P-136, stored x
+    chat = P-138, candidate x
+    definition-side = P-146, candidate x
+    chat = nothing; P-147 lands that
+    cell: the candidate is judged
+    through the store door exactly as
+    replace applies it, and the chat
+    judgement is P-138's own calls,
+    never re-implemented - group check,
+    get_for_chat, chat history, P-093
+    resolve_key + get_entry under the
+    scenario writer, the identical
+    already-present reason string and
+    door refusal message), stated
+    plainly as derived in the slice doc.
+    Evidence (team-02 worktree
+    hidden_files/ P147_EVIDENCE.md +
+    logs P147_BATTERY.log,
+    P147_FENCE.log, P147_FULL.log):
+    battery 15 passed / 0 failed - the
+    design header and the slice doc as
+    staged claimed 16; the battery as
+    authored collects 15 test functions
+    and every case the design enumerates
+    is present (9 service + 6 HTTP incl.
+    the 0041 migration pin); the slip
+    was the count, not a missing case,
+    and the slice doc line was corrected
+    to 15 in-slice; neighbour fence 319
+    passed / 0 failed (P-026 +
+    P-131..P-145 scenario batteries; the
+    P-146 battery is absent from this
+    base by design and is therefore
+    honestly not in the fence - the
+    keeper runs it at banking
+    reconciliation, below); team full
+    suite 4879 passed / 5 skipped / 0
+    failed, reconciling exactly with
+    its base (4864 + 15 = 4879); no
+    failure occurred, so no timing-
+    failure classification or solo re-
+    run was needed.
+    Combined batteries on the merged
+    tree: 349 passed / 0 failed (the
+    fence through P-146 counted 334 at
+    the P-146 banking + 15 = 349; P-026
+    + P-131..P-147 scenario batteries).
+    Log /tmp/p147_combined.log on
+    purplelongship.
+    Forge confirmation suite on the
+    merged tree: 4894 passed / 5 skipped
+    / 0 failed - a clean run in 367.91s
+    with no contention re-runs needed.
+    Expectation check: 4879 + 15 = 4894
+    - exact match, as counted from the
+    log. Log /tmp/p147_forge_full.log
+    on purplelongship.
+    Slice scope: the chat-scoped
+    candidate bind preview -
+    scenarios/candidatechatpreview.py
+    (new: preview_candidate_for_chat
+    judges the candidate body through
+    the store door exactly as
+    ScenarioStore.replace applies it -
+    the store door's _parse_body law,
+    stated in full without importing
+    P-146, which is absent from this
+    base - and answers the chat-scoped
+    envelope: the candidate as if stored
+    at next_revision and then bound,
+    judged with P-138's own calls;
+    pure read: replaces, binds, seeds
+    and writes nothing), one additive
+    road (POST
+    /scenarios/{definition_id}/replace-
+    preview/{chat_id}, declared in its
+    own section after the sharing-pack
+    section at the router tail),
+    scenarios/router.py (additive,
+    insertions only),
+    scenarios/__init__.py (additive,
+    insertions only,
+    preview_candidate_for_chat export +
+    one subsystem-map bullet),
+    tests/test_p147_candidate_chat_preview.py
+    (new, 15 tests),
+    docs/SCENARIO_CANDIDATE_CHAT_PREVIEW_2026-11-08.md
+    (new), clean-room log append (+1).
+    Team delta 6 files (+1167/-0),
+    purely additive, no hidden_files
+    paths in the slice commit.
+    Honest limitations: as-if-stored -
+    would_bind and the splits judge the
+    candidate as if stored at
+    next_revision and then bound; either
+    act re-decides every fact when it
+    runs; the P-146 union was NOT
+    verified in the team worktree (it
+    cannot be: P-146 is absent from that
+    base by design) - it is verified
+    here at banking by the combined
+    batteries and the forge confirmation
+    above; no pre-slice full-suite run
+    was taken in the team session, so
+    the team's no-regression claim rests
+    on its full suite's zero failures
+    plus the 319-test neighbour fence,
+    and the keeper's merged-tree runs
+    above close the question; there is
+    no playback in this slice, and none
+    is claimed (P-027 law: content is
+    data, never code; the candidate is
+    parsed and planned as data only).
+    Team counts exclude P-146 (absent
+    from this base by design);
+    reconciliation is the keeper's at
+    banking (combined batteries + forge
+    confirmation above).
+    Migration: NONE (head stays 0041).
+    Merge: additive union with P-146's
+    banked work; merge conflicts in
+    scenarios/router.py +
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    resolved as pure additive unions
+    (P-146 and P-147 work kept exactly
+    once each; scenarios/__init__.py
+    merged clean as an additive union);
+    merged scenarios/router.py grep-
+    verified carrying BOTH the P-146
+    POST /scenarios/{definition_id}/
+    replace-preview road AND the P-147
+    POST /scenarios/{definition_id}/
+    replace-preview/{chat_id} road; the
+    merged clean-room log holds the
+    P-146 and P-147 entries exactly once
+    each; merged scenarios modules
+    py_compile clean.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-148 (Part
+    IX, in roadmap order).
