@@ -9921,3 +9921,132 @@ P-130 BANKED - Part VIII Gate - Vision Services (Part VIII)
     Next in roadmap order: P-131
     (Part IX opening, in roadmap
     order).
+P-131 BANKED - Scenario Definitions: the Scenario Truth Layer (Part IX)
+    PART IX OPENED. Part IX runs
+    P-131..P-154 (Scenarios - the
+    Visual Novel Engine, per the
+    governing roadmap part line).
+    - team-01 commit 28037a1 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as f43b1d1 (parents be86774 +
+    28037a1); merge pushed and
+    ls-remote verified at f43b1d1
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Derived scope ACCEPTED as banked:
+    Part IX opener, DERIVED scope per
+    the P-101 / P-117 precedent - the
+    filed roadmap gives Part IX only
+    its part line (P-131..P-154), no
+    per-slice entries; the slice scope
+    is derived from Runmal's own
+    in-tree record (P-026's docstring
+    "scenarios are not stored until
+    Part IX", the P-117 versioned-JSON
+    house store pattern, the P-027 law
+    that content is data, never code),
+    stated plainly as derived in the
+    slice doc and the evidence.
+    Evidence (team-01 worktree
+    hidden_files/P131_EVIDENCE.md):
+    battery 29 passed / 0 failed;
+    neighbours (P-026 scenario interop
+    + P-027 content safety rails +
+    P-030 Part II gate) 127 passed /
+    0 failed; team full suite
+    4636 passed / 5 skipped / 0 failed
+    on its base be86774 (P-130 banking
+    record). Arithmetic: 4607 (P-130
+    forge confirmation) + 29 battery
+    = 4636 - exact.
+    Combined batteries on the merged
+    tree (P-131 battery + the neighbour
+    fence): 156 passed / 0 failed
+    (29 + 127 - exact match).
+    Forge confirmation suite on the
+    merged tree: 4636 passed /
+    5 skipped / 0 failed - a clean run
+    in 255.56s with no contention
+    re-runs needed (no s503 STT timing
+    contract or P-077 tripwire failure
+    occurred). Expectation check:
+    4607 (P-130 banking confirmation)
+    + 29 = 4636 - exact match, as
+    counted from the log. Log
+    hidden_files/P131_FORGE_CONFIRM.log
+    on purplelongship.
+    In-slice defect found and FIXED
+    (never leave a discovered bug
+    unfixed): the landed ScenarioStore
+    _load converted rows via from_dict,
+    whose int() parse of revision
+    raised ValueError / TypeError on a
+    hand-damaged stored row ("abc" /
+    null), bricking every store verb -
+    against the design tolerant-load
+    law. Reproduced before the fix
+    (both probes crashed). Fix: _load
+    skips a malformed row (it reads as
+    absent), keeping the good rows
+    beside it. Pinned by 2 new battery
+    tests (malformed row never bricks;
+    good row survives a bad neighbour;
+    27 landed + 2 finisher = 29).
+    Honesty note (recorded, not
+    invented): hidden_files/
+    P131_SCOUT.md does NOT exist in
+    the team-01 worktree (verified by
+    the keeper and again by the
+    finisher). P131_DESIGN.md governed;
+    no scout content is claimed
+    anywhere in this slice's record.
+    Honest limitation: stored
+    definitions are the P-026 NATIVE
+    shape - a Voxta file's unmappable
+    raw values do not persist in a
+    stored definition; the record's
+    import report names every one, and
+    the stateless P-026 import/export
+    roads remain the lossless hand-back
+    road (slice doc section 5). No
+    instantiation, playback, or library
+    organisation in this slice (named
+    seams in the slice doc).
+    Slice scope: src/runmal/scenarios/
+    store.py (new - ScenarioDefinition
+    + ScenarioStore over the versioned
+    JSON document scenarios.json;
+    owner-scoped create / get /
+    list_for_owner / replace / remove;
+    create parses through P-026 and
+    persists the native export, the
+    import report riding with the
+    record), src/runmal/scenarios/
+    router.py (five CRUD roads appended
+    on the existing /scenarios prefix -
+    POST 201 / GET list / GET one /
+    PUT / DELETE, owner-scoped, 404 for
+    unknown and foreign alike, 422 for
+    parse and store refusals; the P-026
+    import/export roads byte-untouched),
+    src/runmal/scenarios/__init__.py
+    (exports + subsystem-map line),
+    tests/test_p131_scenario_definitions.py
+    (new, 29 tests),
+    docs/SCENARIO_DEFINITIONS_2026-11-08.md
+    (new), clean-room log append (+1).
+    6 files, +1030/-2.
+    Migration: NONE (head stays 0041;
+    no migration was added by this
+    slice; the battery pins the head at
+    0041).
+    Merge: CLEAN - no conflicts at
+    all, not even the clean-room log;
+    the merged diff vs the forge head
+    is exactly the team slice
+    (+1030/-2). No banking heal needed.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-132
+    (Part IX, in roadmap order).
