@@ -966,3 +966,102 @@ async def game_bridge_clear(
     except ValueError as exc:
         raise _visible(exc) from exc
     return {"cleared": True, "chat_id": chat_id, "removed": removed}
+
+
+# -- Plugin Settings UI surface (P-098) ------------------------------------
+# The generated settings form + the validated owner-value
+# road, in the house router idiom (owner dep, ValueError
+# -> 422 via _visible with the NAMED validation errors in
+# the detail, unknown plugin -> 404). Manifest resolution:
+# registry record first, else a shipped citizen manifest
+# (the P-094 pattern). The citizen lives in
+# runmal.plugins.settings_ui; imports are lazy so this
+# router's import graph is unchanged at module load.
+
+
+def _settings_manifest_or_404(plugin_id: str):
+    from runmal.plugins import settings_ui as su
+
+    manifest = su.resolve_manifest(_registry(), plugin_id)
+    if manifest is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"unknown plugin: {plugin_id}")
+    return manifest
+
+
+def _settings_error(exc: Exception) -> HTTPException:
+    from runmal.plugins import settings_ui as su
+
+    if isinstance(exc, su.SettingsValidationError):
+        return HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={"message": str(exc), "errors": exc.errors})
+    return _visible(exc)
+
+
+@router.get("/plugins/{plugin_id}/settings-form")
+async def plugin_settings_form(
+    plugin_id: str,
+    user_id: str = Depends(get_owner_id),
+):
+    from runmal.plugins import settings_ui as su
+
+    manifest = _settings_manifest_or_404(plugin_id)
+    try:
+        return su.form_for_owner(user_id, manifest)
+    except ValueError as exc:
+        raise _settings_error(exc) from exc
+
+
+@router.get("/plugins/{plugin_id}/settings")
+async def plugin_settings_values(
+    plugin_id: str,
+    user_id: str = Depends(get_owner_id),
+):
+    from runmal.plugins import settings_ui as su
+
+    manifest = _settings_manifest_or_404(plugin_id)
+    try:
+        values = su.get_plugin_settings(user_id, manifest)
+        stored = su.load_stored_values(user_id, plugin_id)
+    except ValueError as exc:
+        raise _settings_error(exc) from exc
+    return {"plugin_id": plugin_id, "values": values, "stored": stored,
+            "defaults": su.declared_defaults(manifest)}
+
+
+@router.post("/plugins/{plugin_id}/settings")
+async def plugin_settings_save(
+    plugin_id: str,
+    body: dict,
+    user_id: str = Depends(get_owner_id),
+):
+    from runmal.plugins import settings_ui as su
+
+    manifest = _settings_manifest_or_404(plugin_id)
+    if not isinstance(body, dict) or not isinstance(body.get("values"), dict):
+        raise _visible(ValueError(
+            "request must carry a 'values' object"))
+    try:
+        return su.save_plugin_settings(user_id, manifest, body["values"])
+    except ValueError as exc:
+        raise _settings_error(exc) from exc
+
+
+@router.post("/plugins/{plugin_id}/settings/delete")
+async def plugin_settings_delete(
+    plugin_id: str,
+    body: dict,
+    user_id: str = Depends(get_owner_id),
+):
+    from runmal.plugins import settings_ui as su
+
+    _settings_manifest_or_404(plugin_id)
+    if not isinstance(body, dict) or body.get("confirm") is not True:
+        raise _visible(ValueError(
+            "settings deletion requires an explicit {confirm: true}"))
+    try:
+        return su.delete_plugin_settings(user_id, plugin_id)
+    except ValueError as exc:
+        raise _settings_error(exc) from exc
