@@ -10273,3 +10273,79 @@ P-133 BANKED - Stored-Definition File Export (Part IX)
     PART IX OPEN (P-131..P-154).
     Next in roadmap order: P-134
     (Part IX, in roadmap order).
+P-134 BANKED - Scenario Library Organisation (Part IX)
+    Part IX fourth slice.
+    - team-01 commit 377f0e9 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 8296639 (parents cc9bcee +
+    377f0e9); merge pushed and
+    ls-remote verified at 8296639
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only
+    its part line (P-131..P-154), no
+    per-slice entries; the slice scope
+    is derived from the in-tree record
+    (P-131 declined organisation;
+    P-132 declined it behind
+    consumption, P-133 behind export
+    parity), stated plainly as derived
+    in the slice doc and the evidence.
+    Evidence (team-01 worktree
+    hidden_files/P134_EVIDENCE.md):
+    battery 12 passed / 0 failed;
+    neighbours 121 passed / 0 failed
+    (battery + P-131 + P-132 + P-026
+    batteries); team full suite
+    4666 passed / 5 skipped / 0 failed.
+    Arithmetic: 4654 (base) + 12
+    = 4666 - exact.
+    Combined batteries on the merged
+    tree: 145 passed / 0 failed
+    (P-131 29 + P-132 18 + P-133 24
+    + P-134 12 + P-026 62).
+    Forge confirmation suite on the
+    merged tree: 4690 passed /
+    5 skipped / 0 failed - a clean
+    run in 272.87s with no contention
+    re-runs needed. Expectation check:
+    4678 + 12 = 4690 - exact match,
+    as counted from the log. Log
+    hidden_files/P134_FORGE_CONFIRM.log
+    on purplelongship.
+    In-slice fix: repeatable tag
+    query parameter bound via
+    Query(default=None).
+    Slice scope: organisation lives
+    in its own scenario_organisation.json
+    (P-131 definitions document
+    byte-untouched); P-024 tag law
+    imported; scenarios/organisation.py
+    (new), scenarios/router.py and
+    scenarios/__init__.py (additive),
+    tests/test_p134_scenario_organisation.py
+    (new), docs/SCENARIO_ORGANISATION_2026-11-08.md
+    (new), clean-room log append (+1).
+    Honest limitations: orphan
+    organisation rows filtered at read
+    on definition delete, search covers
+    name/description/scenario_text only,
+    no collections/UI.
+    Migration: NONE (head stays 0041).
+    Merge: conflicts in router.py,
+    __init__.py and CLEAN_ROOM_LOG
+    resolved as pure additive unions
+    keeping both slices; clean-room
+    entries exactly once each; merged
+    router grep-verified carrying
+    P-131 CRUD + P-132 binding +
+    P-133 export + P-134 organisation
+    roads (GET /scenarios/library/tags
+    before the {definition_id} roads);
+    py_compile clean.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-135
+    (Part IX, in roadmap order).
