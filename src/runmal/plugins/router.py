@@ -160,11 +160,36 @@ async def plugin_install(body: dict, response: Response):
     return _outcome_payload(outcome, _registry())
 
 
+@router.get("/plugins/failure-reports")
+async def plugin_failure_reports():
+    # P-099: every plugin's plain failure report, in
+    # registration order. Declared before the {plugin_id}
+    # detail route so the fixed segment is not captured
+    # as a plugin id.
+    from runmal.plugins import failure as failure_mod
+    registry = _registry()
+    return [report.to_dict()
+            for report in failure_mod.all_failure_reports(registry)]
+
+
 @router.get("/plugins/{plugin_id}")
 async def plugin_detail(plugin_id: str):
     registry = _registry()
     record = _record_or_404(registry, plugin_id)
     return service.record_detail_to_dict(record, registry)
+
+
+@router.get("/plugins/{plugin_id}/failure-report")
+async def plugin_failure_report(plugin_id: str):
+    # P-099: the one plugin's inspectable failure report,
+    # plain words included; messages are scrubbed of any
+    # secret values the caller names via the module road -
+    # over HTTP no secret values are supplied, and the
+    # plain report never embeds message text at all.
+    from runmal.plugins import failure as failure_mod
+    registry = _registry()
+    _record_or_404(registry, plugin_id)
+    return failure_mod.failure_report(registry, plugin_id).to_dict()
 
 
 @router.get("/plugins/{plugin_id}/permission-card")
