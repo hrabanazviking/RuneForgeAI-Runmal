@@ -10,6 +10,13 @@ The truth layer lives in runmal.vision.service; this module
 is only the HTTP shape. The only provider this slice ships
 is the metadata provider (sniffed truth, road "metadata");
 no road here invents a semantic caption.
+
+P-119: describe now selects its provider through
+runmal.vision.selection — the request may name a provider
+by road or provider_id, or require a semantic provider
+(refused plainly today: none exists in-tree) — and
+GET /vision/providers exposes the provider catalogue plus
+the backends' declared vision truth as data.
 """
 
 from __future__ import annotations
@@ -26,6 +33,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from runmal.assets import service as asset_service
 from runmal.chats import service as chat_service
 from runmal.db.deps import get_owner_id, get_session
+from runmal.vision import selection as vision_selection
 from runmal.vision import service as vision_service
 
 router = APIRouter(tags=["vision"])
@@ -50,6 +58,8 @@ class DescribeRequest(BaseModel):
     asset_id: str | None = None
     image_b64: str | None = None
     question: str = ""
+    provider: str | None = None
+    require_semantic: bool = False
 
 
 @router.post("/vision/describe")
@@ -92,12 +102,14 @@ async def describe(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="asset_id or image_b64 is required")
     try:
+        provider = vision_selection.select_provider(
+            body.provider, semantic_required=body.require_semantic)
         record = vision_service.describe_image(
             _store(),
             chat_id=chat.id,
             owner_id=owner_id,
             image_bytes=image_bytes,
-            provider=vision_service.MetadataVisionProvider(),
+            provider=provider,
             source_kind=source_kind,
             source_ref=source_ref,
             question=body.question or "",
@@ -111,6 +123,13 @@ async def describe(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=str(exc)) from None
     return record.to_dict()
+
+
+@router.get("/vision/providers")
+async def list_providers(
+    owner_id: str = Depends(get_owner_id),
+):
+    return vision_selection.providers_payload()
 
 
 @router.get("/vision/descriptions")
