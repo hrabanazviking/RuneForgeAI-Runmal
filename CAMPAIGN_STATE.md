@@ -12398,3 +12398,160 @@ P-148 BANKED - Binding Chat-Custody Census (Part IX)
     PART IX OPEN (P-131..P-154).
     Next in roadmap order: P-149 (Part
     IX, in roadmap order).
+P-149 BANKED - Chat Delete-Impact Preview (Part IX)
+    Part IX nineteenth slice.
+    - team-01 commit 17eeac3 merged (no-
+    ff) into yrsa/two-mirrors-build as
+    7ab4d22 (parents 0dde71b + 17eeac3);
+    merge pushed and ls-remote verified
+    at 7ab4d22 before this record;
+    banking record commit follows this
+    entry and is pushed after it.
+    Cross-base banking: team-01 built on
+    c66c5bf (the P-147 banking record);
+    P-148 is NOT in its base by design,
+    so reconciliation at banking was the
+    keeper's (below).
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only its
+    part line (P-131..P-154), no per-
+    slice entries; the slice scope is
+    derived from Runmal's own in-tree
+    record (Part IX's irreversible acts
+    each had a pre-commit preview except
+    chat deletion - P-139 previews
+    definition deletion, P-140 / P-146 /
+    P-147 the replacement and candidate
+    previews, P-136 / P-138 the binding -
+    while chats.service.delete_chat
+    cleans checkpoints / databank / undo
+    / vision links / image attachments
+    / folder-watch registrations but
+    never the scenario binding store, so
+    a deleted bound chat's binding
+    record stands forever; P-148's
+    census names such orphans only after
+    the fact, across the whole store,
+    never before one named chat's
+    deletion; P-149 names, before the
+    act, exactly what one named chat's
+    deletion would orphan), stated
+    plainly as derived in the slice doc.
+    Evidence (team-01 worktree
+    hidden_files/ P149_EVIDENCE.md +
+    logs P149_BATTERY.log,
+    P149_NEIGHBOURS.log,
+    P149_FULL_SUITE.log): battery 18
+    passed / 0 failed; neighbour fence
+    367 passed / 0 failed; team full
+    suite 4912 passed / 5 skipped / 0
+    failed, reconciling exactly with
+    the count expected on that base
+    (4894 + 18 = 4912). The team's first
+    detached full-suite run HUNG on the
+    pre-existing manual PortAudio test
+    tests/test_s501_audio.py::
+    test_sounddevice_provider_manual
+    (host audio-stack hang enumerating
+    PortAudio devices; not a slice
+    defect) - the run was killed, that
+    file solo re-run 12 passed / 1
+    skipped, and a fresh full suite ran
+    clean; the incident is recorded in
+    full in P149_EVIDENCE.md.
+    Combined batteries on the merged
+    tree: 384 passed / 0 failed (the
+    fence through P-148 counted 366 at
+    the P-148 banking + 18 = 384; P-026
+    + P-131..P-149 scenario batteries).
+    Log hidden_files/P149_COMBINED.log
+    in ~/runmal-forge on purplelongship.
+    Forge confirmation suite on the
+    merged tree: 4929 passed / 5 skipped
+    / 0 failed - a clean run in 298.24s
+    with no contention re-runs needed.
+    Expectation check: 4911 + 18 = 4929
+    - exact match, as counted from the
+    log. Log hidden_files/
+    P149_FORGE_SUITE.log in
+    ~/runmal-forge on purplelongship.
+    Slice scope: the chat delete-impact
+    preview -
+    scenarios/chatdeletepreview.py (new:
+    preview_chat_delete_impact, async
+    pure read; leak-free None law -
+    unknown, foreign and foreign-bound
+    chats answer alike, so existence
+    never leaks; owner-scoped Chat
+    existence, the P-132 binding record
+    verbatim, its definition-axis state
+    under P-144's state law via imported
+    STATE_* constants, impact counts
+    read from the record itself, five
+    standing honesty notes), one
+    additive road (GET
+    /scenarios/bindings/{chat_id}/
+    delete-impact, declared after the
+    per-chat binding roads; the
+    service's None maps to 404 "chat not
+    found"), scenarios/router.py
+    (additive, +47), scenarios/__init__.py
+    (additive, +14,
+    preview_chat_delete_impact export +
+    one subsystem-map bullet),
+    tests/test_p149_chat_delete_impact.py
+    (new, 18 tests),
+    docs/SCENARIO_CHAT_DELETE_IMPACT_2026-11-08.md
+    (new), clean-room log append (+1).
+    Team delta 6 files (+1031/-0),
+    purely additive, no hidden_files
+    paths in the slice commit.
+    Honest limitations: the preview is a
+    pure read; it changes no write
+    behaviour and deletes nothing. The
+    delete_chat cascade into the binding
+    store - P-148's named open question -
+    was weighed and NOT taken in this
+    slice, with the reasons recorded in
+    the slice doc (a write-behaviour
+    change inside the chats subsystem
+    that no in-tree record has decided;
+    chat deletion's custody blocks run
+    silently and best-effort and would
+    erase the binding record - the only
+    surviving account of what a binding
+    seeded - with no answer and no
+    undo); it stands open for a future
+    slice to take deliberately. The
+    P-148 union was NOT verified in the
+    team worktree (it cannot be: P-148
+    is absent from that base by design) -
+    it is verified here at banking by
+    the combined batteries and the forge
+    confirmation above.
+    Migration: NONE (head stays 0041).
+    Merge: additive union with P-148's
+    banked work; merge conflicts in
+    scenarios/router.py +
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    resolved as pure additive unions
+    (P-148 and P-149 work kept exactly
+    once each; scenarios/__init__.py
+    merged clean as an additive union);
+    merged scenarios/router.py grep-
+    verified carrying BOTH the P-148
+    GET /scenarios/bindings/chat-census
+    road AND the P-149 GET
+    /scenarios/bindings/{chat_id}/
+    delete-impact road; the merged
+    clean-room log holds the P-148 and
+    P-149 entries exactly once each;
+    merged scenarios modules py_compile
+    clean; merged diff vs 0dde71b is
+    exactly the 6 slice files
+    (+1031/-0). No heal was needed at
+    merge.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-150 (Part
+    IX, in roadmap order).
