@@ -33,6 +33,12 @@
   definition's current revision and the bounds of what
   a definition-side plan can promise (P-136, Part IX,
   DERIVED scope).
+- ``chatpreview`` — chat-scoped binding plan preview:
+  P-136's envelope judged against one named chat —
+  bind's refusal facts reported as data and the plan's
+  seedable keys split by P-093's own presence law into
+  would-seed and already-present (P-138, Part IX,
+  DERIVED scope).
 - ``router`` — the HTTP roads: the stateless P-026
   import/export roads plus the P-131 definition CRUD
   roads on the same /scenarios prefix.
@@ -69,6 +75,7 @@ from runmal.scenarios.organisation import (
     query_definitions,
 )
 from runmal.scenarios.bindpreview import preview_bind_plan
+from runmal.scenarios.chatpreview import preview_bind_for_chat
 from runmal.scenarios.fileexport import (
     export_native,
     export_native_bytes,
@@ -177,6 +184,7 @@ __all__ = [
     "organisation_path",
     "organisation_view",
     "preview_bind_plan",
+    "preview_bind_for_chat",
     "query_definitions",
     "get_binding",
     "list_bindings",
