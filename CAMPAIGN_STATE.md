@@ -7910,3 +7910,109 @@ P-113 BANKED - Plugin Custody Coverage (Part VII)
     boot registry stays empty
     (battery-pinned).
     Next in roadmap order: P-114.
+P-114 BANKED - Voice Mishearing Session Report (Part VII)
+    - team-02 commit 62bc5d5 merged (no-ff)
+    into yrsa/two-mirrors-build as cfced69;
+    banking record commit follows this
+    entry and is pushed with the merge;
+    ls-remote verification is reported
+    in the keeper run log.
+    Evidence (team-02 worktree
+    hidden_files/P114_EVIDENCE.md):
+    battery 18 passed, neighbours
+    408 passed / 2 skipped / 0 failed,
+    team full suite
+    4297 passed / 4 skipped / 0 failed
+    on the b70b3bc base (P-112 banking
+    record; the slice was built on
+    that base while P-113 banked
+    ahead of it, and was reconciled
+    at this merge in roadmap order).
+    Derived scope ACCEPTED by the keeper:
+    P-114 is a session-level aggregate
+    over P-105's confidence evidence -
+    the mishearing report. It pools
+    ONLY what turn_mishearing already
+    states (the bands, the predeclared
+    0.5 threshold and the probabilities
+    are never recomputed under a second
+    law - one truth source) and adds
+    pooled probability statistics
+    (count/mean/percentiles over the
+    house metrics.percentile), the
+    often-missed-word table grouped
+    by the lexicon's own key law, the
+    lexicon-coverage view (covered vs
+    uncovered at occurrence and
+    distinct-word level), and the
+    per-backend split from each turn
+    record's stt_backend. The light
+    report view carries exactly the
+    totals session_mishearing already
+    states plus the aggregate and no
+    per-turn detail; the session view
+    gains the same aggregate
+    additively. Slice:
+    src/runmal/voice/mishearing.py
+    (extended: mishearing_aggregate +
+    session_mishearing_report +
+    _word_group_key),
+    src/runmal/voice/mishearing_router.py
+    (extended: GET /voice/sessions/{id}/
+    mishearing-report road),
+    src/runmal/voice/__init__.py
+    (module-map line),
+    tests/test_p114_voice_mishearing_report.py
+    (18 tests),
+    docs/VOICE_MISHEARING_REPORT_2026-11-08.md,
+    clean-room log append (+1). 6 files,
+    +661/-1.
+    Migration: NONE (head stays 0041).
+    Merge conflict only in the clean-room
+    log (append-vs-append), resolved as
+    an additive union: the log keeps
+    the P-113 and P-114 entries exactly
+    once each. The voice files
+    auto-merged; the merged tree carries
+    P-113 custody coverage AND P-114
+    mishearing report, py_compile green
+    on all touched Python files.
+    No banking heal needed.
+    Combined batteries on the merged
+    tree: 901 passed / 0 failed
+    (= 883 P-113 combined family + 18
+    exact). Log hidden_files/p114_combined.log
+    (forge) on purplelongship.
+    Forge confirmation suite:
+    4312 passed / 4 skipped / 2 failed
+    in 336.61s in-run, the 2 failures
+    being exactly the named contention
+    class under shared-machine load
+    (load average ~16 at the time):
+    the s503 STT timing contract
+    (RTF p50 1.718 over contract) and
+    the P-077 wall-clock tripwire
+    (median sample 0.281s against the
+    0.2s budget). Both pass solo:
+    test_p077 17 passed, test_s503
+    4 passed (logs
+    hidden_files/p114_solo_p077.log +
+    p114_solo_s503.log), so the
+    effective confirmation is
+    4314 passed / 4 skipped / 0 failed
+    - exact match to expectation
+    (= 4296 + 18). Logs
+    hidden_files/p114_confirm.log +
+    p114_confirm_solo.log (forge).
+    Honest limitations carried:
+    confidence is the backend's own
+    uncalibrated estimate and the
+    pooled statistics inherit that;
+    the aggregate is one session only
+    (no cross-session roll-up; the
+    repeat digest/aging candidate
+    stays open); grouping is
+    whole-word only (no stemming or
+    fuzzy matching); no UI renders
+    the report in this slice.
+    Next in roadmap order: P-115.
