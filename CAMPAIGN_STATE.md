@@ -7007,3 +7007,129 @@ P-105 BANKED - Voice Mishearing Truth (Part VII)
     only and install-wide; no UI renders
     the markings.
     Next in roadmap order: P-106.
+P-106 BANKED - Voice Projection Mishearing Mark (Part VII)
+    - team-03 commit f0fba84 merged (no-ff)
+    into yrsa/two-mirrors-build as 4db276a;
+    banking heal a2f152b (below) on top;
+    merge + heal pushed; ls-remote verified
+    a2f152b1ae3ee3babf9058fb13890bda6bbd52ec.
+    Evidence (team-03 worktree
+    hidden_files/P106_EVIDENCE.md):
+    battery 18 passed, neighbours
+    273 passed / 2 skipped (voice fence
+    S501-S509/S511/S512 + P-010/P-091/
+    P-101/P-102/P-103/P-104 + P-075
+    provenance + S107 chats + S111 chat
+    management; 20 files; skips are
+    pre-existing environmental optionals),
+    team full suite 4173 passed /
+    4 skipped / 0 failed (= 4155 + 18
+    exact, on the c067a57 base).
+    Derived scope ACCEPTED by the keeper:
+    P-106 is the later slice P-105's slice
+    doc section 4 named - it takes the
+    MARK half of that gap (P-103
+    projection landed the original
+    transcript unmarked) and DECLINES the
+    suggestion half, on the record in the
+    slice doc section 2: provenance holds
+    no content (P-075 law), and landing a
+    rewrite would put words in the user's
+    mouth in their own chat history; the
+    suggestion stays a view on P-105's
+    mishearings surface. The roadmap gives
+    Part VII only its part line.
+    Slice:
+    src/runmal/voice/projection.py (ONLY
+    code file: pure
+    transcript_mishearing_mark reading
+    word evidence duck-typed; scalar
+    mishearing facts on
+    transcript_provenance, always present;
+    additive per-turn marks + aggregates
+    on projection_status and the
+    project_session_turns report; threshold
+    is P-105's LOW_CONFIDENCE_THRESHOLD
+    imported when present, else the same
+    0.5 as fallback, pinned equal whenever
+    the import succeeds),
+    tests/test_p106_voice_projection_mishearing.py
+    (18 tests),
+    docs/VOICE_PROJECTION_MISHEARING_MARK_2026-11-07.md,
+    clean-room log append (+1). 4 files,
+    +606/-0.
+    Migration: NONE (head stays 0041).
+    Threshold reconciliation PASSED on
+    the merged tree: the real
+    LOW_CONFIDENCE_THRESHOLD import road
+    verified live, and merged session.py
+    carries BOTH P-104 auto_project and
+    P-105 transcript_words. Merge conflict
+    only in the clean-room log, resolved
+    with both entries kept exactly once.
+    BANKING STOP + DEFECT + HEAL: combined
+    batteries on the merged tree first ran
+    125 passed / 2 failed (expected 127).
+    The two failures were the slice's
+    service-level tests
+    (test_service_landing_carries_mark_and_content_law,
+    test_service_idempotent_reprojection_keeps_mark):
+    they build turns whose transcript_words
+    are duck-typed FakeWord objects (text/
+    probability only), and on the merged
+    tree P-105's VoiceTurnRecord.to_dict
+    persists transcript_words by calling
+    w.to_dict() on each word -
+    AttributeError inside save_session.
+    Exposed only at reconciliation: on
+    team-03's P-104 base P-105 was unbanked
+    and the mark's fallback road never
+    persisted the fakes. The mark reader
+    itself is fine (all 16 pure-mark tests
+    passed throughout) and production code
+    is self-consistent (real turns always
+    hold real WordConfidence objects).
+    Heal a2f152b is TEST-ONLY, P-021/P-023
+    precedent: the two service tests now
+    build transcript_words from the real
+    runmal.voice.session.WordConfidence
+    with the same text/probability values,
+    so every assertion about the mark,
+    counts and content law stands unchanged
+    at equal strength; FakeWord stays in
+    use for the pure mark-function tests,
+    where duck-typing is the design's
+    contract. NO production code changed:
+    making session.py's to_dict tolerant
+    was expressly NOT the fix - it would
+    weaken P-105's persisted-shape
+    discipline. After the heal: battery
+    18 passed; combined batteries on the
+    merged tree 127 passed / 0 failed
+    (28 + 24 + 19 + 17 + 21 + 18). Logs
+    hidden_files/p106_battery_healed.log
+    and hidden_files/p106_combined.log
+    (forge) on purplelongship.
+    Forge confirmation suite:
+    4194 passed / 4 skipped / 0 failed
+    in 209.53s, exit 0 - exact match to
+    expectation (= 4176 + 18), no
+    contention re-runs needed. Log
+    hidden_files/p106_confirm.log (forge).
+    Honest limitations carried:
+    the mark is a receipt, not a
+    rendering - no UI shows it and no
+    character asks for a repeat (VX-11's
+    rendered markings stay open); turns
+    projected before P-105/P-106 are not
+    back-marked (a landed message's
+    provenance is its production receipt,
+    P-075), while the status/report marks,
+    being views over the session store, do
+    show the mark for such turns; word
+    texts of low-confidence words appear
+    only in the status/report mark, never
+    in provenance; the response side is
+    untouched; no new HTTP road, store or
+    migration in this slice.
+    Next in roadmap order: P-107.
