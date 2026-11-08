@@ -128,6 +128,19 @@
   from the rows themselves) — a census under standing
   law: it names, never repairs, and executes nothing
   (P-145, Part IX, DERIVED scope).
+- ``definitioncensus`` - library definition census:
+  every definition the caller holds, rowed as the
+  census subject (the P-131 summary verbatim) and
+  classified by the custody of its bindings - each
+  binding joined on P-144's definition verdict and
+  P-148's chat verdict under their plain conjunction
+  (sound, definition_drift, chat_orphaned,
+  doubly_broken), the definition's own state under a
+  stated precedence law (unbound when it holds no
+  bindings - the one census a never-bound definition
+  appears in at all), stale bindings counted in the
+  totals and rowing under no definition (P-151,
+  Part IX, DERIVED scope).
 - ``router`` — the HTTP roads: the stateless P-026
   import/export roads plus the P-131 definition CRUD
   roads on the same /scenarios prefix.
@@ -182,6 +195,10 @@ from runmal.scenarios.bindingcensus import (
     census_bindings,
 )
 from runmal.scenarios.reportcensus import census_unmappable
+from runmal.scenarios.definitioncensus import (
+    DEFINITION_CUSTODY_STATES,
+    census_definitions,
+)
 from runmal.scenarios.chatcensus import (
     CHAT_CUSTODY_STATES,
     census_binding_chats,
@@ -329,6 +346,8 @@ __all__ = [
     "CUSTODY_STATES",
     "census_binding_custody",
     "census_unmappable",
+    "DEFINITION_CUSTODY_STATES",
+    "census_definitions",
     "CONFLICT_CREATE_NEW",
     "CONFLICT_MODES",
     "CONFLICT_REJECT",
