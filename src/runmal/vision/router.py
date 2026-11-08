@@ -34,6 +34,12 @@ P-123 adds the attachment thumbnail road on the same
 prefix: the stored bytes derived on read through the
 P-023 PNG engine, PNG-only with plain refusals, nothing
 derived ever stored.
+P-124 adds watcher custody & control completion on the
+same prefix: deleting an attachment also forgets its
+watcher ingested records (the scan dedupe memory), and
+the watch roads gain the single-watch read and the
+enabled toggle (PATCH) that make a registration's
+enabled flag reachable for the first time.
 """
 
 from __future__ import annotations
@@ -401,14 +407,21 @@ async def delete_attachment(
     record = _attachment_or_404(attachment_id, owner_id)
     removed = _attachment_store().remove(record.id)
     purged = 0
+    forgotten = 0
     if removed is not None:
         # P-122 source custody: descriptions derived from this
         # attachment die with it, so derived text never
         # outlives the bytes the owner deleted.
         purged = _store().purge_source(
             vision_service.SOURCE_ATTACHMENT, record.id)
+        # P-124 watcher custody: the scan dedupe records
+        # naming this attachment die with it, so its source
+        # file can be ingested anew by a later scan instead
+        # of skipping as already-ingested forever.
+        forgotten = _watch_store().forget_attachment(record.id)
     return {"deleted": removed is not None, "id": record.id,
-            "descriptions_purged": purged}
+            "descriptions_purged": purged,
+            "watch_records_forgotten": forgotten}
 
 
 def _watch_store() -> watcher_service.WatchStore:
@@ -470,6 +483,32 @@ async def list_watch_folders(
     rows = [r for r in rows if r.owner_id == owner_id]
     return {"chat_id": chat.id,
             "watch_folders": [r.to_dict() for r in rows]}
+
+
+@router.get("/vision/watch-folders/{watch_id}")
+async def get_watch_folder(
+    watch_id: str,
+    owner_id: str = Depends(get_owner_id),
+):
+    store = _watch_store()
+    watch = await _watch_or_404(store, owner_id, watch_id)
+    return watch.to_dict()
+
+
+class WatchEnabledRequest(BaseModel):
+    enabled: bool
+
+
+@router.patch("/vision/watch-folders/{watch_id}")
+async def set_watch_folder_enabled(
+    watch_id: str,
+    body: WatchEnabledRequest,
+    owner_id: str = Depends(get_owner_id),
+):
+    store = _watch_store()
+    watch = await _watch_or_404(store, owner_id, watch_id)
+    updated = store.set_enabled(watch.id, body.enabled)
+    return updated.to_dict()
 
 
 @router.delete("/vision/watch-folders/{watch_id}")

@@ -30,4 +30,10 @@
   explicit polling scan that ingests new image files as
   P-120 chat attachments (P-121). No daemon: a scan is a
   deliberate operation, stated plainly.
+- ``watcher`` custody & control (P-124) - forget_attachment
+  (an attachment's death forgets its ingested records, so
+  the dedupe memory never tombstones its source file) and
+  set_enabled (the registration's enabled flag gains its
+  first handle; the scan has always refused a disabled
+  watch).
 """
