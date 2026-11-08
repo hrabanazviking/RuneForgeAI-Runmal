@@ -8120,3 +8120,131 @@ P-115 BANKED - Voice Repeat-Request Digest & Aging (Part VII)
     remain as the scout records them.
     Next in roadmap order: P-116
     (Part VII gate).
+P-116 BANKED - Part VII Gate - Voice, the Voxta Way (Part VII)
+    PART VII COMPLETE (P-101..P-116).
+    - team-01 commit ea0c742 merged (no-ff)
+    into yrsa/two-mirrors-build as eeafeea
+    (parents 3886cd2 + ea0c742); banking
+    record commit follows this entry and
+    is pushed with the merge; ls-remote
+    verification is reported in the keeper
+    run log.
+    Evidence (team-01 worktree
+    hidden_files/P116_EVIDENCE.md):
+    gate verdict PASS on all rows -
+    Census PASS, Together PASS, Digest
+    PASS (by auto-discovery), Accounting
+    PASS; per-row verdicts P-101..P-115
+    in docs/PART_VII_GATE_2026-11-08.md.
+    Battery 30 passed / 1 skipped
+    (gate 20 passed / 1 skipped +
+    gate-record 10 passed) on the
+    0333be0 base (P-114 banking record;
+    the slice was built on that base
+    while P-115 banked ahead of it, and
+    was reconciled at this merge in
+    roadmap order); the 1 skip is the
+    Area C digest-aging test, absent
+    by design on that base. Neighbours
+    445 passed / 3 skipped / 0 failed;
+    team full suite 4334 passed /
+    5 skipped / 0 failed.
+    Gate scope (derived, as every Part
+    VII slice scope is derived - the
+    filed roadmap gives Part VII only
+    its part line): the gate judges
+    Part VII against the census its own
+    banked slice docs declare -
+    sessions, the live host, projection
+    + auto-projection, mishearing truth
+    / markings / report, repeat-request
+    signal + housekeeping + digest,
+    affects as carried data, latency
+    evidence, live-start back-projection,
+    and custody coverage. No banked code
+    was changed by this slice. Slice:
+    tests/test_p116_gate.py (21 tests),
+    tests/test_p116_gate_record.py
+    (10 tests),
+    docs/PART_VII_GATE_2026-11-08.md,
+    clean-room log append (+1). 4 files,
+    +924/-0.
+    Migration: NONE (head stays 0041).
+    Merge conflict only in the clean-room
+    log (append-vs-append), resolved as
+    an additive union at merge time by
+    the keeper; the merged tree carries
+    P-115 repeat digest AND the P-116
+    gate, py_compile green.
+    No banking heal needed.
+    Gate battery re-run on the merged
+    tree by the banking finisher:
+    31 passed / 0 skipped / 0 failed -
+    the Area C digest-aging test runs
+    GREEN here (P-115 present), not
+    skipped.
+    Combined batteries on the merged
+    tree: 973 passed / 0 failed. Log
+    hidden_files/p116_combined.log
+    (forge) on purplelongship. Honest
+    note: the keeper's pre-run
+    expectation was 947 (= 917 P-115
+    combined family + 30 gate battery
+    as counted on team-01's base); the
+    merged-tree run read 973. Of the
+    +26, +1 is the digest-aging test
+    passing instead of skipping; the
+    log carries no collection listing
+    to decompose the remaining +25
+    further, and the summary line is
+    recorded exactly as read, not
+    forced to the expectation.
+    Forge confirmation suite:
+    4361 passed / 4 skipped / 0 failed
+    in 220.52s, exit 0 - a clean run
+    with no contention re-runs needed.
+    (= 4330 P-115 confirmation + 31
+    gate battery on the merged tree;
+    the +1 over the 4360 pre-merge
+    expectation is the same resolved
+    digest-aging skip.) Log
+    hidden_files/p116_confirm.log
+    (forge) on purplelongship.
+    Carried items named by the gate
+    (K1-K7, gate record S4): K1 the
+    character-asks half of VX-11 stays
+    open on the P-102 responder seam;
+    K2 VX-12's engine half has no
+    backend seam (affects are carried
+    data, consumed_by_backends False);
+    K3 L3 registration is deliberate
+    host-explicit law (boot registry
+    empty, no auto-registration); K4
+    several Part VII surfaces have no
+    UI (mishearing report, repeat
+    digest, latency evidence,
+    housekeeping are data + HTTP only);
+    K5 back-projection is HTTP-road
+    only (the in-process controller is
+    synchronous and DB-free by design);
+    K6 confidence is the backend's
+    uncalibrated estimate (0.5 threshold
+    predeclared, single-sourced from
+    P-105); K7 the digest reports how
+    long, never "too long" (no staleness
+    verdict, no buckets; ages inherit
+    wall-clock skew honestly).
+    Finding F2 (gate record S5):
+    app.openapi() raises app-wide
+    ("A response class is needed to
+    generate OpenAPI", at the HTML
+    voice page route) - pre-existing,
+    outside the gate footprint, NOT
+    fixed in this gate; commissioned
+    forward to P-117 by the keeper.
+    F1: no new engine defect found by
+    this gate.
+    Next in roadmap order: P-117
+    (Part VIII opening slice; the F2
+    openapi fix is its commissioned
+    first business).
