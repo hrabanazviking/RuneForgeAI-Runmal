@@ -1,5 +1,6 @@
 """Scenario API: file interop (P-026) + stored definitions (P-131)
-+ scenario-to-chat binding (P-132).
++ scenario-to-chat binding (P-132) + stored-definition file
+export (P-133).
 
 P-026 roads (stateless): parse a scenario file and report
 honestly, and re-export it. Those roads are unchanged.
@@ -12,6 +13,14 @@ Owner scoping: a definition that is unknown — or owned by
 someone else — answers 404 on every parameterised road;
 existence never leaks. The truth layer lives in
 runmal.scenarios.store; this module is only the HTTP shape.
+P-133 (Part IX, DERIVED scope) adds the by-id export road:
+a stored definition hands back a FILE through P-026's own
+exporters, with an honest export report naming whatever
+cannot round-trip (a Voxta file's unmappable raw values
+never persisted — P-131). The service lives in
+runmal.scenarios.storedexport; this module is only the
+HTTP shape.
+
 No road here plays a scenario back or executes anything a
 definition carries (P-027: content is data, never code).
 """
@@ -38,6 +47,11 @@ from runmal.scenarios.store import (
     ScenarioStore,
     ScenarioStoreError,
     definitions_path,
+)
+from runmal.scenarios.storedexport import (
+    DEFAULT_FORMAT,
+    FORMATS,
+    export_stored_definition,
 )
 
 router = APIRouter(tags=["scenarios"])
@@ -262,3 +276,44 @@ async def delete_scenario_binding(
         "unbound": True,
         "seeded_content_kept": True,
     }
+
+
+# ------------------------------------ stored export (P-133)
+
+
+@router.get(
+    "/scenarios/{definition_id}/export",
+    status_code=status.HTTP_200_OK,
+)
+async def export_scenario_definition(
+    definition_id: str,
+    format: str | None = None,
+    user_id: str = Depends(get_owner_id),
+):
+    """Hand one owned definition back as a file (P-133).
+
+    The answer is an envelope: the requested format, the
+    file itself (built by P-026's own exporters from the
+    stored definition), and the honest export report —
+    what the export restores and, by name, what it cannot
+    (a Voxta file's unmappable raw values never persisted;
+    P-131). The default format is native, the stored
+    truth's own shape. Unknown or foreign answers 404 —
+    decided BEFORE the format is judged, so no verdict
+    leaks about someone else's data; an unknown format on
+    an owned definition answers 422.
+    """
+    record = _store().get(definition_id, user_id)
+    if record is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="scenario definition not found",
+        )
+    fmt = DEFAULT_FORMAT if format is None else format
+    if fmt not in FORMATS:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"unknown export format: {fmt!r} (valid: native, voxta)",
+        )
+    file_dict, report = export_stored_definition(record, fmt)
+    return {"format": fmt, "file": file_dict, "report": report}

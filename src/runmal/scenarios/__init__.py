@@ -10,6 +10,10 @@
   door through the P-026 parser, and the import report
   carried with each record as data (P-131, Part IX
   opener, DERIVED scope).
+- ``storedexport`` — stored-definition file export: a
+  stored definition handed back as a file through P-026's
+  own exporters, with an honest report naming whatever
+  cannot round-trip (P-133, Part IX, DERIVED scope).
 - ``binding`` — scenario-to-chat binding: the versioned
   JSON binding store (``scenario_bindings.json``), the
   materialisation plan, and the bind service that seeds
@@ -68,6 +72,13 @@ from runmal.scenarios.filemodels import (
     ScenarioRole,
     UnmappableElement,
 )
+from runmal.scenarios.storedexport import (
+    DEFAULT_FORMAT,
+    FORMATS as EXPORT_FORMATS,
+    StoredExportError,
+    export_stored_definition,
+    scenario_file_from_stored,
+)
 from runmal.scenarios.store import (
     DEFINITIONS_FILENAME,
     DEFINITIONS_VERSION,
@@ -114,10 +125,15 @@ __all__ = [
     "ScenarioStore",
     "BindingNotFoundError",
     "ScenarioStoreError",
+    "StoredExportError",
     "UnmappableElement",
+    "DEFAULT_FORMAT",
+    "EXPORT_FORMATS",
     "bind_scenario",
     "bindings_path",
     "definitions_path",
+    "export_stored_definition",
+    "scenario_file_from_stored",
     "get_binding",
     "plan_materialisation",
     "unbind",
