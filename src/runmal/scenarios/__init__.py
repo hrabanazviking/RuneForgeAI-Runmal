@@ -43,6 +43,7 @@
   seedable keys split by P-093's own presence law into
   would-seed and already-present (P-138, Part IX,
   DERIVED scope).
+- ``replacepreview`` — definition replace-impact preview: for one stored definition, the bindings a replace would leave pinning a superseded revision (split by pinned revision against the current one), the organisation row that stays live, and the next revision, read before any replace is committed (P-140, Part IX, DERIVED scope).
 - ``router`` — the HTTP roads: the stateless P-026
   import/export roads plus the P-131 definition CRUD
   roads on the same /scenarios prefix.
@@ -80,6 +81,7 @@ from runmal.scenarios.organisation import (
 )
 from runmal.scenarios.bindpreview import preview_bind_plan
 from runmal.scenarios.chatpreview import preview_bind_for_chat
+from runmal.scenarios.replacepreview import preview_replace_impact
 from runmal.scenarios.fileexport import (
     export_native,
     export_native_bytes,
@@ -189,6 +191,7 @@ __all__ = [
     "organisation_view",
     "preview_bind_plan",
     "preview_bind_for_chat",
+    "preview_replace_impact",
     "query_definitions",
     "get_binding",
     "list_bindings",
