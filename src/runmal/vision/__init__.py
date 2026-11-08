@@ -48,4 +48,8 @@
   path and sha256, owner-scoped first - the P-122/P-125
   parity surface for the watcher store. Nothing new is
   persisted; the scan report stays a synchronous result.
+- ``watcher`` describe-on-scan (P-128) - describe-on-scan
+  is an explicit opt-in on the scan road only: atomic per
+  file via P-126, and the scan itself still describes
+  nothing on its own.
 """
