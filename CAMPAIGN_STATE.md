@@ -6179,3 +6179,109 @@ P-093 BANKED - Variables & state plugin API (Part VI)
     hidden_files/p093_forge_confirmation.log).
     No heal needed at this banking.
     Next in roadmap order: P-094.
+P-094 BANKED - Plugin data custody (Part VI)
+    - team-03 commit 0873de8 merged
+    (no-ff) into
+    yrsa/two-mirrors-build as ba3dbe8
+    and pushed; ls-remote verified
+    ba3dbe802980d668908b69139ccebf94e9c30af2
+    (see WAVE_PLAN update). Evidence
+    (team-03 worktree
+    hidden_files/P094_EVIDENCE.md):
+    battery 24 passed, neighbours 434
+    passed, team full suite 3871
+    passed / 4 skipped / 0 failed on
+    its base.
+    Slice:
+    src/runmal/plugins/custody.py (new
+    - one custody surface over every
+    Part VI citizen),
+    src/runmal/plugins/router.py (+58,
+    custody export/delete routes
+    appended),
+    tests/test_p094_plugin_custody.py
+    (24 tests),
+    docs/PLUGIN_DATA_CUSTODY_2026-11-07.md,
+    clean-room log append. 5 files,
+    +1477.
+    Migration: NONE (head stays 0041;
+    no migration taken - custody rides
+    the citizens' own stores and
+    inspect/clear roads; no 0042).
+    Defects: the finisher run found
+    the previous lead's custody.py
+    truncated at 240 lines and
+    completed it against the design
+    (807 lines); battery-authoring
+    fixes only in test code. No defect
+    was found in the landed file-store
+    section.
+    Design honesty: a plugin's data is
+    exportable and deletable with the
+    plugin - no hostage state. Every
+    store appears as a section:
+    exported / empty / unavailable
+    with the reason named / error
+    carried in the document, never
+    silently omitted; the checksum is
+    the packs canonical-JSON + sha256
+    idiom. Custody delete finishes
+    through manager.uninstall when a
+    ledger row exists, so removal
+    leaves neither orphaned data nor
+    an orphan row. Deletion is
+    owner-scoped throughout; founding
+    host data (chats, memories at
+    large, P-023 assets) is named as
+    references only, never deleted.
+    The HTTP road names instance
+    sections unavailable rather than
+    dressing a partial export as
+    complete.
+    The P-093 seam: the variables
+    adapter is lazy by design - on the
+    slice base (P-093 absent) its
+    section reported unavailable and
+    its store file was never touched;
+    the adapter's store_path /
+    STORE_SCHEMA expectations were
+    verified against the banked P-093
+    module, so it lights up unchanged
+    on the merged tree.
+    Merge conflicts in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    and src/runmal/plugins/router.py
+    (both append-vs-append), resolved
+    as true additive unions keeping
+    BOTH entries / BOTH route sets
+    exactly once; py_compile clean on
+    the merged tree, and the merged
+    router verified to carry the P-093
+    chat-variables routes and the
+    P-094 custody routes alongside all
+    prior plugin routes.
+    Banking heal (one, pinned to
+    merged truth, never a weakened
+    assertion): the battery's
+    lazy-adapter test pinned the
+    slice-base absence (unavailable /
+    manifest None / file untouched);
+    on the merged tree the module
+    exists, so that one test was
+    re-pinned to the lit-up behaviour
+    - verbatim exported document,
+    schema stamped, manifest id
+    runmal.variables, checksum
+    verified, delete removes the
+    owner's file (removed files = 1)
+    and leaves another owner's store
+    byte-identical. No custody code
+    changed.
+    Combined batteries on the merged
+    tree: 48 passed / 0 failed (= 24 +
+    24 exact). Forge confirmation
+    suite: 3895 passed / 4 skipped / 0
+    failed (= 3871 P-093 confirmation
+    + 24, exact; log
+    hidden_files/p094_forge_confirmation.log).
+    Next in roadmap order: P-095.
