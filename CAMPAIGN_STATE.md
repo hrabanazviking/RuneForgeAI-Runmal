@@ -6558,3 +6558,71 @@ P-098 BANKED - Plugin settings UI generated from declared schemas (Part VI)
     confirmation + 32, exact; log
     hidden_files/p098_forge_confirmation.log).
     Next in roadmap order: P-099.
+P-099 BANKED - Failure manners (Part VI)
+    - team-02 commit d42556c merged (no-ff)
+    into yrsa/two-mirrors-build as 77e3315
+    and pushed; ls-remote verified
+    77e33150f184b5a507a3626e9324817fb70e5be3.
+    Evidence (team-02 worktree
+    hidden_files/P099_EVIDENCE.md):
+    battery 24 passed, neighbours 542
+    passed, team full suite 3979 passed /
+    4 skipped / 0 failed.
+    Slice:
+    src/runmal/plugins/failure.py (new,
+    369 lines - plain FailureReport,
+    leak-free by construction: the plain
+    report carries no message text at all;
+    guarded host-call roads
+    guard_plugin_call / _async; the
+    sandbox-to-registry bridge
+    apply_sandbox_bridge, 1:1, watermarked,
+    idempotent, parity at 3 strikes;
+    deliberate re-enable only - nothing
+    retries or auto-re-enables, strikes
+    clear on enable, history kept),
+    src/runmal/plugins/router.py (+25 lines:
+    GET /plugins/failure-reports and
+    GET /plugins/{plugin_id}/failure-report),
+    tests/test_p099_failure_manners.py
+    (24 tests),
+    docs/FAILURE_MANNERS_2026-11-07.md,
+    clean-room log append. 5 files, +931.
+    Migration: NONE (head stays 0041; no
+    migration taken - all failure state is
+    the P-081 registry process-local record).
+    Honest limitations: failure state is
+    process-local; reports do not survive
+    a restart. The sandbox bridge is an
+    explicit host act; a host that never
+    calls it keeps both records separate
+    (each correct on its own). Scrubbing
+    hides caller-named secret values; a
+    secret nobody names could still sit in
+    a scrubbed message field of the
+    owner-facing dict (stated in slice doc).
+    Merge conflicts: docs/CLEAN_ROOM_LOG_
+    2026-10-30.md only (append-vs-append),
+    resolved as an additive union keeping
+    the P-097, P-098 and P-099 entries
+    exactly once; router.py auto-merged -
+    verified as a true additive union:
+    both the P-098 settings routes
+    (settings-form, GET/POST settings,
+    settings/delete) and the P-099
+    failure-report routes are present and
+    py_compile passes. No other conflicts.
+    Banking heal: none needed. Corpus:
+    P-099 adds no new citizen (failure.py
+    is a manners layer, not a citizen);
+    the P-097 conformance corpus on the
+    merged tree stays 16 citizens, all
+    passing and listable as shipped
+    (battery re-run 30 passed). Combined
+    batteries on the merged tree: 56 passed
+    / 0 failed (= 32 P-098 + 24 P-099,
+    exact). Forge confirmation suite:
+    4041 passed / 4 skipped / 0 failed
+    (= 4017 P-098 confirmation + 24, exact;
+    log hidden_files/p099_forge_confirmation.log).
+    Next in roadmap order: P-100 (Part VI gate).
