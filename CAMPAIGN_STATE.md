@@ -12694,3 +12694,162 @@ P-150 BANKED - Binding Custody Census (Part IX)
     PART IX OPEN (P-131..P-154).
     Next in roadmap order: P-151 (Part
     IX, in roadmap order).
+P-151 BANKED - Library Definition Census (Part IX)
+    Part IX twenty-first slice.
+    - team-03 commit 190c34a merged (no-
+    ff) into yrsa/two-mirrors-build as
+    4b5acdd (parents effe800 + 190c34a);
+    merge pushed and ls-remote verified
+    at 4b5acdd before this record;
+    banking record commit follows this
+    entry and is pushed after it.
+    Banking completion note: the merge
+    and the forge confirmation were
+    completed by the previous banking
+    coordinator, whose run was then
+    interrupted by a cron timeout before
+    this record was written; a banking
+    finisher re-verified the merge from
+    git, ran the combined fence below,
+    and completed steps 5-6 (this record
+    + worktree resets). No full suite
+    was re-run: the forge confirmation
+    log already on disk governed.
+    Cross-base banking: team-03 built on
+    0dde71b (the P-148 banking record);
+    P-149 and P-150 are NOT in its base
+    by design, so reconciliation at
+    banking was the keeper's (below).
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only its
+    part line (P-131..P-154), no per-
+    slice entries; the slice scope is
+    derived from Runmal's own in-tree
+    record (every Part IX census rows
+    bindings - P-144, P-148, P-150 - or
+    report rows - P-145; the binding
+    censuses' groups are built from
+    binding rows, so a never-bound
+    definition appears in no census at
+    all and no road answered the per-
+    definition library custody question
+    except walking P-135's per-
+    definition list by hand - the by-
+    hand gap P-144's derivation named,
+    transposed; P-151 rows every
+    definition the caller holds and
+    classifies it by the custody of its
+    bindings, stated plainly as derived
+    in the slice doc.
+    Evidence (team-03 worktree
+    hidden_files/ P151_EVIDENCE.md +
+    logs P151_BATTERY.log,
+    P151_NEIGHBOURS.log,
+    P151_FULLSUITE.log): battery 20
+    passed / 0 failed; neighbour fence
+    386 passed / 0 failed (the P-148
+    banking record's combined fence
+    through P-148 counted 366; 366 + 20
+    = 386, exact; the P-149 and P-150
+    batteries are absent from this base
+    by design and are therefore honestly
+    not in the fence - the keeper runs
+    them at banking reconciliation,
+    below); team full suite 4931 passed
+    / 5 skipped / 0 failed in 293.51s,
+    reconciling exactly with its base
+    (4911 + 20 = 4931); no failure
+    occurred, so no timing-failure
+    classification or solo re-run was
+    needed.
+    Combined batteries on the merged
+    tree: 424 passed / 0 failed (the
+    fence through P-150 counted 404 at
+    the P-150 banking + 20 = 424; P-026
+    + P-131..P-151 scenario batteries),
+    run by the banking finisher with
+    PYTHONPATH=src on the merged tree.
+    Log hidden_files/P151_COMBINED.log
+    in the forge.
+    Forge confirmation suite on the
+    merged tree: 4969 passed / 5 skipped
+    / 0 failed in 297.98s, exit 0.
+    Expectation check: 4949 + 20 = 4969
+    - exact match, as counted from the
+    log. Log hidden_files/
+    P151_FORGE_CONFIRM.log in the forge.
+    Slice scope: the library definition
+    census - scenarios/
+    definitioncensus.py (new: every
+    definition the caller holds rowed
+    as the census subject, its P-131
+    summary verbatim, classified by the
+    custody of its bindings - P-144
+    definition verdicts and P-148 chat
+    verdicts composed per binding:
+    sound / definition_drift /
+    chat_orphaned / doubly_broken - the
+    definition's own state under a
+    stated precedence law, unbound when
+    it holds no bindings; stale
+    bindings counted in the totals and
+    rowing under no definition; pure
+    read: binds, unbinds, deletes and
+    writes nothing), one additive road
+    (GET /scenarios/library/census),
+    scenarios/router.py (additive, +39),
+    scenarios/__init__.py (additive,
+    +19), tests/
+    test_p151_definition_census.py
+    (new, 20 tests), docs/
+    SCENARIO_DEFINITION_CENSUS_2026-11-08.md
+    (new), clean-room log append (+1).
+    Team delta 6 files (+1168/-0),
+    purely additive, no hidden_files
+    paths in the slice commit.
+    Honest limitations: the census is a
+    pure read; it changes no write
+    behaviour. The delete_chat cascade
+    into the binding store remains OPEN
+    and deliberately untaken: P-149
+    reserved the decision expressly for
+    Volmarr and P-150 declined it again;
+    this slice records the same position
+    with the full argument in the slice
+    doc, rather than overriding two
+    fresh in-tree reservations. The
+    definition state is a precedence
+    summary; the row's per-state binding
+    counts are the full account and the
+    per-binding truth stays on P-144 /
+    P-148 / P-150, untouched beside it.
+    The P-149 and P-150 unions were NOT
+    verified in the team worktree (both
+    absent from that base by design) -
+    they are verified here at banking by
+    the combined batteries and the forge
+    confirmation above. No pre-slice
+    full-suite run was taken in the team
+    worktree; the no-regression claim
+    rests on the post-slice full suite's
+    zero failures plus the 386-test
+    neighbour fence, reconciling exactly
+    with the banked counts. No playback,
+    runtime or execution of any stored
+    content (P-027 law).
+    Migration: NONE (head stays 0041).
+    Merge: additive union with P-149's
+    and P-150's banked work; merged
+    scenarios/router.py grep-verified
+    carrying BOTH the P-150 GET
+    /scenarios/bindings/custody-census
+    road AND the P-151 GET /scenarios/
+    library/census road; merged
+    scenarios modules py_compile clean;
+    merged diff vs effe800 is exactly
+    the 6 slice files (+1168/-0). No
+    heal was needed at merge.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-152 (Part
+    IX, in roadmap order).
