@@ -6443,3 +6443,62 @@ P-096 BANKED - Dice & game-bridge plugin surface (Part VI)
     confirmation + 33, exact; log
     hidden_files/p096_forge_fullsuite.log).
     Next in roadmap order: P-097.
+P-097 BANKED - Plugin conformance kit (Part VI)
+    - team-03 commit afeae93 merged (no-ff)
+    into yrsa/two-mirrors-build as 2d1d776
+    and pushed; ls-remote verified
+    2d1d776d4a7d95da972134b5faef263aed88ebc8
+    (see WAVE_PLAN update). Evidence
+    (team-03 worktree
+    hidden_files/P097_EVIDENCE.md):
+    battery 30 passed, neighbours 509
+    passed, team full suite 3952 passed /
+    4 skipped / 0 failed (= 3922 base +
+    battery 30, exact).
+    Slice:
+    src/runmal/plugins/conformance.py (new,
+    831 lines - the conformance kit: thirteen
+    checks in fixed order across the
+    manifest and citizen roads, deterministic
+    checksummed report, listing gate as
+    data, corpus auto-discovery under
+    runmal.plugins, and the kit citizen
+    runmal.plugin-conformance itself),
+    tests/test_p097_plugin_conformance.py
+    (30 tests),
+    docs/PLUGIN_CONFORMANCE_KIT_2026-11-07.md,
+    clean-room log append. 4 files, +1348.
+    Migration: NONE (head stays 0041; no
+    migration taken - the kit holds no
+    state; no 0042).
+    Defect: check-order defect on the
+    parse-failure road, fixed in-slice:
+    when manifest_parses failed, the not_run
+    rows for handlers_binding and
+    registration were emitted BEFORE
+    settings_shape, reshuffling the design
+    fixed check order. The two not_run rows
+    now land in their own slots, after
+    settings_shape; pinned by
+    test_check_names_fixed_order_on_parse_failure.
+    Corpus note: on the merged tree the
+    P-096 citizen runmal.game-bridge joins
+    the conformance corpus by auto-discovery
+    (citizen_modules under runmal.plugins),
+    giving 15 citizens; the P-097 battery
+    re-run on the merged tree passed 30 / 0
+    with game-bridge present. No pin heal
+    was needed - no battery pin hard-codes
+    the 14-citizen in-tree corpus.
+    Merge conflict in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md only
+    (append-vs-append), resolved keeping
+    the P-096 and P-097 entries exactly
+    once; no other conflicts. Combined
+    batteries on the merged tree: 63 passed
+    / 0 failed (= 33 P-096 + 30 P-097,
+    exact). Forge confirmation suite:
+    3985 passed / 4 skipped / 0 failed
+    (= 3955 P-096 confirmation + 30,
+    exact).
+    Next in roadmap order: P-098.
