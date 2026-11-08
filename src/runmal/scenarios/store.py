@@ -37,6 +37,18 @@ the record's report names every one of them, and the
 stateless P-026 import/export roads remain the lossless
 hand-back road for raw files. Nothing is silently
 dropped: the report is the record of it.
+
+P-137 (Part IX, DERIVED scope) adds the store's
+duplication verb: a faithful clone of one stored
+definition under a fresh id. The definition and its
+import report are deep-copied exactly — the report is
+the one part of the record the composed export ->
+create road provably cannot reproduce (P-133's
+one-way naming law) — the source format is preserved,
+and the name follows the characters S303 law (the
+source's name + " (copy)"). The clone starts at
+revision 1 as a new citizen; no organisation row and
+no binding is carried to it.
 """
 
 from __future__ import annotations
@@ -304,6 +316,61 @@ class ScenarioStore:
             return None
         self._save(kept)
         return removed[0]
+
+    def duplicate(
+        self,
+        definition_id: str,
+        owner_id: str,
+        *,
+        now: str | None = None,
+    ) -> ScenarioDefinition | None:
+        """Clone one owned definition faithfully, or None.
+
+        Unknown or foreign answers None BEFORE anything
+        is copied or written — existence never leaks.
+        The clone is a new citizen: fresh id, revision 1,
+        one birth stamp, the source's owner. Its
+        definition and its P-131 import report are
+        deep-copied exactly (the report holds no name
+        value, so the rename falsifies nothing in it),
+        its source_format is preserved, and its name —
+        on the record and on the definition's own name
+        field alike, so the two never disagree — follows
+        the characters S303 law: the source's name +
+        " (copy)". Only the definitions document gains
+        a row: no organisation row and no binding is
+        carried to the clone.
+        """
+        rows = self._load()
+        source = next(
+            (
+                row
+                for row in rows
+                if row.id == definition_id and row.owner_id == owner_id
+            ),
+            None,
+        )
+        if source is None:
+            return None
+        stamp = now or _now_iso()
+        name = f"{source.name} (copy)"
+        definition = copy.deepcopy(source.definition)
+        if isinstance(definition.get("name"), str):
+            definition["name"] = name
+        record = ScenarioDefinition(
+            id=str(uuid.uuid4()),
+            owner_id=source.owner_id,
+            name=name,
+            definition=definition,
+            source_format=source.source_format,
+            report=copy.deepcopy(source.report),
+            revision=1,
+            created_at=stamp,
+            updated_at=stamp,
+        )
+        rows.append(record)
+        self._save(rows)
+        return record
 
 
 def _parse_body(body: dict):

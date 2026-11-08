@@ -9,7 +9,11 @@
   store (``scenarios.json``), validation at the store
   door through the P-026 parser, and the import report
   carried with each record as data (P-131, Part IX
-  opener, DERIVED scope).
+  opener, DERIVED scope); its duplication verb clones
+  one definition faithfully under a fresh id — report
+  and source format preserved exactly, the name under
+  the characters S303 " (copy)" law (P-137, Part IX,
+  DERIVED scope).
 - ``storedexport`` — stored-definition file export: a
   stored definition handed back as a file through P-026's
   own exporters, with an honest report naming whatever

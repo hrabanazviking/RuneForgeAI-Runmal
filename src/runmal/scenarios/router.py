@@ -1,7 +1,8 @@
 """Scenario API: file interop (P-026) + stored definitions (P-131)
 + scenario-to-chat binding (P-132) + stored-definition file export (P-133)
 + scenario library organisation (P-134) + binding
-  lifecycle read surface (P-135).
+  lifecycle read surface (P-135) + definition
+  duplication (P-137).
 
 P-026 roads (stateless): parse a scenario file and report
 honestly, and re-export it. Those roads are unchanged.
@@ -270,6 +271,34 @@ async def delete_scenario_definition(
             detail="scenario definition not found",
         )
     return {"id": record.id, "deleted": True}
+
+
+@router.post(
+    "/scenarios/{definition_id}/duplicate",
+    status_code=status.HTTP_201_CREATED,
+)
+async def duplicate_scenario_definition(
+    definition_id: str,
+    user_id: str = Depends(get_owner_id),
+):
+    """Clone one owned definition faithfully (P-137).
+
+    The clone is a new citizen under a fresh id: the
+    source's definition and its P-131 import report
+    preserved exactly, its source format preserved,
+    its name carrying the house " (copy)" suffix (the
+    characters S303 law). The answer is the clone's
+    full record, the create road's shape. Unknown or
+    foreign answers 404 — existence never leaks. No
+    organisation row and no binding is carried.
+    """
+    record = _store().duplicate(definition_id, user_id)
+    if record is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="scenario definition not found",
+        )
+    return record.to_dict()
 
 
 # --------------------------------------- organisation (P-134)
