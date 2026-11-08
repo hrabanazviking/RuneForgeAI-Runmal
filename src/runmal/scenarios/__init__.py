@@ -27,6 +27,12 @@
   tags, favourites and findability over stored
   definitions in their own versioned JSON document,
   on P-024's tag law (P-134, Part IX, DERIVED scope).
+- ``bindpreview`` — binding plan preview: P-132's pure
+  materialisation plan for one stored definition,
+  handed back read-only in an envelope naming the
+  definition's current revision and the bounds of what
+  a definition-side plan can promise (P-136, Part IX,
+  DERIVED scope).
 - ``router`` — the HTTP roads: the stateless P-026
   import/export roads plus the P-131 definition CRUD
   roads on the same /scenarios prefix.
@@ -62,6 +68,7 @@ from runmal.scenarios.organisation import (
     organisation_view,
     query_definitions,
 )
+from runmal.scenarios.bindpreview import preview_bind_plan
 from runmal.scenarios.fileexport import (
     export_native,
     export_native_bytes,
@@ -169,6 +176,7 @@ __all__ = [
     "list_tags",
     "organisation_path",
     "organisation_view",
+    "preview_bind_plan",
     "query_definitions",
     "get_binding",
     "list_bindings",
