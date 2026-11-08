@@ -7246,3 +7246,112 @@ P-107 BANKED - Voice Rendered Confidence Markings (Part VII)
     and VX-13 stay open, as recorded in
     the slice doc.
     Next in roadmap order: P-108.
+P-108 BANKED - Voice Repeat-Request Signal (Part VII)
+    - team-02 commit cf21eb8 merged (no-ff)
+    into yrsa/two-mirrors-build as 860f7d2;
+    merge pushed; ls-remote verified
+    860f7d2d9e186bc37d124c99af3ea754a1cd8445.
+    Evidence (team-02 worktree
+    hidden_files/P108_EVIDENCE.md):
+    battery 15 passed, neighbours
+    302 passed / 2 skipped / 0 failed
+    (fence S501-S514 + P-010 + P-091 +
+    P-101..P-105 + P-108 batteries; the
+    2 skips are the pre-existing
+    environmental optionals), team full
+    suite 4191 passed / 4 skipped /
+    0 failed (= 4176 + 15 exact, on
+    the fc4ea07 base).
+    Derived scope ACCEPTED by the keeper:
+    P-108 is the host-facing half of
+    VX-11's ask-to-repeat - the signal
+    half P-105, P-106 and P-107 each
+    left open. A turn is a pending
+    repeat request exactly when P-105's
+    turn_mishearing says needs_repeat:
+    pending requests are derived purely
+    from that one truth source (the
+    predeclared threshold and bands are
+    imported, never redeclared), so the
+    signal cannot disagree with P-105's
+    view, P-106's receipt or P-107's
+    rendering. The acknowledgement
+    lifecycle is durable (the P-105
+    voice JSON-store house pattern):
+    first acknowledgement wins, clearing
+    returns the request to pending with
+    the truth untouched, and acknowledging
+    a turn with no request answers 422.
+    No dialogue is fabricated, no chat
+    message is created, no text is
+    generated, and the P-102 responder
+    is untouched. The roadmap gives
+    Part VII only its part line.
+    Slice:
+    src/runmal/voice/repeat_requests.py
+    (new: turn_repeat_request /
+    session_repeat_requests pure views
+    over the P-105 truth + the durable
+    AcknowledgementStore),
+    src/runmal/voice/repeat_router.py
+    (new: 3 roads - GET the session's
+    repeat-request signal, POST
+    acknowledge a turn's request,
+    DELETE clear an acknowledgement;
+    owner rule: unknown and foreign
+    sessions answer 404),
+    src/runmal/app.py (repeat_router
+    wiring, additive),
+    src/runmal/voice/__init__.py
+    (module-map entry, additive),
+    tests/test_p108_voice_repeat_requests.py
+    (15 tests),
+    docs/VOICE_REPEAT_REQUESTS_2026-11-08.md,
+    clean-room log append (+1). 7 files,
+    +905/-0.
+    Migration: NONE (head stays 0041).
+    Merge conflict only in the clean-room
+    log, resolved with the P-106, P-107
+    and P-108 entries kept exactly once
+    each; app.py and voice/__init__.py
+    merged cleanly as additive unions
+    keeping all banked P-101..P-107
+    wiring. Merged tree carries P-106
+    transcript_mishearing_mark in
+    voice/projection.py, P-107 markings
+    (voice/markings.py, the chats/router.py
+    voice_marking attach) AND P-108
+    repeat_requests + repeat_router with
+    its 3 roads wired in app.py;
+    py_compile green on all touched
+    Python files.
+    Combined batteries on the merged
+    tree: 154 passed / 0 failed
+    (28 + 24 + 19 + 17 + 21 + 18 + 12 + 15).
+    Log hidden_files/p108_combined.log
+    (forge) on purplelongship.
+    Forge confirmation suite:
+    4221 passed / 4 skipped / 0 failed
+    in 212.31s, exit 0 - exact match to
+    expectation (= 4206 + 15), no
+    contention re-runs needed (the run
+    shared the laptop with team-03's
+    P-109 work and stayed clean). Log
+    hidden_files/p108_confirm.log (forge).
+    Honest limitations carried:
+    the character-asks half of VX-11
+    stays open on the P-102 responder
+    seam, which this slice does not
+    cross. The signal is poll-based:
+    a host reads the road; no push or
+    event is emitted. Acknowledgements
+    are install-wide records keyed by
+    session, not per-host - which is
+    precisely the do-not-ask-twice
+    protection. A deleted session's
+    acknowledgements become inert
+    records: they name a session that
+    no longer exists and drive nothing.
+    VX-12 and VX-13 stay open, as
+    recorded in the slice doc.
+    Next in roadmap order: P-109.
