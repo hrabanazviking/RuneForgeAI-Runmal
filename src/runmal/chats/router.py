@@ -20,6 +20,31 @@ from runmal.prompt.post_history import instructions_to_data
 router = APIRouter(tags=["chats"])
 
 
+def _with_voice_markings(message_dicts):
+    """P-107: attach the additive voice_marking view to any
+    landed voice-transcript message dicts (runmal.voice.
+    markings). Tolerant by design: any voice-store failure
+    leaves the dicts unmarked rather than bricking the
+    thread surface - the marking is a view, never the road."""
+    try:
+        import os
+        from pathlib import Path as _Path
+
+        from runmal.voice import markings as markings_mod
+        from runmal.voice import mishearing as mis_mod
+        from runmal.voice import session as voice_session
+
+        data_dir = _Path(os.environ.get("RUNMAL_DATA_DIR", ".runmal-data"))
+        store = voice_session.VoiceSessionStore(
+            data_dir / voice_session.SESSIONS_FILENAME)
+        pairs = mis_mod.ReplacementStore(
+            data_dir / mis_mod.REPLACEMENTS_FILENAME).pairs()
+        markings_mod.markings_for_messages(message_dicts, store, pairs)
+    except Exception:
+        pass
+    return message_dicts
+
+
 class ChatCreate(BaseModel):
     title: str = ""
     character_id: str | None = None
@@ -296,7 +321,7 @@ async def get_chat(
         raise HTTPException(status_code=404, detail="chat not found")
     history = await service.get_history(session, user_id, chat_id) or []
     payload = chat_to_dict(chat, len(history))
-    payload["messages"] = [message_to_dict(m) for m in history]
+    payload["messages"] = _with_voice_markings([message_to_dict(m) for m in history])
     return payload
 
 
@@ -419,7 +444,7 @@ async def get_history(
         history = await service.get_history(session, user_id, chat_id)
         if history is None:
             raise HTTPException(status_code=404, detail="chat not found")
-        return [message_to_dict(m) for m in history]
+        return _with_voice_markings([message_to_dict(m) for m in history])
     page_result = await service.get_history_page(
         session, user_id, chat_id,
         limit=limit if limit is not None else 100,
@@ -429,7 +454,7 @@ async def get_history(
         raise HTTPException(status_code=404, detail="chat not found")
     page, total, effective_offset, effective_limit = page_result
     return {
-        "messages": [message_to_dict(m) for m in page],
+        "messages": _with_voice_markings([message_to_dict(m) for m in page]),
         "total": total,
         "limit": effective_limit,
         "offset": effective_offset,

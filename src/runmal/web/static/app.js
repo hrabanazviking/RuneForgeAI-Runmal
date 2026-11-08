@@ -78,11 +78,38 @@ function renderInto(div, text) {
   div.innerHTML = window.RunmalRenderer.renderMarkdownLite(text);
 }
 
-function appendMessage(role, text, rendered) {
+function markingBadge(marking) {
+  // P-107 (VX-11 rendered markings): the badge under a landed
+  // voice transcript. Text only - the suggested hearing is
+  // data shown as text, never rendered as message content.
+  const badge = document.createElement("div");
+  badge.className = "voice-marking";
+  if (!marking.evidence_available) {
+    badge.textContent = "Voice line: hearing evidence unavailable.";
+  } else if (!marking.has_confidence_evidence) {
+    badge.textContent = "Voice line: no confidence evidence was recorded.";
+  } else if (marking.needs_repeat) {
+    badge.textContent = "Heard with doubt - " + marking.low_confidence_count
+      + " unclear word(s).";
+    if (marking.replacements_applied && marking.replacements_applied.length) {
+      badge.textContent += " Suggested hearing: " + marking.suggested_text;
+    }
+  } else {
+    badge.textContent = "Heard clearly.";
+  }
+  return badge;
+}
+
+function appendMessage(role, text, rendered, marking) {
   const div = document.createElement("div");
   div.className = "msg " + role;
-  if (rendered) renderInto(div, text);
+  if (rendered && marking && marking.has_confidence_evidence) {
+    div.innerHTML = window.RunmalRenderer.renderMarkedTranscript(
+      text, marking.low_confidence_words);
+  }
+  else if (rendered) renderInto(div, text);
   else div.textContent = text;
+  if (marking) div.appendChild(markingBadge(marking));
   $("thread").appendChild(div);
   div.scrollIntoView({ block: "end" });
   return div;
@@ -129,7 +156,7 @@ function renderThread() {
     });
     thread.appendChild(more);
   }
-  for (const m of visible) appendMessage(m.role, m.content, true);
+  for (const m of visible) appendMessage(m.role, m.content, true, m.voice_marking || null);
 }
 
 async function loadPresets() {

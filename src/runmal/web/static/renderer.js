@@ -65,6 +65,49 @@ function renderMarkdownLite(input) {
   return out.join("");
 }
 
+/* STT confidence markings (P-107, VX-11 rendered markings).
+ * Mirrors the P-105 token law: a token matches when its
+ * punctuation-stripped core, lower-cased, is a low-confidence
+ * word; punctuation stays OUTSIDE the span. Escape-first XSS
+ * discipline is inherited from renderMarkdownLite: the mark
+ * placeholders are control characters that escaping leaves
+ * alone, and the span is substituted only after every
+ * transform has run, so no user text can become markup. */
+var STT_PUNCT = ".,!?;:'()[]{}<>" + String.fromCharCode(34) + "“”‘’«»";
+var MARK_OPEN = "";
+var MARK_CLOSE = "";
+
+function splitAffixes(token) {
+  var start = 0;
+  while (start < token.length && STT_PUNCT.indexOf(token[start]) >= 0) start++;
+  var end = token.length;
+  while (end > start && STT_PUNCT.indexOf(token[end - 1]) >= 0) end--;
+  return { lead: token.slice(0, start), core: token.slice(start, end),
+           trail: token.slice(end) };
+}
+
+function renderMarkedTranscript(input, lowWords) {
+  var text = String(input == null ? "" : input);
+  var low = {};
+  (lowWords || []).forEach(function (w) {
+    low[String(w).toLowerCase()] = true;
+  });
+  if (!Object.keys(low).length) return renderMarkdownLite(text);
+  var marked = text.split(" ").map(function (token) {
+    var parts = splitAffixes(token);
+    if (parts.core && low[parts.core.toLowerCase()]) {
+      return parts.lead + MARK_OPEN + parts.core + MARK_CLOSE + parts.trail;
+    }
+    return token;
+  }).join(" ");
+  return renderMarkdownLite(marked).replace(
+    /([^]*)/g,
+    function (_, core) {
+      return '<span class="stt-low" title="Low speech-to-text confidence">'
+        + core + "</span>";
+    });
+}
+
 /* Thread windowing ("virtualized" thread): render only the newest
  * `limit` messages; the UI offers earlier ones on demand. */
 function windowMessages(messages, limit) {
@@ -78,6 +121,7 @@ function windowMessages(messages, limit) {
 var api = {
   escapeHtml: escapeHtml,
   renderMarkdownLite: renderMarkdownLite,
+  renderMarkedTranscript: renderMarkedTranscript,
   windowMessages: windowMessages,
 };
 
