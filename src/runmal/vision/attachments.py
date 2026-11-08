@@ -31,6 +31,13 @@ chat-scoped. An attachment is the missing first-class citizen:
   deleting a chat purges the chat's (the P-118 purge idiom,
   wired from runmal.chats.service); a single delete removes
   the index row AND the byte file together.
+- thumbnails (P-123) are DERIVED ON READ through the
+  in-tree P-023 PNG engine (assets/imaging
+  make_png_thumbnail): nothing derived is ever stored,
+  so thumbnails need no custody of their own. The engine
+  is PNG-only, so a non-PNG attachment refuses plainly;
+  thumbnail availability is a request-time fact and is
+  never pre-claimed in the attachment record.
 """
 
 from __future__ import annotations
@@ -43,7 +50,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
-from runmal.assets.imaging import sniff_image
+from runmal.assets.imaging import make_png_thumbnail, sniff_image
 
 ATTACHMENTS_VERSION = 1
 ATTACHMENTS_FILENAME = "vision_attachments.json"
@@ -322,3 +329,53 @@ def attach_image(
         created_at=now or _now_iso(),
     )
     return store.append(record, data)
+
+
+# ---------------------------------------------------------- thumbnail
+# P-123: thumbnails derived on read (see the module docstring).
+
+THUMBNAIL_DEFAULT_MAX_DIM = 256  # the P-023 engine default
+THUMBNAIL_MAX_DIM_LIMIT = 1024
+
+
+def thumbnail_bytes(
+    store: AttachmentStore,
+    record: ImageAttachment,
+    max_dim: int = THUMBNAIL_DEFAULT_MAX_DIM,
+) -> bytes:
+    """Derive a PNG thumbnail of *record*'s stored bytes.
+
+    The derivation rides the P-023 engine
+    (assets.imaging.make_png_thumbnail) and stores
+    NOTHING: no byte file, no index change. Refusals are
+    plain and total, each naming its bound:
+
+    - max_dim outside 1..THUMBNAIL_MAX_DIM_LIMIT;
+    - a non-PNG attachment - the engine is PNG-only, and the
+      full bytes are never served in a thumbnail's place;
+    - the byte file missing (the router maps this one to
+      404: its text starts with "attachment bytes not found");
+    - a PNG outside the engine's decodable subset
+      (interlaced, unsupported bit depth / colour type, or
+      corrupt pixel data).
+    """
+    if not (1 <= int(max_dim) <= THUMBNAIL_MAX_DIM_LIMIT):
+        raise AttachmentError(
+            f"max_dim {max_dim} is outside the supported "
+            f"1..{THUMBNAIL_MAX_DIM_LIMIT} range")
+    if record.image_format != "png":
+        raise AttachmentError(
+            f"thumbnails are PNG-only in-tree (the P-023 engine "
+            f"decodes PNG only); this attachment is "
+            f"{record.image_format or 'unknown'} - refusing to "
+            f"substitute the full image")
+    data = store.read_bytes(record)
+    if data is None:
+        raise AttachmentError("attachment bytes not found")
+    thumb = make_png_thumbnail(data, max_dim=int(max_dim))
+    if thumb is None:
+        raise AttachmentError(
+            "attachment PNG is outside the thumbnail engine's "
+            "decodable subset (interlaced, unsupported bit "
+            "depth or colour type, or corrupt pixel data)")
+    return thumb

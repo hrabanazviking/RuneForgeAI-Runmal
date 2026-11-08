@@ -16,7 +16,9 @@
 - ``attachments`` — user-supplied images attached to a
   chat or one of its messages: bytes + honest sniffed
   metadata on the same JSON-store pattern, describable
-  through the describe road (P-120).
+  through the describe road (P-120); thumbnails are
+  derived on read through the P-023 PNG engine - PNG-only,
+  plain refusals, nothing derived stored (P-123).
 - ``router`` — the owner-scoped HTTP road
   (/api/v1/vision/*).
 - ``watcher`` — folder-watcher registrations and the
