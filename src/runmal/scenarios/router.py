@@ -8,6 +8,7 @@
 + library-scoped pack import preview (P-143).
 + global binding census (P-144).
 + library unmappable-content census (P-145).
++ chat-scoped candidate bind preview (P-147).
 
 P-026 roads (stateless): parse a scenario file and report
 honestly, and re-export it. Those roads are unchanged.
@@ -138,6 +139,7 @@ from runmal.scenarios.store import (
 )
 from runmal.scenarios.bindpreview import preview_bind_plan
 from runmal.scenarios.chatpreview import preview_bind_for_chat
+from runmal.scenarios.candidatechatpreview import preview_candidate_for_chat
 from runmal.scenarios.deletepreview import preview_delete_impact
 from runmal.scenarios.replacepreview import preview_replace_impact
 from runmal.scenarios.packs import build_pack, import_pack, inspect_pack
@@ -975,3 +977,62 @@ async def export_scenario_pack(
             detail="scenario definition not found",
         )
     return build_pack(record)
+
+
+# ----------------- chat-scoped candidate bind preview (P-147)
+
+
+@router.post(
+    "/scenarios/{definition_id}/replace-preview/{chat_id}",
+    status_code=status.HTTP_200_OK,
+)
+async def preview_scenario_candidate_for_chat(
+    definition_id: str,
+    chat_id: str,
+    body: dict,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """What binding this candidate WOULD do to THIS chat (P-147).
+
+    The candidate replace body is judged through the
+    store door exactly as a replace would store it, and
+    its would-be bind plan is judged against one named
+    chat: bind's refusal facts reported as data in
+    bind's decision order (group room, already bound -
+    naming the standing binding - and non-empty, with
+    its message count), would_bind for the candidate as
+    if stored at the next revision, and the candidate
+    plan's seedable keys split by the P-093 store's own
+    presence law beside the stored plan's split and the
+    full-key deltas. The definition is decided first:
+    unknown or foreign answers 404 ("scenario definition
+    not found") even with a malformed body; an unknown
+    or foreign chat answers 404 ("chat not found")
+    before the candidate is judged - existence never
+    leaks on either side; a refused candidate on an
+    owned definition and chat answers 422 with the store
+    door's own refusal. The road replaces, binds and
+    writes nothing; PUT remains the only replacer and
+    POST bind the only binder.
+    """
+    record = _store().get(definition_id, user_id)
+    if record is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="scenario definition not found",
+        )
+    try:
+        envelope = await preview_candidate_for_chat(
+            session, record, user_id, chat_id, body)
+    except (ScenarioParseError, ScenarioStoreError) as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(exc),
+        ) from exc
+    if envelope is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="chat not found",
+        )
+    return envelope
