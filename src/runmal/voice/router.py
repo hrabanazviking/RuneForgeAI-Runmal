@@ -526,5 +526,20 @@ async def record_voice_turn(
 
 @router.delete("/voice/chats/{chat_id}/sessions")
 async def drop_chat_voice_sessions(chat_id: str, request: Request) -> dict:
-    dropped = _session_store(request).drop_chat(chat_id)
-    return {"chat_id": chat_id, "dropped": dropped}
+    store = _session_store(request)
+    dropped = store.drop_chat(chat_id)
+    # P-111: dropping a chat's sessions is the act that orphans
+    # their repeat acknowledgements (P-108's inert records) -
+    # prune every acknowledgement whose session no longer
+    # exists in the same housekeeping act, and report the count.
+    from runmal.voice import repeat_requests as _rr
+
+    data_dir = Path(os.environ.get("RUNMAL_DATA_DIR", ".runmal-data"))
+    live = {s.session_id for s in store.all_sessions()}
+    pruned = _rr.AcknowledgementStore(
+        data_dir / _rr.ACK_FILENAME).prune_orphans(live)
+    return {
+        "chat_id": chat_id,
+        "dropped": dropped,
+        "repeat_acknowledgements_pruned": pruned["removed_records"],
+    }

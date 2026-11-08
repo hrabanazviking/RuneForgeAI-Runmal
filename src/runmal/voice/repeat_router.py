@@ -105,3 +105,41 @@ async def clear_repeat_acknowledgement(
     found = _session_or_404(session_id, owner_id)
     removed = _ack_store().clear(session_id, turn_no)
     return {"removed": removed, **_view(found)}
+
+
+def _live_session_ids() -> set:
+    store = voice_session.VoiceSessionStore(
+        _data_dir() / voice_session.SESSIONS_FILENAME)
+    return {s.session_id for s in store.all_sessions()}
+
+
+@router.get("/voice/repeat-requests/housekeeping")
+async def get_repeat_housekeeping(
+    owner_id: str = Depends(get_owner_id),
+) -> dict:
+    """P-111: the acknowledgement store's housekeeping truth.
+
+    Install-wide, exactly like the acknowledgement store itself
+    (the P-108 stance, stated plainly): the bearer gate is the
+    API's own, and the view names inert session ids - records
+    whose session no longer exists - so a host can see what a
+    prune would remove. Acknowledging nothing, deleting
+    nothing: a pure read.
+    """
+    _ = owner_id  # the bearer gate is the authorisation (API law)
+    return rr_mod.housekeeping_view(_ack_store(), _live_session_ids())
+
+
+@router.post("/voice/repeat-requests/housekeeping/prune")
+async def prune_repeat_housekeeping(
+    owner_id: str = Depends(get_owner_id),
+) -> dict:
+    """P-111: remove inert acknowledgement records (only those).
+
+    Live sessions' records are never touched; a prune with
+    nothing inert removes nothing and says so. The report
+    carries before/after counts and the removed session ids.
+    """
+    _ = owner_id
+    return rr_mod.prune_inert_acknowledgements(
+        _ack_store(), _live_session_ids())

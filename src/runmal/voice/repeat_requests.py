@@ -252,3 +252,80 @@ class AcknowledgementStore:
             del self._acks[session_id]
         self.save()
         return True
+
+    def session_ids(self) -> list[str]:
+        """Session ids that carry at least one record, sorted."""
+        return sorted(sid for sid, turns in self._acks.items() if turns)
+
+    def record_count(self) -> int:
+        """Total acknowledgement records in the store."""
+        return sum(len(turns) for turns in self._acks.values())
+
+    def prune_orphans(self, live_session_ids) -> dict:
+        """Remove every record naming a session that is not live
+        (P-111 housekeeping: the inert-record cleanup).
+
+        A record is inert exactly when its session id is not in
+        ``live_session_ids`` - the session was deleted (its chat's
+        sessions were dropped) and the record drives nothing: no
+        session view can ever show it, and it can never return a
+        request to pending. Live sessions' records are never
+        touched, order and content alike. Saves only when
+        something was actually removed, so a no-op prune leaves
+        the document byte-identical. Returns the removed session
+        ids (sorted) and the removed record count.
+        """
+        live = {str(sid) for sid in live_session_ids}
+        removed_sessions = sorted(
+            sid for sid in self.session_ids() if sid not in live)
+        removed_records = sum(
+            len(self._acks[sid]) for sid in removed_sessions)
+        for sid in removed_sessions:
+            del self._acks[sid]
+        if removed_sessions:
+            self.save()
+        return {
+            "removed_sessions": removed_sessions,
+            "removed_records": removed_records,
+        }
+
+
+# ------------------------------------------------------- housekeeping
+
+
+def housekeeping_view(store, live_session_ids) -> dict:
+    """The acknowledgement store's housekeeping truth, as data.
+
+    Splits the store's records into live (their session still
+    exists in the session store) and inert (P-108's recorded
+    limitation: the session is gone, the record names nothing
+    and drives nothing). Counts are read from the store, never
+    estimated; inert session ids are named so a host can see
+    exactly what a prune would remove before calling it.
+    """
+    live = {str(sid) for sid in live_session_ids}
+    per_session = {
+        sid: len(store.acks_for(sid)) for sid in store.session_ids()}
+    inert_ids = sorted(sid for sid in per_session if sid not in live)
+    return {
+        "acknowledged_sessions": len(per_session),
+        "acknowledged_records": sum(per_session.values()),
+        "live_acknowledged_sessions": len(per_session) - len(inert_ids),
+        "inert_sessions": len(inert_ids),
+        "inert_records": sum(per_session[sid] for sid in inert_ids),
+        "inert_session_ids": inert_ids,
+    }
+
+
+def prune_inert_acknowledgements(store, live_session_ids) -> dict:
+    """Prune inert records and report before/after in one view."""
+    before = housekeeping_view(store, live_session_ids)
+    removed = store.prune_orphans(live_session_ids)
+    after = housekeeping_view(store, live_session_ids)
+    return {
+        **after,
+        "inert_sessions_before": before["inert_sessions"],
+        "inert_records_before": before["inert_records"],
+        "removed_sessions": removed["removed_sessions"],
+        "removed_records": removed["removed_records"],
+    }
