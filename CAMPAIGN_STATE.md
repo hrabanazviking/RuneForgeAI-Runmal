@@ -9567,3 +9567,120 @@ P-127 BANKED - Watcher History & Search (Part VIII)
     inclusion of the vision stores.
     Next in roadmap order: P-128
     (Part VIII continues).
+P-128 BANKED - Describe-on-Scan Opt-In (Part VIII)
+    PART VIII continues (twelfth slice).
+    - team-01 commit e5cc0c6 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as b537e7b (parents d708d76 +
+    e5cc0c6); merge pushed and
+    ls-remote verified at b537e7b
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Evidence (team-01 worktree
+    hidden_files/P128_EVIDENCE.md):
+    battery 23 passed / 0 failed;
+    neighbours 184 passed / 2 skipped
+    / 0 failed; team full suite
+    4541 passed / 5 skipped / 0 failed
+    on its base 0be09f6 (P-126 banking
+    record; P-127 is NOT in that base,
+    reconciled at this merge in
+    roadmap order).
+    Expectation check: 4518 (banked
+    base) + 23 new = 4541 - exact
+    match. Combined vision fence on
+    the merged tree (P-117 through
+    P-128): 198 passed / 1 skipped /
+    0 failed (175 P-127 fence + 23).
+    Forge confirmation suite on the
+    merged tree: 4559 passed /
+    5 skipped / 0 failed - a clean run
+    in 260.47s with no contention
+    re-runs needed. Expectation
+    check: 4536 (P-127 banking
+    confirmation) + 23 new = 4559 -
+    exact match. Log
+    hidden_files/P128_FORGE_CONFIRM.log
+    on purplelongship.
+    Slice scope (DERIVED, as Part
+    VIII per-slice definitions are
+    derived - the filed roadmap gives
+    Part VIII only its part line):
+    scan_and_describe composition in
+    the watcher, riding P-126's
+    attach_and_describe at the
+    attacher seam, so each newly
+    ingested file lands as attachment
+    + description or as a named
+    refused skip, and already-ingested
+    files are never re-described;
+    the scan HTTP road gains an
+    optional opt-in body with P-119
+    provider selection BEFORE the
+    scan, so a selection refusal
+    ingests nothing. scan_watch and
+    attach_image are untouched and
+    plain scans stay byte-identical:
+    the report gains the described /
+    describe_requested keys only on
+    an opt-in scan. This closes the
+    last describe-shaped hole named
+    open in the record.
+    Slice: src/runmal/vision/
+    watcher.py, src/runmal/vision/
+    router.py, src/runmal/vision/
+    __init__.py,
+    tests/test_p128_describe_on_scan.py
+    (new, 23 tests),
+    docs/VISION_DESCRIBE_ON_SCAN_
+    2026-11-08.md (new), clean-room
+    log append (+1).
+    6 files, +935/-1.
+    Migration: NONE (head stays 0041;
+    the provisional 0042 was NOT
+    needed and NOT taken -
+    descriptions ride the existing
+    P-117 store and ingestions the
+    v1 watcher document).
+    Merge conflicts in the clean-room
+    log (append-vs-append; P-124,
+    P-125, P-126, P-127, and P-128
+    entries kept, each exactly once)
+    and vision/watcher.py,
+    vision/router.py, and
+    vision/__init__.py (additive
+    unions: the P-127 watcher history
+    paragraphs and the P-128 scan
+    opt-in paragraphs both kept;
+    watcher search / search_ingested
+    and scan_and_describe both
+    verified present; watch-folders
+    history roads still declared
+    before the {watch_id} roads;
+    py_compile clean), resolved as
+    additive unions by the banking
+    coordinator before this banking.
+    Merged diff vs the forge head is
+    exactly the team slice (+935/-1,
+    the single deletion being the
+    ScanReport to_dict restructure
+    for the conditional described
+    key).
+    Derived scope ACCEPTED as
+    banked. Declined plainly, with
+    evidence in the scout and slice
+    doc: a semantic caption provider,
+    OCR, capture / camera, a watcher
+    daemon, watcher scan-history
+    persistence, vision settings,
+    describe-batch, portable-archive
+    inclusion of the vision stores,
+    and fork-carry.
+    Named-open carried items (not
+    dropped): a real local semantic
+    caption provider; OCR; capture /
+    camera; portable-archive
+    inclusion of the vision stores.
+    Next in roadmap order: P-129
+    (Part VIII continues).
