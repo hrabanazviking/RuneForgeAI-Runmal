@@ -9684,3 +9684,121 @@ P-128 BANKED - Describe-on-Scan Opt-In (Part VIII)
     inclusion of the vision stores.
     Next in roadmap order: P-129
     (Part VIII continues).
+
+P-129 BANKED - Watcher Registration Control Parity (Part VIII)
+    PART VIII continues (thirteenth slice).
+    - team-02 commit 8d0e931 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 74393f3 (parents d59e39a +
+    8d0e931); merge pushed and
+    ls-remote verified at 74393f3
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Evidence (team-02 worktree
+    hidden_files/P129_EVIDENCE.md):
+    battery 12 passed / 0 failed
+    (finisher re-run also 12 passed);
+    neighbours 187 passed / 1 skipped
+    / 0 failed; team full suite
+    4548 passed / 5 skipped / 0 failed
+    on its base d708d76 (P-127 banking
+    record; P-128 is NOT in that base,
+    reconciled at this merge in
+    roadmap order).
+    Expectation check: 4536 (banked
+    base) + 12 new = 4548 - exact
+    match. Combined vision fence on
+    the merged tree (P-117 through
+    P-129): 210 passed / 1 skipped /
+    0 failed (198 P-128 fence + 12).
+    Forge confirmation suite on the
+    merged tree: 4571 passed /
+    5 skipped / 0 failed - a clean run
+    in 249.98s with no contention
+    re-runs needed. Expectation
+    check: 4559 (P-128 banking
+    confirmation) + 12 new = 4571 -
+    exact match. Log
+    hidden_files/P129_FORGE_CONFIRM.log
+    on purplelongship.
+    Slice scope (DERIVED, as Part
+    VIII per-slice definitions are
+    derived - the filed roadmap gives
+    Part VIII only its part line):
+    WatchStore.set_recursive mirrors
+    set_enabled line for line (named
+    watch only, every other field and
+    ALL ingested records preserved,
+    unknown watch = None and no
+    write), so a registration's
+    recursive flag gains its first
+    handle; the PATCH road widens to
+    either behaviour flag or both
+    (enabled and/or recursive), an
+    empty body refused 422; the
+    DELETE road reads the ingested
+    count via list_ingested BEFORE
+    remove_watch and answers the
+    sibling delete roads' shape:
+    {"deleted": true, "id",
+    "ingested_records_removed": n}.
+    The attachments a scan ingested
+    are NOT touched - they are chat
+    attachments under P-120 custody.
+    Capabilities.vision stays False;
+    no provider is labelled semantic.
+    Slice: src/runmal/vision/
+    watcher.py, src/runmal/vision/
+    router.py, src/runmal/vision/
+    __init__.py,
+    tests/test_p129_watcher_control_parity.py
+    (new, 12 tests),
+    docs/VISION_WATCHER_CONTROL_PARITY_
+    2026-11-08.md (new), clean-room
+    log append (+1).
+    6 files, +601/-4.
+    Migration: NONE (head stays 0041;
+    the provisional 0042 was NOT
+    needed and NOT taken - both flags
+    already live in the v1 watcher
+    document; no storage shape
+    changes).
+    Merge conflicts in the clean-room
+    log (append-vs-append; P-128 and
+    P-129 entries kept, each exactly
+    once) and vision/watcher.py and
+    vision/router.py (additive
+    unions: the P-128 describe-on-scan
+    paragraphs and the P-129 control
+    parity paragraphs both kept;
+    scan_and_describe and
+    set_recursive /
+    ingested_records_removed both
+    verified present; py_compile
+    clean), resolved as additive
+    unions by the banking
+    coordinator before this banking.
+    vision/__init__.py auto-merged
+    carrying both bullets. Merged
+    diff vs the forge head is exactly
+    the team slice (+601/-4).
+    Derived scope ACCEPTED as
+    banked. Declined plainly, with
+    evidence in the scout and slice
+    doc: a semantic caption provider,
+    OCR, capture / camera, a watcher
+    daemon, watcher scan-history
+    persistence, vision settings,
+    describe-batch, portable-archive
+    inclusion of the vision stores,
+    fork-carry, and describe-on-scan
+    (P-128, banked ahead, not
+    duplicated).
+    Named-open carried items (not
+    dropped): a real local semantic
+    caption provider; OCR; capture /
+    camera; portable-archive
+    inclusion of the vision stores.
+    Next in roadmap order: P-130
+    (Part VIII gate).
