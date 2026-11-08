@@ -43,6 +43,14 @@ Laws held (see docs/VOICE_REPEAT_REQUESTS_2026-11-08.md):
 - CONTENT LAW UNCHANGED: the stored transcript is never
   rewritten; the suggested text rides as a view only.
 
+P-115 adds the cross-session DIGEST over this signal:
+the roll-up a host polls for all of its sessions at once,
+with wall-clock aging derived only from the stamps this
+module and the session record already persist (turn
+recorded_at, acknowledgement acknowledged_at) against an
+injected now - plain arithmetic seconds, no age buckets
+and no staleness threshold invented.
+
 Storage is one versioned JSON document in the voice house
 pattern (the P-105 lexicon stance); NO migration - the
 head stays 0041.
@@ -103,6 +111,7 @@ def turn_repeat_request(turn, pairs=None, ack=None) -> dict | None:
         "transcript_text": view["transcript_text"],
         "suggested_text": view["suggested_text"],
         "replacements_applied": view["replacements_applied"],
+        "recorded_at": str(getattr(turn, "recorded_at", "") or ""),
         "acknowledged_at": (ack or {}).get("acknowledged_at", ""),
         "acknowledged_note": (ack or {}).get("note", ""),
     }
@@ -328,4 +337,163 @@ def prune_inert_acknowledgements(store, live_session_ids) -> dict:
         "inert_records_before": before["inert_records"],
         "removed_sessions": removed["removed_sessions"],
         "removed_records": removed["removed_records"],
+    }
+
+
+# ------------------------------------------------------------- digest
+
+
+def _parse_stamp(value) -> datetime | None:
+    """Parse a stored ISO stamp, tolerantly (house law: a
+    stored stamp never bricks a view). Naive stamps are
+    read as UTC - the stores stamp UTC ISO (_now_iso,
+    AcknowledgementStore.acknowledge). Anything missing
+    or unparseable yields None: no age is claimed."""
+    if isinstance(value, datetime):
+        parsed = value
+    elif isinstance(value, str) and value.strip():
+        try:
+            parsed = datetime.fromisoformat(value.strip())
+        except ValueError:
+            return None
+    else:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=UTC)
+    return parsed
+
+
+def _age_seconds(now: datetime, stamp) -> float | None:
+    """now - stamp in seconds, or None when no honest age
+    exists: stamp missing/unparseable, or stamp after now
+    (clock skew - a negative age is dropped, never clamped
+    to zero, the P-110 negative-span law)."""
+    parsed = _parse_stamp(stamp)
+    if parsed is None:
+        return None
+    age = (now - parsed).total_seconds()
+    return age if age >= 0 else None
+
+
+def _delay_seconds(start, end) -> float | None:
+    """end - start in seconds with the same honesty law."""
+    first, last = _parse_stamp(start), _parse_stamp(end)
+    if first is None or last is None:
+        return None
+    delay = (last - first).total_seconds()
+    return delay if delay >= 0 else None
+
+
+def _age_stats(ages: list, total: int) -> dict:
+    """One aging stat block: plain arithmetic over exactly
+    the items that carry an age. No buckets, no thresholds,
+    no staleness verdict - the digest reports how long,
+    never "too long"."""
+    return {
+        "count": len(ages),
+        "without_count": total - len(ages),
+        "oldest_seconds": max(ages) if ages else None,
+        "newest_seconds": min(ages) if ages else None,
+        "mean_seconds": (sum(ages) / len(ages)) if ages else None,
+    }
+
+
+def repeat_digest(sessions, pairs=None, store=None, *, now=None) -> dict:
+    """The cross-session repeat-request digest (P-115).
+
+    Rolls the P-108 per-session signal up over ``sessions``
+    (the caller scopes the set - the HTTP road passes only
+    the owner's sessions) and adds wall-clock aging derived
+    ONLY from stamps the tree already persists: each turn's
+    recorded_at and each acknowledgement's acknowledged_at.
+    ``now`` is the injected clock (datetime, ISO string, or
+    None for the wall clock); every age is arithmetic from
+    it, so a test - or a host with its own clock - pins the
+    answer exactly. Detection truth is never recomputed:
+    every request comes from session_repeat_requests, and
+    the digest counts are its sums by construction.
+    """
+    now_dt = _parse_stamp(now) if now is not None else None
+    if now_dt is None:
+        now_dt = datetime.now(UTC)
+    ordered = sorted(
+        sessions, key=lambda s: (str(s.created_at), str(s.session_id)))
+    session_entries = []
+    pending_flat = []
+    pending_ages: list[float] = []
+    ack_ages: list[float] = []
+    delay_values: list[float] = []
+    pending_total = 0
+    ack_total = 0
+    with_requests = 0
+    with_pending = 0
+    for session in ordered:
+        view = session_repeat_requests(session, pairs, store)
+        recorded = {int(turn.turn_no): str(turn.recorded_at or "")
+                    for turn in session.turns}
+        pending_ages_here: list[float] = []
+        oldest_pending_recorded = ""
+        last_ack = ""
+        for request in view["requests"]:
+            stamp = recorded.get(int(request["turn_no"]), "")
+            if request["state"] == STATE_PENDING:
+                age = _age_seconds(now_dt, stamp)
+                if age is not None:
+                    pending_ages.append(age)
+                    pending_ages_here.append(age)
+                if not oldest_pending_recorded or (
+                        stamp and stamp < oldest_pending_recorded):
+                    if stamp:
+                        oldest_pending_recorded = stamp
+                pending_flat.append({
+                    "session_id": session.session_id,
+                    "chat_id": session.chat_id,
+                    "turn_no": request["turn_no"],
+                    "recorded_at": stamp,
+                    "age_seconds": age,
+                })
+            else:
+                ack_at = request.get("acknowledged_at", "")
+                ack_age = _age_seconds(now_dt, ack_at)
+                if ack_age is not None:
+                    ack_ages.append(ack_age)
+                delay = _delay_seconds(stamp, ack_at)
+                if delay is not None:
+                    delay_values.append(delay)
+                if ack_at and ack_at > last_ack:
+                    last_ack = ack_at
+        pending_total += view["pending_count"]
+        ack_total += view["acknowledged_count"]
+        if view["requests"]:
+            with_requests += 1
+        if view["has_pending"]:
+            with_pending += 1
+        session_entries.append({
+            "session_id": session.session_id,
+            "chat_id": session.chat_id,
+            "has_pending": view["has_pending"],
+            "pending_count": view["pending_count"],
+            "acknowledged_count": view["acknowledged_count"],
+            "pending_turns": view["pending_turns"],
+            "oldest_pending_age_seconds": (
+                max(pending_ages_here) if pending_ages_here else None),
+            "newest_pending_age_seconds": (
+                min(pending_ages_here) if pending_ages_here else None),
+            "oldest_pending_recorded_at": oldest_pending_recorded,
+            "last_acknowledged_at": last_ack,
+        })
+    return {
+        "generated_at": now_dt.isoformat(),
+        "threshold": LOW_CONFIDENCE_THRESHOLD,
+        "sessions_total": len(ordered),
+        "sessions_with_requests": with_requests,
+        "sessions_with_pending": with_pending,
+        "requests_total": pending_total + ack_total,
+        "pending_count": pending_total,
+        "acknowledged_count": ack_total,
+        "pending": pending_flat,
+        "pending_age_seconds": _age_stats(pending_ages, pending_total),
+        "acknowledged_age_seconds": _age_stats(ack_ages, ack_total),
+        "acknowledgement_delay_seconds": _age_stats(delay_values, ack_total),
+        "sessions": session_entries,
     }
