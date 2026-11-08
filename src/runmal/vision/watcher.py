@@ -64,6 +64,12 @@ plainly:
   Search is literal substring matching - never semantic,
   never ranked - and persists nothing: the scan report
   itself remains a synchronous result, unstored.
+- control parity (P-129): a registration's recursive flag
+  gains the handle P-124 gave enabled (``set_recursive``),
+  so scan depth can change without deleting the
+  registration and destroying its dedupe memory; and
+  deleting a registration reports the ingested records it
+  removes as a count, in the sibling delete roads' shape.
 """
 
 from __future__ import annotations
@@ -294,6 +300,36 @@ class WatchStore:
         for row in watches:
             if row.id == watch_id:
                 updated = replace(row, enabled=bool(enabled))
+                out.append(updated)
+            else:
+                out.append(row)
+        if updated is None:
+            return None
+        self._save(out, ingested)
+        return updated
+
+    def set_recursive(self, watch_id: str, recursive: bool) -> WatchFolder | None:
+        """Control (P-129): set a registration's recursive flag.
+
+        Returns the updated registration, or None for an
+        unknown watch (nothing is written). Every other
+        field and all ingested records are preserved -
+        above all the dedupe memory, which is the whole
+        point: until P-129 the only way to change a
+        registration's scan depth was to delete it and
+        re-register, and deletion destroys the ingested
+        records, so the next scan re-ingested every
+        unchanged file as a duplicate attachment. This is
+        the flag's first handle, the P-124 set_enabled
+        precedent one flag over: both flags are set once
+        at registration and consumed by every scan.
+        """
+        watches, ingested = self._load()
+        updated = None
+        out: list[WatchFolder] = []
+        for row in watches:
+            if row.id == watch_id:
+                updated = replace(row, recursive=bool(recursive))
                 out.append(updated)
             else:
                 out.append(row)
