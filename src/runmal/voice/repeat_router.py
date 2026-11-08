@@ -10,6 +10,9 @@ The truth layer lives in runmal.voice.repeat_requests
 (derived from P-105's mishearing truth, the single
 source); this module is only the HTTP shape.
 
+P-115 adds the owner-scoped cross-session digest road
+(GET /voice/repeat-requests/digest) over the same truth.
+
 The signal is data, not dialogue: no road here creates a
 chat message, generates text, or calls a responder. A
 host reads the signal and acts - or not - through its
@@ -111,6 +114,28 @@ def _live_session_ids() -> set:
     store = voice_session.VoiceSessionStore(
         _data_dir() / voice_session.SESSIONS_FILENAME)
     return {s.session_id for s in store.all_sessions()}
+
+
+@router.get("/voice/repeat-requests/digest")
+async def get_repeat_digest(
+    owner_id: str = Depends(get_owner_id),
+) -> dict:
+    """P-115: the cross-session repeat-request digest.
+
+    Owner-scoped, exactly like the per-session roads above:
+    the roll-up covers only the caller's own sessions, so
+    no other owner's session, chat or pending turn is ever
+    named. (The P-111 housekeeping roads below stay
+    install-wide - they expose only counts and inert ids
+    of the install-wide acknowledgement store; the digest
+    names live sessions, so it follows the P-108 road.)
+    A pure read against the wall clock: acknowledges
+    nothing, deletes nothing, creates no message.
+    """
+    store = voice_session.VoiceSessionStore(
+        _data_dir() / voice_session.SESSIONS_FILENAME)
+    mine = [s for s in store.all_sessions() if s.user_id == owner_id]
+    return rr_mod.repeat_digest(mine, _pairs(), _ack_store())
 
 
 @router.get("/voice/repeat-requests/housekeeping")

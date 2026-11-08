@@ -32,7 +32,10 @@ Layered, provider-isolated pieces (see docs/VOICE_ARCHITECTURE.md):
   lexicon coverage (P-114).
 - ``repeat_requests`` / ``repeat_router`` - the repeat-request
   signal: pending requests derived from the P-105 truth +
-  the durable host acknowledgement record (P-108, VX-11).
+  the durable host acknowledgement record (P-108, VX-11),
+  its acknowledgement housekeeping (P-111), and the
+  cross-session digest with wall-clock aging over the
+  persisted stamps (P-115).
 - ``affects``   - the VX-12 affect vocabulary carried as data
   on voice profiles + session snapshots; no backend consumes
   one yet and every surface says so (P-109).
