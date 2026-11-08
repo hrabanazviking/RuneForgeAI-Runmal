@@ -63,6 +63,14 @@
   record; same-name creates fresh or refuses) —
   the P-045 pack discipline over the JSON store
   (P-141, Part IX, DERIVED scope).
+- ``packpreview`` — library-scoped pack import preview:
+  P-141's import verdicts (the exact duplicate, the
+  name collision, the on_conflict=reject refusal)
+  judged AS DATA against the caller's own library
+  before any import, in import's own decision order,
+  through P-141's own validation — a pure read that
+  imports, writes and creates nothing (P-143, Part IX,
+  DERIVED scope).
 - ``router`` — the HTTP roads: the stateless P-026
   import/export roads plus the P-131 definition CRUD
   roads on the same /scenarios prefix.
@@ -102,6 +110,7 @@ from runmal.scenarios.bindpreview import preview_bind_plan
 from runmal.scenarios.chatpreview import preview_bind_for_chat
 from runmal.scenarios.deletepreview import preview_delete_impact
 from runmal.scenarios.replacepreview import preview_replace_impact
+from runmal.scenarios.packpreview import preview_pack_import
 from runmal.scenarios.packs import (
     CONFLICT_CREATE_NEW,
     CONFLICT_MODES,
@@ -230,6 +239,7 @@ __all__ = [
     "preview_bind_for_chat",
     "preview_delete_impact",
     "preview_replace_impact",
+    "preview_pack_import",
     "CONFLICT_CREATE_NEW",
     "CONFLICT_MODES",
     "CONFLICT_REJECT",
