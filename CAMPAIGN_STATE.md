@@ -6673,3 +6673,50 @@ P-100 BANKED - Part VI gate (Part VI) - PART VI COMPLETE / GATE PASSED
     purplelongship).
     PART VI COMPLETE. Next in roadmap
     order: Part VII opens (P-101 onward).
+P-101 BANKED - Voice Sessions (Part VII) - PART VII OPENED
+    - team-01 commit 908ed5a merged (no-ff)
+    into yrsa/two-mirrors-build as 52e6f2c
+    and pushed; ls-remote verified
+    52e6f2ce3348c4c3480418adc463dac14671f6f6.
+    Evidence (team-01 worktree
+    hidden_files/P101_EVIDENCE.md):
+    battery 28 passed, neighbours
+    268 passed / 2 skipped, team full suite
+    4095 passed / 4 skipped / 0 failed
+    (= 4067 P-100 baseline + 28, exact).
+    Derived scope ACCEPTED: the roadmap
+    gives Part VII only its part line;
+    P-101 is derived as Voice Sessions
+    (voice/session.py
+    resolve_session_settings with
+    ProviderTruth as registry data,
+    VoiceTurnRecord.from_orchestrator
+    under S508 truth discipline,
+    VoiceSession lifecycle +
+    VoiceSessionStore in
+    voice_sessions.json, 6 routes,
+    owner-scoped).
+    Slice:
+    src/runmal/voice/session.py (new),
+    src/runmal/voice/router.py (+6 routes),
+    src/runmal/voice/__init__.py,
+    tests/test_p101_voice_sessions.py
+    (28 tests),
+    docs/VOICE_SESSIONS_2026-11-07.md,
+    clean-room log append (+1). 6 files,
+    +1258.
+    Migration: NONE (head stays 0041).
+    Honest limitations carried: no live
+    orchestrator wired into the app
+    process yet; session turns are not
+    projected into chat messages;
+    P-091 citizens remain unregistered
+    in the running app, unchanged.
+    Merge conflicts: none (the slice base
+    was the forge head). Forge
+    confirmation suite: 4095 passed /
+    4 skipped / 0 failed (log
+    /tmp/p101_forge_suite.log on
+    purplelongship).
+    PART VII OPENED. Next in roadmap
+    order: P-102.
