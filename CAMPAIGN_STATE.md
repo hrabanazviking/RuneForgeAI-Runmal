@@ -11280,3 +11280,171 @@ P-142 BANKED - Stateless Native-to-Voxta Export, F1 Leak Closed (Part IX)
     PART IX OPEN (P-131..P-154).
     Next in roadmap order: P-143
     (Part IX, in roadmap order).
+
+P-143 BANKED - Library-Scoped Pack Import Preview (Part IX)
+    Part IX thirteenth slice.
+    - team-01 commit 9fe9d49 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as d644335 (parents bbdd8cc +
+    9fe9d49); merge pushed and
+    ls-remote verified at d644335
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Cross-base banking: team-01 built
+    on cefe709 (the P-141 banking
+    record); P-142 is NOT in its base
+    by design and this slice touches
+    no line of scenarios/fileexport.py
+    (P-142 disjoint), so reconciliation
+    at banking was light.
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only
+    its part line (P-131..P-154), no
+    per-slice entries; the slice scope
+    is derived from Runmal's own
+    in-tree record (P-141's
+    import_pack verdicts -
+    duplicate_exact, name_collision,
+    the on_conflict=reject refusal -
+    computed only inside the importing
+    act itself, while inspect_pack
+    judges a pack alone and touches
+    no store; the P-136 -> P-138
+    preview progression transposed to
+    the pack surface: judge the
+    verdicts AS DATA against the
+    caller's own library BEFORE
+    importing), stated plainly as
+    derived in the slice doc.
+    Evidence (team-01 worktree
+    hidden_files/ P143_EVIDENCE.md +
+    logs P143_BATTERY.log,
+    P143_NEIGHBOURS.log,
+    P143_FULL_SUITE.log):
+    battery 13 passed / 0 failed;
+    neighbours 257 passed / 0 failed
+    (Part IX fence P-026 +
+    P-131..P-141; the P-142 battery
+    is absent from this base by
+    design and is therefore honestly
+    not in the fence - the keeper
+    runs it at banking reconciliation,
+    below); team full suite
+    4815 passed / 5 skipped /
+    0 failed - a clean run,
+    reconciling exactly with its
+    base (4802 + 13 = 4815); no
+    contention failure occurred, so
+    no solo re-run was needed.
+    One defect in the battery itself
+    (not in the service) was found
+    and fixed in-slice: the first
+    HTTP byte-untouched test built
+    its foreign clash pack AFTER
+    snapshotting the store bytes;
+    fixed by building the clash pack
+    before the snapshot; battery
+    then 13/13. No service defect
+    was found.
+    Combined batteries on the merged
+    tree: 286 passed / 0 failed
+    (P-131 29 + P-132 18 + P-133 24
+    + P-134 12 + P-135 16 + P-136 11
+    + P-137 12 + P-138 16 + P-139 11
+    + P-140 12 + P-141 34 + P-142 16
+    + P-143 13 + P-026 62).
+    Forge confirmation suite on the
+    merged tree: 4831 passed /
+    5 skipped / 0 failed - a clean
+    run in 274.06s with no contention
+    re-runs needed. Expectation check:
+    4818 + 13 = 4831 - exact match,
+    as counted from the log. Log
+    hidden_files/P143_FORGE_CONFIRM.log
+    on purplelongship.
+    Slice scope: P-141's import
+    verdicts judged as data against
+    the caller's own library before
+    importing -
+    scenarios/packpreview.py (new:
+    preview_pack_import validates
+    the mode first with import's own
+    PackError, then judges the pack
+    through inspect_pack verbatim -
+    its report rides in the envelope
+    whole, so a malformed pack
+    refuses before any library fact
+    is read - and scans the caller's
+    library by import's own law read
+    not run: list_for_owner only,
+    identity by packs.content_checksum
+    over stored definitions, name
+    collision against the manifest's
+    definition_name; envelope =
+    inspect fields verbatim +
+    on_conflict + library section
+    (duplicate named by P-131's
+    summary() verbatim, non-duplicate
+    same-name summaries in store
+    order) + exactly one outcome in
+    import's own decision order +
+    would_create / would_refuse +
+    import's own refusal sentence
+    verbatim or None + four standing
+    honesty notes in fixed order;
+    pure read), one additive road
+    (POST /scenarios/pack/import-preview
+    200 envelope - a reject-mode
+    would_refuse is data at 200,
+    never the road's own answer -
+    422 malformed pack / unknown
+    mode, declared with the literal
+    pack roads before the
+    {definition_id} roads),
+    scenarios/router.py (additive,
+    +43), scenarios/__init__.py
+    (additive, preview_pack_import
+    export + one subsystem-map
+    bullet),
+    tests/test_p143_pack_import_preview.py
+    (new, 13 tests),
+    docs/SCENARIO_PACK_IMPORT_PREVIEW_2026-11-08.md
+    (new), clean-room log append (+1).
+    No change to packs.py or any
+    P-141 answer, no new store, no
+    storage-shape change.
+    Honest limitations: the verdict
+    judges the library as it stands;
+    import re-decides every fact
+    when it runs and the
+    check-then-create is not
+    transactional (P-141) - stated
+    in the envelope's standing notes
+    and the slice doc. Team counts
+    exclude P-142 (absent from this
+    base by design); reconciliation
+    is the keeper's at banking
+    (combined batteries + forge
+    confirmation above).
+    Migration: NONE (head stays 0041).
+    Merge: conflict in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    only, resolved as a pure additive
+    union keeping BOTH P-142 and
+    P-143 entries exactly once each;
+    no other file conflicted, and
+    the merged diff against bbdd8cc
+    is exactly the six slice files
+    (+818/-0); merged
+    scenarios/router.py grep-verified
+    carrying BOTH the P-141 literal
+    pack roads AND the new POST
+    /scenarios/pack/import-preview
+    road before the {definition_id}
+    roads; merged scenarios modules
+    py_compile clean.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-144
+    (Part IX, in roadmap order).
