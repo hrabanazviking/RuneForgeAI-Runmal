@@ -8834,3 +8834,146 @@ P-121 BANKED - Folder Watcher: Watched Folders Ingest as Attachments (Part VIII)
     if honest machinery ever lands.
     Next in roadmap order: P-122
     (Part VIII continues).
+
+P-122 BANKED - Vision Description History, Search & Custody Completion (Part VIII)
+    PART VIII continues (sixth slice).
+    - team-01 commit c041246 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 7ec00e0 (parents 3726782 +
+    c041246); merge pushed and
+    ls-remote verified at 7ec00e0
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Evidence (team-01 worktree
+    hidden_files/P122_EVIDENCE.md):
+    battery 17 passed / 0 failed;
+    neighbours 86 passed / 0 failed
+    (P-122 + P-117 + P-118 + P-119 +
+    P-120 + s307); team full suite
+    4441 passed / 4 skipped / 0 failed
+    on its base 5692069 (P-120 banking
+    record; P-121 is NOT in that base,
+    reconciled at this merge in
+    roadmap order). Expectation check:
+    4424 (P-120 merged confirmation)
+    + 17 new = 4441 - exact match.
+    Slice scope (DERIVED, as Part
+    VIII's per-slice definitions are
+    derived - the filed roadmap gives
+    Part VIII only its part line):
+    VisionStore gains get /
+    list_for_owner / search / remove /
+    purge_source; owner-scoped history
+    and single-record roads (GET
+    /vision/history, GET + DELETE
+    /vision/descriptions/{id});
+    attachment delete gains
+    descriptions_purged source
+    custody. Search is literal
+    substring matching over stored
+    text - not semantic, not ranked -
+    and says so in code, API, tests
+    and docs.
+    Slice: src/runmal/vision/
+    service.py, src/runmal/vision/
+    router.py, src/runmal/vision/
+    __init__.py, src/runmal/chats/
+    service.py,
+    tests/test_p122_vision_history_
+    custody.py (new, 17 tests),
+    docs/VISION_HISTORY_CUSTODY_
+    2026-11-08.md (new), clean-room
+    log append (+1). 7 files,
+    +733/-3.
+    Migration: NONE (head stays 0041;
+    the provisional 0042 was NOT
+    needed and NOT taken - history is
+    the JSON store read in append
+    order; no SQL index).
+    Merge conflicts in the clean-room
+    log (append-vs-append; P-121's
+    entry AND P-122's entry kept,
+    each exactly once) and
+    vision/router.py (P-122's
+    attachment-delete custody return
+    vs P-121's watch-folder block at
+    the same anchor), resolved as
+    additive unions by the banking
+    coordinator; chats/service.py,
+    vision/service.py and
+    vision/__init__.py auto-merged.
+    The merged tree carries P-121's
+    watch-folder roads AND P-122's
+    history/descriptions roads
+    together (17 vision routes:
+    describe, providers, descriptions,
+    last, history, descriptions/{id}
+    get+delete, 5 attachments roads,
+    5 watch-folders roads),
+    py_compile clean.
+    Custody-hole closure (the slice's
+    core): before P-122, deleting a
+    P-120 attachment left its derived
+    descriptions behind, still able
+    to surface via
+    {{last_vision_description}}.
+    The merged tree was verified by
+    grep: chats/service.py delete_chat
+    carries BOTH custody wirings -
+    P-118's vision_link purge_chat,
+    P-120's AttachmentStore purge_chat
+    AND the P-121 banking heal
+    (3c4e9ea) WatchStore.purge_chat -
+    and delete_message carries P-120's
+    attachment purge WITH P-122's
+    derived-description purge_source
+    inside the same guarded block;
+    attachment delete in the vision
+    router likewise purges derived
+    descriptions by source. No banking
+    heal needed.
+    Combined batteries on the merged
+    tree by the banking coordinator:
+    vision fence 99 passed / 1 skipped
+    / 0 failed (P-117 15 + P-118 17 +
+    P-119 16 + P-120 15 + P-121 19
+    passes + its 1 design skip +
+    P-122 17 - exact); s307 10 passed
+    / 1 skipped / 0 failed; combined
+    109 passed / 2 skipped / 0 failed.
+    Logs /tmp/p122_fence.log,
+    /tmp/p122_fence_vision.log and
+    /tmp/p122_s307.log on
+    purplelongship.
+    Forge confirmation suite:
+    4460 passed / 5 skipped /
+    0 failed in 383.53s - a clean
+    run with no contention re-runs
+    needed (a Mythic Coder suite
+    shared the machine throughout).
+    (= 4443 P-121 confirmation + 17
+    P-122 battery - exact; skipped
+    stays 5 - P-121's lazy-absence
+    honesty test skips by design on
+    any tree carrying P-120.) Log
+    /tmp/p122_confirm.log on
+    purplelongship.
+    Derived scope ACCEPTED as
+    banked. Declined plainly, with
+    evidence in the slice doc:
+    describe-batch / gallery wiring
+    (no census behaviour, no gallery
+    surface), provider health
+    (P-119 already surfaces the
+    truth; neither local provider has
+    a health signal), a semantic
+    caption provider, OCR, and
+    capture / camera (no honest
+    in-tree basis for any of them).
+    Named-open carried items (not
+    dropped): a real local semantic
+    caption provider; OCR; capture /
+    camera.
+    Next in roadmap order: P-123
+    (Part VIII continues).
