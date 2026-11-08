@@ -10963,3 +10963,159 @@ P-140 BANKED - Definition Replace-Impact Preview (Part IX)
     PART IX OPEN (P-131..P-154).
     Next in roadmap order: P-141
     (Part IX, in roadmap order).
+P-141 BANKED - Scenario Definition Sharing Packs (Part IX)
+    Part IX eleventh slice.
+    - team-02 commit 2e4b5f7 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 783cb98 (parents f9b52ac +
+    2e4b5f7); merge pushed and
+    ls-remote verified at 783cb98
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only
+    its part line (P-131..P-154), no
+    per-slice entries; the slice scope
+    is derived from the in-tree record
+    (lorebooks P-045 and prompt
+    artefacts P-063 travel as sealed
+    packs - manifest, SHA-256 checksum,
+    provenance, inspect-before-import,
+    never-overwrite - and the census
+    names scenarios as pack content
+    VX-59/VX-60, while scenarios had
+    only P-133 bare export and P-131
+    blind create; and P-137 proved a
+    record's import report cannot
+    survive export->create, so the
+    pack carries it verbatim as data
+    under the P-045 carrier law),
+    stated plainly as derived in the
+    slice doc.
+    Evidence (team-02 worktree
+    hidden_files/ P141_EVIDENCE.md +
+    logs P141_BATTERY.log,
+    P141_NEIGHBOURS.log,
+    P141_FULLSUITE.log):
+    battery 34 passed / 0 failed;
+    neighbours 211 passed / 0 failed
+    (Part IX fence P-026 + P-131..P-139);
+    team full suite 4790 passed /
+    5 skipped / 0 failed - a clean
+    run, reconciling exactly with
+    its base (4756 + 34 = 4790);
+    no contention failure occurred,
+    so no solo re-run was needed.
+    One battery-expectation defect
+    was found and fixed in-slice:
+    the collision test expected
+    on_conflict=reject to refuse a
+    pack already imported create_new,
+    but duplicate detection correctly
+    precedes reject per the P-045
+    order (nothing would be created,
+    so nothing is refused); the
+    battery was re-pinned to that
+    order and reject exercised against
+    a fresh same-name different-content
+    pack - implementation unchanged.
+    Combined batteries on the merged
+    tree: 257 passed / 0 failed
+    (P-131 29 + P-132 18 + P-133 24
+    + P-134 12 + P-135 16 + P-136 11
+    + P-137 12 + P-138 16 + P-139 11
+    + P-140 12 + P-141 34 + P-026 62).
+    Forge confirmation suite on the
+    merged tree: 4802 passed /
+    5 skipped / 0 failed - a clean
+    run in 335.41s with no contention
+    re-runs needed. Expectation check:
+    4768 + 34 = 4802 - exact match,
+    as counted from the log. Log
+    hidden_files/P141_FORGE_CONFIRM.log
+    on purplelongship.
+    Slice scope: sealed scenario
+    definition sharing packs closing
+    the P-137 import-report loss -
+    scenarios/packs.py (new: build /
+    parse / inspect / import,
+    checksum over the canonical JSON
+    of the definition dict, import
+    writes only through
+    ScenarioStore.create, duplicate
+    scan owner-scoped), three additive
+    roads (POST /scenarios/import-pack
+    201 created / 200 duplicate,
+    POST /scenarios/pack/inspect -
+    inspect-before-import, writes
+    nothing, GET
+    /scenarios/{definition_id}/pack),
+    scenarios/router.py (additive),
+    scenarios/__init__.py (additive),
+    tests/test_p141_scenario_packs.py
+    (new), docs/SCENARIO_PACKS_2026-11-08.md
+    (new), clean-room log append (+1).
+    Pack discipline is P-045/P-063's:
+    manifest + SHA-256 checksum +
+    provenance, inspect before import,
+    and never-overwrite - an exact
+    duplicate returns the existing
+    record unwritten, a same-name
+    collision creates fresh or refuses
+    under on_conflict=reject. No
+    organisation row and no binding
+    travels in a pack.
+    Honest limitations: identity is
+    the definition payload only -
+    dict-identical definitions are
+    exact duplicates even if their
+    records' own reports differ; the
+    carried source_report is data in
+    the pack and the import report,
+    never installed as the new
+    record's report (P-133 one-way
+    law - the new record's own report
+    is its fresh native parse's);
+    the duplicate scan is O(owned
+    definitions) and check-then-create
+    is not transactional across
+    concurrent imports (no unique
+    constraint without a migration),
+    so two racing imports can both
+    create; the checksum proves the
+    contents match the carried
+    manifest, not authorship -
+    provenance is the pack's own
+    statement, unverified; playback /
+    runtime / condition evaluation
+    remain declined absolutely
+    (P-027 law).
+    Migration: NONE (head stays 0041).
+    Merge: conflicts in
+    scenarios/router.py +
+    scenarios/__init__.py +
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    resolved as pure additive unions
+    keeping BOTH P-140 (replace-impact)
+    and P-141 (packs) work exactly
+    once each; merged router
+    grep-verified carrying P-131 CRUD
+    + P-132 binding + P-133 export
+    + P-134 organisation + P-135
+    bindings list/inspect + P-136
+    bind-plan + P-137 duplicate
+    + P-138 bind-plan/{chat_id}
+    + P-139 delete-impact
+    + P-140 replace-impact
+    + P-141 pack roads (POST
+    /scenarios/import-pack and POST
+    /scenarios/pack/inspect declared
+    before the {definition_id} roads,
+    so the literal pack segments are
+    never read as a definition id);
+    py_compile clean.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-142
+    (Part IX, in roadmap order).
