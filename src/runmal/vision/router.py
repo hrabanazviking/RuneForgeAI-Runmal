@@ -10,6 +10,14 @@ The truth layer lives in runmal.vision.service; this module
 is only the HTTP shape. The only provider this slice ships
 is the metadata provider (sniffed truth, road "metadata");
 no road here invents a semantic caption.
+
+P-120 adds the attachment roads on the same prefix:
+user-supplied images attached to a chat (optionally to one
+message of it), stored by runmal.vision.attachments, listed /
+read / deleted owner-scoped, and describable through the
+describe road as source_kind "attachment". An attachment
+record claims sniffed truth only; attaching invents no
+description.
 """
 
 from __future__ import annotations
@@ -19,13 +27,14 @@ import binascii
 import os
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.assets import service as asset_service
 from runmal.chats import service as chat_service
 from runmal.db.deps import get_owner_id, get_session
+from runmal.vision import attachments as att_service
 from runmal.vision import service as vision_service
 
 router = APIRouter(tags=["vision"])
@@ -35,6 +44,11 @@ def _store() -> vision_service.VisionStore:
     base = Path(os.environ.get("RUNMAL_DATA_DIR", ".runmal-data"))
     return vision_service.VisionStore(
         base / vision_service.DESCRIPTIONS_FILENAME)
+
+
+def _attachment_store() -> att_service.AttachmentStore:
+    base = Path(os.environ.get("RUNMAL_DATA_DIR", ".runmal-data"))
+    return att_service.AttachmentStore(base)
 
 
 async def _chat_or_404(session: AsyncSession, owner_id: str, chat_id: str):
@@ -47,6 +61,7 @@ async def _chat_or_404(session: AsyncSession, owner_id: str, chat_id: str):
 
 class DescribeRequest(BaseModel):
     chat_id: str
+    attachment_id: str | None = None
     asset_id: str | None = None
     image_b64: str | None = None
     question: str = ""
@@ -59,7 +74,22 @@ async def describe(
     owner_id: str = Depends(get_owner_id),
 ):
     chat = await _chat_or_404(session, owner_id, body.chat_id)
-    if body.asset_id:
+    if body.attachment_id:
+        record_att = _attachment_store().get(body.attachment_id)
+        if (record_att is None or record_att.owner_id != owner_id
+                or record_att.chat_id != chat.id):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="attachment not found")
+        found_bytes = _attachment_store().read_bytes(record_att)
+        if found_bytes is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="attachment bytes not found")
+        image_bytes = found_bytes
+        source_kind = vision_service.SOURCE_ATTACHMENT
+        source_ref = body.attachment_id
+    elif body.asset_id:
         if not chat.character_id:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -90,7 +120,7 @@ async def describe(
     else:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="asset_id or image_b64 is required")
+            detail="attachment_id, asset_id or image_b64 is required")
     try:
         record = vision_service.describe_image(
             _store(),
@@ -137,3 +167,105 @@ async def last_description(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="no vision description for this chat")
     return record.to_dict()
+
+
+# ------------------------------------------------------- attachments
+# P-120: user-supplied images attached to a chat / message.
+# Owner scoping matches the describe roads: an attachment that
+# is unknown — or owned by someone else, or bound to another
+# chat — answers 404; existence never leaks.
+
+
+class AttachRequest(BaseModel):
+    chat_id: str
+    message_id: str | None = None
+    filename: str = ""
+    image_b64: str
+
+
+def _attachment_or_404(attachment_id: str, owner_id: str):
+    record = _attachment_store().get(attachment_id)
+    if record is None or record.owner_id != owner_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="attachment not found")
+    return record
+
+
+@router.post("/vision/attachments", status_code=status.HTTP_201_CREATED)
+async def attach(
+    body: AttachRequest,
+    session: AsyncSession = Depends(get_session),
+    owner_id: str = Depends(get_owner_id),
+):
+    chat = await _chat_or_404(session, owner_id, body.chat_id)
+    if body.message_id:
+        history = await chat_service.get_history(session, owner_id, chat.id)
+        if not history or all(m.id != body.message_id for m in history):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="message not found")
+    try:
+        image_bytes = base64.b64decode(body.image_b64, validate=True)
+    except (binascii.Error, ValueError):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="image_b64 is not valid base64") from None
+    try:
+        record = att_service.attach_image(
+            _attachment_store(),
+            chat_id=chat.id,
+            owner_id=owner_id,
+            data=image_bytes,
+            message_id=body.message_id,
+            filename=body.filename or "",
+        )
+    except att_service.AttachmentError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(exc)) from None
+    return record.to_dict()
+
+
+@router.get("/vision/attachments")
+async def list_attachments(
+    chat_id: str,
+    session: AsyncSession = Depends(get_session),
+    owner_id: str = Depends(get_owner_id),
+):
+    chat = await _chat_or_404(session, owner_id, chat_id)
+    rows = _attachment_store().list_for_chat(chat.id)
+    return {"chat_id": chat.id,
+            "attachments": [r.to_dict() for r in rows]}
+
+
+@router.get("/vision/attachments/{attachment_id}")
+async def get_attachment(
+    attachment_id: str,
+    owner_id: str = Depends(get_owner_id),
+):
+    return _attachment_or_404(attachment_id, owner_id).to_dict()
+
+
+@router.get("/vision/attachments/{attachment_id}/content")
+async def get_attachment_content(
+    attachment_id: str,
+    owner_id: str = Depends(get_owner_id),
+):
+    record = _attachment_or_404(attachment_id, owner_id)
+    data = _attachment_store().read_bytes(record)
+    if data is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="attachment bytes not found")
+    return Response(content=data, media_type=record.media_type)
+
+
+@router.delete("/vision/attachments/{attachment_id}")
+async def delete_attachment(
+    attachment_id: str,
+    owner_id: str = Depends(get_owner_id),
+):
+    record = _attachment_or_404(attachment_id, owner_id)
+    removed = _attachment_store().remove(record.id)
+    return {"deleted": removed is not None, "id": record.id}

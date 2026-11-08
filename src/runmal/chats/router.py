@@ -45,6 +45,42 @@ def _with_voice_markings(message_dicts):
     return message_dicts
 
 
+def _with_attachment_views(message_dicts):
+    """P-120: attach the additive attachments view (honest
+    sniffed metadata records from runmal.vision.attachments)
+    to any message dicts that carry image attachments.
+    Tolerant by design, exactly like _with_voice_markings:
+    any attachment-store failure leaves the dicts untouched —
+    the view is never the road. Chat-level attachments
+    (message_id None) never land here; they surface on the
+    vision attachment list road only."""
+    try:
+        import os
+        from pathlib import Path as _Path
+
+        from runmal.vision.attachments import AttachmentStore
+
+        data_dir = _Path(os.environ.get("RUNMAL_DATA_DIR", ".runmal-data"))
+        store = AttachmentStore(data_dir)
+        by_message: dict[str, list[dict]] = {}
+        seen_chats: set[str] = set()
+        for d in message_dicts:
+            chat_id = d.get("chat_id")
+            if chat_id and chat_id not in seen_chats:
+                seen_chats.add(chat_id)
+                for row in store.list_for_chat(chat_id):
+                    if row.message_id:
+                        by_message.setdefault(row.message_id, []).append(
+                            row.to_dict())
+        for d in message_dicts:
+            rows = by_message.get(d.get("id") or "")
+            if rows:
+                d["attachments"] = rows
+    except Exception:
+        pass
+    return message_dicts
+
+
 class ChatCreate(BaseModel):
     title: str = ""
     character_id: str | None = None
@@ -321,7 +357,8 @@ async def get_chat(
         raise HTTPException(status_code=404, detail="chat not found")
     history = await service.get_history(session, user_id, chat_id) or []
     payload = chat_to_dict(chat, len(history))
-    payload["messages"] = _with_voice_markings([message_to_dict(m) for m in history])
+    payload["messages"] = _with_attachment_views(
+        _with_voice_markings([message_to_dict(m) for m in history]))
     return payload
 
 
@@ -444,7 +481,8 @@ async def get_history(
         history = await service.get_history(session, user_id, chat_id)
         if history is None:
             raise HTTPException(status_code=404, detail="chat not found")
-        return _with_voice_markings([message_to_dict(m) for m in history])
+        return _with_attachment_views(
+            _with_voice_markings([message_to_dict(m) for m in history]))
     page_result = await service.get_history_page(
         session, user_id, chat_id,
         limit=limit if limit is not None else 100,
@@ -454,7 +492,8 @@ async def get_history(
         raise HTTPException(status_code=404, detail="chat not found")
     page, total, effective_offset, effective_limit = page_result
     return {
-        "messages": _with_voice_markings([message_to_dict(m) for m in page]),
+        "messages": _with_attachment_views(
+            _with_voice_markings([message_to_dict(m) for m in page])),
         "total": total,
         "limit": effective_limit,
         "offset": effective_offset,
