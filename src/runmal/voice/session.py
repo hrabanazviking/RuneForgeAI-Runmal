@@ -241,6 +241,14 @@ class VoiceTurnRecord:
     chunks_total: int = 0
     chunks_played: int = 0
     recorded_at: str = ""
+    # Projection state (P-103): the chat-message shadow of this
+    # turn. ``projected`` means projection has fully considered
+    # the turn; the per-side ids make a half-projected turn
+    # resumable without duplicating the side that landed.
+    projected: bool = False
+    projected_user_message_id: str = ""
+    projected_assistant_message_id: str = ""
+    projected_at: str = ""
 
     @classmethod
     def from_orchestrator(
@@ -303,6 +311,10 @@ class VoiceTurnRecord:
             "chunks_total": self.chunks_total,
             "chunks_played": self.chunks_played,
             "recorded_at": self.recorded_at,
+            "projected": self.projected,
+            "projected_user_message_id": self.projected_user_message_id,
+            "projected_assistant_message_id": self.projected_assistant_message_id,
+            "projected_at": self.projected_at,
         }
 
     @classmethod
@@ -321,6 +333,11 @@ class VoiceTurnRecord:
             chunks_total=int(data.get("chunks_total", 0)),
             chunks_played=int(data.get("chunks_played", 0)),
             recorded_at=str(data.get("recorded_at", "")),
+            projected=bool(data.get("projected", False)),
+            projected_user_message_id=str(data.get("projected_user_message_id", "")),
+            projected_assistant_message_id=str(
+                data.get("projected_assistant_message_id", "")),
+            projected_at=str(data.get("projected_at", "")),
         )
 
 
