@@ -11,6 +11,7 @@
 + candidate replace preview (P-146).
 + chat-scoped candidate bind preview (P-147).
 + binding chat-custody census (P-148).
++ binding custody census, both axes joined (P-150).
 
 P-026 roads (stateless): parse a scenario file and report
 honestly, and re-export it. Those roads are unchanged.
@@ -172,6 +173,7 @@ from runmal.scenarios.candidatepreview import (
 )
 from runmal.scenarios.bindingcensus import census_bindings
 from runmal.scenarios.chatcensus import census_binding_chats
+from runmal.scenarios.custodycensus import census_binding_custody
 from runmal.scenarios.reportcensus import census_unmappable
 from runmal.scenarios.storedexport import (
     DEFAULT_FORMAT,
@@ -367,6 +369,36 @@ async def census_scenario_binding_chats(
     live = {row.id for row in _store().list_for_owner(user_id)}
     return await census_binding_chats(
         session, _bindings(), user_id, live)
+
+
+@router.get(
+    "/scenarios/bindings/custody-census", status_code=status.HTTP_200_OK
+)
+async def census_scenario_binding_custody(
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Every binding the caller holds, judged on both axes (P-150).
+
+    The custody census joining the two standing censuses
+    row by row: each P-144 binding-census row verbatim,
+    enriched with chat_exists and chat_state (P-148
+    verbatim) and custody_state - sound (current and
+    live), definition_drift (superseded, ahead or stale
+    beside a standing chat), chat_orphaned (a current
+    pin whose chat is gone) or doubly_broken (both axes
+    broken at once) - plus per-definition rollups and
+    census counts summed from the rows themselves.
+    Declared before the {chat_id} binding road so the
+    literal "custody-census" is never read as a chat id
+    (the P-135 declaration-order precedent). Owner-
+    scoped; an owner with no bindings answers the honest
+    zero census. Pure read: writes, unbinds, deletes
+    and repairs nothing.
+    """
+    definitions = _store().list_for_owner(user_id)
+    return await census_binding_custody(
+        session, _bindings(), user_id, definitions)
 
 
 @router.post("/scenarios/import-pack", status_code=status.HTTP_201_CREATED)

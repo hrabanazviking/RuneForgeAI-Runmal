@@ -84,6 +84,13 @@
   judged that axis), with per-definition rollups and
   counts summed from the rows themselves (P-148,
   Part IX, DERIVED scope).
+- ``custodycensus`` - binding custody census: every
+  binding judged on BOTH axes at once - the P-144
+  definition verdict and the P-148 chat verdict joined
+  row by row and classified sound, definition_drift,
+  chat_orphaned or doubly_broken - with per-definition
+  rollups and counts summed from the rows themselves
+  (P-150, Part IX, DERIVED scope).
 - ``packs`` — scenario definition sharing packs: one
   stored definition sealed in an envelope (a manifest
   with a SHA-256 content checksum over the canonical
@@ -165,6 +172,10 @@ from runmal.scenarios.reportcensus import census_unmappable
 from runmal.scenarios.chatcensus import (
     CHAT_CUSTODY_STATES,
     census_binding_chats,
+)
+from runmal.scenarios.custodycensus import (
+    CUSTODY_STATES,
+    census_binding_custody,
 )
 from runmal.scenarios.packs import (
     CONFLICT_CREATE_NEW,
@@ -301,6 +312,8 @@ __all__ = [
     "census_bindings",
     "CHAT_CUSTODY_STATES",
     "census_binding_chats",
+    "CUSTODY_STATES",
+    "census_binding_custody",
     "census_unmappable",
     "CONFLICT_CREATE_NEW",
     "CONFLICT_MODES",
