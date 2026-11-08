@@ -428,6 +428,25 @@ async def record_voice_turn(session_id: str, payload: dict, request: Request) ->
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="voice session not found"
         )
+    raw_words = payload.get("transcript_words") or []
+    if not isinstance(raw_words, list):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="transcript_words must be a list",
+        )
+    try:
+        word_evidence = tuple(
+            voice_session.WordConfidence.from_dict(entry)
+            for entry in raw_words
+            if isinstance(entry, dict)
+        )
+        if len(word_evidence) != len(raw_words):
+            raise ValueError("transcript_words entries must be objects")
+    except (TypeError, ValueError):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="transcript_words are malformed",
+        ) from None
     try:
         turn = found.record_turn(
             transcript_text=str(payload.get("transcript_text", "") or ""),
@@ -440,6 +459,7 @@ async def record_voice_turn(session_id: str, payload: dict, request: Request) ->
             error=str(payload.get("error", "") or ""),
             chunks_total=int(payload.get("chunks_total", 0) or 0),
             chunks_played=int(payload.get("chunks_played", 0) or 0),
+            transcript_words=word_evidence,
         )
     except voice_session.VoiceSessionError as exc:
         code = (

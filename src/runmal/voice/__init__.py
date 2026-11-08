@@ -22,6 +22,9 @@ Layered, provider-isolated pieces (see docs/VOICE_ARCHITECTURE.md):
   orchestrators wired into the app process (P-102).
 - ``projection`` / ``projection_router`` — recorded turns landed
   in their chat as provenance-carrying messages (P-103).
+- ``mishearing`` / ``mishearing_router`` — STT word-confidence
+  truth: low-confidence detection + replacement suggestions
+  over the persisted evidence (P-105, VX-11).
 - ``routing``   — persisted logical device routes (S513).
 - ``benchmark`` — reproducible voice benchmark harness (S514).
 
