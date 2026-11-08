@@ -15,4 +15,8 @@
   unknown or semantic requests.
 - ``router`` — the owner-scoped HTTP road
   (/api/v1/vision/*).
+- ``watcher`` — folder-watcher registrations and the
+  explicit polling scan that ingests new image files as
+  P-120 chat attachments (P-121). No daemon: a scan is a
+  deliberate operation, stated plainly.
 """
