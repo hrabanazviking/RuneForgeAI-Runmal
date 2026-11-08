@@ -54,6 +54,16 @@ plainly:
 - Scanning generates NO description or caption and performs
   NO safety scan; ingestion inherits P-120's sniff-only
   stance, and no record claims otherwise.
+- history & search (P-127): the watcher store gains the
+  owner-wide history + literal search surface P-122 gave
+  descriptions and P-125 gave attachments - ``search``
+  over registrations (literal over the folder path only)
+  and ``list_ingested_for_owner`` / ``search_ingested``
+  over the ingested records (owner resolved through watch
+  ownership; literal over source_path and sha256 only).
+  Search is literal substring matching - never semantic,
+  never ranked - and persists nothing: the scan report
+  itself remains a synchronous result, unstored.
 """
 
 from __future__ import annotations
@@ -339,6 +349,106 @@ class WatchStore:
         if removed:
             self._save(watches, kept)
         return removed
+
+    # -- history / search (P-127) ---------------------------
+
+    def search(
+        self,
+        owner_id: str,
+        query: str = "",
+        *,
+        chat_id: str | None = None,
+        enabled: bool | None = None,
+        recursive: bool | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> tuple[list[WatchFolder], int]:
+        """Owner-scoped history search over the registrations.
+
+        LITERAL case-insensitive substring matching over the
+        folder path only - the one text identifier a
+        registration honestly holds; never semantic, never
+        ranked; rows keep store append order. Owner scoping
+        happens FIRST: foreign registrations are never
+        matched, counted, or returned. An empty query
+        matches every owned row (that is the history
+        listing). Returns (page, total) where total is the
+        full match count before paging.
+        """
+        needle = (query or "").strip().lower()
+        rows = self.list_for_owner(owner_id)
+        if chat_id is not None:
+            rows = [row for row in rows if row.chat_id == chat_id]
+        if enabled is not None:
+            rows = [row for row in rows if row.enabled == bool(enabled)]
+        if recursive is not None:
+            rows = [
+                row for row in rows if row.recursive == bool(recursive)]
+        if needle:
+            rows = [row for row in rows if needle in row.path.lower()]
+        total = len(rows)
+        effective_limit = max(1, min(200, int(limit)))
+        effective_offset = max(0, int(offset))
+        return rows[effective_offset:effective_offset + effective_limit], total
+
+    def list_ingested_for_owner(
+            self, owner_id: str) -> list[IngestedRecord]:
+        """Every ingested record of the owner's watches.
+
+        Ingested records carry no owner field of their own;
+        ownership is resolved through the watch
+        registrations, in store append order.
+        """
+        watches, ingested = self._load()
+        owned = {row.id for row in watches if row.owner_id == owner_id}
+        return [row for row in ingested if row.watch_id in owned]
+
+    def search_ingested(
+        self,
+        owner_id: str,
+        query: str = "",
+        *,
+        watch_id: str | None = None,
+        chat_id: str | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> tuple[list[IngestedRecord], int]:
+        """Owner-scoped history search over the ingested records.
+
+        Owner scoping happens FIRST via watch ownership:
+        records of foreign watches are never matched,
+        counted, or returned. LITERAL case-insensitive
+        substring matching over the source_path and the
+        sha256 only - the two text identifiers the record
+        honestly holds (the P-125 field discipline); never
+        semantic, never ranked. Exact watch / chat filters;
+        a filter naming a foreign watch or chat simply
+        matches nothing at this layer (the HTTP layer
+        refuses unknown-or-foreign filter targets with 404
+        before calling). Returns (page, total).
+        """
+        watches, _ = self._load()
+        by_id = {row.id: row for row in watches}
+        rows = self.list_ingested_for_owner(owner_id)
+        if watch_id is not None:
+            rows = [row for row in rows if row.watch_id == watch_id]
+        if chat_id is not None:
+            rows = [
+                row for row in rows
+                if by_id.get(row.watch_id) is not None
+                and by_id[row.watch_id].chat_id == chat_id
+            ]
+        needle = (query or "").strip().lower()
+        if needle:
+            rows = [
+                row for row in rows
+                if needle in row.source_path.lower()
+                or needle in row.sha256.lower()
+            ]
+        total = len(rows)
+        effective_limit = max(1, min(200, int(limit)))
+        effective_offset = max(0, int(offset))
+        return rows[effective_offset:effective_offset + effective_limit], total
 
 
 # ----------------------------------------------------------- service

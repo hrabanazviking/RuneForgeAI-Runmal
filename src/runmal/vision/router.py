@@ -52,6 +52,13 @@ be described in the same call (provider selected through
 P-119 BEFORE anything is stored; atomic - attachment and
 description land together or neither does). Plain attach
 is unchanged and still describes nothing.
+P-127 adds the watcher history roads on the same
+prefix: GET /vision/watch-folders/history and
+GET /vision/watch-folders/ingested/history -
+owner-scoped literal search over the watcher store
+(the P-122/P-125 parity surface for the third vision
+store), declared BEFORE the {watch_id} roads so the
+literal segments are not captured as ids.
 """
 
 from __future__ import annotations
@@ -580,6 +587,97 @@ async def list_watch_folders(
     rows = [r for r in rows if r.owner_id == owner_id]
     return {"chat_id": chat.id,
             "watch_folders": [r.to_dict() for r in rows]}
+
+
+@router.get("/vision/watch-folders/history")
+async def watch_folder_history(
+    q: str = "",
+    chat_id: str | None = None,
+    enabled: bool | None = None,
+    recursive: bool | None = None,
+    limit: int = 50,
+    offset: int = 0,
+    session: AsyncSession = Depends(get_session),
+    owner_id: str = Depends(get_owner_id),
+):
+    # P-127: owner-scoped history + literal search over the
+    # watcher registrations (the P-122/P-125 parity surface
+    # for the watcher store). Declared BEFORE the {watch_id}
+    # roads so FastAPI does not capture the literal segment
+    # "history" as an id. Search is literal substring
+    # matching over the folder path only (see
+    # WatchStore.search) - never semantic, never ranked. A
+    # chat_id filter must name an owned chat (404 otherwise,
+    # the P-122/P-125 history precedent).
+    chat = None
+    if chat_id is not None:
+        chat = await _chat_or_404(session, owner_id, chat_id)
+    rows, total = _watch_store().search(
+        owner_id,
+        q,
+        chat_id=chat.id if chat is not None else None,
+        enabled=enabled,
+        recursive=recursive,
+        limit=limit,
+        offset=offset,
+    )
+    return {
+        "watch_folders": [row.to_dict() for row in rows],
+        "total": total,
+        "returned": len(rows),
+        "limit": max(1, min(200, int(limit))),
+        "offset": max(0, int(offset)),
+        "q": q,
+        "chat_id": chat_id,
+        "enabled": enabled,
+        "recursive": recursive,
+    }
+
+
+@router.get("/vision/watch-folders/ingested/history")
+async def watch_ingested_history(
+    q: str = "",
+    watch_id: str | None = None,
+    chat_id: str | None = None,
+    limit: int = 50,
+    offset: int = 0,
+    session: AsyncSession = Depends(get_session),
+    owner_id: str = Depends(get_owner_id),
+):
+    # P-127: owner-scoped history + literal search over the
+    # watcher ingested records. Declared before the
+    # {watch_id} roads likewise; its two literal segments
+    # cannot collide with {watch_id}/ingested or
+    # {watch_id}/scan. Search is literal substring matching
+    # over the source path and the sha256 only (see
+    # WatchStore.search_ingested). A watch_id filter must
+    # name an owned watch and a chat_id filter an owned
+    # chat (404 otherwise).
+    store = _watch_store()
+    watch = None
+    if watch_id is not None:
+        watch = await _watch_or_404(store, owner_id, watch_id)
+    chat = None
+    if chat_id is not None:
+        chat = await _chat_or_404(session, owner_id, chat_id)
+    rows, total = store.search_ingested(
+        owner_id,
+        q,
+        watch_id=watch.id if watch is not None else None,
+        chat_id=chat.id if chat is not None else None,
+        limit=limit,
+        offset=offset,
+    )
+    return {
+        "ingested": [row.to_dict() for row in rows],
+        "total": total,
+        "returned": len(rows),
+        "limit": max(1, min(200, int(limit))),
+        "offset": max(0, int(offset)),
+        "q": q,
+        "watch_id": watch_id,
+        "chat_id": chat_id,
+    }
 
 
 @router.get("/vision/watch-folders/{watch_id}")
