@@ -16,6 +16,10 @@ Layered, provider-isolated pieces (see docs/VOICE_ARCHITECTURE.md):
 - ``support``   — echo / self-interruption support contract (S509).
 - ``metrics``   — monotonic per-stage latency metrics (S510).
 - ``profiles``  — per-character voice profiles (S512).
+- ``session``   — voice sessions bound to a chat: settings resolved
+  honestly at start, turns persisted with playback truth (P-101).
+- ``live`` / ``live_router`` — the live voice host: per-session
+  orchestrators wired into the app process (P-102).
 - ``routing``   — persisted logical device routes (S513).
 - ``benchmark`` — reproducible voice benchmark harness (S514).
 
