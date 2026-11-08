@@ -8,6 +8,7 @@
 + library-scoped pack import preview (P-143).
 + global binding census (P-144).
 + library unmappable-content census (P-145).
++ candidate replace preview (P-146).
 
 P-026 roads (stateless): parse a scenario file and report
 honestly, and re-export it. Those roads are unchanged.
@@ -77,6 +78,16 @@ runmal.scenarios.packs; this module is only the HTTP
 shape. No organisation row and no binding travels in
 a pack.
 
+P-146 (Part IX, DERIVED scope) adds the candidate replace
+preview road: a candidate body for one stored definition,
+judged through the store door's own parser (P-026) exactly
+as a PUT replace would store it - its would-be native
+shape and import report, its would-be bind plan (P-132),
+the current-vs-candidate comparison, and P-140's replace-
+impact envelope whole - before any replace is committed.
+The service lives in runmal.scenarios.candidatepreview;
+this module is only the HTTP shape.
+
 P-143 (Part IX, DERIVED scope) adds the library-scoped
 pack import preview road: P-141's pack verdicts — the
 exact duplicate, the name collision and the
@@ -142,6 +153,9 @@ from runmal.scenarios.deletepreview import preview_delete_impact
 from runmal.scenarios.replacepreview import preview_replace_impact
 from runmal.scenarios.packs import build_pack, import_pack, inspect_pack
 from runmal.scenarios.packpreview import preview_pack_import
+from runmal.scenarios.candidatepreview import (
+    preview_candidate_replace,
+)
 from runmal.scenarios.bindingcensus import census_bindings
 from runmal.scenarios.reportcensus import census_unmappable
 from runmal.scenarios.storedexport import (
@@ -902,6 +916,53 @@ async def preview_scenario_replace_impact(
     live = {row.id for row in _store().list_for_owner(user_id)}
     return preview_replace_impact(
         record, _bindings(), _organisation(), live)
+
+# --------------------------- candidate replace preview (P-146)
+
+
+@router.post(
+    "/scenarios/{definition_id}/replace-preview",
+    status_code=status.HTTP_200_OK,
+)
+async def preview_scenario_candidate_replace(
+    definition_id: str,
+    body: dict,
+    user_id: str = Depends(get_owner_id),
+):
+    """What replacing with THIS body WOULD store (P-146).
+
+    The candidate body judged before any replace is
+    committed: parsed through the store door's own parser
+    (P-026) exactly as the PUT road would store it, the
+    envelope names the definition (id, name, its current
+    revision, its source format) and the next revision,
+    the current body (its P-131 summary and its P-132
+    bind plan), the candidate (its would-be native shape
+    and import report - exactly what a successful replace
+    would persist - and its would-be bind plan), the
+    current-vs-candidate comparison read from those
+    answers, P-140's replace-impact envelope whole, and
+    six standing honesty notes. Existence is decided
+    before the body is judged: unknown or foreign answers
+    404 even with a malformed candidate (existence never
+    leaks); a candidate the parser refuses answers 422
+    and changes nothing. Pure read: the PUT road remains
+    the only replacer."""
+    record = _store().get(definition_id, user_id)
+    if record is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="scenario definition not found",
+        )
+    live = {row.id for row in _store().list_for_owner(user_id)}
+    try:
+        return preview_candidate_replace(
+            record, _bindings(), _organisation(), live, body)
+    except (ScenarioParseError, ScenarioStoreError) as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(exc),
+        ) from exc
 
 # ------------------------------------ stored export (P-133)
 

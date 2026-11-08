@@ -52,6 +52,14 @@
   standing honesty notes (P-139, Part IX, DERIVED
   scope).
 - ``replacepreview`` — definition replace-impact preview: for one stored definition, the bindings a replace would leave pinning a superseded revision (split by pinned revision against the current one), the organisation row that stays live, and the next revision, read before any replace is committed (P-140, Part IX, DERIVED scope).
+- ``candidatepreview`` - candidate replace preview: a
+  candidate body for one stored definition, judged
+  through the store door's own parser (P-026) exactly as
+  replace would store it - its would-be native shape and
+  import report, its would-be bind plan (P-132), the
+  current-vs-candidate comparison, and P-140's impact
+  envelope whole - before any replace is committed
+  (P-146, Part IX, DERIVED scope).
 - ``bindingcensus`` — global binding census: every
   binding the caller holds, read through P-135 summaries
   verbatim and classified against the live definition
@@ -125,6 +133,9 @@ from runmal.scenarios.bindpreview import preview_bind_plan
 from runmal.scenarios.chatpreview import preview_bind_for_chat
 from runmal.scenarios.deletepreview import preview_delete_impact
 from runmal.scenarios.replacepreview import preview_replace_impact
+from runmal.scenarios.candidatepreview import (
+    preview_candidate_replace,
+)
 from runmal.scenarios.packpreview import preview_pack_import
 from runmal.scenarios.bindingcensus import (
     BINDING_STATES,
@@ -259,6 +270,7 @@ __all__ = [
     "preview_bind_for_chat",
     "preview_delete_impact",
     "preview_replace_impact",
+    "preview_candidate_replace",
     "preview_pack_import",
     "BINDING_STATES",
     "census_bindings",
