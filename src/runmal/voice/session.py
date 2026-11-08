@@ -48,6 +48,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from runmal.voice.backends import TTS_REGISTRY
+from runmal.voice.affects import affect_from_params
 from runmal.voice.ledger import HeardReconstruction
 from runmal.voice.orchestrator import TurnRecord
 from runmal.voice.profiles import DEFAULT_VOICE, CharacterVoice
@@ -142,6 +143,11 @@ class SessionSettings:
     language: str
     tts_truth: ProviderTruth
     stt_truth: ProviderTruth
+    # Affect (P-109, VX-12): the character profile standing
+    # intention, carried as data. Defaulted so pre-P-109 stored
+    # snapshots construct unchanged. NOT consumed by any backend.
+    affect: str = "neutral"
+    affect_source: str = "default"
 
     def to_dict(self) -> dict:
         return {
@@ -151,6 +157,9 @@ class SessionSettings:
             "language": self.language,
             "tts_truth": self.tts_truth.to_dict(),
             "stt_truth": self.stt_truth.to_dict(),
+            "affect": self.affect,
+            "affect_source": self.affect_source,
+            "affect_consumed": False,
         }
 
     @classmethod
@@ -162,7 +171,30 @@ class SessionSettings:
             language=str(data.get("language", "")),
             tts_truth=ProviderTruth.from_dict(data.get("tts_truth") or {}),
             stt_truth=ProviderTruth.from_dict(data.get("stt_truth") or {}),
+            affect=_stored_affect(data)[0],
+            affect_source=_stored_affect(data)[1],
         )
+
+
+def _stored_affect(data: dict) -> tuple[str, str]:
+    # Resolve a stored snapshot affect tolerantly (P-109): the
+    # stored value runs through the same fallback law as profile
+    # params; an out-of-vocabulary value is always fallback,
+    # whatever source string was stored beside it.
+    raw = str(data.get("affect", "") or "").strip()
+    if not raw:
+        return "neutral", str(data.get("affect_source", "default") or "default")
+    affect, source = affect_from_params({"affect": raw})
+    if source == "fallback":
+        return affect, source
+    # In-vocabulary value: the stored source is provenance the
+    # resolver recorded (neutral alone cannot say whether it
+    # came from a profile, a default, or a fallback) - honour a
+    # known stored source, recompute only an unknown one.
+    stored = str(data.get("affect_source", "") or "").strip().lower()
+    if stored in ("profile", "default", "fallback"):
+        return affect, stored
+    return affect, source
 
 
 def resolve_session_settings(
@@ -212,6 +244,10 @@ def resolve_session_settings(
                 "registered STT backend; fell back to the default ear"
             ),
         )
+    affect, affect_source = (
+        affect_from_params(character.params) if character is not None
+        else ("neutral", "default")
+    )
     return SessionSettings(
         tts_backend=tts_backend,
         stt_backend=stt_backend,
@@ -219,6 +255,8 @@ def resolve_session_settings(
         language=language,
         tts_truth=tts_truth,
         stt_truth=stt_truth,
+        affect=affect,
+        affect_source=affect_source,
     )
 
 
