@@ -22,6 +22,9 @@
   owner-wide history + literal search across chats
   (P-125) - owner-scoped first, literal substring over
   the filename and the image sha256 only, never semantic.
+  describe-on-attach is an explicit opt-in on the attach
+  road only - atomic, and the service still describes
+  nothing on its own (P-126).
 - ``service`` history + custody (P-122) - owner-scoped
   get / list / literal search over the description store,
   single-record remove, and purge_source source custody:

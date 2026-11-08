@@ -49,6 +49,14 @@ chat-scoped. An attachment is the missing first-class citizen:
   full total. It is never semantic and never ranked, and
   it reads no image bytes: the record claims no content
   text, so there is nothing semantic to search.
+- describe-on-attach (P-126) is an explicit opt-in on the
+  HTTP attach road ONLY, and it amends the road's form of
+  the no-description invariant above, never the service's:
+  attach_image itself still generates NO description
+  (every service caller, above all the P-121 watcher scan,
+  keeps that invariant exactly), while a caller who opts
+  in on the road gets the attachment AND its description
+  or neither - see attach_and_describe.
 """
 
 from __future__ import annotations
@@ -62,6 +70,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from runmal.assets.imaging import make_png_thumbnail, sniff_image
+from runmal.vision.service import SOURCE_ATTACHMENT, describe_image
 
 ATTACHMENTS_VERSION = 1
 ATTACHMENTS_FILENAME = "vision_attachments.json"
@@ -447,3 +456,52 @@ def thumbnail_bytes(
             "decodable subset (interlaced, unsupported bit "
             "depth or colour type, or corrupt pixel data)")
     return thumb
+
+
+# ------------------------------------------------- describe-on-attach
+# P-126: the HTTP attach road's explicit opt-in (see the module
+# docstring for the reconciliation). attach_image above is
+# unchanged and still generates no description.
+
+
+def attach_and_describe(
+    store: AttachmentStore,
+    vision_store,
+    *,
+    chat_id: str,
+    owner_id: str,
+    data: bytes,
+    message_id: str | None = None,
+    filename: str = "",
+    question: str = "",
+    provider=None,
+    now: str | None = None,
+):
+    # Attach *data* and describe the attachment, atomically.
+    # The pair lands together or not at all: attach_image runs
+    # first (its plain refusals ride unchanged and nothing is
+    # described), then describe_image describes the very same
+    # bytes as source_kind attachment - the exact call the P-117
+    # describe road makes for an attachment, so the record is
+    # indistinguishable from a two-call flow's and inherits the
+    # whole P-122 custody story. On ANY describe failure the
+    # just-created attachment is removed (index row AND byte
+    # file) and the error re-raised; describe_image itself
+    # stores nothing on failure (P-117 law), so no half-state
+    # survives. provider=None rides describe_image's plain
+    # unavailable refusal (and rolls back): this function never
+    # invents a provider - selection is the caller's act (the
+    # router's, via P-119). Returns (attachment, description).
+    record = attach_image(
+        store, chat_id=chat_id, owner_id=owner_id, data=data,
+        message_id=message_id, filename=filename, now=now)
+    try:
+        description = describe_image(
+            vision_store, chat_id=chat_id, owner_id=owner_id,
+            image_bytes=data, provider=provider,
+            source_kind=SOURCE_ATTACHMENT, source_ref=record.id,
+            question=question, now=now)
+    except Exception:
+        store.remove(record.id)
+        raise
+    return record, description
