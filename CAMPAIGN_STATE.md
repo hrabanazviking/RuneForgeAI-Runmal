@@ -10205,3 +10205,71 @@ P-132 BANKED - Scenario-to-Chat Binding (Part IX)
     PART IX OPEN (P-131..P-154).
     Next in roadmap order: P-133
     (Part IX, in roadmap order).
+
+P-133 BANKED - Stored-Definition File Export (Part IX)
+    Part IX third slice.
+    - team-03 commit dfddf84 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 1559902 (parents d11ee6b +
+    dfddf84); merge pushed and
+    ls-remote verified at 1559902
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only
+    its part line (P-131..P-154), no
+    per-slice entries; the slice scope
+    is derived from Runmal's own
+    in-tree record (P-132 declined
+    candidate naming store-to-file
+    export by id as the natural P-133
+    candidate), stated plainly as
+    derived in the slice doc and
+    the evidence.
+    Evidence (team-03 worktree
+    hidden_files/P133_EVIDENCE.md):
+    battery 24 passed / 0 failed;
+    neighbours 109 passed / 0 failed
+    (P-026 + P-131 + P-132 batteries);
+    team full suite 4678 passed /
+    5 skipped / 0 failed. Arithmetic:
+    4654 (P-132 forge confirmation)
+    + 24 battery = 4678 - exact.
+    Forge confirmation suite on the
+    merged tree: 4678 passed /
+    5 skipped / 0 failed - a clean
+    run in 258.23s with no contention
+    re-runs needed. Expectation check:
+    4654 + 24 = 4678 - exact match,
+    as counted from the log. Log
+    hidden_files/P133_FORGE_CONFIRM.log
+    on purplelongship.
+    Finisher fixes (both in-slice):
+    carried_shadowed naming in the
+    export report; ?format= empty
+    answers 422.
+    Honest limitations: F1 carried
+    (P-026 raw-overlay leak, not
+    inherited); element-raw fields
+    outside the record.
+    Slice scope: src/runmal/scenarios/
+    storedexport.py (new - stored
+    export service), src/runmal/
+    scenarios/router.py (GET export
+    road appended), src/runmal/
+    scenarios/__init__.py (exports),
+    tests/test_p133_stored_export.py
+    (new, 24 tests),
+    docs/SCENARIO_STORED_EXPORT_2026-11-08.md
+    (new), clean-room log append (+1).
+    Migration: NONE (head stays 0041).
+    Merge: clean, no conflicts;
+    merged router grep-verified
+    carrying P-131 CRUD + P-132
+    binding + P-133 export roads;
+    py_compile clean.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-134
+    (Part IX, in roadmap order).
