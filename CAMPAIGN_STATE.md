@@ -12555,3 +12555,142 @@ P-149 BANKED - Chat Delete-Impact Preview (Part IX)
     PART IX OPEN (P-131..P-154).
     Next in roadmap order: P-150 (Part
     IX, in roadmap order).
+P-150 BANKED - Binding Custody Census (Part IX)
+    Part IX twentieth slice.
+    - team-02 commit 03efe6c merged (no-
+    ff) into yrsa/two-mirrors-build as
+    7d36b4f (parents 991dcf4 + 03efe6c);
+    merge pushed and ls-remote verified
+    at 7d36b4f before this record;
+    banking record commit follows this
+    entry and is pushed after it.
+    Cross-base banking: team-02 built on
+    0dde71b (the P-148 banking record);
+    P-149 is NOT in its base by design,
+    so reconciliation at banking was the
+    keeper's (below).
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only its
+    part line (P-131..P-154), no per-
+    slice entries; the slice scope is
+    derived from Runmal's own in-tree
+    record (P-144 judges bindings
+    against definitions, P-148 against
+    chats, and P-148 itself names the
+    joint state - orphaned and stale at
+    once - but no surface joined the
+    verdicts row by row; P-150 composes
+    both owning services and classifies
+    each binding sound /
+    definition_drift / chat_orphaned /
+    doubly_broken in one pure read),
+    stated plainly as derived in the
+    slice doc.
+    Evidence (team-02 worktree
+    hidden_files/ P150_EVIDENCE.md +
+    logs P150_BATTERY.log,
+    P150_NEIGHBOURS.log,
+    P150_FULLSUITE.log): battery 20
+    passed / 0 failed; neighbour fence
+    386 passed / 0 failed (the P-026 +
+    P-131..P-148 fence was 366 per the
+    P-148 banking record; 366 + 20 =
+    386, exact; the P-149 battery is
+    absent from this base by design and
+    is therefore honestly not in the
+    fence - the keeper runs it at
+    banking reconciliation, below);
+    team full suite 4931 passed / 5
+    skipped / 0 failed in 344.71s,
+    reconciling exactly with its base
+    (4911 + 20 = 4931); no failure
+    occurred, so no timing-failure
+    classification or solo re-run was
+    needed.
+    Combined batteries on the merged
+    tree: 404 passed / 0 failed (the
+    fence through P-149 counted 384 at
+    the P-149 banking + 20 = 404; P-026
+    + P-131..P-150 scenario batteries).
+    Forge confirmation suite on the
+    merged tree: 4949 passed / 5 skipped
+    / 0 failed - a clean run in 307.50s
+    with no contention re-runs needed
+    (a P-151 team suite ran on the
+    shared machine concurrently;
+    memory was checked before launch).
+    Expectation check: 4929 + 20 = 4949
+    - exact match, as counted from the
+    log. Log /tmp/p150_forge_full.log
+    on purplelongship.
+    Slice scope: the binding custody
+    census, both axes joined -
+    scenarios/custodycensus.py (new:
+    census_binding_custody composes the
+    P-144 and P-148 censuses and
+    classifies every binding sound /
+    definition_drift / chat_orphaned /
+    doubly_broken; pure read: binds,
+    unbinds, deletes and writes
+    nothing), one additive road (GET
+    /scenarios/bindings/custody-census,
+    declared after the chat-census road
+    and before the {chat_id} read, so
+    the literal custody-census is never
+    read as a chat id),
+    scenarios/router.py (additive, +32),
+    scenarios/__init__.py (additive,
+    +13, census_binding_custody export +
+    one subsystem-map bullet),
+    tests/test_p150_custody_census.py
+    (new, 20 tests),
+    docs/SCENARIO_CUSTODY_CENSUS_2026-11-08.md
+    (new), clean-room log append (+1).
+    Team delta 6 files (+1036/-0),
+    purely additive, no hidden_files
+    paths in the slice commit.
+    Honest limitations: the census is a
+    pure read; it names custody, it
+    does not repair it, and it claims
+    nothing neither parent census
+    claims. The delete_chat cascade
+    into the binding store - P-148's
+    named open question, weighed and
+    NOT taken by P-149 and again NOT
+    taken here (a chats-subsystem write
+    change no in-tree record has
+    decided) - stands open for a future
+    slice to take deliberately. The
+    P-149 union was NOT verified in the
+    team worktree (it cannot be: P-149
+    is absent from that base by design)
+    - it is verified here at banking by
+    the combined batteries and the forge
+    confirmation above.
+    Migration: NONE (head stays 0041).
+    Merge: additive union with P-149's
+    banked work; merge conflicts in
+    scenarios/router.py +
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    resolved as pure additive unions
+    (P-149 and P-150 work kept exactly
+    once each; scenarios/__init__.py
+    merged clean as an additive union);
+    merged scenarios/router.py grep-
+    verified carrying BOTH the P-149
+    GET /scenarios/bindings/{chat_id}/
+    delete-impact road AND the P-150
+    GET /scenarios/bindings/custody-
+    census road, with custody-census
+    declared before the {chat_id} read;
+    the merged clean-room log holds the
+    P-149 and P-150 entries exactly once
+    each; merged scenarios modules
+    py_compile clean; merged diff vs
+    991dcf4 is exactly the 6 slice files
+    (+1036/-0). No heal was needed at
+    merge.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-151 (Part
+    IX, in roadmap order).
