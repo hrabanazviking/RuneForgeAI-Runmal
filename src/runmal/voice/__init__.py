@@ -20,6 +20,8 @@ Layered, provider-isolated pieces (see docs/VOICE_ARCHITECTURE.md):
   honestly at start, turns persisted with playback truth (P-101).
 - ``live`` / ``live_router`` — the live voice host: per-session
   orchestrators wired into the app process (P-102).
+- ``projection`` / ``projection_router`` — recorded turns landed
+  in their chat as provenance-carrying messages (P-103).
 - ``routing``   — persisted logical device routes (S513).
 - ``benchmark`` — reproducible voice benchmark harness (S514).
 
