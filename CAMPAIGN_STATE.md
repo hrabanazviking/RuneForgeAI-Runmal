@@ -11448,3 +11448,168 @@ P-143 BANKED - Library-Scoped Pack Import Preview (Part IX)
     PART IX OPEN (P-131..P-154).
     Next in roadmap order: P-144
     (Part IX, in roadmap order).
+P-144 BANKED - Global Binding Census (Part IX)
+    Part IX fourteenth slice.
+    - team-02 commit 55f2969 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as aed1809 (parents 336b204 +
+    55f2969); merge pushed and
+    ls-remote verified at aed1809
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Cross-base banking: team-02 built
+    on bbdd8cc (the P-142 banking
+    record); P-143 is NOT in its base
+    by design, so reconciliation at
+    banking was the keeper's (below).
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only
+    its part line (P-131..P-154), no
+    per-slice entries; the slice scope
+    is derived from Runmal's own
+    in-tree record (the candidate
+    P-142 named in its weighing and
+    its banking record - a global
+    stale/superseded binding census -
+    deferred there only because the
+    proven F1 defect outranked it;
+    F1 closed by P-142 and no
+    F-finding remains open), stated
+    plainly as derived in the slice
+    doc.
+    Evidence (team-02 worktree
+    hidden_files/ P144_EVIDENCE.md +
+    logs P144_BATTERY.log,
+    P144_NEIGHBOURS.log,
+    P144_FULL_SUITE.log):
+    battery 18 passed / 0 failed;
+    neighbours 273 passed / 0 failed
+    (Part IX fence P-026 +
+    P-131..P-142; the P-143 battery
+    is absent from this base by
+    design and is therefore honestly
+    not in the fence - the keeper
+    runs it at banking reconciliation,
+    below); team full suite
+    4836 passed / 5 skipped /
+    0 failed - a clean run,
+    reconciling exactly with its
+    base (4818 + 18 = 4836); no
+    contention failure occurred, so
+    no solo re-run was needed.
+    One defect of the team's own
+    making (an unused json import,
+    F401, in the battery) was found
+    by ruff and fixed in-slice; the
+    battery re-ran green after the
+    fix. Ruff's remaining 4 errors
+    on the touched files are
+    pre-existing baseline, verified
+    by stash comparison. No banked
+    defect was discovered.
+    Combined batteries on the merged
+    tree: 304 passed / 0 failed
+    (P-131 29 + P-132 18 + P-133 24
+    + P-134 12 + P-135 16 + P-136 11
+    + P-137 12 + P-138 16 + P-139 11
+    + P-140 12 + P-141 34 + P-142 16
+    + P-143 13 + P-144 18 + P-026 62;
+    = 286 counted at the P-143
+    banking + 18).
+    Forge confirmation suite on the
+    merged tree: 4849 passed /
+    5 skipped / 0 failed - a clean
+    run in 277.21s with no contention
+    re-runs needed. Expectation check:
+    4831 + 18 = 4849 - exact match,
+    as counted from the log. Log
+    hidden_files/P144_FORGE_CONFIRM.log
+    on purplelongship.
+    Slice scope: the global
+    stale/superseded binding census -
+    scenarios/bindingcensus.py (new:
+    census_bindings reads every row
+    through P-135's list_bindings
+    verb, so each row is a P-135
+    summary verbatim, enriched only
+    with the live record's
+    current_revision and
+    current_name (None when the
+    definition is gone) and a state
+    under a four-state law -
+    current / superseded / ahead /
+    stale - ahead impossible by
+    construction and counted anyway
+    so a hand-damaged store is
+    named, never hidden, the P-140
+    pinned_newer precedent;
+    by_definition rollups in
+    first-binding order and every
+    count summed from the rows and
+    groups themselves; five standing
+    honesty notes in fixed order;
+    pure read), one additive road
+    (GET /scenarios/bindings/census,
+    declared after the bindings list
+    road and before the {chat_id}
+    binding read so the literal is
+    never read as a chat id; no 404
+    case - an owner with no bindings
+    answers the honest zero census),
+    scenarios/router.py (additive),
+    scenarios/__init__.py (additive,
+    BINDING_STATES + census_bindings
+    exports + one subsystem-map
+    bullet),
+    tests/test_p144_binding_census.py
+    (new, 18 tests),
+    docs/SCENARIO_BINDING_CENSUS_2026-11-08.md
+    (new), clean-room log append (+1).
+    Team delta 6 files (+856/-1);
+    the merged diff against 336b204
+    is exactly the six slice files
+    (+855/-0) - the team's one
+    deletion was a docstring
+    punctuation variant of the
+    P-141 header line, not taken;
+    the union kept the banked line.
+    Honest limitations: a census,
+    not a cleanup - stale and ahead
+    rows are named, never unbound,
+    deleted or repaired; the census
+    judges the definition store
+    only and no chat liveness (the
+    binding store carries no such
+    fact and none is fabricated);
+    summaries remain counts, not
+    content; no filters, sorts or
+    paging. Team counts exclude
+    P-143 (absent from this base by
+    design); reconciliation is the
+    keeper's at banking (combined
+    batteries + forge confirmation
+    above).
+    Migration: NONE (head stays 0041).
+    Merge: conflicts in
+    scenarios/router.py,
+    scenarios/__init__.py and
+    docs/CLEAN_ROOM_LOG_2026-10-30.md,
+    resolved as pure additive unions
+    keeping BOTH P-143 and P-144
+    work exactly once each; merged
+    scenarios/router.py grep-verified
+    carrying BOTH the P-143 POST
+    /scenarios/pack/import-preview
+    road AND the P-144 GET
+    /scenarios/bindings/census road,
+    literal roads before the
+    parameterised ones; the merged
+    clean-room log holds the P-143
+    and P-144 entries exactly once
+    each; merged scenarios modules
+    py_compile clean.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-145
+    (Part IX, in roadmap order).
