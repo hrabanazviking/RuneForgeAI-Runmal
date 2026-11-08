@@ -8362,3 +8362,98 @@ P-117 BANKED - Vision Foundation + OpenAPI fix (Part VIII)
     recorded in the slice evidence).
     Next in roadmap order: P-118
     (Part VIII continues).
+P-118 BANKED - The Last Vision Description Reaches the Prompt (Part VIII)
+    PART VIII continues (second slice).
+    - team-03 commit afacf23 merged (no-ff)
+    into yrsa/two-mirrors-build as a1f105b
+    (parents 6e523e3 + afacf23); banking
+    record commit follows this entry and
+    is pushed with the merge; ls-remote
+    verification is reported in the keeper
+    run log.
+    Evidence (team-03 worktree
+    hidden_files/P118_EVIDENCE.md):
+    battery 17 passed / 0 failed;
+    neighbours fence 162 passed /
+    1 skipped (battery + neighbours run;
+    neighbour-only 145 passed /
+    1 skipped); team full suite
+    4378 passed / 4 skipped / 0 failed
+    on its base ee235a2 (P-116 banking
+    record; P-117 is NOT in that base,
+    reconciled at this merge in roadmap
+    order). Expectation check: 4361 base
+    + 17 new = 4378 - exact match, no
+    s503.
+    Slice scope (DERIVED, as Part VIII's
+    per-slice definitions are derived -
+    the filed roadmap gives Part VIII
+    only its part line): the
+    {{last_vision_description}} template
+    variable (census VX-43/VX-50) via
+    new src/runmal/prompt/vision_link.py
+    reading P-117's
+    vision_descriptions.json format v1
+    as DATA only (never importing
+    runmal.vision), resolving to the
+    honest empty string when absent
+    (P-075, nothing fabricated), plus
+    vision custody: purge_chat wired
+    into chats/service.py delete_chat
+    in the house guarded lazy-import
+    pattern alongside the prior
+    checkpoints / databank / undo
+    custody blocks. Review found no
+    defect; two pre-existing ruff
+    findings in chats/service.py
+    (I001/E501) are base-identical and
+    out of footprint, recorded in the
+    slice evidence.
+    Slice: src/runmal/prompt/
+    vision_link.py (new),
+    src/runmal/prompt/variables.py,
+    src/runmal/tools/router.py,
+    src/runmal/chats/service.py,
+    tests/test_p118_vision_template_
+    variable.py (new, 17 tests),
+    tests/test_s307_variables.py,
+    docs/VISION_TEMPLATE_VARIABLE_
+    2026-11-08.md (new), clean-room log
+    append (+1). 8 files, +558/-5.
+    Migration: NONE (head stays 0041).
+    Merge conflict only in the clean-room
+    log (append-vs-append), resolved as
+    an additive union at merge time by
+    the banking coordinator; the merged
+    tree carries P-117's entry AND
+    P-118's entry, each exactly once.
+    The merged tree was verified: the
+    vision package (P-117) and
+    vision_link coexist, the variables
+    registry carries
+    last_vision_description,
+    delete_chat carries BOTH prior
+    custody blocks and the vision
+    purge, and py_compile is clean on
+    all touched modules.
+    No banking heal needed.
+    Combined batteries on the merged
+    tree by the banking coordinator:
+    32 passed / 0 failed (P-117 battery
+    15 + P-118 battery 17 - exact).
+    Forge confirmation suite:
+    4393 passed / 4 skipped / 0 failed
+    in 226.65s - a clean run with no
+    contention re-runs needed.
+    (= 4376 P-117 confirmation + 17
+    P-118 battery - exact.) Log
+    /tmp/p118_confirm.log on
+    purplelongship.
+    Derived scope ACCEPTED as banked.
+    Named-open carried items (not
+    dropped): semantic caption
+    providers; Capabilities.vision
+    selection; capture / watcher /
+    camera / OCR / attachments.
+    Next in roadmap order: P-119
+    (Part VIII continues).
