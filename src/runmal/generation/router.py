@@ -75,7 +75,8 @@ async def generate(
 
     async def sse():
         async for event in service.generate_events(
-                request_id, messages=messages, backend=backend):
+                request_id, messages=messages, backend=backend,
+                chat_id=body.chat_id):
             yield f"data: {json.dumps(event)}\n\n"
 
     return StreamingResponse(

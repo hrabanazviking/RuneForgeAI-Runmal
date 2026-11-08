@@ -51,6 +51,9 @@ def _world(client, with_persona=True):
     body = {"title": "Bridge chat"}
     if with_persona:
         body["character_id"] = character["id"]
+        # P-079: the bridge drives its own opening; opt out of
+        # greeting seeding so the world starts with an empty chat.
+        body["greeting_mode"] = "quiet"
     chat = client.post("/api/v1/chats", json=body).json()
     return character, chat
 

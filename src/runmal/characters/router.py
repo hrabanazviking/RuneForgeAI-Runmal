@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.cards import CardParseError
 from runmal.characters import service, versioning
+from runmal.chats import service as chats_service
 from runmal.characters.service import UnsafeFilenameError, character_to_dict
 from runmal.db.deps import get_owner_id, get_session
 from runmal.lorebooks import service as lorebooks_service
@@ -148,6 +149,20 @@ async def update_character(
     if character is None:
         raise HTTPException(status_code=404, detail="character not found")
     return character_to_dict(character)
+
+
+@router.get("/characters/{character_id}/greetings")
+async def get_character_greetings(
+    character_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """The card's greeting deck (P-079): the greetings a new chat
+    would seed from, in deck order with kinds and source indexes."""
+    deck = await chats_service.get_character_greetings(session, user_id, character_id)
+    if deck is None:
+        raise HTTPException(status_code=404, detail="character not found")
+    return deck
 
 
 @router.get("/characters/{character_id}/editor")

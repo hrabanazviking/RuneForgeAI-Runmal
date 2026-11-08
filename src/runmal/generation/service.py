@@ -50,6 +50,17 @@ def default_backend() -> ChatBackend:
     return FakeChatBackend(chunks=_STUB_CHUNKS)
 
 
+async def _dispatch_plugin(name, *, chat_id=None, message_id=None, data=None):
+    """Fire-and-observe plugin dispatch (P-081): lazy import, never
+    raises. Metadata only -- never prompt/message text (PLG-05)."""
+    try:
+        from runmal.plugins.service import dispatch_event
+
+        await dispatch_event(name, chat_id=chat_id, message_id=message_id, data=data)
+    except Exception:
+        pass
+
+
 def bridge_event(event: Event) -> dict | None:
     """Bridge one normalized backend event to the UI's SSE dict shape."""
     if isinstance(event, TextDelta):
@@ -75,6 +86,8 @@ async def generate_events(
     params: SamplingParams | None = None,
     retry_policy: RetryPolicy | None = None,
     structured=None,
+    chat_id: str | None = None,
+    plugin_events: bool = True,
 ):
     """Yield UI-shaped SSE dicts for `request_id` through the backend seam.
 
@@ -83,10 +96,45 @@ async def generate_events(
     With `retry_policy` set, the stream runs through the S309 retry
     contract (§7): retries happen only before visible output, under the
     same request identity — the events seen here are still one turn.
+
+    P-081: ``chat_id`` is threaded into the generation.* plugin
+    payloads by callers that generate FOR a chat (the /generate
+    router, the bridge); it stays None for chat-agnostic callers.
+    ``plugin_events=False`` suppresses plugin dispatch entirely —
+    the group-chat call sites pass it, because group chats are
+    OUT of the v1 plugin catalogue (design section 3).
     """
     token = _cancel_tokens.setdefault(request_id, asyncio.Event())
     backend = backend or default_backend()
+    # P-081 dispatch alias: the module helper, or a no-op when
+    # this call site opted out (group chats). A distinct local
+    # name -- shadowing the module helper conditionally would
+    # make it function-local everywhere and break every call.
+    if plugin_events:
+        _dispatch = _dispatch_plugin
+    else:
+        async def _dispatch(name, *, chat_id=None, message_id=None, data=None):
+            return None
+    backend_key = getattr(backend, "backend_key", None) or "unknown"
     chat_messages = messages or [ChatMessage(role="user", content=prompt)]
+    _model = getattr(backend, "default_model", None)
+    # P-081 generation.before fires BEFORE the backend stream is
+    # constructed/opened (design section 3 dispatch point).
+    # model_id comes from the backend's declared default model --
+    # the only model identity this seam honestly knows. chat_id
+    # is whatever the caller threaded in (None for chat-agnostic
+    # callers).
+    await _dispatch(
+        "generation.before",
+        chat_id=chat_id,
+        data={
+            "request_id": request_id,
+            "backend_key": backend_key,
+            "model_id": _model.model_id if _model is not None else None,
+            "chat_id": chat_id,
+            "message_count": len(chat_messages),
+        },
+    )
     if retry_policy is not None:
         stream = stream_with_retry(
             backend, chat_messages, params or SamplingParams(), token,
@@ -98,19 +146,76 @@ async def generate_events(
     else:
         stream = backend.chat_stream(chat_messages, params or SamplingParams(), token)
     saw_done = False
+    last_usage: dict | None = None
     try:
         async for event in stream:
             bridged = bridge_event(event)
+            if isinstance(event, UsageUpdate):
+                last_usage = event.to_dict()
+            elif isinstance(event, Done) and event.usage is not None:
+                last_usage = event.usage.to_dict()
             if bridged is None:
                 continue
             if bridged["type"] == "done":
                 saw_done = True
+                if isinstance(event, Done) and event.reason == "error":
+                    await _dispatch(
+                        "generation.failed",
+                        chat_id=chat_id,
+                        data={
+                            "request_id": request_id,
+                            "backend_key": backend_key,
+                            "error_code": event.reason,
+                            "retryable": False,
+                        },
+                    )
+                if isinstance(event, Done) and event.reason != "error":
+                    await _dispatch(
+                        "generation.after",
+                        chat_id=chat_id,
+                        data={
+                            "request_id": request_id,
+                            "backend_key": backend_key,
+                            "finish_reason": event.reason,
+                            "usage": last_usage,
+                        },
+                    )
             yield bridged
         if token.is_set() and not saw_done:
+            await _dispatch(
+                "generation.after",
+                chat_id=chat_id,
+                data={
+                    "request_id": request_id,
+                    "backend_key": backend_key,
+                    "finish_reason": "cancelled",
+                    "usage": last_usage,
+                },
+            )
             yield {"type": "done", "finish_reason": "cancelled"}
     except GenerationCancelled:
+        await _dispatch(
+            "generation.after",
+            chat_id=chat_id,
+            data={
+                "request_id": request_id,
+                "backend_key": backend_key,
+                "finish_reason": "cancelled",
+                "usage": last_usage,
+            },
+        )
         yield {"type": "done", "finish_reason": "cancelled"}
     except BackendError as exc:
+        await _dispatch(
+            "generation.failed",
+            chat_id=chat_id,
+            data={
+                "request_id": request_id,
+                "backend_key": backend_key,
+                "error_code": exc.code,
+                "retryable": exc.retryable,
+            },
+        )
         yield {"type": "error", "code": exc.code, "message": str(exc),
                "retryable": exc.retryable}
         yield {"type": "done", "finish_reason": "error"}

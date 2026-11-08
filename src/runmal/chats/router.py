@@ -4,10 +4,12 @@ from __future__ import annotations
 
 from typing import Literal
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, Field
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from pydantic import BaseModel, Field, StrictBool, StrictInt
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from runmal.chats import metadata as metadata_mod
+from runmal.chats.greetings import GreetingChoice
 from runmal.chats import service
 from runmal.chats.service import chat_to_dict, event_to_dict, message_to_dict
 from runmal.chats.swipes import settings_to_data
@@ -21,6 +23,15 @@ router = APIRouter(tags=["chats"])
 class ChatCreate(BaseModel):
     title: str = ""
     character_id: str | None = None
+    greeting_mode: str = "first"
+    greeting_index: StrictInt | None = None
+    greeting_seed: StrictInt | None = None
+
+
+class GreetingSeedIn(BaseModel):
+    mode: str = "first"
+    index: StrictInt | None = None
+    seed: StrictInt | None = None
 
 
 class ChatUpdate(BaseModel):
@@ -67,9 +78,36 @@ class SwipeSelectIn(BaseModel):
     index: int | None = None
 
 
+class MessageMoveIn(BaseModel):
+    to_index: int
+
+
+class MessageCopyIn(BaseModel):
+    target_chat_id: str | None = None
+    title: str | None = None
+
+
 class SwipeSettingsIn(BaseModel):
     enabled: bool = True
     params: dict = {}
+
+
+class ContinueIn(BaseModel):
+    mode: str = "auto"
+    instruction: str | None = None
+
+
+class ImpersonateIn(BaseModel):
+    instruction: str | None = None
+
+
+class ImpersonateAcceptIn(BaseModel):
+    content: str = Field(min_length=1)
+    draft_id: str | None = None
+
+
+class ImpersonateDiscardIn(BaseModel):
+    draft_id: str | None = None
 class BranchCreate(BaseModel):
     message_id: str | None = None
     name: str | None = None
@@ -88,8 +126,47 @@ class CheckpointCreate(BaseModel):
     name: str | None = None
 
 
+class ChatMetadataIn(BaseModel):
+    title: str | None = None
+    summary: str | None = None
+    tags: list[str] | None = None
+
+
+class ChatRegenerateIn(BaseModel):
+    fields: list[str] | None = None
+    force: bool = False
+
+
+class ChatFavouriteIn(BaseModel):
+    is_favourite: bool
+
+
 class CheckpointRestoreIn(BaseModel):
     name: str | None = None
+
+
+class UndoIn(BaseModel):
+    entry_id: str | None = None
+
+
+class DataBankAttachIn(BaseModel):
+    name: str
+    content: str = ""
+    content_type: str | None = None
+    enabled: StrictBool | None = None
+    priority: StrictInt | None = None
+
+
+class DataBankUpdateIn(BaseModel):
+    name: str | None = None
+    content: str | None = None
+    content_type: str | None = None
+    enabled: StrictBool | None = None
+    priority: StrictInt | None = None
+
+
+class DataBankBudgetIn(BaseModel):
+    budget_tokens: StrictInt
 
 
 @router.post("/chats", status_code=status.HTTP_201_CREATED)
@@ -99,10 +176,42 @@ async def create_chat(
     session: AsyncSession = Depends(get_session),
 ):
     try:
-        chat = await service.create_chat(session, user_id, body.title, body.character_id)
+        choice = GreetingChoice(
+            mode=body.greeting_mode, index=body.greeting_index, seed=body.greeting_seed
+        )
+        chat = await service.create_chat(
+            session, user_id, body.title, body.character_id, greeting=choice
+        )
     except KeyError:
         raise HTTPException(status_code=404, detail="character not found") from None
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     return chat_to_dict(chat)
+
+
+@router.post("/chats/{chat_id}/greeting")
+async def seed_greeting(
+    chat_id: str,
+    body: GreetingSeedIn,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Seed a character greeting into an existing EMPTY chat (P-079).
+
+    The seeded message carries the card's whole greeting deck as
+    its swipes. A quiet choice (or a greetingless card) seeds
+    nothing and reports ``seeded: false``.
+    """
+    try:
+        choice = GreetingChoice(mode=body.mode, index=body.index, seed=body.seed)
+        message = await service.seed_greeting(session, user_id, chat_id, choice)
+    except KeyError:
+        raise HTTPException(status_code=404, detail="chat not found") from None
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if message is None:
+        return {"seeded": False, "message": None}
+    return {"seeded": True, "message": message_to_dict(message)}
 
 
 @router.get("/chats")
@@ -111,6 +220,69 @@ async def list_chats(
     session: AsyncSession = Depends(get_session),
 ):
     return [chat_to_dict(chat, count) for chat, count in await service.list_chats(session, user_id)]
+
+
+@router.get("/chats/search")
+async def search_chats_route(
+    q: str,
+    mode: str = "auto",
+    limit: int = 20,
+    chat_id: str | None = None,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Search the caller's chats (P-072): full-text + semantic,
+    jump-to-message. Declared BEFORE get_chat on purpose: the
+    literal "search" must not be captured as a chat_id by
+    GET /chats/{chat_id}, so this route must stay above it."""
+    from runmal.chats import search as search_mod
+
+    try:
+        result = await search_mod.search_chats(
+            session, user_id, q, mode=mode, limit=limit, chat_id=chat_id
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if result is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return result
+
+@router.get("/chats/library")
+async def list_chat_library(
+    q: str | None = None,
+    tags: list[str] | None = Query(default=None),
+    tag_mode: str = "any",
+    favourites_only: bool = False,
+    character_id: str | None = None,
+    sort: str = "recent",
+    limit: int = 50,
+    offset: int = 0,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    try:
+        return await metadata_mod.list_chat_library(
+            session,
+            user_id,
+            q=q,
+            tags=tags,
+            tag_mode=tag_mode,
+            favourites_only=favourites_only,
+            character_id=character_id,
+            sort=sort,
+            limit=limit,
+            offset=offset,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@router.get("/chats/tags")
+async def list_chat_tags(
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    return await metadata_mod.list_chat_tags(session, user_id)
 
 
 @router.get("/chats/{chat_id}")
@@ -152,6 +324,72 @@ async def delete_chat(
     return {"deleted": True, "id": chat_id}
 
 
+@router.get("/chats/{chat_id}/metadata")
+async def get_chat_metadata(
+    chat_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    payload = await metadata_mod.get_metadata(session, user_id, chat_id)
+    if payload is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return payload
+
+
+@router.put("/chats/{chat_id}/metadata")
+async def update_chat_metadata(
+    chat_id: str,
+    body: ChatMetadataIn,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    updates = {
+        key: value
+        for key, value in body.model_dump().items()
+        if value is not None
+    }
+    try:
+        payload = await metadata_mod.update_metadata(session, user_id, chat_id, updates)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if payload is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return payload
+
+
+@router.post("/chats/{chat_id}/metadata/regenerate")
+async def regenerate_chat_metadata(
+    chat_id: str,
+    body: ChatRegenerateIn,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    try:
+        payload = await metadata_mod.regenerate_metadata(
+            session, user_id, chat_id, fields=body.fields, force=body.force
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if payload is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return payload
+
+
+@router.put("/chats/{chat_id}/favourite")
+async def set_chat_favourite(
+    chat_id: str,
+    body: ChatFavouriteIn,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    payload = await metadata_mod.set_favourite(
+        session, user_id, chat_id, body.is_favourite
+    )
+    if payload is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return payload
+
+
 @router.post("/chats/{chat_id}/messages", status_code=status.HTTP_201_CREATED)
 async def append_message(
     chat_id: str,
@@ -171,13 +409,32 @@ async def append_message(
 @router.get("/chats/{chat_id}/messages")
 async def get_history(
     chat_id: str,
+    limit: int | None = None,
+    offset: int = 0,
+    tail: bool = False,
     user_id: str = Depends(get_owner_id),
     session: AsyncSession = Depends(get_session),
 ):
-    history = await service.get_history(session, user_id, chat_id)
-    if history is None:
+    if limit is None and offset == 0 and not tail:
+        history = await service.get_history(session, user_id, chat_id)
+        if history is None:
+            raise HTTPException(status_code=404, detail="chat not found")
+        return [message_to_dict(m) for m in history]
+    page_result = await service.get_history_page(
+        session, user_id, chat_id,
+        limit=limit if limit is not None else 100,
+        offset=offset, tail=tail,
+    )
+    if page_result is None:
         raise HTTPException(status_code=404, detail="chat not found")
-    return [message_to_dict(m) for m in history]
+    page, total, effective_offset, effective_limit = page_result
+    return {
+        "messages": [message_to_dict(m) for m in page],
+        "total": total,
+        "limit": effective_limit,
+        "offset": effective_offset,
+        "has_more": effective_offset + len(page) < total,
+    }
 
 
 @router.patch("/chats/{chat_id}/messages/{message_id}")
@@ -207,6 +464,143 @@ async def delete_message(
     if not await service.delete_message(session, user_id, chat_id, message_id):
         raise HTTPException(status_code=404, detail="message not found")
     return {"deleted": True, "id": message_id}
+
+
+@router.get("/chats/{chat_id}/messages/{message_id}/variants")
+async def get_message_variants(
+    chat_id: str,
+    message_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """A message's variant history: replaced contents, edit order (P-068)."""
+    variants = await service.get_message_variants(session, user_id, chat_id, message_id)
+    if variants is None:
+        raise HTTPException(status_code=404, detail="message not found")
+    return {"message_id": message_id, "variants": variants,
+            "variant_count": len(variants)}
+
+
+@router.get("/chats/{chat_id}/messages/{message_id}/provenance")
+async def get_message_provenance(
+    chat_id: str,
+    message_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """A message's full provenance document: the recorded
+    production record for every swipe (P-075). Legacy messages
+    read as an explicit not_recorded document, never a 404."""
+    payload = await service.get_message_provenance(
+        session, user_id, chat_id, message_id)
+    if payload is None:
+        raise HTTPException(status_code=404, detail="message not found")
+    return payload
+
+
+@router.get("/chats/{chat_id}/provenance")
+async def list_chat_provenance(
+    chat_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Per-message active provenance records + summary (P-075)."""
+    payload = await service.list_chat_provenance(session, user_id, chat_id)
+    if payload is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return payload
+
+
+@router.post("/chats/{chat_id}/messages/{message_id}/move")
+async def move_message(
+    chat_id: str,
+    message_id: str,
+    body: MessageMoveIn,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Move a message to a strict target index within its chat (P-068)."""
+    try:
+        message = await service.move_message(
+            session, user_id, chat_id, message_id, body.to_index
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if message is None:
+        raise HTTPException(status_code=404, detail="message not found")
+    return message_to_dict(message)
+
+
+@router.post("/chats/{chat_id}/messages/{message_id}/copy-to-branch",
+             status_code=status.HTTP_201_CREATED)
+async def copy_message_to_branch(
+    chat_id: str,
+    message_id: str,
+    body: MessageCopyIn,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Copy a message to a branch chat (P-068): fork a new chat up to
+    and including the message, or copy it into an existing owned chat."""
+    try:
+        result = await service.copy_message_to_branch(
+            session, user_id, chat_id, message_id,
+            target_chat_id=body.target_chat_id, title=body.title,
+        )
+    except KeyError:
+        raise HTTPException(status_code=404, detail="target chat not found") from None
+    if result is None:
+        raise HTTPException(status_code=404, detail="message not found")
+    return {
+        "target_chat": chat_to_dict(result["target_chat"]),
+        "copied_message": message_to_dict(result["copied_message"]),
+        "copied_count": result["copied_count"],
+        "mode": result["mode"],
+    }
+
+
+@router.post("/chats/{chat_id}/messages/{message_id}/pin",
+             status_code=status.HTTP_201_CREATED)
+async def pin_message(
+    chat_id: str,
+    message_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Pin a message to memory (P-068): a real pinned Memory record."""
+    from runmal.memory.models import memory_to_dict
+
+    memory = await service.pin_message_to_memory(session, user_id, chat_id, message_id)
+    if memory is None:
+        raise HTTPException(status_code=404, detail="message not found")
+    return memory_to_dict(memory)
+
+
+@router.delete("/chats/{chat_id}/messages/{message_id}/pin")
+async def unpin_message(
+    chat_id: str,
+    message_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Unpin a message (P-068): removes its pin Memory record."""
+    removed = await service.unpin_message_from_memory(session, user_id, chat_id, message_id)
+    if removed is None:
+        raise HTTPException(status_code=404, detail="message not found")
+    return {"unpinned": removed, "id": message_id}
+
+
+@router.get("/chats/{chat_id}/pinned-messages")
+async def list_pinned_messages(
+    chat_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """A chat's pinned messages, in display order (P-068)."""
+    pinned = await service.list_pinned_messages(session, user_id, chat_id)
+    if pinned is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return [message_to_dict(m) for m in pinned]
 
 
 @router.post(
@@ -578,6 +972,32 @@ async def list_checkpoints(
     return result
 
 
+@router.post("/chats/{chat_id}/continue", status_code=status.HTTP_201_CREATED)
+async def continue_chat(
+    chat_id: str,
+    body: ContinueIn,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Continue a chat (P-069): the model nudges the conversation
+    forward and the result LANDS -- extend grows the last
+    assistant message in place; next appends a new assistant
+    message."""
+    from runmal.chats import continue_impersonate as ci
+
+    try:
+        result = await ci.continue_chat(
+            session, user_id, chat_id, mode=body.mode, instruction=body.instruction
+        )
+    except ci.GenerationFailedError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if result is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return result
+
+
 @router.get("/chats/{chat_id}/checkpoints/{checkpoint_id}")
 async def get_checkpoint(
     chat_id: str,
@@ -649,6 +1069,155 @@ async def delete_checkpoint(
     return {"deleted": True, "id": checkpoint_id}
 
 
+@router.get("/chats/{chat_id}/undo")
+async def list_undo_journal(
+    chat_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """A chat's undo journal (P-076), top of stack first.
+    Metadata only -- entry payloads are never returned."""
+    from runmal.chats import undo as undo_mod
+
+    try:
+        entries = await undo_mod.list_journal(session, user_id, chat_id)
+    except (undo_mod.UndoError, ValueError) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if entries is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return {"entries": entries, "count": len(entries), "can_undo": bool(entries)}
+
+
+@router.get("/chats/{chat_id}/undo/{entry_id}")
+async def get_undo_entry(
+    chat_id: str,
+    entry_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """One journal entry's metadata (P-076): a verified read,
+    so a tampered entry file 422s here, not only at undo."""
+    from runmal.chats import undo as undo_mod
+
+    try:
+        entry = await undo_mod.get_entry(session, user_id, chat_id, entry_id)
+    except (undo_mod.UndoError, ValueError) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if entry is None:
+        raise HTTPException(status_code=404, detail="chat or undo entry not found")
+    return entry
+
+
+@router.post("/chats/{chat_id}/undo")
+async def undo_last_operation(
+    chat_id: str,
+    body: UndoIn | None = None,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Undo the most recent journaled chat operation (P-076):
+    restores the operation's before-image in place and
+    consumes the entry. An explicit entry_id must be the top
+    entry -- out-of-order undo is refused with 422."""
+    from runmal.chats import undo as undo_mod
+
+    try:
+        result = await undo_mod.undo_last(
+            session, user_id, chat_id, body.entry_id if body else None
+        )
+    except (undo_mod.UndoError, ValueError) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if result is None:
+        raise HTTPException(status_code=404, detail="chat not found or nothing to undo")
+    return result
+
+
+@router.delete("/chats/{chat_id}/undo")
+async def clear_undo_journal(
+    chat_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Clear a chat's whole undo journal (P-076). The escape
+    hatch for a stack blocked by a corrupt entry; the chat
+    itself is untouched."""
+    from runmal.chats import undo as undo_mod
+
+    result = await undo_mod.clear_journal(session, user_id, chat_id)
+    if result is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return {"cleared": result}
+
+
+@router.post("/chats/{chat_id}/impersonate", status_code=status.HTTP_201_CREATED)
+async def impersonate_draft(
+    chat_id: str,
+    body: ImpersonateIn,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Draft the next user turn (P-069). The result is a DRAFT
+    document only: it is never stored as a message and history
+    is untouched until the user accepts a final text."""
+    from runmal.chats import continue_impersonate as ci
+
+    try:
+        draft = await ci.impersonate_draft(
+            session, user_id, chat_id, instruction=body.instruction
+        )
+    except ci.GenerationFailedError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if draft is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return draft
+
+
+@router.post(
+    "/chats/{chat_id}/impersonate/accept", status_code=status.HTTP_201_CREATED
+)
+async def accept_impersonate(
+    chat_id: str,
+    body: ImpersonateAcceptIn,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Accept an impersonate draft (P-069): the final text the
+    user supplies -- the draft verbatim or their edit of it --
+    is appended as a real user message. This is the only road
+    by which impersonated text becomes a message."""
+    from runmal.chats import continue_impersonate as ci
+
+    try:
+        message = await ci.accept_impersonate(
+            session, user_id, chat_id, body.content, draft_id=body.draft_id
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if message is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return message_to_dict(message)
+
+
+@router.post("/chats/{chat_id}/impersonate/discard")
+async def discard_impersonate(
+    chat_id: str,
+    body: ImpersonateDiscardIn,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Discard an impersonate draft (P-069): records the
+    discard and stores nothing -- a draft was never stored."""
+    from runmal.chats import continue_impersonate as ci
+
+    if not await ci.discard_impersonate(
+        session, user_id, chat_id, draft_id=body.draft_id
+    ):
+        raise HTTPException(status_code=404, detail="chat not found")
+    return {"discarded": True, "chat_id": chat_id}
+
+
 @router.get("/chats/{chat_id}/export")
 async def export_chat(
     chat_id: str,
@@ -672,3 +1241,161 @@ async def list_events(
     if events is None:
         raise HTTPException(status_code=404, detail="chat not found")
     return [event_to_dict(e) for e in events]
+
+
+# ---------------- Data bank (P-074) ----------------
+
+
+def _databank_http(exc):
+    return HTTPException(status_code=422, detail=str(exc))
+
+
+@router.post("/chats/{chat_id}/databank", status_code=status.HTTP_201_CREATED)
+async def attach_databank_document(chat_id: str, body: DataBankAttachIn, user_id: str = Depends(get_owner_id), session: AsyncSession = Depends(get_session)):
+    """Attach a document to this chat's data bank (P-074)."""
+    from runmal.chats import databank
+    try:
+        result = await databank.attach_document(session, user_id, databank.SCOPE_CHAT, chat_id, name=body.name, content=body.content, content_type=body.content_type, enabled=body.enabled, priority=body.priority)
+    except (databank.DataBankError, ValueError) as exc:
+        raise _databank_http(exc) from exc
+    if result is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return result
+
+
+@router.get("/chats/{chat_id}/databank")
+async def list_databank_documents(chat_id: str, user_id: str = Depends(get_owner_id), session: AsyncSession = Depends(get_session)):
+    """List this chat's data-bank documents + budget accounting (P-074)."""
+    from runmal.chats import databank
+    try:
+        result = await databank.list_documents(session, user_id, databank.SCOPE_CHAT, chat_id)
+    except (databank.DataBankError, ValueError) as exc:
+        raise _databank_http(exc) from exc
+    if result is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return result
+
+
+@router.get("/chats/{chat_id}/databank/budget")
+async def get_databank_budget(chat_id: str, user_id: str = Depends(get_owner_id), session: AsyncSession = Depends(get_session)):
+    """This chat's declared data-bank token budget (P-074)."""
+    from runmal.chats import databank
+    try:
+        result = await databank.get_budget(session, user_id, chat_id)
+    except (databank.DataBankError, ValueError) as exc:
+        raise _databank_http(exc) from exc
+    if result is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return result
+
+
+@router.put("/chats/{chat_id}/databank/budget")
+async def set_databank_budget(chat_id: str, body: DataBankBudgetIn, user_id: str = Depends(get_owner_id), session: AsyncSession = Depends(get_session)):
+    """Set this chat's declared data-bank token budget (P-074)."""
+    from runmal.chats import databank
+    try:
+        result = await databank.set_budget(session, user_id, chat_id, body.budget_tokens)
+    except (databank.DataBankError, ValueError) as exc:
+        raise _databank_http(exc) from exc
+    if result is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    return result
+
+
+@router.get("/chats/{chat_id}/databank/{doc_id}")
+async def get_databank_document(chat_id: str, doc_id: str, user_id: str = Depends(get_owner_id), session: AsyncSession = Depends(get_session)):
+    """One data-bank document, content included (P-074)."""
+    from runmal.chats import databank
+    try:
+        result = await databank.get_document(session, user_id, databank.SCOPE_CHAT, chat_id, doc_id)
+    except (databank.DataBankError, ValueError) as exc:
+        raise _databank_http(exc) from exc
+    if result is None:
+        raise HTTPException(status_code=404, detail="chat or document not found")
+    return result
+
+
+@router.put("/chats/{chat_id}/databank/{doc_id}")
+async def update_databank_document(chat_id: str, doc_id: str, body: DataBankUpdateIn, user_id: str = Depends(get_owner_id), session: AsyncSession = Depends(get_session)):
+    """Update a data-bank document's fields (P-074)."""
+    from runmal.chats import databank
+    try:
+        result = await databank.update_document(session, user_id, databank.SCOPE_CHAT, chat_id, doc_id, name=body.name, content=body.content, content_type=body.content_type, enabled=body.enabled, priority=body.priority)
+    except (databank.DataBankError, ValueError) as exc:
+        raise _databank_http(exc) from exc
+    if result is None:
+        raise HTTPException(status_code=404, detail="chat or document not found")
+    return result
+
+
+@router.delete("/chats/{chat_id}/databank/{doc_id}")
+async def detach_databank_document(chat_id: str, doc_id: str, user_id: str = Depends(get_owner_id), session: AsyncSession = Depends(get_session)):
+    """Detach (delete) one data-bank document (P-074)."""
+    from runmal.chats import databank
+    try:
+        result = await databank.detach_document(session, user_id, databank.SCOPE_CHAT, chat_id, doc_id)
+    except (databank.DataBankError, ValueError) as exc:
+        raise _databank_http(exc) from exc
+    if result is None:
+        raise HTTPException(status_code=404, detail="chat not found")
+    if not result:
+        raise HTTPException(status_code=404, detail="document not found")
+    return {"deleted": True, "id": doc_id}
+
+
+@router.post("/databank/global", status_code=status.HTTP_201_CREATED)
+async def attach_global_document(body: DataBankAttachIn, user_id: str = Depends(get_owner_id), session: AsyncSession = Depends(get_session)):
+    """Attach a global data-bank document (P-074): every chat of
+    this owner can read it, within that chat's budget."""
+    from runmal.chats import databank
+    try:
+        result = await databank.attach_document(session, user_id, databank.SCOPE_GLOBAL, None, name=body.name, content=body.content, content_type=body.content_type, enabled=body.enabled, priority=body.priority)
+    except (databank.DataBankError, ValueError) as exc:
+        raise _databank_http(exc) from exc
+    return result
+
+
+@router.get("/databank/global")
+async def list_global_documents(user_id: str = Depends(get_owner_id), session: AsyncSession = Depends(get_session)):
+    """List global data-bank documents + accounting (P-074)."""
+    from runmal.chats import databank
+    try:
+        return await databank.list_documents(session, user_id, databank.SCOPE_GLOBAL, None)
+    except (databank.DataBankError, ValueError) as exc:
+        raise _databank_http(exc) from exc
+
+
+@router.get("/databank/global/{doc_id}")
+async def get_global_document(doc_id: str, user_id: str = Depends(get_owner_id), session: AsyncSession = Depends(get_session)):
+    from runmal.chats import databank
+    try:
+        result = await databank.get_document(session, user_id, databank.SCOPE_GLOBAL, None, doc_id)
+    except (databank.DataBankError, ValueError) as exc:
+        raise _databank_http(exc) from exc
+    if result is None:
+        raise HTTPException(status_code=404, detail="document not found")
+    return result
+
+
+@router.put("/databank/global/{doc_id}")
+async def update_global_document(doc_id: str, body: DataBankUpdateIn, user_id: str = Depends(get_owner_id), session: AsyncSession = Depends(get_session)):
+    from runmal.chats import databank
+    try:
+        result = await databank.update_document(session, user_id, databank.SCOPE_GLOBAL, None, doc_id, name=body.name, content=body.content, content_type=body.content_type, enabled=body.enabled, priority=body.priority)
+    except (databank.DataBankError, ValueError) as exc:
+        raise _databank_http(exc) from exc
+    if result is None:
+        raise HTTPException(status_code=404, detail="document not found")
+    return result
+
+
+@router.delete("/databank/global/{doc_id}")
+async def detach_global_document(doc_id: str, user_id: str = Depends(get_owner_id), session: AsyncSession = Depends(get_session)):
+    from runmal.chats import databank
+    try:
+        result = await databank.detach_document(session, user_id, databank.SCOPE_GLOBAL, None, doc_id)
+    except (databank.DataBankError, ValueError) as exc:
+        raise _databank_http(exc) from exc
+    if not result:
+        raise HTTPException(status_code=404, detail="document not found")
+    return {"deleted": True, "id": doc_id}

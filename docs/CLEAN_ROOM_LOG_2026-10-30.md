@@ -679,3 +679,190 @@ source in §0(2) and appends its entry here:
   SillyTavern or Voxta source code was read and no file
   was downloaded; the slice's tests are authored fresh
   in the test module (P-005 discipline).
+- **P-077 (2026-11-07, public behaviour + own tree
+  only):** long-chat performance is built entirely from
+  Runmal's own facts: the founding UI campaign's
+  THREAD_WINDOW = 100 standard in web/static/app.js and
+  renderer.js, the P-046 budget discipline (budget stated
+  before measuring, seeded corpus shared by bench and
+  battery, single-core medians, frozen-oracle equivalence),
+  the P-068 position semantics, and the P-072 search
+  contract as already recorded in this tree. The paged
+  history shape, the density-aggregate append proof, the
+  composer prefix-sum trim, and the search word-prefix
+  pre-filter are Runmal's own design for the roadmap line.
+  No SillyTavern or Voxta source code was read and no file
+  was downloaded; the slice's tests are authored fresh in
+  the test module (P-005 discipline).
+- **P-078 (2026-11-07, public behaviour + own tree
+  only):** chat import surgery — P-020's parsed imports
+  become fully live chats — is built entirely from
+  Runmal's own in-tree contracts: the P-020 file contract
+  (filemodels/fileimport/filebridge), the P-065 swipe-deck
+  invariant, the P-066 lineage columns, the P-075
+  provenance document shape, and the P-068 materialised-
+  position rule. The deck-resolution rules (mes
+  authoritative, empty alternates dropped and reported,
+  branch-link header keys preserved as data and never
+  mapped to lineage) extend the tree's own filebridge law;
+  no external behaviour was consulted beyond what earlier
+  slices already recorded. No SillyTavern or Voxta source
+  code was read and no file was downloaded; the slice's
+  tests are authored fresh in the test module (P-005
+  discipline).
+- **P-079 (2026-11-07, public behaviour + own tree only):**
+  quiet/greeting controls are built from the mirrors'
+  publicly known behaviour -- a new chat opens on the
+  character's greeting and alternate greetings are swiped
+  through on that first message -- plus Runmal's own facts:
+  the card model's `first_mes` / `alternate_greetings`
+  fields and the S212 editor that already maintained them,
+  the P-065 swipe-deck contract (deck invariant, strict
+  `select_index`, non-empty alternates), the P-075
+  per-swipe provenance document, the P-036 seeded-RNG
+  honesty discipline, and the P-076 journal pattern. The
+  deck/choice contract (labelled entries with card-side
+  source indexes, the four modes first/index/random/quiet,
+  strict choice decode), the seed-into-empty road, and the
+  deck-view shape are Runmal's own design for the roadmap
+  line. No SillyTavern or Voxta source code was read and
+  no file was downloaded; the slice's tests are authored
+  fresh in the test module (P-005 discipline).
+- **P-080 (2026-11-07, public behaviour + own tree
+  only):** the Part V gate -- a surgery drill script
+  (branch, checkpoint, swipe-storm, group scene) runs
+  green; no operation loses data -- is built entirely
+  from Runmal's own in-tree contracts: the P-030 / P-048 /
+  P-064 gate discipline (battery + gate record + pinned
+  limitations + numbered findings), the P-065 deck
+  invariant, the P-066 lineage and merge law, the P-067
+  checksum-sealed restore-as-new snapshots, the P-068
+  variant-history rule, the P-070 room road, the P-076
+  sealed journal, the P-077 paged history road, the P-078
+  full-deck copy contract, and the P-079 greeting deck.
+  The account discipline (a multiset over every deck
+  string plus variant-history contents, read through
+  message_to_dict) and the Surgeryhall world are Runmal's
+  own design for the roadmap line. No SillyTavern or
+  Voxta source code was read and no file was downloaded;
+  the slice's tests are authored fresh in the test
+  module (P-005 discipline).
+- **P-081 (2026-11-07, public behaviour + own tree
+  only):** the Plugin API v1 — Part VI's opener — is
+  built entirely from Runmal's own bridge row
+  (S601–S611): the versioned bridge protocol becomes
+  PLUGIN_API_VERSION, the bridge scopes' exact-match
+  grammar (INV-029) becomes the manifest's closed
+  capability/permission vocabularies, the bridge
+  /capabilities document becomes the plugin
+  introspection document, and the bridge event outbox
+  becomes fire-and-observe chat events — the Samtal
+  adapter pattern turned inward, exactly as the
+  roadmap line names it. The lifecycle states, the
+  failure rule (three consecutive failures, then
+  errored), the per-receiver chat.read payload
+  redaction, the prompt-hook stages riding the P-057
+  composition choke point, the forced-provenance rule
+  (S214), and the UI slot registry are Runmal's own
+  design for the roadmap line. No SillyTavern or
+  Voxta source code was read and no file was
+  downloaded; the slice's tests are authored fresh
+  in the test module (P-005 discipline).
+- **P-082 (2026-11-07, public behaviour + own tree
+  only):** the plugin sandbox -- plugins are data+declared
+  capabilities; no plugin touches the network/files/secrets
+  uninvited -- is built entirely from Runmal's own in-tree
+  contracts: the P-081 design as landed in team-01's tree
+  (closed manifest vocabularies, the failure rule, the
+  metadata-only failure record), the P-027 typed-refusal and
+  error-hygiene discipline, and the SECURITY_MODEL section 8
+  honesty rule (no implied sandboxing without a real
+  boundary). The grant policy (surface permissions grant no
+  resource access; resource permissions live outside the v1
+  vocabulary, so a v1 plugin's resource grant set is empty),
+  the guarded-context facade (grant check + realpath
+  confinement + host-wired transport/provider + audit), and
+  the ADR-0008 decision record are Runmal's own design for
+  the roadmap line. No SillyTavern or Voxta source code was
+  read and no file was downloaded; the slice's tests are
+  authored fresh in the test module (P-005 discipline).
+- **P-083 (2026-11-07, public behaviour + own tree
+  only):** the plugin manager — Part VI's install road — is
+  built entirely from Runmal's own precedents: the P-045
+  lorebook-pack envelope discipline (single JSON envelope,
+  content_sha256 over the canonical NORMALISED payload,
+  provenance carried verbatim and never interpreted) becomes
+  the local plugin pack; the P-025 collision discipline
+  (exact duplicate = no-op report, never a silent overwrite)
+  becomes the manager's duplicate/conflict rule; the P-081
+  design's own bequests (its section 7 durable-state question
+  and section 10 permission-card + manager-verbs sketch)
+  become the file ledger in the data dir, the permission
+  card rendering declared capabilities/permissions/events/
+  hooks/slots plainly, and a manager driving exactly the
+  P-081 registry verbs. The exact-grant rule (a grant must
+  name precisely the declared permission set) and the
+  data-only rule (packs declaring prompt hooks refuse —
+  hooks are code, and code is not in packs) are Runmal's own
+  design for the roadmap line. No SillyTavern or Voxta
+  source code was read and no file was downloaded; the
+  slice's tests are authored fresh in the test module
+  (P-005 discipline).
+- **P-084 (2026-11-07, public behaviour + own tree
+  only):** the Memory Summarise plugin — rolling chat
+  summary into memory — is built entirely from Runmal's
+  own in-tree contracts: the P-081 Plugin API v1 (whose
+  slice doc's canonical example is this very citizen,
+  id runmal.summarise, made registerable by declaring
+  the full surface the example omitted), the P-082
+  sandbox grant policy (surface permissions only, an
+  empty resource grant set), the founding S404 roll
+  (versioned ChatSummary rows plus kind='summary'
+  memories with full message sources) driven by
+  fire-and-observe chat events, the S404 summarizer
+  seam filled with a deterministic extractive
+  summarizer in the P-073 honesty pattern (no model
+  called or claimed), and the prompt composer's
+  slots stage as the read-back path with forced
+  plugin provenance (PLG-07). No SillyTavern or
+  Voxta source code was read and no file was
+  downloaded; the slice's tests are authored fresh
+  in the test module (P-005 discipline).
+- **P-085 (2026-11-07, public behaviour + own tree only):** the Vector Storage plugin — per-chat/character vector memory on the founding sqlite-vec store — is built entirely from Runmal's own contracts: the P-081 Plugin API v1 citizen pattern (as proven by the P-084 Memory Summarise citizen, read as a pattern and not imported), the P-082 empty-grant sandbox stance, the founding S401 vector-store contract with its provenance spaces, the S407 scope model (chat scope stays inside its chat, character scope stays private to its character), and the P-041 embedding-honesty law (the local hash-ngram provider is lexical-semantic and labelled `lexical_vector`; a configured profile gives `vector`; a degraded keyword scan is labelled `keyword_fallback`, never a vector hit). Scoped doc ids, the over-fetch-then-scope-filter search, and the inspectable status shape are Runmal's own design for the roadmap line. No SillyTavern or Voxta source code was read and no file was downloaded; the slice's tests are authored fresh in the test module (P-005 discipline).
+- **P-086 (2026-11-07, public behaviour + own tree only):**
+  the Translate plugin — messages in/out via local models by
+  default; provider-pluggable — is built entirely from
+  Runmal's own in-tree contracts: the P-081 Plugin API v1
+  citizen pattern as banked by P-084 (register via
+  register_plugin; build_registry/create_app untouched), the
+  P-082 sandbox rule (only v1 surface permissions, so the
+  resource grant set is empty; model access is host wiring,
+  never an uninvited network call), the chat.write reservation
+  (IN is a messages-stage prompt transform in flight; OUT is
+  an in-memory derived, inspectable view — originals never
+  change), and the continue/impersonate generation precedent
+  (plugin_events=False; an error, a non-clean finish or empty
+  output raises, and partial text is never stored). The
+  deterministic default road (a tiny authored lexicon plus a
+  [deterministic:<target>] marker, provider deterministic-1,
+  never presented as real translation), the per-chat
+  configuration with an always-configured, never-detected
+  source language, and the no-migration in-memory storage
+  stance (config and derived store lost on restart, stated
+  plainly) are Runmal's own design for the roadmap line. No
+  SillyTavern or Voxta source code was read and no file was
+  downloaded; the slice's tests are authored fresh in the test
+  module (P-005 discipline).
+- **P-087 (2026-11-07, public behaviour + own tree only):** the Image Generation plugin — prompt-from-scene + manual, local diffusion endpoints first — is built entirely from Runmal's own contracts: the P-081 Plugin API v1 citizen pattern (as proven by the P-084/P-085 citizens, read as a pattern), the P-082 empty-grant sandbox stance, the P-073 extractive honesty pattern (the scene prompt is assembled deterministically from the chat's own messages and names, inspectable before use, nothing invented), and the P-023 character-asset machinery as the landing road (with its character-scoping stated plainly where a chat has no bound character). The provider seam, the loopback-only refusal for local diffusion endpoints, the deterministic hash-canvas test provider with its labelled `deterministic_local` road, per-chat opt-in enablement, and the process-local generation ledger are Runmal's own design for the roadmap line. No SillyTavern or Voxta source code was read and no file was downloaded; the slice's tests are authored fresh in the test module (P-005 discipline).
+- **P-088 (2026-11-07, public behaviour + own tree only):** the Web Search plugin — opt-in, per-chat, with results cited into context (off by default; sovereignty is the default state) — is built entirely from Runmal's own in-tree contracts: the P-081 Plugin API v1 citizen pattern as banked by P-084/P-085/P-086 (register via register_plugin; build_registry/create_app untouched), the P-082 sandbox rule (only v1 surface permissions, so the resource grant set is empty; network.access is not in the v1 manifest vocabulary, so the provider/transport is host wiring in the P-086 model-access trust class, exercised only through the citizen's own per-chat opt-in gate), and the P-086 per-chat configuration stance (in-memory on the instance, lost on restart, stated plainly). The sovereignty gate (the explicit search action refuses before any provider call for a chat that has not opted in; the prompt hook never searches and abstains the moment opt-in is off), the citation rule (results render only with title + URL, exposed as inspectable citation data, and uncitable rows refuse at the seam), the deterministic default provider (labelled deterministic-1, URLs on the reserved example.invalid domain, snippets declaring themselves placeholders), and the injected-transport HTTP provider shape (the module opens no socket; tests use fakes only) are Runmal's own design for the roadmap line. No SillyTavern or Voxta source code was read and no file was downloaded; the slice's tests are authored fresh in the test module (P-005 discipline).
+- **P-089 (2026-11-07, public behaviour + own tree only):** the Quick Replies citizen — user-defined one-tap macros incl. chained actions and input senders — is built entirely from Runmal's own contracts: the P-081 Plugin API v1 citizen pattern (as proven by the P-084/P-087 citizens, read as patterns), the P-082 empty-grant sandbox stance, the P-055 macro engine as the single expansion road (strict mode at execution, so unknown macros fail a step loudly instead of posting raw text), the chats append road with its P-075 provenance discipline (origin kind stays in the closed vocabulary; the quick-reply road is named in scalar origin facts, never a forged kind) and P-076 undo coverage, and the P-076/P-083 durable file-store idiom for per-user definitions (no migration). Chained steps in declared order with a persisted per-step execution record, the input-sender semantics (a user-role message whose receipt still names the road), and the no-hidden-generation stance are Runmal's own design for the roadmap line. No SillyTavern or Voxta source code was read and no file was downloaded; the slice's tests are authored fresh in the test module (P-005 discipline).
+- **P-090 (2026-11-07, public behaviour + own tree only):** the Regex Scripts plugin — ST-shaped find/replace rules applied at declared stages, with a safe regex dialect and timeout discipline — is built entirely from Runmal's own in-tree contracts: the P-081 Plugin API v1 citizen pattern as banked by P-084/P-085/P-087/P-088 (register via register_plugin; build_registry/create_app untouched), the P-082 sandbox rule (only v1 surface permissions, so the resource grant set is empty), and the P-089 durable per-user file-store idiom (one JSON document per UUID-validated user, atomic save, corrupt stores raise and are never silently reset). The ST-shaped importer (aliases, the /body/flags slash form, placement decoding), the safe-dialect token scan (backreference, lookbehind, nested-quantifier and quantifier-bound refusals — extended in-slice to the {,n} brace form Python treats as {0,n} after the finisher's review caught it escaping both checks), the hand-parsed replacement grammar expanded through a Pattern.sub function, and the per-rule forked-child timeout (with its in-process cooperative fallback stated plainly) are Runmal's own design for the roadmap line. No SillyTavern or Voxta source code was read and no file was downloaded; the slice's tests are authored fresh in the test module (P-005 discipline).
+- **P-091 (2026-11-07, public behaviour + own tree only):** the TTS/STT plugin citizens — the founding voice stack behind the P-081 API — are built entirely from Rúnmál's own in-tree contracts: the P-081 Plugin API v1 citizen pattern as banked by P-088/P-089 (register via `register_plugin`; `build_registry`/`create_app` untouched), the P-082 empty-grant sandbox stance (only v1 surface permissions; the voice engine is host wiring, never a grant and never manifest data), and the founding S503/S504 voice seams (`STTBackend`/`TTSBackend`) driven unchanged through their existing ABCs. The two-citizen split mirroring the two independent seams/registries, the settings-panel pair, the metadata-only `message.created` observation that never synthesizes, the no-prompt-hooks stance (voice is not prompt text), the byte-parity law against the direct backend call, and the in-memory latest-result stance are Rúnmál's own design for the roadmap line. No SillyTavern or Voxta source code was read and no file was downloaded; the slice's tests are authored fresh in the test module (P-005 discipline).
+- **P-092 (2026-11-07, public behaviour + own tree only):** the Expression/sprite plugin surface — declared expression sets per character, current-expression selection per chat with provenance, bound to P-023 sprite assets (Part X builds on it) — is built entirely from Runmal's own in-tree contracts: the P-081 Plugin API v1 citizen pattern as banked by P-084/P-087/P-089 (register via register_plugin; build_registry/create_app untouched), the P-082 sandbox rule (only v1 surface permissions, so the resource grant set is empty), the P-023 character-asset machinery as the one sprite store (card "emotion" refs already land as kind expression assets; this citizen binds them by id and never copies bytes), and the P-089 durable per-user file-store idiom (one JSON document per UUID-validated user, atomic save, corrupt stores raise and are never silently reset; no migration). The set/selection/provenance vocabulary (a closed selection-source set, a selection receipt naming source, actor, reason, message and the expression replaced), the honest per-entry binding report (bound, or no_asset / asset_missing / wrong_kind / not_stored), the returned-never-saved derivation draft from existing expression assets, and the no-renderer / no-detection boundaries (Part X owns rendering; nothing scans message text to guess an expression) are Runmal's own design for the roadmap line. No SillyTavern or Voxta source code was read and no file was downloaded; the slice's tests are authored fresh in the test module (P-005 discipline).
+- **P-093 (2026-11-07, public behaviour + own tree only):** the Variables & State plugin - per-chat variables/flags in one shared store that Part IX scenarios consume too - is built entirely from Runmal's own in-tree contracts: the P-081 Plugin API v1 citizen pattern as banked by P-084..P-091 (register via `register_plugin`; `build_registry`/`create_app` untouched), the P-082 empty-grant sandbox stance (only v1 surface permissions declared), and the P-089 durable per-user file-store idiom (one JSON document per UUID-validated owner, atomic 0600 save, corrupt stores raise and are never silently reset; no migration, head stays 0041). The namespacing law (a plugin's bare keys land in its own namespace, `shared` is the documented collaboration surface whose overwrites are recorded in provenance and a version counter, and another plugin's namespace refuses outright), the typed-scalar/bool-only-flag discipline with kinds that never blur, the seed-only-missing Part IX seeding contract, and the P-055 macro bridge (shared namespace rendered as macro strings one way, expansion reports persisted back with macro provenance the other, with the ephemeral-vs-durable difference stated plainly) are Runmal's own design for the roadmap line. No SillyTavern or Voxta source code was read and no file was downloaded; the slice's tests are authored fresh in the test module (P-005 discipline).
+- **P-094 (2026-11-07, public behaviour + own tree only):** the Plugin Data Custody surface — a plugin's data is exportable and deletable with the plugin, no hostage state — is built entirely from Rúnmál's own in-tree contracts: the P-081 Plugin API v1 citizen pattern as banked by P-084..P-092 (register via register_plugin; build_registry/create_app untouched), the P-082 empty-grant sandbox stance, the packs canonical-JSON + sha256 checksum idiom, the P-083 manager/ledger (custody delete finishes through manager.uninstall when a row exists, so removal leaves neither orphaned data nor an orphan row), the P-089 durable per-user file-store idiom (verbatim export, owner-scoped file deletion), each citizen's own inspect/clear roads, and the P-093 namespacing law as the owner-scoping model. The honest-section rule (exported / empty / unavailable-with-reason / error-carried-in-the-document, never a silently omitted store), the lazy P-093 variables adapter (module absent on this base: section unavailable, its file never touched, lighting up unchanged at reconciliation), the vector-index boundary (the index is the plugin's data; founding memories are host data), and the HTTP honesty line (instance sections named unavailable over HTTP rather than a partial export dressed as complete) are Rúnmál's own design for the roadmap line. No SillyTavern or Voxta source code was read and no file was downloaded; the slice's tests are authored fresh in the test module (P-005 discipline).
+- **P-095 (2026-11-07, public behaviour + own tree only):** The gallery plugin — a per-chat image gallery with generation history as a first-class citizen — is built entirely from Runmal's own in-tree contracts: the P-081 Plugin API v1 citizen pattern as banked by P-087/P-092/P-093 (register via `register_plugin`; `build_registry`/`create_app` untouched), the P-082 empty-grant sandbox stance (only v1 surface permissions declared), the P-023 character-asset machinery as the one durable image store (asset-backed entries reference asset ids and read facts/thumbnail state through the P-023 roads; bytes are never copied), the P-087 generation ledger as the provenance source (its records are ingested verbatim and idempotently into the gallery's durable store, the deterministic road staying labelled `deterministic_local`, unlanded generations stated plainly with their landing reason), and the P-089 durable per-user file-store idiom (one JSON document per UUID-validated owner, atomic 0600 save, corrupt stores raise and are never silently reset; no migration, head stays 0041). The three-kind provenance vocabulary (generated / asset / attached), the honestly labelled `attached_local` byte-store road for chats with no bound character (the one place P-023 cannot land by construction), pull-based explicit generation import (the gallery preserves what it is handed and never claims to observe generations it was not shown), and curation that can touch title/notes only, never provenance, are Runmal's own design for the roadmap line. No SillyTavern or Voxta source code was read and no file was downloaded; the slice's tests are authored fresh in the test module (P-005 discipline).
+- **P-096 (2026-11-07, public behaviour + own tree only):** the Dice & game-bridge plugin surface - Sagnaskemma rolls and bridge events exposed as a plugin citizen - is built entirely from Runmal's own in-tree contracts: the P-081 Plugin API v1 citizen pattern as banked by P-084..P-094 (register via register_plugin; build_registry/create_app untouched), the P-082 empty-grant sandbox stance (only v1 surface permissions declared), the P-036/P-055 seeded-roll discipline given its own algorithm version (runmal-p096-dice-v1: a roll is a pure function of seed, context, canonical notation, roll key and die index, recorded with every face and draw, reproducible forever; the unseeded path is labelled and unverifiable, never dressed as reproducible), the P-089 durable per-user file-store idiom (one JSON document per UUID-validated owner, atomic 0600 save, stored rolls re-validated against their own faces on read, corrupt stores raise and are never silently reset; no migration), and the S609 bridge-outbox discipline at plugin scale (per-chat sequence numbers, after-cursor poll, monotonic per-consumer ack cursors, bounded retention with the prune count kept on the inspect document). The notation grammar (NdM[+-K] plus keep-highest/lowest, everything else refused plainly, multi-term named unsupported rather than half-parsed), the dice.rolled honesty rule (that kind is minted only by an actual roll in the same save; the generic emit road refuses it, so the log can never claim a roll that did not happen), the recorded-only game.event stance (never appended to a chat - chat.write is reserved; the credentialed bridge API owns turning game events into turns), the metadata-only event handler (a plugin event carries no owner id, so no durable write is made from it), and the no-transport boundary (the citizen opens no socket and talks to no game client; runmal.bridge and the runmal.bridges VRChat OSC / Skyrim HTTP adapters already exist and own transport) are Runmal's own design for the roadmap line. In this repo's own docs Sagnaskemma names the dice discipline itself (the P-036 line: "the Sagnaskemma dice discipline's kin"); no external Sagnaskemma material was consulted. No SillyTavern or Voxta source code was read and no file was downloaded; the slice's tests are authored fresh in the test module (P-005 discipline).
+- **P-097 (2026-11-07, public behaviour + own tree only):** the Plugin conformance kit — a plugin must pass contract + sandbox tests to be listed — is built entirely from Runmal's own in-tree contracts: the P-081 Plugin API v1 strict parser, surface rules and registry (reused as oracles on a throwaway registry; the default registry is untouched and the submission is never mutated), the P-082 grant policy and guarded context (behavioural denial probes that refuse at the grant gate), and the P-084..P-095 citizen pattern as the corpus the kit verifies. The thirteen checks in fixed order across two submission roads (a data-shaped manifest road and an in-tree citizen road), the deterministic checksummed report with no timestamps, the listing gate as data (is_listable / listable_ids), the corpus auto-discovery under runmal.plugins (so the P-096 citizen joins unchanged on the merged tree at banking), and the kit citizen itself (runmal.plugin-conformance, ui.slots only, P-082 grants empty, no state) are Runmal's own design for the roadmap line. One defect was found and fixed in-slice: on the parse-failure road the not_run rows for handlers_binding and registration were emitted before settings_shape, reshuffling the fixed check order; they now land in their own slots, pinned by a battery test on both roads. No SillyTavern or Voxta source code was read and no file was downloaded; the slice's tests are authored fresh in the test module (P-005 discipline).
+- **P-098 (2026-11-07, public behaviour + own tree only):** the Plugin settings UI generated from declared schemas - one generic renderer interpreting the P-081 settings block {schema, defaults} that P-081 stores verbatim and expressly leaves to this slice - is built entirely from Runmal's own in-tree contracts: the shipped citizens' actual declarations (flat string/integer/number fields with minimum/maximum bounds; seven citizens with fields, seven with honestly empty schemas), the P-089 durable per-user file-store idiom (one JSON document per UUID-validated owner, atomic 0600 save, strict re-validation on read, corrupt stores raise and are never silently reset; no migration, head stays 0041), the P-094 custody rules (one checksummed export document per plugin, owner-scoped delete that removes exactly the plugin's own section), and the P-081 citizen pattern (register via register_plugin; build_registry/create_app untouched; only v1 surface permissions, so the resource grant set is empty). The deterministic widget mapping (enum to select, boolean to checkbox, numeric to number, string to text), the strict named-error validation that is the deliberate mirror image of the citizens' lenient config_from_manifest roads (no coercion, no clamping, no silent drops; declaration defects are a separate loud class), the patch-merge-then-validate-whole write road, and the honest no-settings surface for empty-schema and settings=None plugins are Runmal's own design for the roadmap line. Shipped citizens' runtime config roads are unchanged in this slice, stated plainly in the slice doc. No SillyTavern or Voxta source code was read and no file was downloaded; the slice's tests are authored fresh in the test module (P-005 discipline).
+- **P-099 (2026-11-07, public behaviour + own tree only):** Failure manners - a crashing plugin disables itself with a plain report and the chat never dies with it - is built entirely from Runmal's own in-tree contracts: the P-081 registry failure rule (record_failure strikes, ERRORED at 3 consecutive, no dispatch while not ENABLED, enable/acknowledge lifecycle), the P-082 sandbox (Sandbox.run isolation and quarantine, secrets-by-name, metadata-only audit), and the P-083/P-096 router lazy-import idiom for the two new read routes. The guarded-call road for direct host invocations, the 1:1 sandbox-to-registry bridge (real failures only, watermarked, idempotent; no forged strikes), the declared re-enable rule (deliberate enable only; strikes clear, history kept; nothing retries or auto-re-enables), and the report hygiene rule (plain report carries no message text at all; dict messages scrubbed of caller-named secret values) are Runmal's own design for the roadmap line. No SillyTavern or Voxta source code was read and no file was downloaded; the slice's tests are authored fresh in the test module (P-005 discipline).

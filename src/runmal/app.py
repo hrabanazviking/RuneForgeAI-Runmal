@@ -39,6 +39,8 @@ from runmal.library.router import router as library_router
 from runmal.lorebooks.router import router as lorebooks_router
 from runmal.memory.router import memories_browser_page
 from runmal.memory.router import router as memories_router
+from runmal.plugins import service as plugin_service
+from runmal.plugins.router import router as plugins_router
 from runmal.presets.router import router as presets_router
 from runmal.prompt.router import router as prompt_router
 from runmal.scenarios.router import router as scenarios_router
@@ -101,6 +103,9 @@ def create_app(
 ) -> FastAPI:
     app = FastAPI(title="Rúnmál", version=__version__)
     app.state.session_factory = session_factory or default_session_factory()
+    _reg = plugin_service.build_registry()
+    plugin_service.set_default_registry(_reg)
+    app.state.plugin_registry = _reg
 
     @app.get("/healthz")
     def healthz() -> dict[str, str]:
@@ -210,6 +215,11 @@ def create_app(
     app.get("/voice", response_class=None)(voice_page)
     app.include_router(
         prompt_router,
+        prefix="/api/v1",
+        dependencies=[Depends(require_local_auth)],
+    )
+    app.include_router(
+        plugins_router,
         prefix="/api/v1",
         dependencies=[Depends(require_local_auth)],
     )

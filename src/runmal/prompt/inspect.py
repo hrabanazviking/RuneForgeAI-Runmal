@@ -298,6 +298,7 @@ async def inspect_prompt(
     include_preview: bool = False,
     backend_key: str | None = None,
     model_profile: object | None = None,
+    plugin_registry=None,
 ) -> dict | None:
     """Build the trace dict for a hypothetical prompt, or None when a
     referenced character/lorebook does not exist."""
@@ -366,6 +367,7 @@ async def inspect_prompt(
     messages = list(messages or [])
     note = AuthorsNote()
     authors_note_active = False
+    databank_echo: dict | None = None
     lorebook_inspections: dict = {}
     lore_scope_summary: dict | None = None
     slots: list[Slot] = [
@@ -566,6 +568,35 @@ async def inspect_prompt(
         )
 
     message_count = len(messages)
+    # Data bank (P-074): when a chat is in scope, its attached
+    # documents (chat scope + the owner's global scope) join the
+    # composition as databank slots, selected whole within the
+    # chat's declared budget. Excluded documents surface as
+    # discards; the accounting echo carries ids/names/counts
+    # only, never content.
+    if chat_id is not None:
+        from runmal.chats import databank as _databank
+
+        _selection = await _databank.load_prompt_selection(session, user_id, chat_id)
+        if _selection is not None:
+            slots.extend(_databank.slots_for_selection(_selection))
+            for _doc, _reason, _tokens in _selection.excluded:
+                extras.append(
+                    TraceSlot(
+                        slot_id=f"databank/{_doc['id']}",
+                        kind="databank",
+                        role="system",
+                        status="discarded",
+                        tokens=_tokens,
+                        reason=(
+                            "databank_disabled"
+                            if _reason == _databank.REASON_DISABLED
+                            else "databank_over_budget"
+                        ),
+                        provenance=f"databank:{_doc['scope']}:{_doc['name']}",
+                    )
+                )
+            databank_echo = _databank.accounting_to_dict(_selection)
     if note_has_content(note):
         if is_active_for(note, message_count):
             an_slot = note_slot_for(note, message_count)
@@ -644,6 +675,29 @@ async def inspect_prompt(
             "source": ph_source,
         }
 
+    # P-081 prompt hooks: effective registry is the explicit
+    # keyword or the plugins service default holder (lazy import,
+    # no cycle). The slots stage itself runs AFTER layout, the
+    # context template and the budget governor, immediately before
+    # composer.compose(...) (design section 4), so hook slots pass
+    # through the composer -- the sole budget authority -- exactly
+    # like host slots and are never vetoed or reordered by the
+    # earlier stages.
+    slot_echo: list[dict] = []
+    msg_echo: list[dict] = []
+    _plugin_registry = plugin_registry
+    if _plugin_registry is None:
+        try:
+            from runmal.plugins import service as _plugin_service
+
+            _plugin_registry = _plugin_service.get_default_registry()
+        except Exception:
+            _plugin_registry = None
+    _plugin_ctx = {
+        "chat_id": chat_id,
+        "character_id": character_id,
+        "model_id": eff_model_id,
+    }
     slots_for_compose = slots
     if layout is not None:
         kept, dropped = apply_layout(slots, layout)
@@ -702,17 +756,43 @@ async def inspect_prompt(
                         )
                     )
         slots_for_compose = list(governed.kept)
+    # P-081 prompt hooks, slots stage (design section 4): runs on
+    # the post-layout / post-context / post-governor slot list,
+    # immediately before compose. Hook slots are merged into the
+    # trace source list so build_trace can describe them with
+    # their forced provenance.
+    trace_slots = slots
+    if _plugin_registry is not None:
+        from runmal.plugins.hooks import apply_slot_hooks
+
+        slots_for_compose, slot_echo = await apply_slot_hooks(
+            _plugin_registry, _plugin_ctx, slots_for_compose)
+        _known_ids = {slot.id for slot in trace_slots}
+        trace_slots = [
+            *trace_slots,
+            *(slot for slot in slots_for_compose if slot.id not in _known_ids),
+        ]
     composed = compose(
         slots_for_compose, context_limit=context_limit, reserve_response=reserve_response
     )
-    trace = build_trace(composed, slots, extra_discards=tuple(extras))
+    # P-081 prompt hooks, messages stage: transform the composed
+    # messages; the TRANSFORMED list is what gets rendered (and
+    # token-counted) below. No registry = composed.messages as-is.
+    messages_out = composed.messages
+    if _plugin_registry is not None:
+        from runmal.plugins.hooks import apply_message_hooks
+
+        messages_out, msg_echo = await apply_message_hooks(
+            _plugin_registry, _plugin_ctx, list(composed.messages))
+    trace = build_trace(composed, trace_slots, extra_discards=tuple(extras))
     result = trace_to_dict(trace)
     result["prompt_layout"] = layout_echo(layout, layout_source)
-    rendered = render_prompt(composed.messages, template)
+    rendered = render_prompt(messages_out, template)
     result["instruct_template"] = template_echo(template, template_source)
     result["context_template"] = context_echo(ctx_template, ctx_source)
     result["rendered_tokens"] = estimate_tokens(rendered.text)
     result["authors_note"] = authors_note_echo
+    result["databank"] = databank_echo
     result["post_history"] = post_history_echo
     if lore_scope_summary is not None:
         result["lore_scopes"] = lore_scope_summary
@@ -731,9 +811,14 @@ async def inspect_prompt(
     )
     result["model_profile"] = model_profile_echo(
         profile, profile_source, field_sources=field_sources)
+    result["plugins"] = {
+        "api_version": 1,
+        "slots_stage": slot_echo,
+        "messages_stage": msg_echo,
+    }
     if include_preview:
         result["prompt_preview"] = build_preview(
-            composed.messages, rendered,
+            messages_out, rendered,
             backend_key=eff_backend_key, model_id=eff_model_id
         )
     return result

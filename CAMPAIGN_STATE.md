@@ -4474,3 +4474,2155 @@ P-067 BANKED - Checkpoints (Part V) -
     (never destructive), cross-user isolation
     404. No defects found. Next in roadmap
     order: P-068 (message actions complete).
+P-068 BANKED - Message actions complete (Part V) -
+    team-03 commit 62c804d merged (no-ff) into
+    yrsa/two-mirrors-build as d90e619, banking
+    heal e39d73d, and pushed; ls-remote verified
+    (see WAVE_PLAN update).
+    Evidence (team-03 worktree
+    hidden_files/P068_EVIDENCE.md): battery 35
+    passed, neighbours 251 passed, team full
+    suite 3012 passed / 4 skipped / 0 failed.
+    Forge confirmation suite at the merged
+    tree: 3086 passed / 4 skipped / 0 failed
+    (= 3051 + 35, exact). Migration RENUMBERED
+    at banking: provisional 0039 -> 0038 (file,
+    REVISION, registry, head pins swept); head
+    now 0038, chain composed 0036 -> 0037 ->
+    0038 as separate registry entries. Merge
+    reconciliation: event-constant union in
+    chats service (P-066 branch events + P-068
+    message events), P-067 checkpoint cleanup
+    and P-066 branch_info kept; copy-to-branch
+    RE-TARGETED onto P-066 branch columns in
+    the heal (fork chats now carry branch
+    lineage + source settings, mirroring
+    branches.fork_chat); head/index/tail pins
+    healed to merged truth in the heal (the
+    four Part V batteries + 17 pins across
+    p033-p039/p047/s103/s107, all the stale
+    negative-index class, none weakened).
+    Slice: edit with variant history, delete
+    (pin-Memory cleanup, renumbering), move
+    (position materialisation), copy-to-branch,
+    pin-to-memory through the existing
+    retrieval road; message.edited events carry
+    data={variant_count}. No new defect found.
+    Next in roadmap order: P-069.
+P-069 BANKED - Continue & impersonate (Part V) -
+    team-01 commit e07848d merged (no-ff) into
+    yrsa/two-mirrors-build as 922c29e, banking
+    heal 05f7e37, and pushed; ls-remote verified
+    (see WAVE_PLAN update).
+    Evidence (team-01 worktree
+    hidden_files/P069_EVIDENCE.md): battery 34
+    passed, neighbours 335 passed, team full
+    suite 3041 passed / 4 skipped / 0 failed.
+    Forge confirmation suite at the merged
+    tree: 3120 passed / 4 skipped / 0 failed
+    (= 3086 + 34, exact). NO migration taken
+    by P-069 (by approved design; provisional
+    0040 unused); head stays 0038 from P-068,
+    chain 0035 -> 0036 -> 0037 -> 0038 as
+    separate registry entries. Merge
+    reconciliation: chats/router.py conflict
+    resolved as an additive union (P-066
+    branch routes + P-067 checkpoint routes +
+    P-068 message-action routes + P-069
+    continue/impersonate routes all verified
+    coexisting; line-multiset union check
+    exact, 43 handler defs); chats/__init__.py
+    auto-merged as an exact union. Head pins
+    healed to the merged truth in the heal
+    (battery + slice doc: P-069 took no
+    migration; head is 0038 from P-068; the
+    no-0040 assertion kept, none weakened).
+    Slice: continue (extend appends onto the
+    last assistant message in place,
+    swipe-deck aware; next appends a new
+    assistant message; auto resolves by last
+    message role) and impersonate (stateless
+    draft only, never lands; accept posts the
+    final text as a real user message with
+    source=impersonate; discard records
+    metadata only); generation failures store
+    nothing; metadata-only events; cross-user
+    isolation 404. F1/F2 fixed in-slice. No
+    new defect found. Next in roadmap
+    order: P-070.
+P-070 BANKED - Group chats deepened (Part V) -
+    team-02 commit 46796a3 merged (no-ff) into
+    yrsa/two-mirrors-build as 5f5c848, and pushed;
+    ls-remote verified (see WAVE_PLAN update).
+    Evidence (team-02 worktree
+    hidden_files/P070_EVIDENCE.md): battery 15
+    passed, neighbours 78 passed, team full
+    suite 3101 passed / 4 skipped / 0 failed.
+    Forge confirmation suite at the merged
+    tree: 3135 passed / 4 skipped / 0 failed
+    (= 3120 + 15, exact). Combined P-070 +
+    P-069 batteries at the merged tree: 49
+    passed. NO migration taken by P-070;
+    head stays 0038 (state lives in
+    groups.speaker_config JSON under the
+    p070 key; battery asserts head 0038,
+    no pin heal needed). Merge CLEAN -
+    footprint groupchat-only, P-069 touched
+    chats/ only. Slice: activation strategies
+    on the room road (force/never/self-response
+    around the S211 policies, persisted list
+    cursor + pool via POST /groups/{id}/next
+    and /run), per-member overrides, swap/join
+    prompt assembly, group lore via the P-040
+    scoped layered preview, member peek;
+    metadata-only events. No new defect
+    found. Next in roadmap order: P-071.
+P-071 BANKED - Absent-character history
+    digest for group scenes (Part V) -
+    team-03 commit 0c26902 merged (no-ff) into
+    yrsa/two-mirrors-build as d093b27, and pushed;
+    ls-remote verified (see WAVE_PLAN update).
+    Evidence (team-03 worktree
+    hidden_files/P071_EVIDENCE.md): battery 23
+    passed, neighbours 77 passed, team full
+    suite 3143 passed / 4 skipped / 0 failed.
+    Forge confirmation suite at the merged
+    tree: 3158 passed / 4 skipped / 0 failed
+    (= 3135 + 23, exact). Combined P-071 +
+    P-070 + neighbour batteries at the merged
+    tree: 115 passed. NO migration taken by
+    P-071; head stays 0038 (presence rides
+    the existing chat_events log; the digest
+    is derived on demand, never stored).
+    Merge CONFLICT in groupchat/router.py
+    only - both slices appended at EOF;
+    resolved as an additive union keeping
+    BOTH blocks (P-070 deepening first, P-071
+    presence appended after; py_compile OK,
+    every handler present). Slice: a group
+    member marked absent receives on return
+    an extractive digest of what it missed,
+    built on demand from the real stored
+    transcript over the absence window
+    (anchor by last-seen message id;
+    from_start for an empty room;
+    by_count_fallback when the anchor was
+    deleted while away, a labelled documented
+    approximation); capped entries and
+    excerpts with omitted_count always
+    stated; by-speaker counts excluding the
+    returning character; metadata-only
+    presence.left / presence.returned events;
+    digest preview and per-member presence
+    list. No new defect found. Next in
+    roadmap order: P-072.
+P-072 BANKED - Chat search: full-text +
+    semantic search across all chats,
+    jump-to-message (Part V) -
+    team-01 commit 26c77c7 merged (no-ff) into
+    yrsa/two-mirrors-build as 6de95de, and pushed;
+    ls-remote verified (see WAVE_PLAN update).
+    Evidence (team-01 worktree
+    hidden_files/P072_EVIDENCE.md): battery 43
+    passed, neighbours 468 passed, team full
+    suite 3178 passed / 4 skipped / 0 failed.
+    Forge confirmation suite at the merged
+    tree: 3201 passed / 4 skipped / 0 failed
+    (= 3158 + 43, exact). NO migration taken by
+    P-072; head stays 0038 (search stores
+    nothing: the full-text index is rebuilt
+    per query from stored messages and
+    semantic vectors are computed per query
+    and discarded). Merge CLEAN -
+    footprint chats-only, P-071 touched
+    groupchat/ only. Slice: full-text +
+    semantic search across all of the
+    callers chats (owned-first corpus in
+    the query itself, foreign/missing chat
+    filter -> 404), active content only,
+    titles never create hits; semantic reuses
+    the P-041 embedding road with cosine >=
+    0.30, keyword fallback always labelled;
+    GET /chats/search declared before
+    GET /chats/{chat_id}; hits carry chat +
+    message anchors for jump-to-message.
+    One doc defect found and fixed in-slice
+    (F1: phrase_score wording); no code
+    defect found. Next in roadmap order: P-073.
+P-073 BANKED - Chat metadata: titles, tags,
+    summaries auto-generated and editable;
+    the library view at scale (Part V) -
+    team-02 commit 1786df5 merged (no-ff) into
+    yrsa/two-mirrors-build as 456db8d, banking
+    heal 9822fd4, and pushed; ls-remote
+    verified (see WAVE_PLAN update).
+    Evidence (team-02 worktree
+    hidden_files/P073_EVIDENCE.md): battery 17
+    passed, neighbours 211 passed / 17 failed,
+    team full suite 3076 passed / 4 skipped /
+    99 failed - ALL failures the
+    migration-head pin class, zero functional
+    failures. Forge first run at the merged
+    tree: 3118 passed / 100 failed (the 99
+    plus P-072's own head pins), every one
+    the same pin class; healed batteries
+    1816 passed; forge confirmation suite:
+    3218 passed / 4 skipped / 0 failed
+    (= 3201 + 17, exact). MIGRATION 0039
+    TAKEN by P-073 and STANDS as numbered
+    (P-072 took no migration); head becomes
+    0039. Adds chats.summary,
+    chats.metadata_json, chat_tags,
+    chat_organisation; registry verified with
+    0039 as a separate tuple entry after
+    0038, chain 0037 -> 0038 -> 0039. Merge
+    CONFLICT in chats/router.py only,
+    resolved as an additive union keeping
+    BOTH slices' routes (P-072 /chats/search
+    and P-073 /chats/library + /chats/tags,
+    all declared before /chats/{chat_id}).
+    Heal: uniform re-pin of the head to 0039
+    across 44 test files, positional pins
+    shifted one step, revision lists
+    extended honestly, NO assertion
+    weakened; P-072's anti-0039 assert
+    reworked to pin the single registry
+    0039 as P-073's own. Slice: deterministic
+    extractive-v1 auto titles/tags/summaries
+    (no model call), per-field provenance,
+    manual fields survive regeneration;
+    library view routes GET /chats/library,
+    GET /chats/tags, metadata GET/PUT/
+    regenerate, favourite. One test defect
+    found and fixed in-slice (tag read-back
+    order); no code defect found. Next in
+    roadmap order: P-074.
+P-074 BANKED - Data bank: per-chat
+    attached documents, scoped and
+    budgeted (Part V) - team-03 commit
+    e93668d merged (no-ff) into
+    yrsa/two-mirrors-build as 54003a9,
+    banking heal 28b2408, and pushed;
+    ls-remote verified (see WAVE_PLAN
+    update). Evidence (team-03 worktree
+    hidden_files/P074_EVIDENCE.md):
+    battery 26 passed, neighbours 177
+    passed, team full suite 3227 passed /
+    4 skipped / 0 failed on its base.
+    Forge confirmation suite: 3244
+    passed / 4 skipped / 0 failed
+    (= 3218 + 26, exact). NO MIGRATION
+    taken by P-074; head stays 0039
+    (P-073's m0039_chat_metadata stands);
+    registry verified loading with head
+    0039, 39 migrations. Merge CONFLICT
+    in chats/router.py only (imports),
+    resolved as an additive union keeping
+    BOTH slices' work (Query from
+    P-072/P-073 plus StrictBool/StrictInt
+    from P-074); grep-verified P-072
+    /chats/search, P-073 /chats/library +
+    /chats/tags and P-074 databank routes
+    all coexist, and the P-057
+    authors_note/post_history aliasing in
+    prompt/inspect.py is intact. Heal:
+    the battery's head pin re-pinned
+    honestly to 0039 (test renamed
+    test_migration_head_stays_0039, exact
+    head still pinned, no assertion
+    weakened; its anti-0039 assert
+    reworked to pin 0040 absent, the
+    no-migration guard for this slice).
+    Slice: per-chat + global attached
+    documents as sealed JSON files on
+    the P-067 checkpoint pattern,
+    whole-document selection within a
+    declared per-chat token budget
+    (default 2000), priority-ordered,
+    never truncated; over-budget docs
+    excluded whole with reason; spend
+    visible in list accounting,
+    prompt-inspect echo + trace discards,
+    and the P-058 governor context
+    section. Bug found + fixed in-slice:
+    Pydantic bool-to-int coercion at the
+    router boundary (StrictInt/StrictBool
+    on the data-bank request models). No
+    new defect found at banking. Next in
+    roadmap order: P-075.
+P-075 BANKED - Message-level provenance
+    (Part V) - team-01 commit fb2aa62
+    merged (no-ff) into
+    yrsa/two-mirrors-build as 41fc7fb,
+    banking heal 60eb4e5, and pushed;
+    ls-remote verified (see WAVE_PLAN
+    update). Evidence (team-01 worktree
+    hidden_files/P075_EVIDENCE.md):
+    battery 13 passed, neighbours 283
+    passed / 32 failed (ALL the migration
+    head-pin class superseded by 0040,
+    zero functional), team full suite
+    3123 passed / 108 failed / 4 skipped
+    (programmatic check: every failure
+    the same head-pin class; test_s503
+    clean). Forge confirmation suite:
+    3257 passed / 4 skipped / 0 failed
+    (= 3244 + 13, exact). Migration
+    PROVISIONAL 0040 STANDS as numbered
+    (P-074 took none):
+    m0040_message_provenance adds
+    messages.provenance_json; head is
+    now 0040, chain 0038 -> 0039 -> 0040
+    as separate registry tuples, 40
+    migrations. Merge CONFLICT in
+    chats/__init__.py only, resolved as
+    an additive union keeping BOTH
+    slices' work (P-074 databank exports
+    plus P-075 message_provenance);
+    router.py, service.py, migrations
+    registry and models auto-merged;
+    grep-verified P-072 /chats/search,
+    P-073 /chats/library + /chats/tags,
+    P-074 databank routes and P-075
+    provenance routes all coexist, and
+    the P-057 authors_note/post_history
+    note_/ph_ aliasing in
+    prompt/inspect.py is intact. Heal:
+    46 test files re-pinned honestly to
+    the merged truth 0040 (exact head
+    still pinned, positional pins
+    shifted, revision lists extended;
+    the four no-migration absence
+    asserts in p069/p071/p072/p074
+    reworked at equal strength to pin
+    0040 as exactly-once and provably
+    P-075's module -- no assertion
+    weakened). Pre-heal merged-tree
+    suite: 3148 passed / 109 failed / 4
+    skipped, all 109 the head-pin class.
+    No new defect found at banking.
+    Next in roadmap order: P-076.
+P-076 BANKED - Undo for chat
+    operations (the coders journal
+    pattern at chat scale) (Part V) -
+    team-02 commit 2b2eca9 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as bf52316, banking heal 8efb7bb,
+    and pushed; ls-remote verified (see
+    WAVE_PLAN update). Evidence
+    (team-02 worktree
+    hidden_files/P076_EVIDENCE.md):
+    battery 28 passed, neighbours 308
+    passed / 0 failed, team full suite
+    3272 passed / 4 skipped / 0 failed
+    (= 3244 + 28, exact on its base).
+    Combined Part V batteries on the
+    merged tree: 387 passed / 0 failed.
+    Forge confirmation suite: 3285
+    passed / 4 skipped / 0 failed
+    (= 3257 + 28, exact). NO migration
+    taken by P-076: the undo journal is
+    sealed per-chat files (P-067/P-074
+    idiom); head stays 0040, 40
+    migrations. Merge was CLEAN
+    (ort auto-merge, no conflicts):
+    chats/service.py, metadata.py,
+    branches.py and router.py merged
+    additively; py_compile clean and
+    grep-verified P-075 provenance
+    routes and P-076 undo routes
+    coexist (journal-before-mutate in
+    append_message survives alongside
+    provenance-on-append), P-072
+    /chats/search, P-073 library/tags,
+    P-074 databank routes intact, and
+    the P-057 note_/ph_ aliasing in
+    prompt/inspect.py intact. Heal:
+    the P-076 battery head pin reworked
+    honestly at equal strength from
+    0039 to 0040 (exact head still
+    pinned; its no-migration guard now
+    pins 0040 as exactly-once and
+    provably P-075s
+    m0040_message_provenance -- no
+    assertion weakened), per the P-075
+    banking precedent. Honest
+    boundaries (from the evidence):
+    chat create/delete are NOT undoable
+    (deletion is terminal; the journal
+    dies with the chat), fork/merge/
+    copy are not journaled, there is
+    NO redo (undo consumes its entry),
+    and the journal is capped at 50
+    entries per chat. No new defect
+    found at banking. Next in roadmap
+    order: P-077.
+P-077 BANKED - Long-chat performance
+    (Part V) - team-03 commit d882d5d
+    merged (no-ff) into
+    yrsa/two-mirrors-build as d0935d3,
+    banking heal 7fdbead, and pushed;
+    ls-remote verified (see WAVE_PLAN
+    update). Evidence (team-03 worktree
+    hidden_files/P077_EVIDENCE.md):
+    battery 17 passed, neighbours 316
+    passed / 25 failed (all 25 the
+    provisional-head pin class), team
+    full suite 3158 passed / 116 failed
+    / 4 skipped (all 116 the pin class:
+    103x '0041' == '0040', the rest
+    applied-list / positional revision
+    pins; zero behavioural, no s503).
+    Bench BUDGET-P077 (seed 77077):
+    ALL 8 GATES PASS - A latest page
+    130.12 ms (<=150), B deepest page
+    21.72 ms (<=200), B ratio 0.167
+    (<=1.5), C list_chats 6.41 ms
+    (<=300), D in-chat search 398.70 ms
+    (<=500), E composer trim 3.36 ms
+    (<=500), F append at 10k 5.14 ms
+    (<=200), F ratio 1.785 (<=2.0).
+    F_ratio was solved honestly via
+    the 0041 covering index (the append
+    density aggregate became a
+    covering-index stream); the budget
+    was NOT relaxed or re-worded.
+    Migration PROVISIONAL 0041 STANDS
+    as numbered (P-076 and P-078 took
+    none): m0041_message_order_index
+    adds ix_messages_chat_position on
+    messages(chat_id, position,
+    created_at, id); head now 0041,
+    chain 0039 -> 0040 -> 0041 as
+    separate registry tuples, 41
+    migrations, registry loads clean.
+    Merge: ONE conflict, in
+    chats/service.py append_message,
+    resolved as an additive union -
+    P-076 journal-before-mutate now
+    runs first, then P-077's density
+    aggregate fast path (the fast path
+    does NOT bypass journal or
+    provenance recording; composition
+    read and verified at banking).
+    Router auto-merged; grep-verified
+    get_history_page + paged
+    limit/offset/tail route, P-075
+    provenance routes, P-076 undo
+    routes, P-072 /chats/search, P-073
+    library/tags, P-074 databank
+    routes all coexist; py_compile
+    clean. Heal: 48 test files
+    re-pinned honestly to 0041 (exact
+    head pinned, positional pins
+    shifted, revision lists extended;
+    no-migration / absence asserts
+    reworked at equal strength to pin
+    0041 exactly-once as P-077's
+    m0041_message_order_index; P-075's
+    own shape test now pins 0040 at
+    [-2] plus the 0041 head - no
+    assertion weakened). Pre-heal
+    merged-tree suite: 3184 passed /
+    118 failed / 4 skipped - 117 the
+    pin class plus one s503 STT timing
+    failure (RTF under contention;
+    the confirmation run below was
+    clean on s503). Combined batteries
+    on the merged tree (P-077 battery +
+    every heal-affected file): 1900
+    passed / 0 failed. Forge
+    confirmation suite: 3302 passed /
+    4 skipped / 0 failed (= 3285 + 17,
+    exact). Honest limits: the
+    Pi-equivalents are the laptop x4.0
+    derating, NOT a Pi measurement - a
+    direct Pi bench run is still owed;
+    streamGeneration's full-history
+    fetch is deliberately left as the
+    generation context (product
+    semantics, reported-only, not this
+    slice's call). No new defect found
+    at banking. Next in roadmap order:
+    P-078.
+P-078 BANKED - Chat import surgery
+    (Part V) - team-01 commit 975b379
+    merged (no-ff) into
+    yrsa/two-mirrors-build as 02f262d
+    and pushed; ls-remote verified
+    (see WAVE_PLAN update). Evidence
+    (team-01 worktree
+    hidden_files/P078_EVIDENCE.md):
+    battery 35 passed, neighbours 328
+    passed, team full suite 3320
+    passed / 4 skipped / 0 failed
+    (= 3285 + 35 exact on its base).
+    Slice: chats/liveimport.py
+    materialises P-020 imports into
+    live chats in ONE transaction
+    (plan_import pure +
+    materialise_import direct rows,
+    positions 0..n-1, created_at from
+    parsed send dates verbatim,
+    deterministic deck resolution,
+    branches never fabricated -
+    branch-link header keys preserved
+    as report data, new chat kind=root,
+    per-message P-075 provenance
+    origin_kind=imported, one
+    chat.created + one chat.imported
+    event, owner-scoped); NO router
+    endpoint (P-020 pattern: service
+    layer only). In-slice fixes banked
+    with it: fileimport _parse_native
+    reads the validated swipe deck +
+    swipe_id export emits; branches
+    _copy_message carries deck, active
+    index, variant history and
+    per-swipe provenance; plus the
+    post-commit independent review's
+    8 confirmed defects, each pinned
+    by a battery test (evidence
+    addendum). Migration: NONE (all
+    columns pre-exist: 0036 decks,
+    0037 lineage, 0040 provenance).
+    Merge: ONE conflict, in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md,
+    resolved as an additive union -
+    the P-077 and P-078 clean-room
+    entries both kept. Heal: the
+    battery's head pin reworked at
+    equal strength to the merged
+    truth - head 0041 exactly once,
+    0040 present exactly once and
+    still the provenance migration,
+    current_revision 0041; no
+    assertion weakened. Combined
+    affected batteries on the merged
+    tree (P-078 + P-020 + P-065..068 +
+    P-072 + P-075 + P-076 + P-077):
+    380 passed / 0 failed. Forge
+    confirmation suite: 3337 passed /
+    4 skipped / 0 failed (= 3302 + 35,
+    exact; log
+    hidden_files/p078_banking_fullsuite.log).
+    Honest limits (from the evidence):
+    no model identity for imported
+    text (provenance model unknown /
+    not_applicable, never invented),
+    no preset, no lore-scan result,
+    no live speaker ids, swipe_info
+    and extra payloads reported
+    unmappable only. No new defect
+    found at banking. Next in roadmap
+    order: P-079.
+P-079 BANKED - Quiet/greeting controls
+    (Part V) - team-02 commit c9a0b2c
+    merged (no-ff) into
+    yrsa/two-mirrors-build as 7ca082d
+    and pushed; ls-remote verified
+    (see WAVE_PLAN update). Evidence
+    (team-02 worktree
+    hidden_files/P079_EVIDENCE.md):
+    battery 50 passed, neighbours 243
+    passed, team full suite 3352
+    passed / 4 skipped / 0 failed
+    (= 3302 + 50 exact on its base).
+    Slice: chats/greetings.py pure
+    deck+choice contract (first /
+    index / random / quiet modes,
+    strict decode, seeded-random
+    honesty); create_chat seeds the
+    greeting as the first message
+    with the whole deck as swipes
+    and one P-075 provenance record
+    per alternate; seed_greeting
+    seeds an existing EMPTY chat
+    (quiet-created or persona bound
+    late); GET /characters/{id}/
+    greetings deck view; POST
+    /chats/{id}/greeting endpoint
+    (ValueError maps to 422).
+    Migration: NONE (the deck rides
+    the P-065 message columns; the
+    battery pins 0042 not in
+    MIGRATIONS, head still 0041).
+    Merge: ONE conflict, in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md,
+    resolved as an additive union -
+    the P-078 and P-079 clean-room
+    entries both kept. Heals at
+    banking (2): (1) the in-slice fix
+    the lead flagged and left
+    unamended - seed_greeting refused
+    group rooms only incidentally
+    (a room's character_id is None);
+    it now refuses EXPLICITLY on
+    chat.group_id (ValueError -> 422)
+    ahead of the character check,
+    pinned by a battery test that
+    binds a character to a group
+    room via set_chat_persona and
+    demands the refusal (heal
+    eb78249; battery 50 -> 51).
+    (2) The battery's fork
+    expectation followed P-078's
+    _copy_message fix: a fork now
+    carries the whole deck + active
+    index - the active-only copy the
+    test pinned was the deck-loss
+    behaviour P-078 repaired;
+    expectation updated at equal
+    strength with the reason inline,
+    no assertion weakened (heal
+    a4a3f73). Combined affected
+    batteries on the merged tree
+    (P-079 + P-078 + P-020 + P-030 +
+    P-065..068 + P-070 + P-073 +
+    P-075..077 + S106 + S107 + S210
+    x2 + S212 x2 + S602): 533 passed
+    / 0 failed. Forge confirmation
+    suite: 3388 passed / 4 skipped /
+    0 failed (= 3337 + 50 + 1 heal,
+    exact; log
+    hidden_files/p079_banking_fullsuite.log).
+    Contention note: the first
+    confirmation run hung inside
+    test_s804_doctor's PortAudio
+    device probe under cross-campaign
+    load (load avg ~14, a Mythic
+    Coder full suite running); the
+    doctor file passes solo (8 passed
+    in 0.67s) and the re-run at load
+    ~2 completed fully green -
+    contention, not a defect. No new
+    defect found at banking beyond
+    the two heals above. Next in
+    roadmap order: P-080.
+
+P-080 BANKED - Part V gate (PART V
+    COMPLETE / GATE PASSED) -
+    team-03 commit 1cff00b merged
+    (no-ff) into
+    yrsa/two-mirrors-build as ff9d8b6
+    and pushed; ls-remote verified
+    (see WAVE_PLAN update). Evidence
+    (team-03 worktree
+    hidden_files/P080_EVIDENCE.md):
+    gate battery 15 passed, gate
+    record 10 passed, surgery drill
+    PASS (10 steps, exit 0). Gate
+    verdict per area: Drill PASS,
+    Accounting PASS, Citizens PASS -
+    Part V (P-065..P-080) COMPLETES
+    at this banking. Slice:
+    tests/test_p080_part_v_gate.py
+    (15 tests: surgery drill battery
+    over the Part V contracts),
+    tests/test_p080_gate_record.py
+    (10 tests pinning this gate),
+    scripts/drill_p080_surgery.py
+    (10-step drill: branch,
+    checkpoint, swipe-storm, group
+    scene - no operation loses
+    data), docs/PART_V_GATE_2026-11-07.md
+    (the gate record), clean-room log
+    append. Migration: NONE (head
+    stays 0041; the battery and the
+    gate record pin it, 0042 absent).
+    Merge: ONE conflict, in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md,
+    resolved as an additive union -
+    the P-079 and P-080 clean-room
+    entries both kept. Counts-heal
+    note (gate doc S6): the gate
+    doc's preliminary figures
+    (1025 / 3430 / 3416) were
+    corrected to the final logs -
+    neighbours 567 passed / 1 failed
+    (F1 only), overlay full suite
+    3401 passed / 1 failed (F1) /
+    4 skipped, B = 3387 on the
+    overlay shape - in the amended
+    commit 1cff00b before banking.
+    Finding F1 was already healed at
+    P-079 banking (a4a3f73: the fork
+    expectation follows P-078's
+    full-deck _copy_message fix);
+    the gate battery's Area I
+    greeting tests pass on the
+    merged tree because P-079 is in
+    it. Finding F2: no new engine
+    defect. Carried pinned
+    limitations (gate doc S4,
+    named, not hidden): (a) fork and
+    merge copies carry the FULL
+    deck; (b) delete is intentional
+    loss, exactly scoped; (c) the
+    undo journal is bounded
+    (MAX_ENTRIES = 50 per scope);
+    (d) undo covers a named
+    operation set, not everything;
+    (e) checkpoints live outside the
+    database; (f) the group scene is
+    a transcript + activation claim;
+    (g) gate scales are drill
+    scales. Combined batteries on
+    the merged tree (P-080 gate +
+    P-080 record + P-079): 76 passed
+    / 0 failed (= 25 + 51 exact).
+    Forge confirmation suite: 3413
+    passed / 4 skipped / 0 failed
+    (= 3388 P-079 confirmation + 25
+    gate, exact; log
+    hidden_files/p080_confirmation.log).
+    No heal needed at this banking.
+    PART V COMPLETE. Next in roadmap
+    order: P-081 (Part VI).
+P-081 BANKED - Plugin API v1 (Part VI
+    opener) - team-01 commit 628ca34
+    merged (no-ff) into
+    yrsa/two-mirrors-build as b20d7a0
+    and pushed; ls-remote verified
+    (see WAVE_PLAN update). Evidence
+    (team-01 worktree
+    hidden_files/P081_EVIDENCE.md):
+    battery 30 passed, neighbours
+    518 passed / 1 skipped, team
+    full suite 3418 passed /
+    4 skipped / 0 failed
+    (= 3388 + 30 exact). Slice:
+    src/runmal/plugins/ package
+    (api, manifest, events,
+    registry, hooks, service,
+    router, __init__ - versioned
+    manifest + lifecycle,
+    failure-isolated chat events,
+    prompt hooks at the P-057
+    composition choke point, UI
+    slot registry), wiring in
+    app.py, chats/service.py,
+    generation service + router,
+    bridge/conversation.py,
+    groupchat router + deepening,
+    prompt inspect + router;
+    tests/test_p081_plugin_api.py
+    (30 tests),
+    docs/PLUGIN_API_V1_2026-11-07.md
+    (the public contract doc),
+    clean-room log append. 20
+    files, +3685/-8. Migration:
+    NONE (head stays 0041, pinned
+    by battery test 29; provisional
+    0042 bequeathed to P-083 per
+    design section 7). Nine defects
+    found in the landed work and
+    fixed in-slice (evidence file):
+    slot hooks moved to after the
+    governor (HIGH), prompt router
+    registry threading, generation
+    event payload threading
+    (model_id, chat_id, usage),
+    group-chat opt-out, error-Done
+    firing generation.failed,
+    foreign slot namespace
+    rejection, and one CRITICAL
+    self-introduced conditional-
+    shadow break caught by the
+    tester + neighbour battery and
+    fixed before commit. Merge:
+    ONE conflict, in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    (append-vs-append, as briefed),
+    resolved keeping BOTH entries
+    exactly once - the P-080 and
+    P-081 clean-room entries both
+    kept; no .py conflicts;
+    py_compile clean on the merged
+    tree. Combined batteries on the
+    merged tree (P-081 + P-080 gate
+    + P-080 gate record): 55 passed
+    / 0 failed (= 30 + 25 exact).
+    Forge confirmation suite: 3443
+    passed / 4 skipped / 0 failed
+    (= 3413 P-080 confirmation +
+    30, exact; log
+    hidden_files/p081_confirm_fullsuite.log).
+    No heal needed at this banking.
+    PART VI OPENED. Next in roadmap
+    order: P-082.
+P-082 BANKED - Plugin sandbox (Part VI)
+    - team-02 commit 0737e4e merged
+    (no-ff) into
+    yrsa/two-mirrors-build as 6b77c19
+    and pushed; ls-remote verified
+    (see WAVE_PLAN update). Evidence
+    (team-02 worktree
+    hidden_files/P082_EVIDENCE.md):
+    battery 54 passed, neighbours
+    87 passed, team full suite 3467
+    passed / 4 skipped / 0 failed
+    (= 3413 P-080 confirmation + 54
+    exact). Slice:
+    src/runmal/sandbox/ package
+    (policy - grant derivation from
+    manifest-shaped data; guard -
+    guarded context; __init__),
+    tests/test_p082_plugin_sandbox.py
+    (54 tests),
+    docs/PLUGIN_SANDBOX_2026-11-07.md,
+    docs/adr/0008-plugin-sandbox.md
+    (new ADR), clean-room log
+    append. 7 files, +1372/-0.
+    Migration: NONE (head stays
+    0041; battery pins 0042 not in
+    MIGRATIONS, import-only).
+    Design note: the slice was built
+    on the P-080 base (a53c37a) by
+    design, pre-P-081 banking, and
+    deliberately does NOT import
+    runmal.plugins - it derives
+    grants from manifest-shaped
+    data; v1 surface permissions
+    grant NO resource access, so a
+    v1 plugin's resource grant set
+    is empty by construction.
+    Reconciliation at banking
+    verified a no-op: no cross
+    imports in either direction at
+    the merged tree (only a
+    docstring mention in
+    policy.py). Ruff clean (the
+    evidence ruff log tail is the
+    pre-fix run; live re-check at
+    banking: all checks passed).
+    Merge: ONE conflict, in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    (append-vs-append, as briefed),
+    resolved keeping BOTH entries
+    exactly once - the P-081 and
+    P-082 clean-room entries both
+    kept; no .py conflicts.
+    Combined batteries on the
+    merged tree (P-082 + P-081):
+    84 passed / 0 failed
+    (= 54 + 30 exact). Forge
+    confirmation suite: 3497
+    passed / 4 skipped / 0 failed
+    (= 3443 P-081 confirmation +
+    54, exact; log
+    hidden_files/p082_forge_fullsuite.log).
+    No heal needed at this banking.
+    Next in roadmap order: P-083.
+P-083 BANKED - Plugin manager (Part VI)
+    - team-01 commit ce7c02a merged
+    (no-ff) into
+    yrsa/two-mirrors-build as acf8cd3
+    and pushed; ls-remote verified
+    acf8cd37b1f22ed460b01aca3d0ea4c575b4c1f3
+    (see WAVE_PLAN update). Evidence
+    (team-01 worktree
+    hidden_files/P083_EVIDENCE.md):
+    battery 52 passed, neighbours
+    55 passed, team full suite 3494
+    passed / 4 skipped / 1 failed
+    - the single failure is the
+    test_s503 STT timing contract
+    under shared-machine contention,
+    solo re-run 4/4 green, classified
+    contention, NOT a defect. Slice:
+    src/runmal/plugins/ manager
+    surface (manager - PluginManager
+    + file ledger; packs - plugin
+    pack envelope with content_sha256
+    over normalised manifest; cards -
+    permission cards; router +
+    service + __init__ updates),
+    tests/test_p083_plugin_manager.py
+    (52 tests),
+    docs/PLUGIN_MANAGER_2026-11-07.md,
+    clean-room log append. 9 files,
+    +2039/-19. Migration: NONE (head
+    stays 0041; "0042" not in
+    MIGRATIONS, pinned by battery).
+    Two defects found in the landed
+    work and fixed in-slice (evidence
+    file): (1) router KeyError->404
+    mapping - manager update()/
+    uninstall() raise KeyError for
+    unknown plugins but the router
+    except clauses did not catch it,
+    so unknown-id update/uninstall
+    would have answered 500; KeyError
+    added to the except tuples of all
+    three manager endpoints, pinned
+    by battery tests. (2) Manager
+    install atomicity - install was
+    not atomic in its enable path
+    (ledger saved, then enable, then
+    save again; failures left a
+    mis-stated or orphaned
+    registration); fixed to enable
+    first with ONE ledger save and
+    rollback (disable + unregister,
+    best-effort) on ledger-write
+    failure, pinned by battery test.
+    Merge: ONE conflict, in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    (append-vs-append, as briefed),
+    resolved keeping BOTH entries
+    exactly once - the P-082 and
+    P-083 clean-room entries both
+    kept; no .py conflicts;
+    py_compile clean on the merged
+    tree. Combined batteries on the
+    merged tree (P-083 + P-081 +
+    P-080 gate + P-080 gate record):
+    107 passed / 0 failed
+    (= 52 + 55 exact). Forge
+    confirmation suite: 3549
+    passed / 4 skipped / 0 failed
+    (= 3497 P-082 confirmation +
+    52, exact; log
+    /tmp/p083_confirm.log).
+    No heal needed at this banking.
+    Next in roadmap order: P-084.
+P-084 BANKED - Memory Summarise plugin (Part VI)
+    - team-02 commit 3515924 merged
+    (no-ff) into
+    yrsa/two-mirrors-build as 7c415f6
+    and pushed; ls-remote verified
+    7c415f67dacf6d8a3715c607d757ba5b8a0a43f9
+    (see WAVE_PLAN update). Evidence
+    (team-02 worktree
+    hidden_files/P084_EVIDENCE.md):
+    battery 26 passed, neighbours
+    86 passed, team full suite 3523
+    passed / 4 skipped / 0 failed
+    (= 3497 P-082 confirmation +
+    26, exact). Slice:
+    src/runmal/plugins/summarise.py
+    (new - manifest id
+    runmal.summarise, SummariseConfig,
+    ExtractiveSummarizer
+    (extractive-1), refresh_summary /
+    summary_status on the founding
+    S404 roll + memory service,
+    MemorySummarisePlugin,
+    register_plugin, sandbox_grants),
+    tests/test_p084_memory_summarise.py
+    (26 tests),
+    docs/MEMORY_SUMMARISE_PLUGIN_2026-11-07.md,
+    clean-room log append. 4 files.
+    Migration: NONE (head stays
+    0041; "0042" not in MIGRATIONS,
+    pinned by battery).
+    Two defects found in the landed
+    work and fixed in-slice (evidence
+    file): (1) ExtractiveSummarizer
+    degraded under the founding
+    roll's incremental folding - each
+    re-fold re-headed the prior
+    summary, nesting "Summary of 2
+    messages:" headers and pushing
+    real message heads out of the
+    cap; fixed with segment
+    recovery (a prior summary
+    contributes its segments back).
+    (2) At the 1600-char cap the
+    tail (newest folded messages)
+    was silently truncated while
+    the header claimed them; fixed
+    with middle elision - first +
+    newest segments kept, the
+    dropped count rides in an
+    [elided N messages] marker that
+    recovery reads back; the header
+    count (kept + elided) always
+    spans every folded message,
+    pinned by a dedicated battery
+    test. Reconciliation PASS
+    (recorded before the merge):
+    build_registry / create_app
+    deliberately unchanged - the
+    empty-boot registry pin (P-081
+    battery) is intact; the citizen
+    registers through register_plugin
+    only, and the register_plugin vs
+    P-083 manager (install/enable)
+    division stands as designed.
+    Combined batteries on the merged
+    tree: 164 passed / 0 failed.
+    Forge confirmation suite, first
+    run: 3574 passed / 4 skipped /
+    1 failed - the single failure is
+    tests/test_p077_longchat_performance.py
+    ::test_longchat_tripwires, a
+    wall-clock tripwire tripped
+    under cross-campaign load; solo
+    re-run 17/17 green, classified
+    timing-contention (the s503
+    pattern), NOT a defect (log
+    /tmp/p084_confirm.log).
+    Confirmation re-run: 3575
+    passed / 4 skipped / 0 failed,
+    EXIT 0 (= 3549 P-083
+    confirmation + 26, exact; log
+    /tmp/p084_confirm2.log).
+    No heal needed at this banking.
+    Next in roadmap order: P-085.
+P-085 BANKED - Vector Storage plugin (Part VI)
+    - team-03 commit 0289061 merged
+    (no-ff) into
+    yrsa/two-mirrors-build as 309e280
+    and pushed; ls-remote verified
+    309e2808aab5a936dbef273192e189de388fd444
+    (see WAVE_PLAN update). Evidence
+    (team-03 worktree
+    hidden_files/P085_EVIDENCE.md):
+    battery 24 passed, neighbours
+    213 passed, team full suite 3573
+    passed / 4 skipped / 0 failed
+    (= 3549 P-083 confirmation +
+    24, exact, on its base). Slice:
+    src/runmal/plugins/vector_storage.py
+    (new - per-chat/character vector
+    memory on the founding sqlite-vec
+    store, scoped doc ids,
+    over-fetch-then-scope-filter
+    search, inspectable status),
+    tests/test_p085_vector_storage.py
+    (24 tests),
+    docs/VECTOR_STORAGE_PLUGIN_2026-11-07.md,
+    clean-room log append. 4 files.
+    Migration: NONE (head stays
+    0041; "0042" not in MIGRATIONS,
+    pinned by battery).
+    build_registry / create_app
+    deliberately unchanged by
+    design. Defects: none in
+    pre-existing code found; no
+    discovered bug left unfixed.
+    Design honesty: the slots hook
+    carries no query text, so it
+    offers the scoped indexed-count /
+    provenance slot rather than fake
+    retrieval; the search API does
+    real retrieval. Keyword fallback
+    labelled keyword_fallback with
+    provenance None; local provider
+    labelled lexical_vector.
+    Merge conflict only in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    (append-vs-append), resolved
+    keeping BOTH the P-084 and
+    P-085 entries exactly once;
+    py_compile clean on the merged
+    tree. Combined batteries on the
+    merged tree: 102 passed / 0
+    failed (= 24 + 26 + 52 exact).
+    Forge confirmation suite:
+    3599 passed / 4 skipped / 0
+    failed, EXIT 0 (= 3575 P-084
+    confirmation + 24, exact; log
+    /tmp/p085_confirm.log).
+    No heal needed at this banking.
+    Next in roadmap order: P-086.
+P-086 BANKED - Translate plugin (Part VI)
+    - team-01 commit 99b759d merged
+    (no-ff) into
+    yrsa/two-mirrors-build as 24621f1
+    and pushed; ls-remote verified
+    24621f1d4fadd98f6a0dc9508c5b93faee4b0a82
+    (see WAVE_PLAN update). Evidence
+    (team-01 worktree
+    hidden_files/P086_EVIDENCE.md):
+    battery 26 passed, neighbours
+    239 passed, banked P-084 / P-085
+    batteries 50 passed read-only in
+    the forge, team full suite 3575
+    passed / 4 skipped / 0 failed
+    (= 3549 P-083 confirmation +
+    26, exact, on its base). Slice:
+    src/runmal/plugins/translate.py
+    (new - per-chat translation in
+    flight via a messages-stage
+    prompt hook and as a derived
+    inspectable view, deterministic
+    road labelled deterministic-1,
+    model road via the generation
+    service with plugin_events=False,
+    originals never changed),
+    tests/test_p086_translate_plugin.py
+    (26 tests),
+    docs/TRANSLATE_PLUGIN_2026-11-07.md,
+    clean-room log append. 4 files.
+    Migration: NONE (head stays
+    0041; "0042" not in MIGRATIONS,
+    pinned by battery).
+    build_registry / create_app
+    deliberately unchanged by
+    design. Defects: none found in
+    the finisher review; no
+    discovered bug left unfixed.
+    Design honesty: the deterministic
+    default road is a tiny authored
+    lexicon over es/fr/de with a
+    [deterministic:<target>] marker,
+    provider deterministic-1, never
+    presented as real translation;
+    the source language is always
+    configured, never detected;
+    config and the derived store are
+    in-memory and lost on restart,
+    stated plainly.
+    Merge conflict only in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    (append-vs-append), resolved
+    keeping the P-084, P-085 and
+    P-086 entries exactly once;
+    py_compile clean on the merged
+    tree. Combined batteries on the
+    merged tree: 76 passed / 0
+    failed (= 26 + 24 + 26 exact).
+    Forge confirmation suite:
+    3625 passed / 4 skipped / 0
+    failed, EXIT 0 (= 3599 P-085
+    confirmation + 26, exact; log
+    /tmp/p086_confirm.log).
+    No heal needed at this banking.
+    Next in roadmap order: P-087.
+
+P-087 BANKED - Image Generation plugin (Part VI)
+    - team-02 commit 41611f3 merged
+    (no-ff) into
+    yrsa/two-mirrors-build as 6108b89
+    and pushed; ls-remote verified
+    6108b8982605aaa5a9be2d0a6f7980c10033f920
+    (see WAVE_PLAN update). Evidence
+    (team-02 worktree
+    hidden_files/P087_EVIDENCE.md):
+    battery 25 passed, neighbours
+    229 passed, team full suite 3624
+    passed / 4 skipped / 0 failed
+    (= 3599 P-085 confirmation +
+    25, exact, on its base). Slice:
+    src/runmal/plugins/image_generation.py
+    (new - prompt-from-scene plus
+    manual prompt image generation,
+    local diffusion endpoints first,
+    per-chat opt-in enablement,
+    deterministic provider labelled
+    deterministic_local, landed
+    images ride the P-023 character
+    asset machinery),
+    tests/test_p087_image_generation.py
+    (25 tests),
+    docs/IMAGE_GENERATION_PLUGIN_2026-11-07.md,
+    clean-room log append. 4 files.
+    Migration: NONE (head stays
+    0041; "0042" not in MIGRATIONS,
+    pinned by battery).
+    build_registry / create_app
+    deliberately unchanged by
+    design. Defects: none found in
+    the slice; no discovered bug
+    left unfixed.
+    Design honesty: the deterministic
+    provider is the default only
+    because no diffusion endpoint
+    is configured in-tree and is
+    labelled road=deterministic_local
+    everywhere; the local provider
+    was tested solely through an
+    injected fake transport, no
+    socket touched; landing requires
+    a character-bound chat (P-023 is
+    character-scoped) and unlanded
+    records state the reason;
+    enablement and the generation
+    ledger are process-local and
+    lost on restart, stated plainly.
+    Merge conflict only in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    (append-vs-append), resolved
+    keeping the P-086 and P-087
+    entries exactly once;
+    py_compile clean on the merged
+    tree. Combined batteries on the
+    merged tree: 51 passed / 0
+    failed (= 26 + 25 exact).
+    Forge confirmation suite:
+    3650 passed / 4 skipped / 0
+    failed, EXIT 0 (= 3625 P-086
+    confirmation + 25, exact; log
+    /tmp/p087_confirm.log).
+    No heal needed at this banking.
+    Next in roadmap order: P-088.
+P-088 BANKED - Web Search plugin (Part VI)
+    - team-03 commit 0aae895 merged
+    (no-ff) into
+    yrsa/two-mirrors-build as ab0868c
+    and pushed; ls-remote verified
+    ab0868c6711cf82317bae404f1a51a138e908446
+    (see WAVE_PLAN update). Evidence
+    (team-03 worktree
+    hidden_files/P088_EVIDENCE.md):
+    battery 32 passed, neighbours
+    212 passed, team full suite 3657
+    passed / 4 skipped / 0 failed
+    (= 3625 P-086 confirmation +
+    32, exact, on its base). Slice:
+    src/runmal/plugins/web_search.py
+    (new - opt-in per-chat web
+    search, results cited into
+    context, off by default;
+    sovereignty is the default
+    state),
+    tests/test_p088_web_search.py
+    (32 tests),
+    docs/WEB_SEARCH_PLUGIN_2026-11-07.md,
+    clean-room log append. 4 files.
+    Migration: NONE (head stays
+    0041; "0042" not in MIGRATIONS,
+    pinned by battery).
+    build_registry / create_app
+    deliberately unchanged by
+    design. Defects: one found and
+    fixed in-slice - malformed
+    provider rows now raise typed
+    WebSearchError instead of
+    leaking a raw ValueError; no
+    discovered bug left unfixed.
+    Design honesty: the default
+    provider is deterministic-1,
+    URLs on example.invalid,
+    snippets self-labelled as
+    placeholders, never disguised;
+    the HTTP provider opens no
+    socket (transport is injected
+    host wiring, tested with fakes
+    only); sandbox_grants() is the
+    empty frozenset (network.access
+    is not in the v1 manifest
+    vocabulary); per-chat opt-in
+    and stored results are
+    process-local and lost on
+    restart, stated plainly; the
+    prompt hook never searches and
+    results render only with title
+    plus URL as citations.
+    Merge conflict only in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    (append-vs-append), resolved
+    keeping the P-087 and P-088
+    entries exactly once;
+    py_compile clean on the merged
+    tree. Combined batteries on the
+    merged tree: 57 passed / 0
+    failed (= 25 + 32 exact).
+    Forge confirmation suite:
+    first run 3681 passed / 4
+    skipped / 1 failed - the one
+    failure was
+    test_p077_longchat_performance
+    test_longchat_tripwires, a
+    wall-clock tripwire under
+    cross-campaign load; solo
+    re-run 17 passed / 0 failed,
+    classified timing-contention,
+    not a defect; effective total
+    3682 passed / 4 skipped / 0
+    failed (= 3650 P-087
+    confirmation + 32, exact; log
+    /tmp/p088_confirm.log).
+    No heal needed at this banking.
+    Next in roadmap order: P-089.
+P-089 BANKED - Quick Replies plugin (Part VI)
+    - team-01 commit ae6bddd merged
+    (no-ff) into
+    yrsa/two-mirrors-build as 71533ff
+    and pushed; ls-remote verified
+    71533ff299709803f99fcdec860db451dfdbf013
+    (see WAVE_PLAN update). Evidence
+    (team-01 worktree
+    hidden_files/P089_EVIDENCE.md):
+    battery 24 passed, neighbours
+    228 passed, team full suite 3674
+    passed / 4 skipped / 0 failed
+    (= 3650 + 24, exact, on its base).
+    Slice:
+    src/runmal/plugins/quick_replies.py
+    (new - user-defined one-tap
+    macros, chained steps with
+    variable threading, input
+    senders with honest P-075
+    receipts, durable per-user
+    file store),
+    src/runmal/plugins/router.py
+    (routes appended),
+    tests/test_p089_quick_replies.py
+    (24 tests),
+    docs/QUICK_REPLIES_2026-11-07.md,
+    clean-room log append. 5 files.
+    Migration: NONE (head stays
+    0041; "0042" not in MIGRATIONS,
+    pinned by battery).
+    build_registry / create_app
+    deliberately unchanged by
+    design. Defects: none in
+    shipped code; one
+    battery-authoring defect
+    (MIGRATIONS tuple shape) was
+    fixed in the test itself
+    before the green run; no
+    discovered bug left unfixed.
+    Design honesty: definitions
+    ride the durable per-user
+    file store
+    (data_dir()/quick_replies/<user_id>.json),
+    no migration; chained steps
+    run in declared order with a
+    persisted per-step execution
+    record; strict macro mode at
+    execution, so unknown macros
+    fail a step loudly instead
+    of posting raw text; input
+    senders post a user-role
+    message whose receipt still
+    names the quick-reply road
+    (origin kind stays in the
+    closed P-075 vocabulary);
+    sandbox grants are the empty
+    frozenset; no hidden
+    generation.
+    Merge conflict only in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    (append-vs-append), resolved
+    keeping the P-088 and P-089
+    entries exactly once;
+    py_compile clean on the merged
+    tree. Combined batteries on the
+    merged tree: 56 passed / 0
+    failed (= 32 + 24 exact).
+    Forge confirmation suite:
+    3706 passed / 4 skipped / 0
+    failed (= 3682 P-088
+    confirmation + 24, exact; log
+    /tmp/p089_forge_suite.log).
+    No heal needed at this banking.
+    Next in roadmap order: P-090.
+P-090 BANKED - Regex Scripts plugin (Part VI)
+    - team-02 commit e8a7ebf merged
+    (no-ff) into
+    yrsa/two-mirrors-build as 586e8e0
+    and pushed; ls-remote verified
+    586e8e07c77ce77d6120393f6b3cbe5e9c64a02f
+    (see WAVE_PLAN update). Evidence
+    (team-02 worktree
+    hidden_files/P090_EVIDENCE.md):
+    battery 65 passed, neighbours
+    269 passed, team full suite 3747
+    passed / 4 skipped / 0 failed
+    (= 3682 + 65, exact, on its base).
+    Slice:
+    src/runmal/plugins/regex_scripts.py
+    (new - ST-shaped find/replace
+    rules at declared stages, safe
+    regex dialect, per-rule timeout),
+    tests/test_p090_regex_scripts.py
+    (65 tests),
+    docs/REGEX_SCRIPTS_2026-11-07.md,
+    clean-room log append. 4 files.
+    Migration: NONE (head stays
+    0041; "0042" not in MIGRATIONS,
+    pinned by battery).
+    build_registry / create_app
+    deliberately unchanged by
+    design. Defects fixed in-slice:
+    two safe-dialect holes -
+    (1) brace-quantifier bypass
+    ({,n} treated as {0,n} escaped
+    the quantifier-bound and
+    nested-quantifier checks;
+    _BRACE_RE now matches every
+    brace form Python treats as a
+    repeat); (2) duplicate named
+    groups now refuse in the scan
+    as unsupported_group_construct
+    instead of falling through to
+    the re.compile fallback.
+    No discovered bug left unfixed.
+    Design honesty: scripts ride
+    the durable per-user file store
+    (P-089 idiom), no migration;
+    the safe-dialect scan is a
+    heuristic - (a|aa)+ passes it
+    and is caught only by the
+    per-rule timeout; the hook
+    applies the prompt_assembly
+    stage only, other stages via
+    explicit apply_scripts calls
+    only; ST-shaped, not
+    ST-compatible - unknown ST
+    fields refuse; sandbox grants
+    are the empty frozenset.
+    Merge conflict only in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    (append-vs-append), resolved
+    keeping the P-089 and P-090
+    entries exactly once;
+    py_compile clean on the merged
+    tree. Combined batteries on the
+    merged tree: 89 passed / 0
+    failed (= 24 + 65 exact).
+    Forge confirmation suite:
+    3771 passed / 4 skipped / 0
+    failed (= 3706 P-089
+    confirmation + 65, exact; log
+    /tmp/p090_forge_suite.log).
+    No heal needed at this banking.
+    Next in roadmap order: P-091.
+P-091 BANKED - TTS/STT as plugins (Part VI)
+    - team-03 commit 2ec7fba merged
+    (no-ff) into
+    yrsa/two-mirrors-build as 92588f3
+    and pushed; ls-remote verified
+    92588f3d3d6d83bd63dd175dea0ab5096d96d864
+    (see WAVE_PLAN update). Evidence
+    (team-03 worktree
+    hidden_files/P091_EVIDENCE.md):
+    battery 52 passed, neighbours
+    257 passed, team full suite 3758
+    passed / 4 skipped / 0 failed
+    (= 3706 + 52, exact, on its base).
+    Slice:
+    src/runmal/plugins/tts.py
+    (new - founding TTS stack behind
+    the P-081 Plugin API, explicit
+    actions only, byte parity with
+    the direct backend call),
+    src/runmal/plugins/stt.py
+    (new - founding STT stack behind
+    the same API, same stance),
+    tests/test_p091_voice_plugins.py
+    (52 tests),
+    docs/VOICE_PLUGINS_2026-11-07.md,
+    clean-room log append. 5 files.
+    Migration: NONE (head stays
+    0041; pinned by battery on the
+    declared head and the live
+    revision on a fresh database).
+    build_registry / create_app
+    deliberately unchanged by
+    design. Defects: review found
+    no code defect; five slice-doc
+    prose defects were fixed
+    in-slice before commit -
+    (1) swapped S503/S504 founding
+    seam numbers in the slice doc,
+    (2) speaking-rate road via
+    synthesize_all misdescribed,
+    (3) backend voices() named as
+    the introspection road instead
+    of the citizen methods,
+    (4) TTS observation record
+    understated, (5) two stale
+    internal cross-references.
+    No discovered bug left unfixed.
+    Design honesty: citizens are
+    NOT registered in the running
+    app - no build_registry /
+    create_app registration and no
+    HTTP routes; host wiring via
+    register_plugin is the only
+    road in v1, and the founding
+    /api/v1/voice/* routes remain
+    the HTTP road. Sandbox grants
+    are the empty frozenset; the
+    voice backend is host wiring,
+    never a grant. Per-chat latest
+    results and TTS observation
+    metadata are in-memory and
+    lost on restart; no real engine
+    was exercised (labelled fakes
+    and test doubles only).
+    Merge conflict only in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    (append-vs-append), resolved
+    keeping the P-090 and P-091
+    entries exactly once;
+    py_compile clean on the merged
+    tree. Combined batteries on the
+    merged tree: 117 passed / 0
+    failed (= 65 + 52 exact).
+    Forge confirmation suite:
+    3823 passed / 4 skipped / 0
+    failed (= 3771 P-090
+    confirmation + 52, exact; log
+    /tmp/p091_forge_suite.log).
+    No heal needed at this banking.
+    Next in roadmap order: P-092.
+P-092 BANKED - Expression/sprite plugin surface (Part VI)
+    - team-01 commit cf7c03a merged
+    (no-ff) into
+    yrsa/two-mirrors-build as 21d97f3
+    and pushed; ls-remote verified
+    21d97f3798d2a02a6afcf539b4a6e30eee15405b
+    (see WAVE_PLAN update). Evidence
+    (team-01 worktree
+    hidden_files/P092_EVIDENCE.md):
+    battery 24 passed, neighbours
+    425 passed, team full suite 3795
+    passed / 4 skipped / 0 failed
+    (= 3771 + 24, exact, on its base).
+    Slice:
+    src/runmal/plugins/expressions.py
+    (new - declared expression sets
+    per character and current-
+    expression selection per chat
+    with provenance, behind the
+    P-081 Plugin API),
+    src/runmal/plugins/router.py
+    (expression routes appended),
+    tests/test_p092_expressions.py
+    (24 tests),
+    docs/EXPRESSION_SPRITE_2026-11-07.md,
+    clean-room log append. 5 files.
+    Migration: NONE (head stays
+    0041; pinned by battery -
+    MIGRATIONS[-1] == 0041, no 0042,
+    current_revision == 0041).
+    Sets and selections ride the
+    durable per-user file store
+    (data_dir()/expressions/
+    <user_id>.json); no migration.
+    Defects: one lint defect in the
+    new battery (unused json import,
+    F401) found and fixed in-slice,
+    battery re-run green; ruff clean
+    on the new module and battery
+    (the router's B008 findings are
+    the pre-existing house FastAPI
+    Depends idiom, not introduced
+    by this slice). No shipped-code
+    defects were discovered.
+    Design honesty: sprite assets
+    are bound by reference only via
+    the P-023 character-asset
+    machinery - the citizen binds
+    existing expression assets by id
+    and never copies bytes; the
+    binding report is honest per
+    entry (bound, or no_asset /
+    asset_missing / wrong_kind /
+    not_stored); the derivation
+    draft from existing expression
+    assets is returned, never saved.
+    No renderer was invented and no
+    message text is scanned to guess
+    an expression - Part X owns
+    rendering. Selection receipts
+    name source, actor, reason,
+    message and the expression
+    replaced, from a closed
+    selection-source set.
+    Merge conflict only in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    (append-vs-append), resolved
+    keeping the P-091 and P-092
+    entries exactly once;
+    plugins/router.py auto-merged
+    clean (P-091 did not touch it);
+    py_compile clean on the merged
+    tree, and the merged router
+    verified to carry the P-092
+    expression routes alongside all
+    prior plugin routes; the merged
+    tree contains both the P-091
+    voice citizens (tts.py / stt.py)
+    and the P-092 expressions
+    citizen. Combined batteries on
+    the merged tree: 76 passed / 0
+    failed (= 52 + 24 exact).
+    Forge confirmation suite:
+    3847 passed / 4 skipped / 0
+    failed (= 3823 P-091
+    confirmation + 24, exact; log
+    /tmp/p092_forge_suite.log).
+    No heal needed at this banking.
+    Next in roadmap order: P-093.
+P-093 BANKED - Variables & state plugin API (Part VI)
+    - team-02 commit 776f9be merged
+    (no-ff) into
+    yrsa/two-mirrors-build as 29169f1
+    and pushed; ls-remote verified
+    29169f13e9d3e0f5b1a962fb7e9447aa8ac41c40
+    (see WAVE_PLAN update). Evidence
+    (team-02 worktree
+    hidden_files/P093_EVIDENCE.md):
+    battery 24 passed, neighbours
+    149 passed, team full suite 3847
+    passed / 4 skipped / 0 failed
+    (= 3823 + 24, exact, on its base).
+    Slice:
+    src/runmal/plugins/variables.py
+    (new - one shared per-chat
+    variables/flags store behind
+    the P-081 Plugin API),
+    src/runmal/plugins/router.py
+    (chat-variables routes appended),
+    tests/test_p093_variables.py
+    (24 tests),
+    docs/VARIABLES_STATE_API_2026-11-07.md,
+    clean-room log append. 5 files.
+    Migration: NONE (head stays
+    0041; no migration taken - the
+    store rides the P-089 durable
+    per-user file idiom,
+    data_dir()/chat_variables/
+    <user_id>.json, atomic save
+    at 0600, corrupt stores raise
+    and are never silently reset;
+    no 0042).
+    Defects: the battery's first
+    run caught the team's own wrong
+    registry call in the test (fixed
+    to the house registry.keys()
+    idiom; no product code was
+    wrong), and ruff N818 renamed
+    ChatVariableNotFound to
+    ChatVariableNotFoundError in
+    module and battery, battery
+    re-run green; ruff clean on
+    both new files (the router's
+    B008 findings are the
+    pre-existing house FastAPI
+    Depends idiom). No defect was
+    found in banked code.
+    Design honesty: ONE shared
+    per-chat store - plugins, the
+    host, Part IX scenarios and
+    the P-055 macro road all read
+    and write through the same
+    service functions; there is no
+    plugin-private silo and no
+    scenario-private store. Every
+    entry carries provenance
+    (writer kind - plugin / host /
+    scenario / macro - and writer
+    id, created/updated timestamps
+    and a version counter); no
+    anonymous write path exists.
+    Namespacing: a plugin's bare
+    keys land in its own namespace,
+    shared is the documented
+    collaboration surface, and a
+    plugin addressing another
+    plugin's namespace is refused -
+    never a silent overwrite.
+    Kinds never blur: variables
+    hold JSON scalars only, flags
+    hold bool only, reading one
+    kind through the other refuses
+    and re-kinding an existing key
+    refuses; cap 500 entries per
+    chat.
+    P-055 macro bridge:
+    load_macro_variables renders
+    the chat's shared variables as
+    macro strings and
+    apply_macro_variables persists
+    an expansion report's map back
+    with macro provenance;
+    plugin-namespaced entries never
+    leak into the macro map (P-055
+    variables are ephemeral strings
+    in a per-expansion working
+    copy; P-093 entries are typed
+    and durable - deliberate).
+    Part IX seed contract: a
+    scenario runtime seeds
+    initial_variables via
+    seed_variables - missing keys
+    only, seeding never overwrites
+    live state - and then uses the
+    same get/set/flag/increment
+    functions with scenario
+    provenance. Citizen wiring is
+    register_plugin only; the
+    sandbox grant set is EMPTY.
+    Merge conflicts in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    and src/runmal/plugins/router.py
+    (both append-vs-append),
+    resolved as true additive
+    unions keeping BOTH entries /
+    BOTH route sets exactly once;
+    py_compile clean on the merged
+    tree, and the merged router
+    verified to carry the P-092
+    expression routes and the
+    P-093 chat-variables routes
+    alongside all prior plugin
+    routes; the merged tree
+    contains both the P-092
+    expressions citizen and the
+    P-093 variables citizen.
+    Combined batteries on the
+    merged tree: 48 passed / 0
+    failed (= 24 + 24 exact).
+    Forge confirmation suite:
+    3871 passed / 4 skipped / 0
+    failed (= 3847 P-092
+    confirmation + 24, exact; log
+    hidden_files/p093_forge_confirmation.log).
+    No heal needed at this banking.
+    Next in roadmap order: P-094.
+P-094 BANKED - Plugin data custody (Part VI)
+    - team-03 commit 0873de8 merged
+    (no-ff) into
+    yrsa/two-mirrors-build as ba3dbe8
+    and pushed; ls-remote verified
+    ba3dbe802980d668908b69139ccebf94e9c30af2
+    (see WAVE_PLAN update). Evidence
+    (team-03 worktree
+    hidden_files/P094_EVIDENCE.md):
+    battery 24 passed, neighbours 434
+    passed, team full suite 3871
+    passed / 4 skipped / 0 failed on
+    its base.
+    Slice:
+    src/runmal/plugins/custody.py (new
+    - one custody surface over every
+    Part VI citizen),
+    src/runmal/plugins/router.py (+58,
+    custody export/delete routes
+    appended),
+    tests/test_p094_plugin_custody.py
+    (24 tests),
+    docs/PLUGIN_DATA_CUSTODY_2026-11-07.md,
+    clean-room log append. 5 files,
+    +1477.
+    Migration: NONE (head stays 0041;
+    no migration taken - custody rides
+    the citizens' own stores and
+    inspect/clear roads; no 0042).
+    Defects: the finisher run found
+    the previous lead's custody.py
+    truncated at 240 lines and
+    completed it against the design
+    (807 lines); battery-authoring
+    fixes only in test code. No defect
+    was found in the landed file-store
+    section.
+    Design honesty: a plugin's data is
+    exportable and deletable with the
+    plugin - no hostage state. Every
+    store appears as a section:
+    exported / empty / unavailable
+    with the reason named / error
+    carried in the document, never
+    silently omitted; the checksum is
+    the packs canonical-JSON + sha256
+    idiom. Custody delete finishes
+    through manager.uninstall when a
+    ledger row exists, so removal
+    leaves neither orphaned data nor
+    an orphan row. Deletion is
+    owner-scoped throughout; founding
+    host data (chats, memories at
+    large, P-023 assets) is named as
+    references only, never deleted.
+    The HTTP road names instance
+    sections unavailable rather than
+    dressing a partial export as
+    complete.
+    The P-093 seam: the variables
+    adapter is lazy by design - on the
+    slice base (P-093 absent) its
+    section reported unavailable and
+    its store file was never touched;
+    the adapter's store_path /
+    STORE_SCHEMA expectations were
+    verified against the banked P-093
+    module, so it lights up unchanged
+    on the merged tree.
+    Merge conflicts in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    and src/runmal/plugins/router.py
+    (both append-vs-append), resolved
+    as true additive unions keeping
+    BOTH entries / BOTH route sets
+    exactly once; py_compile clean on
+    the merged tree, and the merged
+    router verified to carry the P-093
+    chat-variables routes and the
+    P-094 custody routes alongside all
+    prior plugin routes.
+    Banking heal (one, pinned to
+    merged truth, never a weakened
+    assertion): the battery's
+    lazy-adapter test pinned the
+    slice-base absence (unavailable /
+    manifest None / file untouched);
+    on the merged tree the module
+    exists, so that one test was
+    re-pinned to the lit-up behaviour
+    - verbatim exported document,
+    schema stamped, manifest id
+    runmal.variables, checksum
+    verified, delete removes the
+    owner's file (removed files = 1)
+    and leaves another owner's store
+    byte-identical. No custody code
+    changed.
+    Combined batteries on the merged
+    tree: 48 passed / 0 failed (= 24 +
+    24 exact). Forge confirmation
+    suite: 3895 passed / 4 skipped / 0
+    failed (= 3871 P-093 confirmation
+    + 24, exact; log
+    hidden_files/p094_forge_confirmation.log).
+    Next in roadmap order: P-095.
+P-095 BANKED - The gallery plugin (Part VI)
+    - team-01 commit 8578b54 merged
+    (no-ff) into
+    yrsa/two-mirrors-build as 7bcc14d
+    and pushed; ls-remote verified
+    7bcc14d602ce5ac7e601d33ae39d940a79a66a41
+    (see WAVE_PLAN update). Evidence
+    (team-01 worktree
+    hidden_files/P095_EVIDENCE.md):
+    battery 27 passed, neighbours 200
+    passed, team full suite 3898
+    passed / 4 skipped / 0 failed on
+    its base (base predates P-094;
+    reconciled at this banking).
+    Slice:
+    src/runmal/plugins/gallery.py (new
+    - durable per-owner gallery store,
+    P-087 generation-history ingest
+    verbatim and idempotent, P-023
+    asset-derived and attached roads,
+    enriched gallery view, pull-based
+    import, curation/removal/clear
+    verbs, manifest + register_plugin,
+    empty P-082 grants),
+    tests/test_p095_gallery.py
+    (27 tests),
+    docs/GALLERY_PLUGIN_2026-11-07.md,
+    clean-room log append. 4 files,
+    +1393.
+    Migration: NONE (head stays 0041;
+    no migration taken - the gallery
+    rides the P-089 file-store idiom
+    and the P-023 asset store; no
+    0042).
+    Defects: none found in-slice; the
+    battery passed 27/27 on its first
+    run and the team full suite was
+    green outright, so no fix commit
+    was needed.
+    Design honesty: a per-chat image
+    gallery with generation history as
+    a first-class citizen. Provenance
+    is a three-kind vocabulary
+    (generated / asset / attached) and
+    curation can touch title and notes
+    only, never provenance. Generation
+    import is pull-based and explicit:
+    the gallery preserves only the
+    generations it is handed and never
+    claims to observe more. The
+    attached_local road for chats with
+    no bound character is labelled
+    honestly and carries no thumbnails
+    (a P-023 road). No HTTP routes
+    this slice - service surface and
+    UI contribution only.
+    Merge conflict in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    only (append-vs-append), resolved
+    as a true additive union keeping
+    BOTH the P-094 and P-095 entries
+    exactly once; no other conflicts
+    (gallery.py deliberately took no
+    router changes). Banking heal:
+    none needed - no pin required
+    re-pinning on the merged tree.
+    Combined batteries on the merged
+    tree: 51 passed / 0 failed (= 24
+    P-094 + 27 P-095, exact). Forge
+    confirmation suite: 3922 passed /
+    4 skipped / 0 failed (= 3895
+    P-094 confirmation + 27, exact;
+    log
+    hidden_files/p095_forge_confirmation.log).
+    Next in roadmap order: P-096.
+P-096 BANKED - Dice & game-bridge plugin surface (Part VI)
+    - team-02 commit abbb72b merged (no-ff)
+    into yrsa/two-mirrors-build as a771299
+    and pushed; ls-remote verified
+    a7712991253e6b00fb6279c8126143043692e874
+    (see WAVE_PLAN update). Evidence
+    (team-02 worktree
+    hidden_files/P096_EVIDENCE.md):
+    battery 33 passed, neighbours 209
+    passed, team full suite 3928 passed /
+    4 skipped / 0 failed on its base (base
+    predates P-095; reconciled at this
+    banking).
+    Slice:
+    src/runmal/plugins/game_bridge.py (new
+    - the citizen runmal.game-bridge,
+    seeded inspectable rolls, durable
+    store, bridge event surface),
+    src/runmal/plugins/router.py (+171,
+    /game-bridge/* routes appended),
+    tests/test_p096_game_bridge.py (33
+    tests),
+    docs/DICE_GAME_BRIDGE_2026-11-07.md,
+    clean-room log append. 5 files, +1709.
+    Migration: NONE (head stays 0041; no
+    migration taken - the store rides the
+    P-089 durable file idiom; no 0042).
+    Defects: page-limit coupling (product
+    defect, caught by the battery
+    cap/prune tests): list_rolls and
+    list_bridge_events validated the
+    caller page limit against the
+    RETENTION caps (MAX_ROLLS_PER_CHAT /
+    MAX_EVENTS_PER_CHAT), so a smaller
+    retention cap would make ordinary
+    listing refuse instead of paginating.
+    Fixed in-slice: limits now validate
+    against a dedicated MAX_PAGE_SIZE =
+    1000; retention caps govern storage
+    only. One battery-authoring fix in
+    test code only. No defect was found in
+    banked code.
+    Design honesty: seeded inspectable
+    rolls (algorithm runmal-p096-dice-v1,
+    the P-036 discipline): a roll is a
+    pure function of seed, context,
+    canonical notation, roll key and die
+    index, recorded with every face and
+    draw; verify_roll is honest about
+    unseeded rolls - labelled and
+    unverifiable, never dressed as
+    reproducible. Bridge events are a
+    closed vocabulary of kinds and targets
+    (VRChat / Skyrim named), with per-chat
+    sequence numbers and monotonic
+    per-consumer ack cursors, bounded
+    retention with the prune count kept.
+    No transport is claimed: the citizen
+    records bridge events and opens no
+    socket; the existing bridge adapters
+    own transport.
+    Carried item: P-094 custody does not
+    yet name runmal.game-bridge (fixed
+    citizen list); export for this id
+    answers unknown-plugin honestly. Named
+    in the P-096 design (section 7) as a
+    later-reconciliation item. The event
+    handler observation list is in-memory
+    and lost on restart, stated plainly in
+    the code.
+    Merge conflict in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md only
+    (append-vs-append), resolved keeping
+    the P-095 and P-096 entries exactly
+    once; no other conflicts. Banking
+    heal: none needed. Combined batteries
+    on the merged tree: 60 passed / 0
+    failed (= 27 P-095 + 33 P-096, exact).
+    Forge confirmation suite: 3955 passed
+    / 4 skipped / 0 failed (= 3922 P-095
+    confirmation + 33, exact; log
+    hidden_files/p096_forge_fullsuite.log).
+    Next in roadmap order: P-097.
+P-097 BANKED - Plugin conformance kit (Part VI)
+    - team-03 commit afeae93 merged (no-ff)
+    into yrsa/two-mirrors-build as 2d1d776
+    and pushed; ls-remote verified
+    2d1d776d4a7d95da972134b5faef263aed88ebc8
+    (see WAVE_PLAN update). Evidence
+    (team-03 worktree
+    hidden_files/P097_EVIDENCE.md):
+    battery 30 passed, neighbours 509
+    passed, team full suite 3952 passed /
+    4 skipped / 0 failed (= 3922 base +
+    battery 30, exact).
+    Slice:
+    src/runmal/plugins/conformance.py (new,
+    831 lines - the conformance kit: thirteen
+    checks in fixed order across the
+    manifest and citizen roads, deterministic
+    checksummed report, listing gate as
+    data, corpus auto-discovery under
+    runmal.plugins, and the kit citizen
+    runmal.plugin-conformance itself),
+    tests/test_p097_plugin_conformance.py
+    (30 tests),
+    docs/PLUGIN_CONFORMANCE_KIT_2026-11-07.md,
+    clean-room log append. 4 files, +1348.
+    Migration: NONE (head stays 0041; no
+    migration taken - the kit holds no
+    state; no 0042).
+    Defect: check-order defect on the
+    parse-failure road, fixed in-slice:
+    when manifest_parses failed, the not_run
+    rows for handlers_binding and
+    registration were emitted BEFORE
+    settings_shape, reshuffling the design
+    fixed check order. The two not_run rows
+    now land in their own slots, after
+    settings_shape; pinned by
+    test_check_names_fixed_order_on_parse_failure.
+    Corpus note: on the merged tree the
+    P-096 citizen runmal.game-bridge joins
+    the conformance corpus by auto-discovery
+    (citizen_modules under runmal.plugins),
+    giving 15 citizens; the P-097 battery
+    re-run on the merged tree passed 30 / 0
+    with game-bridge present. No pin heal
+    was needed - no battery pin hard-codes
+    the 14-citizen in-tree corpus.
+    Merge conflict in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md only
+    (append-vs-append), resolved keeping
+    the P-096 and P-097 entries exactly
+    once; no other conflicts. Combined
+    batteries on the merged tree: 63 passed
+    / 0 failed (= 33 P-096 + 30 P-097,
+    exact). Forge confirmation suite:
+    3985 passed / 4 skipped / 0 failed
+    (= 3955 P-096 confirmation + 30,
+    exact).
+    Next in roadmap order: P-098.
+P-098 BANKED - Plugin settings UI generated from declared schemas (Part VI)
+    - team-01 commit c60f521 merged (no-ff)
+    into yrsa/two-mirrors-build as 7d27d4b
+    and pushed; ls-remote verified
+    7d27d4bed2a126d9f4e16d3f22580a69f55207e6.
+    Evidence (team-01 worktree
+    hidden_files/P098_EVIDENCE.md):
+    battery 32 passed, neighbours 542
+    passed, team full suite 3987 passed /
+    4 skipped / 0 failed (= 3955 P-096
+    forge confirmation + 32, exact).
+    Slice:
+    src/runmal/plugins/settings_ui.py (new,
+    857 lines - one schema-driven renderer:
+    form document + escaped HTML, strict
+    named-error validation, and a
+    custody-shaped declared file store for
+    owner values),
+    src/runmal/plugins/router.py (+99 lines,
+    append-only: four settings routes),
+    tests/test_p098_plugin_settings_ui.py
+    (32 tests),
+    docs/PLUGIN_SETTINGS_UI_2026-11-07.md,
+    clean-room log append. 5 files, +1514.
+    Migration: NONE (head stays 0041; no
+    migration taken).
+    Honest limitations: stored owner values
+    do not yet change a running citizen's
+    behaviour - shipped citizens still read
+    manifest defaults at runtime; this slice
+    is the generated UI + strict validation
+    + the durable owner-value store.
+    runmal.plugin-settings-ui is not in
+    P-094 custody's fixed citizen list (the
+    same carried class as runmal.game-bridge
+    from P-096); its sections export/delete
+    through its own custody-shaped verbs.
+    Merge conflict in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md only
+    (append-vs-append), resolved as an
+    additive union keeping the P-097 and
+    P-098 entries exactly once; router.py
+    auto-merged; no other conflicts.
+    Banking heal: none needed. Corpus: on
+    the merged tree the P-098 citizen
+    runmal.plugin-settings-ui joins the
+    P-097 conformance corpus by
+    auto-discovery, giving 16 citizens, and
+    passes as shipped. Combined batteries
+    on the merged tree: 62 passed / 0
+    failed (= 30 P-097 + 32 P-098, exact).
+    Forge confirmation suite: 4017 passed
+    / 4 skipped / 0 failed (= 3985 P-097
+    confirmation + 32, exact; log
+    hidden_files/p098_forge_confirmation.log).
+    Next in roadmap order: P-099.
+P-099 BANKED - Failure manners (Part VI)
+    - team-02 commit d42556c merged (no-ff)
+    into yrsa/two-mirrors-build as 77e3315
+    and pushed; ls-remote verified
+    77e33150f184b5a507a3626e9324817fb70e5be3.
+    Evidence (team-02 worktree
+    hidden_files/P099_EVIDENCE.md):
+    battery 24 passed, neighbours 542
+    passed, team full suite 3979 passed /
+    4 skipped / 0 failed.
+    Slice:
+    src/runmal/plugins/failure.py (new,
+    369 lines - plain FailureReport,
+    leak-free by construction: the plain
+    report carries no message text at all;
+    guarded host-call roads
+    guard_plugin_call / _async; the
+    sandbox-to-registry bridge
+    apply_sandbox_bridge, 1:1, watermarked,
+    idempotent, parity at 3 strikes;
+    deliberate re-enable only - nothing
+    retries or auto-re-enables, strikes
+    clear on enable, history kept),
+    src/runmal/plugins/router.py (+25 lines:
+    GET /plugins/failure-reports and
+    GET /plugins/{plugin_id}/failure-report),
+    tests/test_p099_failure_manners.py
+    (24 tests),
+    docs/FAILURE_MANNERS_2026-11-07.md,
+    clean-room log append. 5 files, +931.
+    Migration: NONE (head stays 0041; no
+    migration taken - all failure state is
+    the P-081 registry process-local record).
+    Honest limitations: failure state is
+    process-local; reports do not survive
+    a restart. The sandbox bridge is an
+    explicit host act; a host that never
+    calls it keeps both records separate
+    (each correct on its own). Scrubbing
+    hides caller-named secret values; a
+    secret nobody names could still sit in
+    a scrubbed message field of the
+    owner-facing dict (stated in slice doc).
+    Merge conflicts: docs/CLEAN_ROOM_LOG_
+    2026-10-30.md only (append-vs-append),
+    resolved as an additive union keeping
+    the P-097, P-098 and P-099 entries
+    exactly once; router.py auto-merged -
+    verified as a true additive union:
+    both the P-098 settings routes
+    (settings-form, GET/POST settings,
+    settings/delete) and the P-099
+    failure-report routes are present and
+    py_compile passes. No other conflicts.
+    Banking heal: none needed. Corpus:
+    P-099 adds no new citizen (failure.py
+    is a manners layer, not a citizen);
+    the P-097 conformance corpus on the
+    merged tree stays 16 citizens, all
+    passing and listable as shipped
+    (battery re-run 30 passed). Combined
+    batteries on the merged tree: 56 passed
+    / 0 failed (= 32 P-098 + 24 P-099,
+    exact). Forge confirmation suite:
+    4041 passed / 4 skipped / 0 failed
+    (= 4017 P-098 confirmation + 24, exact;
+    log hidden_files/p099_forge_confirmation.log).
+    Next in roadmap order: P-100 (Part VI gate).
