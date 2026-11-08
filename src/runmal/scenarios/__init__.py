@@ -52,6 +52,13 @@
   standing honesty notes (P-139, Part IX, DERIVED
   scope).
 - ``replacepreview`` — definition replace-impact preview: for one stored definition, the bindings a replace would leave pinning a superseded revision (split by pinned revision against the current one), the organisation row that stays live, and the next revision, read before any replace is committed (P-140, Part IX, DERIVED scope).
+- ``bindingcensus`` — global binding census: every
+  binding the caller holds, read through P-135 summaries
+  verbatim and classified against the live definition
+  store as current, superseded, ahead (impossible by
+  construction; a hand-damaged store, named) or stale,
+  with per-definition rollups and counts summed from the
+  rows themselves (P-144, Part IX, DERIVED scope).
 - ``packs`` — scenario definition sharing packs: one
   stored definition sealed in an envelope (a manifest
   with a SHA-256 content checksum over the canonical
@@ -111,6 +118,10 @@ from runmal.scenarios.chatpreview import preview_bind_for_chat
 from runmal.scenarios.deletepreview import preview_delete_impact
 from runmal.scenarios.replacepreview import preview_replace_impact
 from runmal.scenarios.packpreview import preview_pack_import
+from runmal.scenarios.bindingcensus import (
+    BINDING_STATES,
+    census_bindings,
+)
 from runmal.scenarios.packs import (
     CONFLICT_CREATE_NEW,
     CONFLICT_MODES,
@@ -240,6 +251,8 @@ __all__ = [
     "preview_delete_impact",
     "preview_replace_impact",
     "preview_pack_import",
+    "BINDING_STATES",
+    "census_bindings",
     "CONFLICT_CREATE_NEW",
     "CONFLICT_MODES",
     "CONFLICT_REJECT",

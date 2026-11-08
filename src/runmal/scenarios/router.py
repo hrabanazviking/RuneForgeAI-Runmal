@@ -6,6 +6,7 @@
 + definition delete-impact preview (P-139) + definition replace-impact preview (P-140)
 + scenario definition sharing packs (P-141).
 + library-scoped pack import preview (P-143).
++ global binding census (P-144).
 
 P-026 roads (stateless): parse a scenario file and report
 honestly, and re-export it. Those roads are unchanged.
@@ -54,6 +55,13 @@ service lives in runmal.scenarios.deletepreview; this
 module is only the HTTP shape.
 
 P-140 (Part IX, DERIVED scope) adds the replace-impact preview road: for one stored definition, the bindings a PUT replace would leave pinning a superseded revision - split by their pinned revision against the current one - the organisation row that stays live, and the next revision, all read before any replace is committed. The service lives in runmal.scenarios.replacepreview; this module is only the HTTP shape.
+P-144 (Part IX, DERIVED scope) adds the global binding
+census road: every binding the caller holds, read through
+P-135 summaries and classified against the live
+definition store as current, superseded, ahead or stale,
+with per-definition rollups - the candidate P-142 named.
+The service lives in runmal.scenarios.bindingcensus; this
+module is only the HTTP shape.
 P-141 (Part IX, DERIVED scope) adds the sharing-pack
 roads: one stored definition sealed in a pack envelope
 (a manifest with a SHA-256 content checksum over the
@@ -122,6 +130,7 @@ from runmal.scenarios.deletepreview import preview_delete_impact
 from runmal.scenarios.replacepreview import preview_replace_impact
 from runmal.scenarios.packs import build_pack, import_pack, inspect_pack
 from runmal.scenarios.packpreview import preview_pack_import
+from runmal.scenarios.bindingcensus import census_bindings
 from runmal.scenarios.storedexport import (
     DEFAULT_FORMAT,
     FORMATS,
@@ -236,6 +245,30 @@ async def list_scenario_bindings(
     live = {row.id for row in _store().list_for_owner(user_id)}
     rows = list_bindings(_bindings(), user_id, live)
     return {"bindings": rows, "total": len(rows)}
+
+
+@router.get("/scenarios/bindings/census", status_code=status.HTTP_200_OK)
+async def census_scenario_bindings(
+    user_id: str = Depends(get_owner_id),
+):
+    """Every binding the caller holds, classified (P-144).
+
+    The global census over the P-135 list surface: each
+    binding summary verbatim, enriched with the live
+    definition current revision and name and its state -
+    current, superseded (a replace landed after the
+    bind), ahead (impossible by construction; a
+    hand-damaged store, named) or stale (the definition
+    is gone) - plus per-definition rollups and census
+    counts summed from the rows themselves. Declared
+    before the {chat_id} binding road so the literal
+    "census" is never read as a chat id (the P-135
+    declaration-order precedent). Owner-scoped; an owner
+    with no bindings answers the honest zero census.
+    Pure read: writes, unbinds and cascades nothing.
+    """
+    definitions = _store().list_for_owner(user_id)
+    return census_bindings(_bindings(), user_id, definitions)
 
 
 @router.post("/scenarios/import-pack", status_code=status.HTTP_201_CREATED)
