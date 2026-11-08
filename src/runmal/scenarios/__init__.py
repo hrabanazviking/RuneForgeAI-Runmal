@@ -152,6 +152,18 @@
   appears in at all), stale bindings counted in the
   totals and rowing under no definition (P-151,
   Part IX, DERIVED scope).
+- ``plancensus`` - library bind-plan census: every
+  definition the caller holds, rowed as the census
+  subject (the P-131 summary verbatim) with the plan
+  P-136's preview computes for it - its own counts
+  and the plan's skipped rows verbatim - classified
+  under the plan law (clean, partial, skips_only,
+  empty), with a by-where rollup in first-appearance
+  order and counts summed from the rows themselves -
+  a pure read carrying counts and skipped rows only:
+  no message text, no flag or variable value and no
+  seedable key is named (P-153, Part IX, DERIVED
+  scope).
 - ``router`` — the HTTP roads: the stateless P-026
   import/export roads plus the P-131 definition CRUD
   roads on the same /scenarios prefix.
@@ -209,6 +221,10 @@ from runmal.scenarios.reportcensus import census_unmappable
 from runmal.scenarios.definitioncensus import (
     DEFINITION_CUSTODY_STATES,
     census_definitions,
+)
+from runmal.scenarios.plancensus import (
+    BIND_PLAN_STATES,
+    census_bind_plans,
 )
 from runmal.scenarios.chatcensus import (
     CHAT_CUSTODY_STATES,
@@ -365,6 +381,8 @@ __all__ = [
     "census_unmappable",
     "DEFINITION_CUSTODY_STATES",
     "census_definitions",
+    "BIND_PLAN_STATES",
+    "census_bind_plans",
     "CONFLICT_CREATE_NEW",
     "CONFLICT_MODES",
     "CONFLICT_REJECT",

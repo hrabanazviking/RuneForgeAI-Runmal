@@ -184,6 +184,7 @@ from runmal.scenarios.definitioncensus import (
     DEFINITION_CUSTODY_STATES,
     census_definitions,
 )
+from runmal.scenarios.plancensus import census_bind_plans
 from runmal.scenarios.storedexport import (
     DEFAULT_FORMAT,
     FORMATS,
@@ -341,6 +342,33 @@ async def census_scenario_library_definitions(
     definitions = _store().list_for_owner(user_id)
     return await census_definitions(
         session, _bindings(), user_id, definitions)
+
+
+@router.get(
+    "/scenarios/library/bind-plans", status_code=status.HTTP_200_OK
+)
+async def census_scenario_library_bind_plans(
+    user_id: str = Depends(get_owner_id),
+):
+    """The caller's library bind-plan census (P-153).
+
+    Every definition the caller holds, rowed with the
+    plan P-136's preview computes for it alone - its
+    own counts and the plan's skipped rows verbatim -
+    classified under the plan law (clean, partial,
+    skips_only, empty), with a by-where rollup in
+    first-appearance order and counts summed from the
+    rows themselves. Declared with the library roads
+    before the {definition_id} roads so the literal
+    "library" is never read as a definition id (the
+    P-134 library/tags precedent). Owner-scoped; an
+    owner with no definitions answers the honest zero
+    census. No 404 case. Pure read: writes, binds,
+    seeds and repairs nothing, and carries counts and
+    skipped rows only - no message text, no flag or
+    variable value, no seedable key.
+    """
+    return census_bind_plans(_store().list_for_owner(user_id))
 
 
 @router.get("/scenarios/bindings", status_code=status.HTTP_200_OK)
