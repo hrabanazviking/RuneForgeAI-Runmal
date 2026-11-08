@@ -7465,3 +7465,140 @@ P-109 BANKED - Voice Affects as Carried Data (Part VII)
     character-asks repeat half and
     P-108's limitations stay open.
     Next in roadmap order: P-110.
+P-110 BANKED - Voice Turn Latency Evidence (Part VII)
+    - team-01 commit 9bed9b4 merged (no-ff)
+    into yrsa/two-mirrors-build as 683905d;
+    merge pushed; ls-remote verified
+    683905d8e580b923f73a85a398afe390e42a77bc.
+    Evidence (team-01 worktree
+    hidden_files/P110_EVIDENCE.md):
+    battery 16 passed, neighbours
+    314 passed / 2 skipped / 0 failed
+    (21 voice files: p010, p091,
+    p101-p107, p110, s501-s509, s511,
+    s512; the 2 skips are the
+    pre-existing environmental
+    optionals), team full suite
+    4222 passed / 4 skipped / 0 failed
+    on the 462a675 base (P-107 banking
+    record; the slice was built on
+    that base while P-108 and P-109
+    banked ahead of it, and was
+    reconciled at this merge in
+    roadmap order).
+    Derived scope ACCEPTED by the keeper:
+    P-110 gives the P-101 session
+    citizen the latency evidence its
+    persisted turns never carried.
+    voice/latency.py derives one
+    turn's durations ONLY from the
+    orchestrator transitions stamped
+    with that turn_id (S505's
+    clock-stamped log): a duration
+    exists only when both of its
+    stage endpoints were stamped for
+    that turn; a negative span is
+    dropped, never clamped; nothing
+    is zero-filled and no wall clock
+    is read for evidence. Aggregates
+    report {count, p50, p95} per
+    duration key via S510's own
+    percentile - imported, never
+    reimplemented (VOICE_ARCHITECTURE
+    sections 2 and 10). response_seconds
+    is named generation duration,
+    never time-to-first-token: the
+    first token is not stamped and
+    is not claimed. A manually
+    recorded turn carries no evidence
+    and the views say so
+    (has_latency_evidence False) -
+    evidence-or-nothing throughout.
+    The roadmap gives Part VII only
+    its part line.
+    Slice:
+    src/runmal/voice/latency.py
+    (new: turn_durations /
+    turn_latency_view /
+    session_latency_view pure views
+    + clean_durations tolerant
+    stored-read),
+    src/runmal/voice/session.py
+    (VoiceTurnRecord gains durations,
+    default empty = NO evidence;
+    from_orchestrator /
+    append_orchestrator_turn accept
+    the transition log and derive
+    at record time),
+    src/runmal/voice/live.py
+    (the live host's persist road
+    passes its orchestrator's
+    transitions into the append road,
+    one additive argument),
+    src/runmal/voice/router.py
+    (founding road, additive: GET
+    /voice/sessions/{id}/latency;
+    session payloads carry turn
+    durations additively),
+    src/runmal/voice/__init__.py
+    (module-map entry, additive),
+    tests/test_p110_voice_latency.py
+    (16 tests),
+    tests/test_p102_live_voice.py
+    (the labelled session double's
+    append road accepts the new
+    transitions argument; no
+    assertion changed - the in-slice
+    fix recorded in the evidence),
+    docs/VOICE_LATENCY_EVIDENCE_2026-11-08.md,
+    clean-room log append (+1). 9 files,
+    +662/-2.
+    Migration: NONE (head stays 0041).
+    Merge conflicts in the clean-room
+    log and voice/session.py, both
+    resolved as additive unions: the
+    log keeps the P-108, P-109 and
+    P-110 entries exactly once each;
+    session.py keeps BOTH the P-109
+    affect_from_params import and the
+    P-110 latency imports, with both
+    usages live. __init__.py and
+    router.py auto-merged; the merged
+    tree carries P-108 repeat_requests
+    + repeat_router (3 roads wired in
+    app.py), P-109 affects (both
+    founding-road affect routes) AND
+    P-110 latency (the /latency road),
+    py_compile green on all touched
+    Python files. No banking heal
+    needed.
+    Combined batteries on the merged
+    tree: 183 passed / 0 failed
+    (28 + 24 + 19 + 17 + 21 + 18 + 12 + 15 + 13 + 16).
+    Log hidden_files/p110_combined.log
+    (forge) on purplelongship.
+    Forge confirmation suite:
+    4250 passed / 4 skipped / 0 failed
+    in 219.88s, exit 0 - exact match to
+    expectation (= 4234 + 16), no
+    contention re-runs needed. Log
+    hidden_files/p110_confirm.log (forge).
+    Honest limitations carried:
+    stage coverage is the transition
+    log's coverage - VAD speech-on
+    latency, endpoint hangover and
+    LLM TTFT are not stamped per turn
+    and stay unrecorded; interruption
+    detection-to-stop is not derivable
+    and is not claimed. The founding
+    /voice/status global
+    MetricsCollector remains unfed,
+    exactly as banked - named, not
+    silently half-wired. Speak turns
+    carry no STT/response stages;
+    their evidence is partial by
+    construction and reads as such.
+    VX-12's engine half, VX-13, the
+    character-asks repeat half and
+    P-108's limitations stay open.
+    Next in roadmap order: P-111.
