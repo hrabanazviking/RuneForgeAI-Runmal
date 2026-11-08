@@ -29,6 +29,9 @@ Layered, provider-isolated pieces (see docs/VOICE_ARCHITECTURE.md):
   truth: low-confidence detection + replacement suggestions
   over the persisted evidence (P-105, VX-11).
 - ``routing``   — persisted logical device routes (S513).
+- ``latency``   — per-turn latency evidence derived from the
+  orchestrator's clock-stamped transitions, persisted on the
+  session record (P-110).
 - ``benchmark`` — reproducible voice benchmark harness (S514).
 
 Core modules are stdlib-only: heavy runtime packages (numpy, onnxruntime,

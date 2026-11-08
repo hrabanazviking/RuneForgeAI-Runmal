@@ -318,7 +318,9 @@ class LiveVoiceController:
             record = turns[host.persisted]
             heard = host.ledger.heard_text(record.turn_id, record.response_text)
             try:
-                turn = host.session.append_orchestrator_turn(record, heard)
+                turn = host.session.append_orchestrator_turn(
+                    record, heard, transitions=host.orchestrator.transitions
+                )
             except Exception as exc:
                 # The citizen's road refused (stopped session):
                 # a stopped session cannot stay live.
