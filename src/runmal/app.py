@@ -7,6 +7,7 @@ Protected (bearer local credential): /api/v1/*
 from __future__ import annotations
 
 from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi.responses import HTMLResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
@@ -42,6 +43,7 @@ from runmal.voice.autoproject_router import router as autoproject_router
 from runmal.voice.mishearing_router import router as mishearing_router
 from runmal.voice.repeat_router import router as repeat_router
 from runmal.voice.router import voice_page
+from runmal.vision.router import router as vision_router
 from runmal.web.router import _HERE as _WEB_DIR
 from runmal.web.router import router as web_router
 
@@ -150,13 +152,13 @@ def create_app(
         prefix="/api/v1",
         dependencies=[Depends(require_local_auth)],
     )
-    app.get("/memories", response_class=None)(memories_browser_page)
+    app.get("/memories", response_class=HTMLResponse)(memories_browser_page)
     app.include_router(
         voice_router,
         prefix="/api/v1",
         dependencies=[Depends(require_local_auth)],
     )
-    app.get("/voice", response_class=None)(voice_page)
+    app.get("/voice", response_class=HTMLResponse)(voice_page)
     app.include_router(
         live_router,
         prefix="/api/v1",
@@ -179,6 +181,11 @@ def create_app(
     )
     app.include_router(
         repeat_router,
+        prefix="/api/v1",
+        dependencies=[Depends(require_local_auth)],
+    )
+    app.include_router(
+        vision_router,
         prefix="/api/v1",
         dependencies=[Depends(require_local_auth)],
     )
