@@ -37,7 +37,10 @@ contracts, from measured evidence only.
 - Area C (honest accounting): the carried Part VI items are
   pinned as measured facts, never loosened: the P-094 fixed
   citizen list omits runmal.game-bridge (P-096) and
-  runmal.plugin-settings-ui (P-098); P-098 stored values do
+  runmal.plugin-settings-ui (P-098) [that omission - gate
+  finding F1 - was discharged by P-113 at the next custody
+  touch, and its pin below now holds the covered state];
+  P-098 stored values do
   not change a running citizen's behaviour; P-099 failure
   state is process-local; the P-081 boot registry is empty
   by deliberate design. Hygiene: migration head stays 0041
@@ -462,20 +465,35 @@ def test_b_crash_is_contained_by_the_p099_manners(app_client):
 # -- Area C: honest accounting, pinned --------------------------
 
 
-def test_c_custody_fixed_list_omits_two_citizens(tmp_path):
-    assert "runmal.game-bridge" not in cu.CITIZEN_PLUGIN_IDS
-    assert "runmal.plugin-settings-ui" not in cu.CITIZEN_PLUGIN_IDS
+def test_c_custody_fixed_list_covers_two_citizens(tmp_path):
+    # Until P-113 this test pinned gate finding F1: the
+    # fixed list omitted both citizens and bare-id custody
+    # refused them. P-113 discharged F1 at the next custody
+    # touch; the pin now holds the covered state at equal
+    # strength (the gate record doc is unchanged history).
+    assert "runmal.game-bridge" in cu.CITIZEN_PLUGIN_IDS
+    assert "runmal.plugin-settings-ui" in cu.CITIZEN_PLUGIN_IDS
     assert cu.custody_coverage()["citizens"] == list(
         cu.CITIZEN_PLUGIN_IDS)
-    assert len(cu.CITIZEN_PLUGIN_IDS) == 12
-    # Bare-id custody refuses both: no adapter, no row, no
-    # registration -- the omission is real, not cosmetic.
-    for plugin_id in ("runmal.game-bridge",
-                      "runmal.plugin-settings-ui"):
-        with pytest.raises(cu.UnknownPluginError):
-            asyncio.run(cu.export_plugin_data(plugin_id))
-    # Yet both ARE custody-reachable once registered: the
-    # omission is in the fixed list only (gate finding F1).
+    assert len(cu.CITIZEN_PLUGIN_IDS) == 14
+    # Bare-id custody now serves both: each export stamps
+    # its real manifest, carries its own data section and
+    # verifies its checksum - the coverage is real, not
+    # cosmetic, exactly as the omission was.
+    for plugin_id, section_name in (
+            ("runmal.game-bridge", "game_bridge_store"),
+            ("runmal.plugin-settings-ui",
+             "plugin_settings_store")):
+        doc = asyncio.run(cu.export_plugin_data(
+            plugin_id, user_id=str(uuid.uuid4()),
+            base_dir=tmp_path))
+        assert doc["plugin_id"] == plugin_id
+        assert doc["manifest"]["id"] == plugin_id
+        assert section_name in [
+            s["name"] for s in doc["sections"]]
+        assert cu.verify_custody_checksum(doc) is True
+    # And both remain custody-reachable once registered,
+    # exactly as the gate measured.
     registry = _composed_registry()
     for plugin_id in ("runmal.game-bridge",
                       "runmal.plugin-settings-ui"):
