@@ -1,4 +1,5 @@
-"""Scenario API: file interop (P-026) + stored definitions (P-131).
+"""Scenario API: file interop (P-026) + stored definitions (P-131)
++ scenario-to-chat binding (P-132).
 
 P-026 roads (stateless): parse a scenario file and report
 honestly, and re-export it. Those roads are unchanged.
@@ -18,8 +19,18 @@ definition carries (P-027: content is data, never code).
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from runmal.db.deps import get_owner_id
+from runmal.db.deps import get_owner_id, get_session
+from runmal.scenarios.binding import (
+    BindingConflictError,
+    BindingNotFoundError,
+    ScenarioBindingStore,
+    bind_scenario,
+    bindings_path,
+    get_binding,
+    unbind,
+)
 from runmal.scenarios.fileexport import export_native, export_voxta
 from runmal.scenarios.fileimport import parse_scenario_file
 from runmal.scenarios.filemodels import ScenarioParseError
@@ -167,3 +178,87 @@ async def delete_scenario_definition(
             detail="scenario definition not found",
         )
     return {"id": record.id, "deleted": True}
+
+
+# --------------------------------------------- binding (P-132)
+
+
+def _bindings() -> ScenarioBindingStore:
+    return ScenarioBindingStore(bindings_path())
+
+
+@router.post("/scenarios/{definition_id}/bind", status_code=status.HTTP_201_CREATED)
+async def bind_scenario_definition(
+    definition_id: str,
+    body: dict,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Bind one owned definition to one owned empty chat (P-132).
+
+    The definition's bootstrap lines become the chat's
+    opening messages and its initial flags / variables seed
+    through P-093, exactly as the binding record returned
+    here accounts. Unknown or foreign definition OR chat
+    answers 404 (existence never leaks); a group room, an
+    already-bound chat or a chat with messages answers 409;
+    a body without a string chat_id answers 422. Nothing is
+    written on any refusal.
+    """
+    chat_id = body.get("chat_id") if isinstance(body, dict) else None
+    if not isinstance(chat_id, str) or not chat_id:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="chat_id must be a non-empty string",
+        )
+    try:
+        record = await bind_scenario(session, user_id, definition_id, chat_id)
+    except BindingNotFoundError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
+        ) from exc
+    except BindingConflictError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail=str(exc)
+        ) from exc
+    return record.to_dict()
+
+
+@router.get("/scenarios/bindings/{chat_id}", status_code=status.HTTP_200_OK)
+async def get_scenario_binding(
+    chat_id: str,
+    user_id: str = Depends(get_owner_id),
+):
+    """The chat's active binding record, or 404."""
+    record = get_binding(_bindings(), user_id, chat_id)
+    if record is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="scenario binding not found",
+        )
+    return record.to_dict()
+
+
+@router.delete("/scenarios/bindings/{chat_id}", status_code=status.HTTP_200_OK)
+async def delete_scenario_binding(
+    chat_id: str,
+    user_id: str = Depends(get_owner_id),
+):
+    """Remove the chat's binding record, or 404.
+
+    Only the record goes: messages and variables the
+    binding seeded are the chat's own truth and stay —
+    the answer says so plainly.
+    """
+    record = unbind(_bindings(), user_id, chat_id)
+    if record is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="scenario binding not found",
+        )
+    return {
+        "chat_id": record.chat_id,
+        "binding_id": record.id,
+        "unbound": True,
+        "seeded_content_kept": True,
+    }
