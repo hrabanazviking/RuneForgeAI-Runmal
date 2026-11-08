@@ -786,6 +786,20 @@ async def delete_chat(session: AsyncSession, user_id: str, chat_id: str) -> bool
         purge_chat(chat_id)
     except Exception:
         pass
+    try:
+        # P-120 custody: the chat's image attachments (index
+        # rows + byte files) die with the chat, like its vision
+        # descriptions above.
+        import os as _os
+        from pathlib import Path as _Path
+
+        from runmal.vision.attachments import AttachmentStore
+
+        AttachmentStore(
+            _Path(_os.environ.get("RUNMAL_DATA_DIR", ".runmal-data"))
+        ).purge_chat(chat_id)
+    except Exception:
+        pass
     await _dispatch_plugin("chat.deleted", chat_id=chat_id, data={"chat_id": chat_id})
     return True
 
@@ -1012,6 +1026,19 @@ async def delete_message(
     if was_materialised:
         _renumber(await _ordered_messages(session, chat_id))
     await session.commit()
+    try:
+        # P-120 custody: a deleted message's image attachments
+        # (index rows + byte files) are purged with it.
+        import os as _os
+        from pathlib import Path as _Path
+
+        from runmal.vision.attachments import AttachmentStore
+
+        AttachmentStore(
+            _Path(_os.environ.get("RUNMAL_DATA_DIR", ".runmal-data"))
+        ).purge_message(message_id)
+    except Exception:
+        pass
     await _dispatch_plugin(
         "message.deleted",
         chat_id=chat_id,

@@ -48,6 +48,7 @@ DESCRIPTIONS_FILENAME = "vision_descriptions.json"
 
 SOURCE_ASSET = "asset"
 SOURCE_INLINE = "inline"
+SOURCE_ATTACHMENT = "attachment"
 
 
 class VisionError(ValueError):

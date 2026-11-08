@@ -13,6 +13,10 @@
   ``Capabilities.vision`` truth derived from the adapters'
   own declarations (P-053 road), and plain refusals for
   unknown or semantic requests.
+- ``attachments`` — user-supplied images attached to a
+  chat or one of its messages: bytes + honest sniffed
+  metadata on the same JSON-store pattern, describable
+  through the describe road (P-120).
 - ``router`` — the owner-scoped HTTP road
   (/api/v1/vision/*).
 """
