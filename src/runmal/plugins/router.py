@@ -737,3 +737,61 @@ async def chat_variables_clear(
     except ValueError as exc:
         raise _visible(exc) from exc
     return {"cleared": True, "chat_id": chat_id, "removed": removed}
+
+
+# -- Plugin Data Custody surface (P-094) -----------------------------------
+# Export + delete-with-the-plugin, in the house router idiom
+# (owner dep, house error mapping). Instances are not in the
+# registry (records hold handlers, not instances), so the HTTP
+# road reaches the owner-scoped roads that need no live
+# instance (durable file, database via the request session,
+# host ledger via the default manager) and reports instance
+# sections unavailable with the reason named - never a partial
+# export dressed as complete. The in-process road
+# (runmal.plugins.custody) reaches instance state.
+
+
+@router.get("/plugins/{plugin_id}/custody/export")
+async def plugin_custody_export(
+    plugin_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    from runmal.plugins import custody as cu
+
+    try:
+        return await cu.export_plugin_data(
+            plugin_id, user_id=user_id, session=session,
+            registry=_registry(), manager=service.plugin_manager())
+    except cu.UnknownPluginError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(exc)) from exc
+    except cu.CustodyError as exc:
+        raise _visible(exc) from exc
+
+
+@router.post("/plugins/{plugin_id}/custody/delete")
+async def plugin_custody_delete(
+    plugin_id: str,
+    body: dict,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    from runmal.plugins import custody as cu
+
+    if not isinstance(body, dict) or body.get("confirm") is not True:
+        raise _visible(ValueError(
+            "custody deletion requires an explicit {confirm: true}"))
+    try:
+        report = await cu.delete_plugin_data(
+            plugin_id, user_id=user_id, session=session,
+            registry=_registry(), manager=service.plugin_manager())
+    except cu.UnknownPluginError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(exc)) from exc
+    except cu.CustodyError as exc:
+        raise _visible(exc) from exc
+    await session.commit()
+    return report
