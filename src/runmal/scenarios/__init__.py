@@ -94,6 +94,17 @@
   judged that axis), with per-definition rollups and
   counts summed from the rows themselves (P-148,
   Part IX, DERIVED scope).
+- ``chatcoverage`` - chat coverage census: every
+  chat the caller holds, rowed as the census subject
+  (identity facts only - id, title, group flag,
+  creation stamp) and classified by the coverage of
+  the binding it carries - its P-144 verdict carried
+  verbatim on the row and read on the chat axis as
+  unbound (no binding at all - the one census a
+  never-bound chat appears in), sound, definition_drift
+  or definition_gone - with orphaned bindings counted
+  in the totals and rowing under no chat (P-152,
+  Part IX, DERIVED scope).
 - ``custodycensus`` - binding custody census: every
   binding judged on BOTH axes at once - the P-144
   definition verdict and the P-148 chat verdict joined
@@ -202,6 +213,10 @@ from runmal.scenarios.definitioncensus import (
 from runmal.scenarios.chatcensus import (
     CHAT_CUSTODY_STATES,
     census_binding_chats,
+)
+from runmal.scenarios.chatcoverage import (
+    CHAT_COVERAGE_STATES,
+    census_chat_coverage,
 )
 from runmal.scenarios.custodycensus import (
     CUSTODY_STATES,
@@ -343,6 +358,8 @@ __all__ = [
     "census_bindings",
     "CHAT_CUSTODY_STATES",
     "census_binding_chats",
+    "CHAT_COVERAGE_STATES",
+    "census_chat_coverage",
     "CUSTODY_STATES",
     "census_binding_custody",
     "census_unmappable",
