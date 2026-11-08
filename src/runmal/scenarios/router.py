@@ -1,6 +1,7 @@
 """Scenario API: file interop (P-026) + stored definitions (P-131)
 + scenario-to-chat binding (P-132) + stored-definition file export (P-133)
-+ scenario library organisation (P-134).
++ scenario library organisation (P-134) + binding
+  lifecycle read surface (P-135).
 
 P-026 roads (stateless): parse a scenario file and report
 honestly, and re-export it. Those roads are unchanged.
@@ -38,6 +39,8 @@ from runmal.scenarios.binding import (
     bind_scenario,
     bindings_path,
     get_binding,
+    list_bindings,
+    list_bindings_for_definition,
     unbind,
 )
 from runmal.scenarios.fileexport import export_native, export_voxta
@@ -151,6 +154,25 @@ async def list_scenario_library_tags(
     rows = _store().list_for_owner(user_id)
     tags = list_tags(rows, _records_by_id(user_id))
     return {"tags": tags, "total": len(tags)}
+
+
+@router.get("/scenarios/bindings", status_code=status.HTTP_200_OK)
+async def list_scenario_bindings(
+    user_id: str = Depends(get_owner_id),
+):
+    """Every binding the caller holds, summary shape (P-135).
+
+    Declared before the {definition_id} roads so the
+    literal "bindings" is never read as a definition id
+    (the P-134 library/tags precedent). Summaries carry
+    counts, never seeded content, and each names
+    definition_exists: deleting a definition does not
+    cascade into the binding store, so a stale binding is
+    named here, never hidden. Pure read.
+    """
+    live = {row.id for row in _store().list_for_owner(user_id)}
+    rows = list_bindings(_bindings(), user_id, live)
+    return {"bindings": rows, "total": len(rows)}
 
 
 @router.get("/scenarios", status_code=status.HTTP_200_OK)
@@ -436,6 +458,38 @@ async def delete_scenario_binding(
         "binding_id": record.id,
         "unbound": True,
         "seeded_content_kept": True,
+    }
+
+
+@router.get(
+    "/scenarios/{definition_id}/bindings",
+    status_code=status.HTTP_200_OK,
+)
+async def list_scenario_bindings_for_definition(
+    definition_id: str,
+    user_id: str = Depends(get_owner_id),
+):
+    """One owned definition's bindings, summary shape (P-135).
+
+    Existence is decided before anything is read: an
+    unknown or foreign definition answers 404, exactly
+    like every other parameterised road. An owned
+    definition with no bindings answers 200 with an
+    empty list — the honest zero, not a refusal.
+    """
+    record = _store().get(definition_id, user_id)
+    if record is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="scenario definition not found",
+        )
+    live = {row.id for row in _store().list_for_owner(user_id)}
+    rows = list_bindings_for_definition(
+        _bindings(), user_id, definition_id, live)
+    return {
+        "definition_id": definition_id,
+        "bindings": rows,
+        "total": len(rows),
     }
 
 

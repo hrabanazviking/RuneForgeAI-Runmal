@@ -19,6 +19,10 @@
   materialisation plan, and the bind service that seeds
   a definition's bootstrap lines and initial state into
   an empty chat (P-132, Part IX, DERIVED scope).
+- ``binding`` read surface — owner-scoped list / inspect
+  summaries over the binding store's list verbs, each
+  naming whether its definition still exists (P-135,
+  Part IX, DERIVED scope).
 - ``organisation`` — scenario library organisation:
   tags, favourites and findability over stored
   definitions in their own versioned JSON document,
@@ -39,6 +43,8 @@ from runmal.scenarios.binding import (
     bind_scenario,
     bindings_path,
     get_binding,
+    list_bindings,
+    list_bindings_for_definition,
     plan_materialisation,
     unbind,
 )
@@ -165,6 +171,8 @@ __all__ = [
     "organisation_view",
     "query_definitions",
     "get_binding",
+    "list_bindings",
+    "list_bindings_for_definition",
     "plan_materialisation",
     "unbind",
     "export_native",
