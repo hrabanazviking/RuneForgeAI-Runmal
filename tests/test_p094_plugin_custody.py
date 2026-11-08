@@ -135,9 +135,12 @@ def test_sandbox_grants_are_empty():
 def test_coverage_names_every_citizen():
     coverage = cu.custody_coverage()
     assert coverage["citizens"] == list(cu.CITIZEN_PLUGIN_IDS)
+    # P-113 (gate finding F1): runmal.game-bridge joins the
+    # durable-file citizens its store always fitted.
     assert set(coverage["durable_file"]) == {
         "runmal.quick-replies", "runmal.regex-scripts",
-        "runmal.expressions", "runmal.variables"}
+        "runmal.expressions", "runmal.variables",
+        "runmal.game-bridge"}
     assert coverage["database"] == ["runmal.summarise"]
     assert coverage["stateless"] == [cu.PLUGIN_ID]
 
