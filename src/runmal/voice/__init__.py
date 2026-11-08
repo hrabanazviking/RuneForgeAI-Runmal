@@ -35,6 +35,9 @@ Layered, provider-isolated pieces (see docs/VOICE_ARCHITECTURE.md):
   on voice profiles + session snapshots; no backend consumes
   one yet and every surface says so (P-109).
 - ``routing``   — persisted logical device routes (S513).
+- ``latency``   — per-turn latency evidence derived from the
+  orchestrator's clock-stamped transitions, persisted on the
+  session record (P-110).
 - ``benchmark`` — reproducible voice benchmark harness (S514).
 
 Core modules are stdlib-only: heavy runtime packages (numpy, onnxruntime,

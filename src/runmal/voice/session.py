@@ -49,6 +49,7 @@ from pathlib import Path
 
 from runmal.voice.backends import TTS_REGISTRY
 from runmal.voice.affects import affect_from_params
+from runmal.voice.latency import clean_durations, turn_durations
 from runmal.voice.ledger import HeardReconstruction
 from runmal.voice.orchestrator import TurnRecord
 from runmal.voice.profiles import DEFAULT_VOICE, CharacterVoice
@@ -324,6 +325,11 @@ class VoiceTurnRecord:
     projected_user_message_id: str = ""
     projected_assistant_message_id: str = ""
     projected_at: str = ""
+    # Latency evidence (P-110): durations derived ONLY from the
+    # orchestrator's clock-stamped transitions for this turn
+    # (voice/latency.py). Empty means NO timing evidence was
+    # recorded — never zeros claimed as measurements.
+    durations: dict = field(default_factory=dict)
 
     @classmethod
     def from_orchestrator(
@@ -334,6 +340,7 @@ class VoiceTurnRecord:
         turn_no: int,
         stt_backend: str,
         recorded_at: str,
+        transitions=None,
     ) -> VoiceTurnRecord:
         """Convert an ephemeral orchestrator TurnRecord (P-065's
         carried limitation) into the persisted form. Without
@@ -367,6 +374,11 @@ class VoiceTurnRecord:
             chunks_total=record.chunks_total,
             chunks_played=record.chunks_played,
             recorded_at=recorded_at,
+            durations=(
+                turn_durations(transitions, record.turn_id)
+                if transitions is not None
+                else {}
+            ),
         )
 
     def history_text(self) -> str:
@@ -395,6 +407,7 @@ class VoiceTurnRecord:
             "projected_user_message_id": self.projected_user_message_id,
             "projected_assistant_message_id": self.projected_assistant_message_id,
             "projected_at": self.projected_at,
+            "durations": dict(self.durations),
         }
 
     @classmethod
@@ -418,6 +431,7 @@ class VoiceTurnRecord:
                 for w in data.get("transcript_words") or []
                 if isinstance(w, dict)
             ),
+            durations=clean_durations(data.get("durations")),
             projected=bool(data.get("projected", False)),
             projected_user_message_id=str(data.get("projected_user_message_id", "")),
             projected_assistant_message_id=str(
@@ -510,6 +524,7 @@ class VoiceSession:
         heard: HeardReconstruction | None,
         *,
         recorded_at: str = "",
+        transitions=None,
     ) -> VoiceTurnRecord:
         """Record a finished orchestrator turn (the live-host road)."""
         if not self.active:
@@ -522,6 +537,7 @@ class VoiceSession:
             turn_no=len(self.turns) + 1,
             stt_backend=self.settings.stt_backend,
             recorded_at=recorded_at or _now_iso(),
+            transitions=transitions,
         )
         self.turns.append(turn)
         return turn

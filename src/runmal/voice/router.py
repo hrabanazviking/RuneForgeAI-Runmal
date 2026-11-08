@@ -349,6 +349,7 @@ from sqlalchemy.ext.asyncio import AsyncSession  # noqa: E402
 from runmal.db.deps import get_owner_id, get_session  # noqa: E402
 from runmal.db.models import Chat  # noqa: E402
 from runmal.voice import session as voice_session  # noqa: E402
+from runmal.voice.latency import session_latency_view  # noqa: E402
 from runmal.voice.profiles import resolve_character_voice  # noqa: E402
 from runmal.voice import affects as affects_mod  # noqa: E402
 
@@ -425,6 +426,19 @@ async def get_voice_session(session_id: str, request: Request) -> dict:
             status_code=status.HTTP_404_NOT_FOUND, detail="voice session not found"
         )
     return found.to_dict()
+
+
+@router.get("/voice/sessions/{session_id}/latency")
+async def get_voice_session_latency(session_id: str, request: Request) -> dict:
+    """Per-turn latency evidence + the section-10 aggregate
+    (P-110): durations derived only from the orchestrator's
+    clock-stamped transitions, persisted on the session."""
+    found = _session_store(request).get(session_id)
+    if found is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="voice session not found"
+        )
+    return session_latency_view(found)
 
 
 @router.post("/voice/sessions/{session_id}/stop")

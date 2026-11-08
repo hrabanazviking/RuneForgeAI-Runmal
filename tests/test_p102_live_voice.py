@@ -99,7 +99,7 @@ class DoubleSession:
         self.active = False
         self.stop_note = note
 
-    def append_orchestrator_turn(self, record, heard, *, recorded_at: str = ""):
+    def append_orchestrator_turn(self, record, heard, *, recorded_at: str = "", transitions=None):  # P-110: live host passes transition evidence; the double ignores it
         if not self.active:
             raise DoubleSessionError("session is stopped; its turns are history")
         turn = DoubleTurn(
