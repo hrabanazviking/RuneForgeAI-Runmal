@@ -10836,3 +10836,130 @@ P-139 BANKED - Definition Delete-Impact Preview (Part IX)
     PART IX OPEN (P-131..P-154).
     Next in roadmap order: P-140
     (Part IX, in roadmap order).
+P-140 BANKED - Definition Replace-Impact Preview (Part IX)
+    Part IX tenth slice.
+    - team-01 commit 552cab7 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as d2ac829 (parents ed0ed34 +
+    552cab7); merge pushed and
+    ls-remote verified at d2ac829
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only
+    its part line (P-131..P-154), no
+    per-slice entries; the slice scope
+    is derived from the in-tree record
+    (replace as Part IX's remaining
+    consequential definition act with
+    no inspect-before-commit surface -
+    bindings pin their revision at
+    bind time and are not
+    re-materialised, so a replace
+    leaves bindings pinning a
+    superseded revision while the
+    organisation row stays live
+    against the same id; P-139's
+    concurrent delete-impact preview
+    read read-only so this slice
+    neither duplicates nor contradicts
+    it), stated plainly as derived in
+    the slice doc.
+    Evidence (team-01 worktree
+    hidden_files/ logs - NOTE:
+    P140_EVIDENCE.md transfer was
+    interrupted and no evidence file
+    sits in the worktree; the
+    substance is carried by the
+    finisher's report and the complete
+    logs P140_BATTERY.log,
+    P140_NEIGHBOURS.log and
+    P140_FULLSUITE.log):
+    battery 12 passed / 0 failed;
+    neighbours 212 passed / 0 failed;
+    team full suite 4757 passed /
+    5 skipped / 0 failed - a clean
+    run, reconciling exactly with
+    its base (4745 + 12 = 4757);
+    no contention failure occurred,
+    so no solo re-run was needed.
+    Combined batteries on the merged
+    tree: 223 passed / 0 failed
+    (P-131 29 + P-132 18 + P-133 24
+    + P-134 12 + P-135 16 + P-136 11
+    + P-137 12 + P-138 16 + P-139 11
+    + P-140 12 + P-026 62).
+    Forge confirmation suite on the
+    merged tree: 4768 passed /
+    5 skipped / 0 failed - a clean
+    run in 271.10s with no contention
+    re-runs needed. Expectation check:
+    4756 + 12 = 4768 - exact match,
+    as counted from the log. Log
+    hidden_files/P140_FORGE_CONFIRM.log
+    on purplelongship.
+    Slice scope: owner-scoped
+    definition replace-impact preview -
+    GET /scenarios/{definition_id}/replace-impact
+    naming, before any replace, the
+    bindings a PUT replace would leave
+    pinning a superseded revision
+    (split by pinned revision against
+    the current one), the organisation
+    row that stays live, and the next
+    revision, every fact read through
+    the owning slice's own verb, with
+    five standing honesty notes in
+    every answer;
+    scenarios/replacepreview.py (new),
+    scenarios/router.py (additive road),
+    scenarios/__init__.py (additive),
+    tests/test_p140_replace_impact_preview.py
+    (new),
+    docs/SCENARIO_REPLACE_IMPACT_2026-11-08.md
+    (new), clean-room log append (+1).
+    Honest limitations: the preview
+    is a statement about the world
+    as it stands when read, never a
+    promise about replace time; PUT
+    remains the only replacer - the
+    preview replaces nothing and
+    writes nothing; no candidate
+    body is judged here (the preview
+    takes no body and passes no
+    verdict on any future body);
+    bindings are not re-materialised
+    and seeded chat content stays
+    the chats' own truth; replace
+    stays permanent for the current
+    body - no un-replace, no history,
+    and P-133's stored-export road is
+    the way to keep a file copy first,
+    under its own stated limits;
+    playback / runtime / condition
+    evaluation remain declined
+    absolutely (P-027 law).
+    Migration: NONE (head stays 0041).
+    Merge: conflicts in
+    scenarios/router.py +
+    scenarios/__init__.py +
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    resolved as pure additive unions
+    keeping BOTH P-139 and P-140 work
+    exactly once each; merged router
+    grep-verified carrying P-131 CRUD
+    + P-132 binding + P-133 export
+    + P-134 organisation + P-135
+    bindings list/inspect + P-136
+    bind-plan + P-137 duplicate
+    + P-138 bind-plan/{chat_id}
+    + P-139 delete-impact
+    + P-140 replace-impact roads
+    (GET /scenarios/bindings before
+    the {definition_id} roads);
+    py_compile clean.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-141
+    (Part IX, in roadmap order).
