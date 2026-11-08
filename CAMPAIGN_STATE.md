@@ -7805,3 +7805,108 @@ P-112 BANKED - Voice Live-Start Back-Projection (Part VII)
     registration) stay open exactly
     where P-110 and P-111 left them.
     Next in roadmap order: P-113.
+P-113 BANKED - Plugin Custody Coverage (Part VII)
+    - team-01 commit 1773a21 merged (no-ff)
+    into yrsa/two-mirrors-build as 1b49a46;
+    banking record commit follows this
+    entry and is pushed with the merge;
+    ls-remote verification is reported
+    in the keeper run log.
+    Evidence (team-01 worktree
+    hidden_files/P113_EVIDENCE.md):
+    battery 17 passed, neighbours
+    981 passed / 2 skipped / 0 failed,
+    team full suite
+    4285 passed / 4 skipped / 0 failed
+    on the 69ba056 base (P-111 banking
+    record; the slice was built on
+    that base while P-112 banked
+    ahead of it, and was reconciled
+    at this merge in roadmap order).
+    Derived scope ACCEPTED by the keeper:
+    P-113 is the P-100 gate finding F1
+    fix - the next custody touch.
+    P-094 CITIZEN_PLUGIN_IDS omitted
+    runmal.game-bridge (P-096) and
+    runmal.plugin-settings-ui (P-098);
+    bare-id custody refused both. Both
+    are now first-class custody
+    citizens: CITIZEN_PLUGIN_IDS
+    12 -> 14 in roadmap order, with
+    real data sections - game-bridge
+    joins the durable file stores and
+    plugin-settings-ui gains a new
+    settings section served
+    section-scoped through the
+    settings_ui module own roads,
+    with custody_coverage gaining
+    the plugin_settings classification.
+    Weighed and not taken, with tree
+    evidence in the scout: L3
+    auto-registration of the P-091
+    voice citizens (deliberate
+    host-explicit law), the VX-12
+    engine half (no backend affect
+    seam), and marking projected
+    message content itself (P-106
+    declined it on the P-075 law).
+    Slice:
+    src/runmal/plugins/custody.py
+    (extended, +80: CITIZEN_PLUGIN_IDS
+    12 -> 14; _MANIFEST_MODULES + both;
+    game-bridge joins _FILE_STORES;
+    new _settings_ui_section +
+    dispatch in _data_sections;
+    custody_coverage plugin_settings
+    classification; docstring F1 note),
+    tests/test_p113_custody_coverage.py
+    (17 tests),
+    tests/test_p100_gate.py
+    (labelled in-slice update: the
+    Area C F1 pin rewritten to hold
+    the covered state, gate battery
+    count unchanged at 16),
+    tests/test_p094_plugin_custody.py
+    (labelled in-slice update:
+    coverage durable_file set gains
+    runmal.game-bridge),
+    docs/PLUGIN_CUSTODY_COVERAGE_2026-11-08.md,
+    clean-room log append (+1). 6 files,
+    +629/-14.
+    Migration: NONE (head stays 0041).
+    Merge conflict only in the clean-room
+    log (append-vs-append), resolved as
+    an additive union: the log keeps
+    the P-112 and P-113 entries exactly
+    once each. custody.py auto-merged;
+    the merged tree carries P-112
+    live-start back-projection AND
+    P-113 custody coverage,
+    py_compile green on all
+    touched Python files.
+    No banking heal needed.
+    Combined batteries on the merged
+    tree: 883 passed / 0 failed.
+    Log hidden_files/p113_combined.log
+    (forge) on purplelongship.
+    Forge confirmation suite:
+    4296 passed / 4 skipped / 0 failed
+    in 226.41s, exit 0 - exact match to
+    expectation (= 4279 + 17), no
+    contention re-runs needed. Log
+    hidden_files/p113_forge_fullsuite.log
+    (forge).
+    Honest limitations carried:
+    stored settings FOR a citizen are
+    still not part of that citizen own
+    custody export/delete (unchanged
+    from P-094 for every citizen);
+    the game-bridge in-memory observation
+    list is not custody data; gallery
+    and conformance remain outside
+    the fixed list (F1 named two ids);
+    L3 stands - no citizen is
+    registered by this slice and the
+    boot registry stays empty
+    (battery-pinned).
+    Next in roadmap order: P-114.
