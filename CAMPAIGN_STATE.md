@@ -7133,3 +7133,116 @@ P-106 BANKED - Voice Projection Mishearing Mark (Part VII)
     untouched; no new HTTP road, store or
     migration in this slice.
     Next in roadmap order: P-107.
+P-107 BANKED - Voice Rendered Confidence Markings (Part VII)
+    - team-01 commit d849329 merged (no-ff)
+    into yrsa/two-mirrors-build as cad03e9;
+    merge pushed; ls-remote verified
+    cad03e992ae1a41815ac87319b6f18c043c0339b.
+    Evidence (team-01 worktree
+    hidden_files/P107_EVIDENCE.md):
+    battery 12 passed, neighbours
+    181 passed (P-091, P-101-P-105,
+    S302, S511), battery + S301 together
+    after the in-slice fix 19 passed,
+    team full suite 4188 passed /
+    4 skipped / 0 failed (= 4176 + 12
+    exact, on the fc4ea07 base).
+    Derived scope ACCEPTED by the keeper:
+    P-107 is VX-11 rendered markings -
+    the rendering half P-105 section 4
+    and P-106 both left open (P-106 banked
+    the receipt, not a rendering). The
+    marking is a read-time view over
+    P-105 truth via the P-103 provenance
+    link: threshold, bands and suggested
+    hearing are imported from
+    runmal.voice.mishearing, never
+    redeclared, so the rendering and
+    P-106 receipt cannot disagree. The
+    roadmap gives Part VII only its
+    part line.
+    Slice:
+    src/runmal/voice/markings.py (new:
+    pure voice_origin / message_marking /
+    markings_for_messages views over the
+    P-103 provenance link and the P-101
+    store, trimmed to rendering facts
+    plus evidence_available),
+    src/runmal/chats/router.py (thread
+    surfaces run message dicts through
+    the attach helper; additive
+    voice_marking key only, tolerant -
+    any voice-store failure leaves dicts
+    unmarked rather than bricking the
+    thread),
+    src/runmal/web/static/renderer.js
+    (renderMarkedTranscript: escape-first,
+    low-confidence word cores wrapped in
+    span.stt-low, punctuation outside),
+    src/runmal/web/static/app.js (thread
+    renders marked transcripts and the
+    badge: Heard with doubt with the
+    P-105 suggested hearing as text,
+    Heard clearly, or the honest
+    no-evidence / unavailable lines),
+    src/runmal/web/static/style.css
+    (.stt-low dotted underline carries
+    the signal, tint assists, never
+    colour alone; .voice-marking),
+    tests/test_p107_voice_markings.py
+    (12 tests),
+    docs/VOICE_RENDERED_MARKINGS_2026-11-08.md,
+    clean-room log append (+1). 8 files,
+    +595/-6.
+    Migration: NONE (head stays 0041).
+    One own-slice defect was found and
+    fixed in-slice: the first .stt-low
+    rule carried a raw rgba tint,
+    breaking the S301 design-token law
+    (test_no_raw_colors_outside_token_blocks
+    failed on the first full-suite run);
+    the tint is now the --stt-low-tint
+    token in every theme token block,
+    pinned by a battery test and S301.
+    Merge conflict only in the clean-room
+    log, resolved with both the P-106 and
+    P-107 entries kept exactly once each.
+    Merged tree carries BOTH P-106
+    transcript_mishearing_mark in
+    voice/projection.py AND P-107
+    markings (voice/markings.py, the
+    chats/router.py voice_marking attach,
+    renderer renderMarkedTranscript);
+    py_compile green on all touched
+    Python files.
+    Combined batteries on the merged
+    tree: 139 passed / 0 failed
+    (28 + 24 + 19 + 17 + 21 + 18 + 12).
+    Log hidden_files/p107_combined.log
+    (forge) on purplelongship.
+    Forge confirmation suite:
+    4206 passed / 4 skipped / 0 failed
+    in 216.10s, exit 0 - exact match to
+    expectation (= 4194 + 12), no
+    contention re-runs needed (the run
+    shared the laptop with team-02
+    P-108 work and stayed clean). Log
+    hidden_files/p107_confirm.log (forge).
+    Honest limitations carried:
+    the badge and spans render in the
+    founding web thread only; other
+    consumers of the messages API receive
+    the same voice_marking data and may
+    render it or not. Word alignment is
+    token-based: a repeated low word is
+    marked at every occurrence, and a
+    word fused into markup-like text is
+    one token whose core is not the word,
+    so it stays unmarked (and escaped).
+    Streaming (in-flight) messages are
+    not marked; markings attach to landed
+    history, where the evidence lives.
+    Mid-dialogue repeat requests, VX-12
+    and VX-13 stay open, as recorded in
+    the slice doc.
+    Next in roadmap order: P-108.
