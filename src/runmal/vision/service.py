@@ -226,6 +226,101 @@ class VisionStore:
         return rows[-1] if rows else None
 
 
+    # -- history / search / custody (P-122) --------------------
+
+    def get(self, description_id: str) -> VisionDescription | None:
+        for row in self._load():
+            if row.id == description_id:
+                return row
+        return None
+
+    def list_for_owner(self, owner_id: str) -> list[VisionDescription]:
+        return [row for row in self._load() if row.owner_id == owner_id]
+
+    def search(
+        self,
+        owner_id: str,
+        query: str = "",
+        *,
+        chat_id: str | None = None,
+        source_kind: str | None = None,
+        provider_road: str | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> tuple[list[VisionDescription], int]:
+        """Owner-scoped history search over the stored rows.
+
+        LITERAL case-insensitive substring matching over the
+        description text and the question only - never semantic,
+        never ranked; rows keep store append order. Owner
+        scoping happens FIRST: foreign rows are never matched,
+        counted, or returned. An empty query matches every
+        owned row (that is the history listing). An unknown
+        ``source_kind`` is a plain ``VisionError`` refusal.
+        Returns (page, total) where total is the full match
+        count before paging.
+        """
+        if source_kind is not None and source_kind not in (
+            SOURCE_ASSET,
+            SOURCE_INLINE,
+            SOURCE_ATTACHMENT,
+        ):
+            raise VisionError(
+                f"unknown source_kind {source_kind!r}; known kinds: "
+                f"{SOURCE_ASSET}, {SOURCE_INLINE}, {SOURCE_ATTACHMENT}"
+            )
+        needle = (query or "").strip().lower()
+        rows = self.list_for_owner(owner_id)
+        if chat_id is not None:
+            rows = [row for row in rows if row.chat_id == chat_id]
+        if source_kind is not None:
+            rows = [row for row in rows if row.source_kind == source_kind]
+        if provider_road is not None:
+            rows = [row for row in rows if row.provider_road == provider_road]
+        if needle:
+            rows = [
+                row
+                for row in rows
+                if needle in row.description.lower()
+                or needle in row.question.lower()
+            ]
+        total = len(rows)
+        effective_limit = max(1, min(200, int(limit)))
+        effective_offset = max(0, int(offset))
+        return rows[effective_offset:effective_offset + effective_limit], total
+
+    def remove(self, description_id: str) -> VisionDescription | None:
+        """Custody: delete exactly one record; return it or None."""
+        rows = self._load()
+        kept = [row for row in rows if row.id != description_id]
+        removed = [row for row in rows if row.id == description_id]
+        if not removed:
+            return None
+        self._save(kept)
+        return removed[0]
+
+    def purge_source(self, source_kind: str, source_ref: str) -> int:
+        """Custody: remove every row derived from one source.
+
+        Used when a source dies (an attachment is deleted): the
+        descriptions it produced die with it, so derived text
+        never outlives the bytes the owner removed. An empty
+        ``source_ref`` names no source and purges nothing.
+        Returns the number of rows removed.
+        """
+        if not source_ref:
+            return 0
+        rows = self._load()
+        kept = [
+            row
+            for row in rows
+            if not (row.source_kind == source_kind and row.source_ref == source_ref)
+        ]
+        removed = len(rows) - len(kept)
+        if removed:
+            self._save(kept)
+        return removed
+
 # ----------------------------------------------------------- service
 
 

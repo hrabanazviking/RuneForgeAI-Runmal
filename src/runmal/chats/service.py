@@ -1029,14 +1029,31 @@ async def delete_message(
     try:
         # P-120 custody: a deleted message's image attachments
         # (index rows + byte files) are purged with it.
+        # P-122 source custody: descriptions derived from those
+        # attachments are purged with them, so derived text
+        # never outlives the deleted bytes.
         import os as _os
         from pathlib import Path as _Path
 
         from runmal.vision.attachments import AttachmentStore
 
-        AttachmentStore(
+        _att_store = AttachmentStore(
             _Path(_os.environ.get("RUNMAL_DATA_DIR", ".runmal-data"))
-        ).purge_message(message_id)
+        )
+        _att_ids = [
+            row.id for row in _att_store.list_for_message(message_id)
+        ]
+        _att_store.purge_message(message_id)
+        if _att_ids:
+            from runmal.vision.service import (
+                SOURCE_ATTACHMENT,
+                VisionStore,
+                descriptions_path,
+            )
+
+            _vis_store = VisionStore(descriptions_path(_att_store.data_dir))
+            for _att_id in _att_ids:
+                _vis_store.purge_source(SOURCE_ATTACHMENT, _att_id)
     except Exception:
         pass
     await _dispatch_plugin(
