@@ -11119,3 +11119,164 @@ P-141 BANKED - Scenario Definition Sharing Packs (Part IX)
     PART IX OPEN (P-131..P-154).
     Next in roadmap order: P-142
     (Part IX, in roadmap order).
+P-142 BANKED - Stateless Native-to-Voxta Export, F1 Leak Closed (Part IX)
+    Part IX twelfth slice.
+    - team-03 commit 7cff079 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 1a24acb (parents cefe709 +
+    7cff079); merge pushed and
+    ls-remote verified at 1a24acb
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only
+    its part line (P-131..P-154), no
+    per-slice entries; the slice scope
+    is derived from the in-tree record
+    (P-133's carried finding F1: the
+    P-026 stateless native-to-Voxta
+    raw-overlay leak, declined by
+    every Part IX weighing since as
+    a future P-026-hardening slice
+    no queue ever commissioned, and
+    re-probed on this base as worse
+    than its record - the overlay
+    (INV-009) starts from the parse's
+    raw, a native parse's raw IS the
+    whole native dict, so the
+    stateless export carried every
+    native key verbatim beside its
+    Voxta spelling (inside the role
+    objects too) and the hybrid
+    re-parsed as NATIVE, while
+    P-133's stored export produced
+    the clean typed-fields conversion
+    for the same content - the two
+    export roads disagreed, the
+    record's one open definition
+    interop parity gap with a proven
+    defect at its centre), stated
+    plainly as derived in the
+    slice doc.
+    Evidence (team-03 worktree
+    hidden_files/ P142_EVIDENCE.md +
+    logs P142_BATTERY.log,
+    P142_NEIGHBOURS.log,
+    P142_FULLSUITE.log):
+    battery 16 passed / 0 failed;
+    neighbours 223 passed / 0 failed
+    (Part IX fence P-026 +
+    P-131..P-140, reconciling exactly
+    with the P-140 banking record's
+    combined count); team full suite
+    4784 passed / 5 skipped /
+    0 failed - a clean run,
+    reconciling exactly with its
+    base (4768 + 16 = 4784); no
+    contention failure occurred, so
+    no solo re-run was needed.
+    The defect fixed in-slice is F1
+    itself: on the unpatched base a
+    stateless native-to-Voxta export
+    of a full native fixture carried
+    BOTH spellings at the top level
+    and inside the role objects, and
+    the hybrid re-parsed as native;
+    post-fix the export carries clean
+    Voxta keys only (role objects
+    exactly the Voxta fields), the
+    export re-parses as voxta, the
+    Voxta fixed point holds, the
+    native round trip is exact, and
+    the original parse is unmutated.
+    No other defect was discovered;
+    the neighbours fence and the
+    full suite both closed green
+    without amendment, and no banked
+    test pinned the leaked shape.
+    Forge confirmation suite on the
+    merged tree: 4818 passed /
+    5 skipped / 0 failed - a clean
+    run in 278.34s with no contention
+    re-runs needed. Expectation check:
+    4802 + 16 = 4818 - exact match,
+    as counted from the log. Log
+    hidden_files/P142_FORGE_CONFIRM.log
+    on purplelongship.
+    Slice scope: the carried P-133
+    finding F1 closed at the exporter
+    itself - scenarios/fileexport.py
+    (a parse whose source_format is
+    native has no Voxta raw to
+    overlay, so export_voxta starts
+    from an empty object and passes
+    every element through the new
+    _rawless copy with raw cleared -
+    the identical construction
+    P-133's scenario_file_from_stored
+    performs externally; the module
+    and function docstrings state
+    the amended law; the parser is
+    untouched, the parse is never
+    mutated, and the Voxta-origin
+    overlay is unchanged byte for
+    byte), tests/test_p142_native_voxta_export.py
+    (new, 16 tests),
+    docs/SCENARIO_NATIVE_VOXTA_EXPORT_2026-11-08.md
+    (new), clean-room log append (+1).
+    No new module, no new road, no
+    __init__ change, no router
+    change, no storage-shape change:
+    the stateless and stored export
+    roads now answer the same file
+    for the same content,
+    battery-pinned as equality.
+    Honest limitations: the fix is
+    origin-scoped by the parse's own
+    source_format - a file the
+    importer classifies as Voxta
+    keeps the full INV-009 overlay,
+    including any native-spelled keys
+    its raw carries as unknowns (that
+    file's own carriage under the
+    standing raw law); inside
+    elements, a native file's unknown
+    keys do not survive a Voxta
+    export (the native parser never
+    typed them; the stored truth
+    drops them the same way, so the
+    roads agree), while top-level
+    unknowns ride as extra on both
+    roads and still ride verbatim;
+    a carried extra key spelled like
+    a Voxta typed field still loses
+    to the typed value under the
+    standing setdefault law on the
+    stateless road. Playback /
+    runtime / condition evaluation
+    with executing stored scripting
+    remain declined absolutely
+    (P-027 law: content is data,
+    never code; export remains a
+    pure function of the parse).
+    The next honest Part IX candidate
+    named by this slice's weighing
+    is a global stale/superseded
+    binding census - named as a
+    future candidate, not built here.
+    Migration: NONE (head stays 0041).
+    Merge: conflict in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    only, resolved as a pure additive
+    union keeping BOTH P-141 and
+    P-142 entries exactly once each;
+    no other file conflicted, and
+    the merged diff against cefe709
+    is exactly the four slice files
+    (+516/-7); merged fileexport.py
+    py_compile clean.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-143
+    (Part IX, in roadmap order).
