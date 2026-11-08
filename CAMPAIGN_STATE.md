@@ -6859,3 +6859,69 @@ P-103 BANKED - Voice Turn Projection (Part VII)
     registration remains deliberate
     host-explicit, unchanged.
     Next in roadmap order: P-104.
+P-104 BANKED - Voice Auto-Projection (Part VII)
+    - team-01 commit b39f43c merged (no-ff)
+    into yrsa/two-mirrors-build as 01af9c6
+    and pushed; ls-remote verified
+    01af9c6e387507954147220f4f16e1c17f9463eb.
+    Evidence (team-01 worktree
+    hidden_files/P104_EVIDENCE.md):
+    battery 17 passed, neighbours
+    249 passed / 2 skipped (fence
+    S501-S514 + P-010/P-091/P-101/P-102/
+    P-103; skips are pre-existing
+    environmental optionals), team full
+    suite 4155 passed / 4 skipped /
+    0 failed (= 4138 + 17 exact, no
+    flakes, on the 7219996 base).
+    Derived scope ACCEPTED by the keeper:
+    P-104 is the async auto-projecting
+    host deferred in P-103 section 5 -
+    the roadmap gives Part VII only its
+    part line. NOT taken, with reasons
+    recorded in the slice doc: L3
+    registration, process-death hosts,
+    VX-11/12/13.
+    Slice:
+    src/runmal/voice/autoproject.py (new,
+    async host), src/runmal/voice/
+    autoproject_router.py (new, POST
+    toggle / GET status, owner-scoped
+    404), src/runmal/voice/session.py
+    (VoiceSession.auto_project durable
+    opt-in, default OFF; pre-P-104
+    sessions load OFF), wiring only in
+    async HTTP roads (live speak, live
+    stop catch-up, P-101 manual /turns);
+    P-102 controller stays synchronous/
+    DB-free (two additive read
+    accessors), src/runmal/app.py,
+    src/runmal/voice/__init__.py,
+    tests/test_p104_voice_autoproject.py
+    (17 tests),
+    docs/VOICE_AUTO_PROJECTION_2026-11-07.md,
+    clean-room log append (+1). 11 files,
+    +880/-7.
+    Migration: NONE (head stays 0041).
+    Combined batteries on the merged
+    tree: 88 passed / 0 failed
+    (28 + 24 + 19 + 17). Log
+    hidden_files/p104_forge_suite.log
+    (forge) on purplelongship.
+    Forge confirmation suite:
+    4155 passed / 4 skipped / 0 failed
+    in 207.61s, exit 0 - exact match to
+    the team suite, no contention
+    re-runs needed.
+    Honest limitations carried:
+    in-process hosts must call
+    autoproject_session themselves;
+    live start does not back-project
+    pre-existing turns (next speak/stop
+    or the manual P-103 road catches
+    up); auto-projection failure is
+    reported in-band, never raised, and
+    never resurrects a deleted chat;
+    L3 (P-091 citizen registration)
+    remains open by design.
+    Next in roadmap order: P-105.
