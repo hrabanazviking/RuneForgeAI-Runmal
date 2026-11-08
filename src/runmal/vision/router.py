@@ -68,6 +68,18 @@ the file is a named refused skip). Plain scans - body-less
 or describe off - are unchanged and still describe
 nothing; the report gains a "described" key only on an
 opt-in scan.
+P-129 completes the watcher registration control surface:
+the PATCH road now also takes the registration's recursive
+flag (P-124 gave enabled its first handle and left
+recursive handle-less, though every scan's depth rides on
+it), and the watch DELETE road reports the ingested
+records it removes as a count in the sibling delete
+roads' shape ({"deleted": true, "id",
+"ingested_records_removed"}) instead of answering the id
+in the deleted slot and staying silent about the dedupe
+memory it destroyed. The attachments a scan ingested are
+untouched by a watch deletion - they are chat attachments
+under P-120 custody, not the watch's.
 """
 
 from __future__ import annotations
@@ -700,7 +712,11 @@ async def get_watch_folder(
 
 
 class WatchEnabledRequest(BaseModel):
-    enabled: bool
+    # P-124 shipped this model with enabled only; P-129 makes
+    # both behaviour flags optional so either (or both) may
+    # be patched - an empty body is refused 422 by the road.
+    enabled: bool | None = None
+    recursive: bool | None = None
 
 
 @router.patch("/vision/watch-folders/{watch_id}")
@@ -711,7 +727,18 @@ async def set_watch_folder_enabled(
 ):
     store = _watch_store()
     watch = await _watch_or_404(store, owner_id, watch_id)
-    updated = store.set_enabled(watch.id, body.enabled)
+    # P-129: either behaviour flag (or both) may be patched;
+    # an empty patch names nothing to change and is refused
+    # plainly (422, the status P-124's battery pinned for {}).
+    if body.enabled is None and body.recursive is None:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="nothing to update: name enabled and/or recursive")
+    updated = watch
+    if body.enabled is not None:
+        updated = store.set_enabled(watch.id, body.enabled)
+    if body.recursive is not None:
+        updated = store.set_recursive(watch.id, body.recursive)
     return updated.to_dict()
 
 
@@ -722,8 +749,17 @@ async def delete_watch_folder(
 ):
     store = _watch_store()
     watch = await _watch_or_404(store, owner_id, watch_id)
+    # P-129 custody reporting (the P-122/P-124 line: a custody
+    # deletion is reported as a count, never silently): the
+    # ingested records die with the registration, so their
+    # count is read BEFORE the removal and rides the response
+    # in the sibling delete roads' shape. The attachments the
+    # scan ingested are NOT touched - they are chat
+    # attachments under P-120 custody, not the watch's.
+    forgotten = len(store.list_ingested(watch.id))
     store.remove_watch(watch.id)
-    return {"deleted": watch.id}
+    return {"deleted": True, "id": watch.id,
+            "ingested_records_removed": forgotten}
 
 
 class ScanRequest(BaseModel):

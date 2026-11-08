@@ -41,7 +41,12 @@
   the dedupe memory never tombstones its source file) and
   set_enabled (the registration's enabled flag gains its
   first handle; the scan has always refused a disabled
-  watch).
+  watch). P-129 completes that control surface:
+  set_recursive gives the recursive flag the same handle
+  (flipping scan depth no longer costs the dedupe memory
+  a delete + re-register would destroy), and the watch
+  delete road reports the ingested records it removes
+  as a count in the sibling delete roads' shape.
 - ``watcher`` history & search (P-127) - owner-wide
   history + literal search across chats: registrations
   searchable by folder path, ingested records by source
