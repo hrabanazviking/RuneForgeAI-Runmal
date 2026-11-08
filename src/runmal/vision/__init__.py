@@ -42,4 +42,8 @@
   set_enabled (the registration's enabled flag gains its
   first handle; the scan has always refused a disabled
   watch).
+- ``watcher`` describe-on-scan (P-128) - describe-on-scan
+  is an explicit opt-in on the scan road only: atomic per
+  file via P-126, and the scan itself still describes
+  nothing on its own.
 """

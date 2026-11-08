@@ -54,6 +54,13 @@ plainly:
 - Scanning generates NO description or caption and performs
   NO safety scan; ingestion inherits P-120's sniff-only
   stance, and no record claims otherwise.
+- describe-on-scan (P-128) is an explicit opt-in composition
+  on the scan road only: ``scan_and_describe`` runs this same
+  scan with a describing attacher built on P-126's
+  ``attach_and_describe``, so each newly ingested file lands
+  as attachment + description or as a named refused skip.
+  ``scan_watch`` itself is unchanged and still generates no
+  description; a plain scan's report stays byte-identical.
 """
 
 from __future__ import annotations
@@ -174,9 +181,14 @@ class ScanReport:
     ingested: list[str] = field(default_factory=list)
     skipped: list[dict] = field(default_factory=list)
     truncated: bool = False
+    # P-128: describe-on-scan outcome. ``described`` holds the
+    # description ids in ingestion order; it is populated only
+    # by scan_and_describe, which also sets describe_requested.
+    described: list[str] = field(default_factory=list)
+    describe_requested: bool = False
 
     def to_dict(self) -> dict:
-        return {
+        out = {
             "watch_id": self.watch_id,
             "chat_id": self.chat_id,
             "scanned": self.scanned,
@@ -184,6 +196,12 @@ class ScanReport:
             "skipped": [dict(row) for row in self.skipped],
             "truncated": self.truncated,
         }
+        # The "described" key appears ONLY on an opt-in scan,
+        # so a plain scan's report dict stays byte-identical
+        # to P-121's shape.
+        if self.describe_requested:
+            out["described"] = list(self.described)
+        return out
 
 
 # ------------------------------------------------------------- store
@@ -490,4 +508,137 @@ def scan_watch(
             ingested_at=stamp))
         seen.add((source, digest))
         report.ingested.append(attachment_id)
+    return report
+
+
+# ------------------------------------------------- describe-on-scan
+# P-128: the scan road's describe opt-in, as a composition
+# over the unchanged scan. scan_watch above is untouched and
+# still generates no description; only a caller who asks
+# through scan_and_describe gets descriptions, one per file
+# the scan newly ingests.
+
+
+def _default_describing_attacher(data_dir, vision_store, *,
+                                 provider, question):
+    """Resolve P-126's attach_and_describe lazily, or refuse.
+
+    Mirrors ``_default_attacher``: returns a callable with
+    the attacher shape ``(data, *, chat_id, owner_id,
+    filename)`` yielding the attachment record, exposing the
+    description ids it produced as ``.described`` (in call
+    order). When the attachments module is not in this tree
+    yet, raises ``WatchError`` naming the absence - an opt-in
+    scan then stores nothing. Atomicity is P-126's own:
+    attach_and_describe rolls the just-created attachment
+    back on any describe failure and re-raises, so the scan
+    records a named refused skip and no ingested record.
+    """
+    try:
+        from runmal.vision import attachments
+    except ImportError:
+        raise WatchError(
+            "image attachments (P-120) are not available in this "
+            "tree yet; a describe-on-scan cannot ingest without "
+            "them") from None
+    try:
+        from runmal.vision import service as vision_service
+    except ImportError:
+        raise WatchError(
+            "vision descriptions (P-117) are not available in "
+            "this tree yet; a describe-on-scan cannot describe "
+            "without them") from None
+
+    att_store = attachments.AttachmentStore(Path(data_dir))
+    described: list[str] = []
+
+    def attach(data: bytes, *, chat_id: str, owner_id: str,
+               filename: str):
+        record, description = attachments.attach_and_describe(
+            att_store, vision_store, chat_id=chat_id,
+            owner_id=owner_id, data=data, filename=filename,
+            question=question, provider=provider)
+        described.append(description.id)
+        return record
+
+    attach.described = described
+    # Keep the resolved service module reachable for callers
+    # that introspect the seam; the closure above is the use.
+    attach.vision_service = vision_service
+    return attach
+
+
+def scan_and_describe(
+    store: WatchStore,
+    watch: WatchFolder,
+    *,
+    vision_store,
+    provider=None,
+    question: str = "",
+    attacher=None,
+    now: str | None = None,
+) -> ScanReport:
+    """Scan *watch* like scan_watch, describing what lands.
+
+    The explicit opt-in form of the scan: every file the
+    scan newly ingests also lands a description (source_kind
+    attachment, source_ref the new attachment's id - the
+    exact record the describe road makes), or the file is a
+    named refused skip and nothing of it is stored. Already-
+    ingested files skip as already_ingested and are NOT
+    re-described: the opt-in describes what the scan
+    ingests, nothing else. ``provider=None`` never invents a
+    provider - it rides describe_image's plain unavailable
+    refusal per file (every file a named skip, nothing
+    ingested); selection is the caller's act (the router's,
+    via P-119, before the scan). One question applies to
+    every file the scan ingests. The report carries
+    ``describe_requested=True`` and the ``described`` ids.
+
+    The injected-attacher seam mirrors scan_watch's: an
+    injected attacher attaches as the caller's fake decides,
+    then the same bytes are described through describe_image
+    as source_kind attachment / source_ref the record's id;
+    a describe failure there propagates and scan_watch names
+    it a refused skip. Production never injects.
+    """
+    if not watch.enabled:
+        raise WatchError("this watch is disabled; refusing to scan")
+    folder = Path(watch.path)
+    if not folder.is_dir():
+        raise WatchError(
+            f"watch folder is missing or not a directory: {watch.path}")
+    if vision_store is None:
+        raise WatchError(
+            "a vision description store is required for a "
+            "describe-on-scan; refusing to scan without one")
+    if attacher is None:
+        describing = _default_describing_attacher(
+            store.data_dir, vision_store,
+            provider=provider, question=question)
+    else:
+        from runmal.vision.service import (
+            SOURCE_ATTACHMENT,
+            describe_image,
+        )
+
+        described_ids: list[str] = []
+
+        def describing(data, *, chat_id, owner_id, filename):
+            record = attacher(
+                data, chat_id=chat_id, owner_id=owner_id,
+                filename=filename)
+            description = describe_image(
+                vision_store, chat_id=chat_id, owner_id=owner_id,
+                image_bytes=data, provider=provider,
+                source_kind=SOURCE_ATTACHMENT,
+                source_ref=str(getattr(record, "id", "") or ""),
+                question=question, now=now)
+            described_ids.append(description.id)
+            return record
+
+        describing.described = described_ids
+    report = scan_watch(store, watch, attacher=describing, now=now)
+    report.describe_requested = True
+    report.described = list(describing.described)
     return report

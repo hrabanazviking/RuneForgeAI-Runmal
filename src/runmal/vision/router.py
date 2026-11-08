@@ -52,6 +52,15 @@ be described in the same call (provider selected through
 P-119 BEFORE anything is stored; atomic - attachment and
 description land together or neither does). Plain attach
 is unchanged and still describes nothing.
+P-128 adds describe-on-scan opt-in on the scan road: the
+scan request may explicitly ask for the files the scan
+ingests to be described in the same call (provider
+selected through P-119 BEFORE the scan; atomic per file
+via P-126 - attachment and description land together or
+the file is a named refused skip). Plain scans - body-less
+or describe off - are unchanged and still describe
+nothing; the report gains a "described" key only on an
+opt-in scan.
 """
 
 from __future__ import annotations
@@ -619,13 +628,63 @@ async def delete_watch_folder(
     return {"deleted": watch.id}
 
 
+class ScanRequest(BaseModel):
+    # P-128: every field optional - a body-less scan (every
+    # existing client) and describe=False keep the P-121
+    # road exactly. The field names mirror the P-126 attach
+    # road's opt-in names.
+    describe: bool = False
+    describe_question: str = ""
+    describe_provider: str | None = None
+    require_semantic: bool = False
+
+
 @router.post("/vision/watch-folders/{watch_id}/scan")
 async def scan_watch_folder(
     watch_id: str,
+    body: ScanRequest | None = None,
     owner_id: str = Depends(get_owner_id),
 ):
     store = _watch_store()
     watch = await _watch_or_404(store, owner_id, watch_id)
+    if body is not None and body.describe:
+        # P-128 opt-in: selection BEFORE the scan (the P-126
+        # selection-first law), so an unknown provider or a
+        # semantic requirement is a 422 and NOTHING is
+        # scanned or ingested.
+        try:
+            provider = vision_selection.select_provider(
+                body.describe_provider,
+                semantic_required=body.require_semantic)
+        except vision_service.VisionError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=str(exc)) from None
+        injected = _scan_attacher()
+        try:
+            if injected is not None:
+                # Test seam: an injected attacher rides the
+                # injected wrap in scan_and_describe (the
+                # router's VisionStore + selected provider).
+                report = watcher_service.scan_and_describe(
+                    store, watch, vision_store=_store(),
+                    provider=provider,
+                    question=body.describe_question or "",
+                    attacher=injected)
+            else:
+                report = watcher_service.scan_and_describe(
+                    store, watch, vision_store=_store(),
+                    provider=provider,
+                    question=body.describe_question or "")
+        except watcher_service.WatchError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=str(exc)) from None
+        except vision_service.VisionError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=str(exc)) from None
+        return report.to_dict()
     try:
         report = watcher_service.scan_watch(
             store, watch, attacher=_scan_attacher())
