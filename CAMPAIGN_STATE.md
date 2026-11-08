@@ -10426,3 +10426,101 @@ P-135 BANKED - Binding Lifecycle Read Surface (Part IX)
     PART IX OPEN (P-131..P-154).
     Next in roadmap order: P-136
     (Part IX, in roadmap order).
+P-136 BANKED - Binding Plan Preview (Part IX)
+    Part IX sixth slice.
+    - team-03 commit 9f7f1f4 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 48d298d (parents 5a210f6 +
+    9f7f1f4); merge pushed and
+    ls-remote verified at 48d298d
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only
+    its part line (P-131..P-154), no
+    per-slice entries; the slice scope
+    is derived from the in-tree record
+    (P-132 pinned plan_materialisation
+    with no definition-side preview
+    road), stated plainly as derived
+    in the slice doc and the evidence.
+    Evidence (team-03 worktree
+    hidden_files/P136_EVIDENCE.md):
+    battery 11 passed / 0 failed;
+    neighbours 145 passed / 0 failed
+    (P-131 + P-132 + P-133 + P-134
+    + P-026 batteries; P-135 battery
+    absent from the team base and
+    honestly not run there); team
+    full suite 4700 passed / 5 skipped
+    / 1 failed in 397.95s - the one
+    failure the P-077 longchat timing
+    tripwire under shared-machine
+    contention, solo re-run of the
+    P-077 file 17 passed, classified
+    contention not a defect.
+    Arithmetic: 4690 (base) + 11
+    = 4701 = 4700 passed + the 1
+    contention failure - exact.
+    Combined batteries on the merged
+    tree: 172 passed / 0 failed
+    (P-131 29 + P-132 18 + P-133 24
+    + P-134 12 + P-135 16 + P-136 11
+    + P-026 62).
+    Forge confirmation suite on the
+    merged tree: 4717 passed /
+    5 skipped / 0 failed - a clean
+    run in 268.12s with no contention
+    re-runs needed. Expectation check:
+    4706 + 11 = 4717 - exact match,
+    as counted from the log. Log
+    hidden_files/P136_FORGE_CONFIRM.log
+    on purplelongship.
+    Slice scope: owner-scoped read road
+    GET /scenarios/{definition_id}/bind-plan
+    returning P-132 plan_materialisation
+    in an envelope naming the current
+    revision, counts read from the plan,
+    and four standing honesty notes;
+    scenarios/bindpreview.py (new),
+    scenarios/router.py (additive),
+    scenarios/__init__.py (additive),
+    tests/test_p136_bind_plan_preview.py
+    (new),
+    docs/SCENARIO_BIND_PLAN_PREVIEW_2026-11-08.md
+    (new), clean-room log append (+1).
+    Routing: P-135's GET
+    /scenarios/bindings roads and
+    P-136's bind-plan road are distinct
+    literals; "bindings" keeps P-135
+    precedence; harmless, recorded in
+    the evidence.
+    Honest limitations: the plan is
+    definition-side only, bind-time
+    refusals are not judged here,
+    seedable is not landed (P-093
+    missing-keys-only at bind), the
+    plan names the definition's
+    CURRENT revision only.
+    Migration: NONE (head stays 0041).
+    Merge: conflicts in
+    scenarios/router.py +
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    resolved as pure additive unions
+    keeping BOTH P-135 and P-136 work
+    exactly once each (scenarios/
+    __init__.py auto-merged clean);
+    merged router grep-verified
+    carrying P-131 CRUD + P-132 binding
+    + P-133 export + P-134 organisation
+    + P-135 binding-read + P-136
+    bind-plan roads (GET
+    /scenarios/bindings before the
+    {definition_id} roads);
+    py_compile clean; merged diff
+    exactly the team slice.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-137
+    (Part IX, in roadmap order).
