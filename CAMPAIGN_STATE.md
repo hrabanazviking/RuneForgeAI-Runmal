@@ -11852,3 +11852,249 @@ P-145 BANKED - Library Unmappable-Content Census (Part IX)
     PART IX OPEN (P-131..P-154).
     Next in roadmap order: P-146
     (Part IX, in roadmap order).
+P-146 BANKED - Candidate Replace Preview (Part IX)
+    Part IX sixteenth slice.
+    - team-01 commit 73373ce merged (no-
+    ff) into yrsa/two-mirrors-build as
+    3dc3430 (parents 0de6465 + 73373ce);
+    merge pushed and ls-remote verified
+    at 3dc3430 before this record;
+    banking record commit follows this
+    entry and is pushed after it.
+    Cross-base banking: team-01 built on
+    1499ca8 (the P-144 banking record);
+    P-145 is NOT in its base by design,
+    so reconciliation at banking was the
+    keeper's (below).
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only its
+    part line (P-131..P-154), no per-
+    slice entries; the slice scope is
+    derived from Runmal's own in-tree
+    record (P-140's replace-impact
+    preview judges the current world and
+    states in its standing notes that it
+    judges no candidate body - what a
+    successful new body would plant was
+    knowable only once it was stored;
+    yet a successful replace is
+    permanent for the current body (the
+    stored definition and its import
+    report are overwritten, there is no
+    un-replace and no definition
+    history), so before the act an owner
+    could not learn whether the store
+    door would accept a given body at
+    all, what native shape and import
+    report it would persist, what it
+    would plant, or how it differs from
+    the body it would supersede - except
+    by committing the replace; every
+    ingredient already existed as an
+    owning slice's own verb: the store
+    door's parser (P-026, applied
+    exactly as replace applies it),
+    P-132's plan_materialisation,
+    P-136's plan-count law, P-131's
+    summary count law, and P-140's
+    impact envelope; this slice is the
+    join, as a pure read, changing no
+    replace semantics: the PUT road
+    remains the only replacer), stated
+    plainly as derived in the slice doc.
+    Evidence (team-01 worktree
+    hidden_files/ P146_EVIDENCE.md +
+    logs P146_BATTERY.log,
+    P146_NEIGHBOURS.log,
+    P146_FULL_SUITE.log): battery 15
+    passed / 0 failed; neighbours 304
+    passed / 0 failed (Part IX fence on
+    this base: P-026 + P-131..P-144
+    scenario batteries; the P-145
+    battery is absent from this base by
+    design and is therefore honestly not
+    in the fence - the keeper runs it at
+    banking reconciliation, below); team
+    full suite 4864 passed / 5 skipped /
+    0 failed, reconciling exactly with
+    its base (4849 + 15 = 4864); no
+    failure occurred, so no timing-
+    failure classification or solo re-
+    run was needed.
+    One battery-authoring correction
+    during the build (not a product
+    defect): the first unmappable test
+    used a native-shaped body, under
+    which P-026's own law carries an
+    unknown top-level key as extra
+    rather than reporting it unmappable;
+    the test was corrected to the Voxta
+    shape P-026's own battery uses for
+    unmappable machinery. No product
+    defect was found; the slice inherits
+    the parser's law exactly, as replace
+    does.
+    Combined batteries on the merged
+    tree: 334 passed / 0 failed (P-131
+    29 + P-132 18 + P-133 24 + P-134 12
+    + P-135 16 + P-136 11 + P-137 12 +
+    P-138 16 + P-139 11 + P-140 12 +
+    P-141 34 + P-142 16 + P-143 13 +
+    P-144 18 + P-145 15 + P-146 15 +
+    P-026 62; = 319 counted at the P-145
+    banking + 15). Log
+    hidden_files/P146_COMBINED.log on
+    purplelongship.
+    Forge confirmation suite on the
+    merged tree: 4879 passed / 5 skipped
+    / 0 failed - a clean run in 287.04s
+    with no contention re-runs needed.
+    Expectation check: 4864 + 15 = 4879
+    - exact match, as counted from the
+    log. Log
+    hidden_files/P146_FORGE_CONFIRM.log
+    on purplelongship.
+    Slice scope: the candidate replace
+    preview -
+    scenarios/candidatepreview.py (new:
+    preview_candidate_replace(record,
+    bindings, organisation,
+    live_definition_ids, body) judges
+    the candidate body through the store
+    door exactly as
+    ScenarioStore.replace applies it (a
+    non-dict body raises
+    ScenarioStoreError; otherwise
+    P-026's parse_scenario_file alone,
+    ScenarioParseError on refusal,
+    before any envelope exists) and
+    answers the envelope: the P-136
+    identity four + next_revision +
+    current {the record's P-131
+    summary() verbatim, P-132's plan
+    over the stored definition, P-136
+    counts} + candidate {parsed name /
+    source_format, the would-be stored
+    native shape - export_native of the
+    parse - and its import report,
+    exactly the pair a successful
+    replace would persist, P-131-law
+    counts, P-132's plan over the would-
+    be shape + counts} + comparison
+    (name / source-format changed flags,
+    identical_body - the would-be shape
+    deep-equals the stored definition -
+    role / bootstrap / plan count
+    triples, flag and variable key added
+    / removed read from the two plans
+    themselves) + replace_impact
+    (P-140's preview_replace_impact
+    envelope whole, verbatim) + six
+    standing honesty notes in fixed
+    order; pure read, stores nothing),
+    one additive road (POST
+    /scenarios/{definition_id}/replace-
+    preview, declared in its own section
+    after P-140's replace-impact
+    section; the record is fetched
+    owner-scoped first - unknown or
+    foreign answers 404 before any body
+    verdict, even a malformed one, so no
+    parse verdict ever leaks about
+    someone else's definition;
+    (ScenarioParseError,
+    ScenarioStoreError) answers 422 with
+    the store door's own refusal),
+    scenarios/router.py (additive,
+    insertions only),
+    scenarios/__init__.py (additive,
+    insertions only,
+    preview_candidate_replace export +
+    one subsystem-map bullet),
+    tests/test_p146_candidate_replace_preview.py
+    (new, 15 tests),
+    docs/SCENARIO_CANDIDATE_REPLACE_PREVIEW_2026-11-08.md
+    (new), clean-room log append (+1).
+    Team delta 6 files (+942/-0); the
+    merged diff against 0de6465 is
+    exactly the six slice files
+    (+942/-0).
+    Honest limitations: the preview is a
+    statement about the candidate and
+    the world as they stand when read,
+    never a promise about replace time -
+    a replace committed with a different
+    body, or after the world changes, is
+    judged by the PUT road when it runs,
+    which re-parses and re-reads
+    everything; the candidate is stored
+    nowhere - if it is not then PUT, it
+    exists only in this answer; judged
+    exactly as stored cuts both ways:
+    the would-be shape named here is the
+    native shape only - a Voxta
+    candidate's unmappable raw values
+    are not part of it and would not
+    persist (P-131); the candidate
+    report carried in the envelope names
+    every one of them, and the stateless
+    P-026 roads remain the lossless
+    hand-back road for raw files; both
+    plans are definition-side (P-136's
+    bounds): no chat is consulted, bind-
+    time refusals are not judged, and
+    seedable keys are not landed keys -
+    a chat that already holds a key
+    seeds nothing for it at bind time,
+    knowable only against that chat
+    (P-138 judges the stored body that
+    way; it does not judge candidates);
+    identical_body is a statement about
+    the would-be native shape only:
+    replacing with an identical body
+    still moves the revision by one and
+    overwrites the record's import
+    report with the candidate's (P-131
+    replace law) - the preview names
+    next_revision either way and claims
+    no no-op; the candidate changes none
+    of P-140's facts (bindings pin the
+    revision of the body actually stored
+    when they bound, and the
+    organisation row keys on the
+    definition's id), so the impact
+    section is P-140's envelope
+    verbatim, not a candidate-adjusted
+    variant; there is no playback in
+    this slice, and none is claimed
+    (P-027 law: content is data, never
+    code; the candidate is parsed and
+    planned as data, nothing it carries
+    is evaluated or run).
+    Team counts exclude P-145 (absent
+    from this base by design);
+    reconciliation is the keeper's at
+    banking (combined batteries + forge
+    confirmation above).
+    Migration: NONE (head stays 0041).
+    Merge: additive union with P-145's
+    banked work; merge conflicts in
+    scenarios/router.py +
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    resolved as pure additive unions
+    (P-145 and P-146 work kept exactly
+    once each; scenarios/__init__.py
+    merged clean as an additive union);
+    merged scenarios/router.py grep-
+    verified carrying BOTH the P-145 GET
+    /scenarios/library/unmappable road
+    AND the P-146 POST
+    /scenarios/{definition_id}/replace-
+    preview road; the merged clean-room
+    log holds the P-145 and P-146
+    entries exactly once each; merged
+    scenarios modules py_compile clean.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-147 (Part
+    IX, in roadmap order).
