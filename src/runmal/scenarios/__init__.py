@@ -37,6 +37,14 @@
   definition's current revision and the bounds of what
   a definition-side plan can promise (P-136, Part IX,
   DERIVED scope).
+- ``deletepreview`` — definition delete-impact
+  preview: what deleting one stored definition would
+  orphan — its bindings, which do not cascade and
+  would read stale, and its organisation row, which
+  does not cascade and would stay an orphan — named
+  before the irreversible act, in an envelope with
+  standing honesty notes (P-139, Part IX, DERIVED
+  scope).
 - ``router`` — the HTTP roads: the stateless P-026
   import/export roads plus the P-131 definition CRUD
   roads on the same /scenarios prefix.
@@ -73,6 +81,7 @@ from runmal.scenarios.organisation import (
     query_definitions,
 )
 from runmal.scenarios.bindpreview import preview_bind_plan
+from runmal.scenarios.deletepreview import preview_delete_impact
 from runmal.scenarios.fileexport import (
     export_native,
     export_native_bytes,
@@ -181,6 +190,7 @@ __all__ = [
     "organisation_path",
     "organisation_view",
     "preview_bind_plan",
+    "preview_delete_impact",
     "query_definitions",
     "get_binding",
     "list_bindings",
