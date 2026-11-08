@@ -6285,3 +6285,78 @@ P-094 BANKED - Plugin data custody (Part VI)
     + 24, exact; log
     hidden_files/p094_forge_confirmation.log).
     Next in roadmap order: P-095.
+P-095 BANKED - The gallery plugin (Part VI)
+    - team-01 commit 8578b54 merged
+    (no-ff) into
+    yrsa/two-mirrors-build as 7bcc14d
+    and pushed; ls-remote verified
+    7bcc14d602ce5ac7e601d33ae39d940a79a66a41
+    (see WAVE_PLAN update). Evidence
+    (team-01 worktree
+    hidden_files/P095_EVIDENCE.md):
+    battery 27 passed, neighbours 200
+    passed, team full suite 3898
+    passed / 4 skipped / 0 failed on
+    its base (base predates P-094;
+    reconciled at this banking).
+    Slice:
+    src/runmal/plugins/gallery.py (new
+    - durable per-owner gallery store,
+    P-087 generation-history ingest
+    verbatim and idempotent, P-023
+    asset-derived and attached roads,
+    enriched gallery view, pull-based
+    import, curation/removal/clear
+    verbs, manifest + register_plugin,
+    empty P-082 grants),
+    tests/test_p095_gallery.py
+    (27 tests),
+    docs/GALLERY_PLUGIN_2026-11-07.md,
+    clean-room log append. 4 files,
+    +1393.
+    Migration: NONE (head stays 0041;
+    no migration taken - the gallery
+    rides the P-089 file-store idiom
+    and the P-023 asset store; no
+    0042).
+    Defects: none found in-slice; the
+    battery passed 27/27 on its first
+    run and the team full suite was
+    green outright, so no fix commit
+    was needed.
+    Design honesty: a per-chat image
+    gallery with generation history as
+    a first-class citizen. Provenance
+    is a three-kind vocabulary
+    (generated / asset / attached) and
+    curation can touch title and notes
+    only, never provenance. Generation
+    import is pull-based and explicit:
+    the gallery preserves only the
+    generations it is handed and never
+    claims to observe more. The
+    attached_local road for chats with
+    no bound character is labelled
+    honestly and carries no thumbnails
+    (a P-023 road). No HTTP routes
+    this slice - service surface and
+    UI contribution only.
+    Merge conflict in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    only (append-vs-append), resolved
+    as a true additive union keeping
+    BOTH the P-094 and P-095 entries
+    exactly once; no other conflicts
+    (gallery.py deliberately took no
+    router changes). Banking heal:
+    none needed - no pin required
+    re-pinning on the merged tree.
+    Combined batteries on the merged
+    tree: 51 passed / 0 failed (= 24
+    P-094 + 27 P-095, exact). Forge
+    confirmation suite: 3922 passed /
+    4 skipped / 0 failed (= 3895
+    P-094 confirmation + 27, exact;
+    log
+    hidden_files/p095_forge_confirmation.log).
+    Next in roadmap order: P-096.
