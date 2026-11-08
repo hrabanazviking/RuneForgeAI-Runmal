@@ -78,6 +78,14 @@
   through P-141's own validation — a pure read that
   imports, writes and creates nothing (P-143, Part IX,
   DERIVED scope).
+- ``reportcensus`` — library unmappable-content census:
+  every unmappable element the caller's stored P-131
+  import reports name, joined across the whole library
+  (per definition, the reports' own rows verbatim with
+  P-131 summaries; rolled up by kind; counts summed
+  from the rows themselves) — a census under standing
+  law: it names, never repairs, and executes nothing
+  (P-145, Part IX, DERIVED scope).
 - ``router`` — the HTTP roads: the stateless P-026
   import/export roads plus the P-131 definition CRUD
   roads on the same /scenarios prefix.
@@ -122,6 +130,7 @@ from runmal.scenarios.bindingcensus import (
     BINDING_STATES,
     census_bindings,
 )
+from runmal.scenarios.reportcensus import census_unmappable
 from runmal.scenarios.packs import (
     CONFLICT_CREATE_NEW,
     CONFLICT_MODES,
@@ -253,6 +262,7 @@ __all__ = [
     "preview_pack_import",
     "BINDING_STATES",
     "census_bindings",
+    "census_unmappable",
     "CONFLICT_CREATE_NEW",
     "CONFLICT_MODES",
     "CONFLICT_REJECT",

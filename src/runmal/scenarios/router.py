@@ -7,6 +7,7 @@
 + scenario definition sharing packs (P-141).
 + library-scoped pack import preview (P-143).
 + global binding census (P-144).
++ library unmappable-content census (P-145).
 
 P-026 roads (stateless): parse a scenario file and report
 honestly, and re-export it. Those roads are unchanged.
@@ -87,6 +88,17 @@ data at 200, never the road's own refusal. The service
 lives in runmal.scenarios.packpreview; this module is
 only the HTTP shape. The preview writes nothing.
 
+P-145 (Part IX, DERIVED scope) adds the library
+unmappable-content census road: every unmappable element
+the caller's stored import reports name, joined across
+the whole library — per definition (P-131 summaries and
+the reports' own rows verbatim) and rolled up by kind,
+with counts summed from the rows themselves. The
+service lives in runmal.scenarios.reportcensus; this
+module is only the HTTP shape. The census writes,
+deletes and repairs nothing: it names, never executes
+and never cleans up.
+
 No road here plays a scenario back or executes anything a
 definition carries (P-027: content is data, never code).
 """
@@ -131,6 +143,7 @@ from runmal.scenarios.replacepreview import preview_replace_impact
 from runmal.scenarios.packs import build_pack, import_pack, inspect_pack
 from runmal.scenarios.packpreview import preview_pack_import
 from runmal.scenarios.bindingcensus import census_bindings
+from runmal.scenarios.reportcensus import census_unmappable
 from runmal.scenarios.storedexport import (
     DEFAULT_FORMAT,
     FORMATS,
@@ -226,6 +239,33 @@ async def list_scenario_library_tags(
     rows = _store().list_for_owner(user_id)
     tags = list_tags(rows, _records_by_id(user_id))
     return {"tags": tags, "total": len(tags)}
+
+
+@router.get(
+    "/scenarios/library/unmappable", status_code=status.HTTP_200_OK
+)
+async def census_scenario_unmappable(
+    user_id: str = Depends(get_owner_id),
+):
+    """The caller's library unmappable-content census (P-145).
+
+    Declared with the library roads before the
+    {definition_id} roads so the literal "library" is
+    never read as a definition id (the P-134 library/tags
+    precedent). Every unmappable element the caller's
+    stored P-131 import reports name, joined across the
+    library: rows in store order naming each definition
+    by its P-131 summary with the report's rows verbatim,
+    a by-kind rollup in first-appearance order, counts
+    summed from the rows themselves, and the standing
+    honesty notes - pure read, not a cleanup, named
+    never executed, the report is the record, and no
+    definition content carried. An owner with no
+    definitions - or none with unmappable elements -
+    answers the honest zero census; the road has no 404
+    case. Pure read.
+    """
+    return census_unmappable(_store().list_for_owner(user_id))
 
 
 @router.get("/scenarios/bindings", status_code=status.HTTP_200_OK)
