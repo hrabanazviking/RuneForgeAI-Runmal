@@ -38,6 +38,7 @@ from runmal.voice.router import router as voice_router
 from runmal.voice.live import LiveVoiceController
 from runmal.voice.live_router import router as live_router
 from runmal.voice.projection_router import router as projection_router
+from runmal.voice.autoproject_router import router as autoproject_router
 from runmal.voice.router import voice_page
 from runmal.web.router import _HERE as _WEB_DIR
 from runmal.web.router import router as web_router
@@ -156,6 +157,11 @@ def create_app(
     app.get("/voice", response_class=None)(voice_page)
     app.include_router(
         live_router,
+        prefix="/api/v1",
+        dependencies=[Depends(require_local_auth)],
+    )
+    app.include_router(
+        autoproject_router,
         prefix="/api/v1",
         dependencies=[Depends(require_local_auth)],
     )

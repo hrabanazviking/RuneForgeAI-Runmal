@@ -358,6 +358,11 @@ class VoiceSession:
     stopped_at: str = ""
     stop_note: str = ""
     turns: list[VoiceTurnRecord] = field(default_factory=list)
+    # Auto-projection opt-in (P-104): when True, the async host
+    # roads project this session's turns into its chat as they
+    # are recorded (P-103's service, called by the host). Default
+    # False — projection stays explicit, exactly as P-103 left it.
+    auto_project: bool = False
 
     @property
     def active(self) -> bool:
@@ -445,6 +450,7 @@ class VoiceSession:
             "stopped_at": self.stopped_at,
             "stop_note": self.stop_note,
             "turn_count": len(self.turns),
+            "auto_project": bool(self.auto_project),
             "settings": self.settings.to_dict(),
         }
 
@@ -466,6 +472,7 @@ class VoiceSession:
             stopped_at=str(data.get("stopped_at", "")),
             stop_note=str(data.get("stop_note", "")),
             turns=[VoiceTurnRecord.from_dict(t) for t in data.get("turns") or []],
+            auto_project=bool(data.get("auto_project", False)),
         )
 
 
@@ -562,6 +569,7 @@ def start_session(
     character_id: str | None,
     settings: SessionSettings,
     now: str = "",
+    auto_project: bool = False,
 ) -> VoiceSession:
     """Start a chat's voice session. One active session per chat:
     an existing active session is stopped as superseded first —
@@ -579,5 +587,6 @@ def start_session(
         character_id=character_id,
         settings=settings,
         created_at=stamp,
+        auto_project=bool(auto_project),
     )
     return store.save_session(session)

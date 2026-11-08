@@ -22,6 +22,9 @@ Layered, provider-isolated pieces (see docs/VOICE_ARCHITECTURE.md):
   orchestrators wired into the app process (P-102).
 - ``projection`` / ``projection_router`` — recorded turns landed
   in their chat as provenance-carrying messages (P-103).
+- ``autoproject`` / ``autoproject_router`` — the async
+  auto-projecting host: opted-in sessions project as their
+  turns are recorded (P-104).
 - ``routing``   — persisted logical device routes (S513).
 - ``benchmark`` — reproducible voice benchmark harness (S514).
 
