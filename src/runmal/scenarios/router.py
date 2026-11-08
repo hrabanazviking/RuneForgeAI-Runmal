@@ -3,6 +3,7 @@
 + scenario library organisation (P-134) + binding
   lifecycle read surface (P-135) + binding plan
   preview (P-136) + definition duplication (P-137) + chat-scoped bind preview (P-138).
++ definition delete-impact preview (P-139).
 
 P-026 roads (stateless): parse a scenario file and report
 honestly, and re-export it. Those roads are unchanged.
@@ -40,6 +41,15 @@ P-093's own presence law into would-seed and
 already-present. The service lives in
 runmal.scenarios.chatpreview; this module is only the
 HTTP shape.
+P-139 (Part IX, DERIVED scope) adds the delete-impact
+preview road: what deleting one stored definition
+WOULD orphan - its bindings, which do not cascade and
+would afterwards read stale on the P-135 surface, and
+its organisation row, which would stay an orphan
+filtered at every read - named before the irreversible
+act in an envelope with standing honesty notes. The
+service lives in runmal.scenarios.deletepreview; this
+module is only the HTTP shape.
 
 No road here plays a scenario back or executes anything a
 definition carries (P-027: content is data, never code).
@@ -80,6 +90,7 @@ from runmal.scenarios.store import (
 )
 from runmal.scenarios.bindpreview import preview_bind_plan
 from runmal.scenarios.chatpreview import preview_bind_for_chat
+from runmal.scenarios.deletepreview import preview_delete_impact
 from runmal.scenarios.storedexport import (
     DEFAULT_FORMAT,
     FORMATS,
@@ -319,6 +330,45 @@ async def duplicate_scenario_definition(
             detail="scenario definition not found",
         )
     return record.to_dict()
+
+
+
+# --------------------------------- delete-impact preview (P-139)
+
+
+@router.get(
+    "/scenarios/{definition_id}/delete-impact",
+    status_code=status.HTTP_200_OK,
+)
+async def preview_scenario_delete_impact(
+    definition_id: str,
+    user_id: str = Depends(get_owner_id),
+):
+    """What deleting this definition WOULD orphan (P-139).
+
+    The envelope names the definition (id, name, its
+    current revision, its source format), the bindings a
+    deletion would leave stale (P-135's own summaries,
+    each naming definition_exists while it is still
+    true), the definition's organisation view (P-134)
+    plus whether a persisted organisation row exists at
+    all, impact counts read from those answers, and the
+    standing honesty notes: no cascade into either
+    store, seeded chat content kept, and deletion
+    permanent - the stored-export road is the way to
+    keep a file copy first. Unknown or foreign answers
+    404 (existence never leaks). The road writes,
+    deletes and cascades nothing.
+    """
+    record = _store().get(definition_id, user_id)
+    if record is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="scenario definition not found",
+        )
+    live = {row.id for row in _store().list_for_owner(user_id)}
+    return preview_delete_impact(
+        record, _bindings(), _organisation(), live)
 
 
 # --------------------------------------- organisation (P-134)
