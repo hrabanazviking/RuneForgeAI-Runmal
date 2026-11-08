@@ -42,6 +42,13 @@ slice. What binding honestly is here:
   no single scenario seat in this slice), and a chat
   carries at most one active binding. Every refusal is
   decided before any write of any kind.
+- P-135 adds the lifecycle read surface: the store's
+  list verbs (pinned since P-132) become owner-scoped
+  HTTP list roads answering count summaries — never the
+  seeded content itself — and each summary names
+  ``definition_exists``, because deleting a definition
+  does not cascade into this store and a binding can
+  honestly outlive the definition it came from.
 - unbinding removes only the binding record. Seeded
   messages and variables are the chat's own truth by
   then and stay; the DELETE road's answer says so.
@@ -136,6 +143,25 @@ class ScenarioBinding:
             "seeded_messages": copy.deepcopy(self.seeded_messages),
             "seeded_keys": list(self.seeded_keys),
             "skipped": copy.deepcopy(self.skipped),
+        }
+
+    def summary(self) -> dict:
+        """The list shape (P-135): identity, the pinned
+        definition facts and counts read from this record
+        itself, so they cannot drift. Seeded content —
+        message texts, cast bodies — stays on the
+        single-read road; a summary never carries it."""
+        return {
+            "id": self.id,
+            "chat_id": self.chat_id,
+            "definition_id": self.definition_id,
+            "definition_name": self.definition_name,
+            "definition_revision": self.definition_revision,
+            "bound_at": self.bound_at,
+            "cast_count": len(self.cast),
+            "seeded_message_count": len(self.seeded_messages),
+            "seeded_key_count": len(self.seeded_keys),
+            "skipped_count": len(self.skipped),
         }
 
     @classmethod
@@ -298,6 +324,47 @@ def _seedable(where: str, key, value) -> str | None:
     if isinstance(value, float):
         return None if math.isfinite(value) else "numeric value is not finite"
     return f"value is {type(value).__name__}, not a typed scalar"
+
+
+def list_bindings(
+    store: ScenarioBindingStore,
+    owner_id: str,
+    live_definition_ids: set,
+) -> list[dict]:
+    """Every binding the owner holds, as summaries (P-135).
+
+    Store (bind) order. ``definition_exists`` is judged
+    against the caller's live definition ids: deleting a
+    definition does not cascade into the binding store,
+    so a stale binding is named, never hidden. Pure read:
+    nothing is written."""
+    return [
+        {
+            **row.summary(),
+            "definition_exists": row.definition_id in live_definition_ids,
+        }
+        for row in store.list_for_owner(owner_id)
+    ]
+
+
+def list_bindings_for_definition(
+    store: ScenarioBindingStore,
+    owner_id: str,
+    definition_id: str,
+    live_definition_ids: set,
+) -> list[dict]:
+    """One definition's bindings for this owner (P-135).
+
+    Same summary shape as list_bindings. The router
+    decides existence (404) before calling this; an owned
+    definition with no bindings honestly answers []."""
+    return [
+        {
+            **row.summary(),
+            "definition_exists": row.definition_id in live_definition_ids,
+        }
+        for row in store.list_for_definition(definition_id, owner_id)
+    ]
 
 
 def plan_materialisation(definition: dict) -> dict:
