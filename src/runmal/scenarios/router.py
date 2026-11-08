@@ -3,7 +3,8 @@
 + scenario library organisation (P-134) + binding
   lifecycle read surface (P-135) + binding plan
   preview (P-136) + definition duplication (P-137) + chat-scoped bind preview (P-138).
-+ definition delete-impact preview (P-139) + definition replace-impact preview (P-140).
++ definition delete-impact preview (P-139) + definition replace-impact preview (P-140)
++ scenario definition sharing packs (P-141).
 
 P-026 roads (stateless): parse a scenario file and report
 honestly, and re-export it. Those roads are unchanged.
@@ -52,6 +53,19 @@ service lives in runmal.scenarios.deletepreview; this
 module is only the HTTP shape.
 
 P-140 (Part IX, DERIVED scope) adds the replace-impact preview road: for one stored definition, the bindings a PUT replace would leave pinning a superseded revision - split by their pinned revision against the current one - the organisation row that stays live, and the next revision, all read before any replace is committed. The service lives in runmal.scenarios.replacepreview; this module is only the HTTP shape.
+P-141 (Part IX, DERIVED scope) adds the sharing-pack
+roads: one stored definition sealed in a pack envelope
+(a manifest with a SHA-256 content checksum over the
+canonical native payload, and provenance carrying the
+source record's facts and its P-131 import report as
+data), an inspect road that validates a pack WITHOUT
+importing it, and an import road that never overwrites
+— an exact duplicate returns the existing record
+unwritten, a same-name collision creates fresh or
+refuses under on_conflict=reject. The service lives in
+runmal.scenarios.packs; this module is only the HTTP
+shape. No organisation row and no binding travels in
+a pack.
 
 No road here plays a scenario back or executes anything a
 definition carries (P-027: content is data, never code).
@@ -94,6 +108,7 @@ from runmal.scenarios.bindpreview import preview_bind_plan
 from runmal.scenarios.chatpreview import preview_bind_for_chat
 from runmal.scenarios.deletepreview import preview_delete_impact
 from runmal.scenarios.replacepreview import preview_replace_impact
+from runmal.scenarios.packs import build_pack, import_pack, inspect_pack
 from runmal.scenarios.storedexport import (
     DEFAULT_FORMAT,
     FORMATS,
@@ -208,6 +223,61 @@ async def list_scenario_bindings(
     live = {row.id for row in _store().list_for_owner(user_id)}
     rows = list_bindings(_bindings(), user_id, live)
     return {"bindings": rows, "total": len(rows)}
+
+
+@router.post("/scenarios/import-pack", status_code=status.HTTP_201_CREATED)
+async def import_scenario_pack(
+    body: dict,
+    on_conflict: str = "create_new",
+    user_id: str = Depends(get_owner_id),
+):
+    """Import a scenario definition sharing pack (P-141).
+
+    Never overwrites: an exact duplicate returns the
+    existing record with a 200 and
+    ``pack_import.duplicate_exact`` set; a same-name
+    collision creates a fresh record by default or
+    refuses with ``?on_conflict=reject`` (422). A
+    malformed pack refuses whole (422) before any
+    write. The answer is the record in full plus the
+    ``pack_import`` report, which carries the pack's
+    manifest and provenance verbatim.
+    """
+    from fastapi.responses import JSONResponse
+
+    try:
+        record, report = import_pack(
+            _store(), user_id, body, on_conflict=on_conflict)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)
+        ) from exc
+    payload = record.to_dict()
+    payload["pack_import"] = report
+    return JSONResponse(
+        content=payload,
+        status_code=200 if report["duplicate_exact"] else 201,
+    )
+
+
+@router.post("/scenarios/pack/inspect", status_code=status.HTTP_200_OK)
+async def inspect_scenario_pack(
+    body: dict,
+    user_id: str = Depends(get_owner_id),
+):
+    """Validate a pack and report on it WITHOUT importing (P-141).
+
+    The hub's pre-flight: format, manifest, provenance
+    and the verified content checksum, as data. Owner-
+    scoped like every scenario road; a malformed pack
+    answers 422. Nothing is written.
+    """
+    try:
+        return inspect_pack(body)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)
+        ) from exc
 
 
 @router.get("/scenarios", status_code=status.HTTP_200_OK)
@@ -756,3 +826,36 @@ async def export_scenario_definition(
         )
     file_dict, report = export_stored_definition(record, fmt)
     return {"format": fmt, "file": file_dict, "report": report}
+
+
+# -------------------------------------- sharing pack (P-141)
+
+
+@router.get(
+    "/scenarios/{definition_id}/pack",
+    status_code=status.HTTP_200_OK,
+)
+async def export_scenario_pack(
+    definition_id: str,
+    user_id: str = Depends(get_owner_id),
+):
+    """Hand one owned definition back as a sharing pack (P-141).
+
+    The stored definition sealed in the pack envelope:
+    a manifest (the definition's name, its role and
+    bootstrap counts, a SHA-256 content checksum over
+    the canonical native payload) and provenance (the
+    source record's id, name, pinned revision and
+    original source format, and its P-131 import report
+    carried verbatim as data — the one artefact the
+    P-133 file roads cannot carry). Unknown or foreign
+    answers 404 — existence never leaks. The road
+    writes nothing.
+    """
+    record = _store().get(definition_id, user_id)
+    if record is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="scenario definition not found",
+        )
+    return build_pack(record)
