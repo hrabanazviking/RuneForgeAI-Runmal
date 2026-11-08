@@ -3,7 +3,7 @@
 + scenario library organisation (P-134) + binding
   lifecycle read surface (P-135) + binding plan
   preview (P-136) + definition duplication (P-137) + chat-scoped bind preview (P-138).
-+ definition delete-impact preview (P-139).
++ definition delete-impact preview (P-139) + definition replace-impact preview (P-140).
 
 P-026 roads (stateless): parse a scenario file and report
 honestly, and re-export it. Those roads are unchanged.
@@ -51,6 +51,8 @@ act in an envelope with standing honesty notes. The
 service lives in runmal.scenarios.deletepreview; this
 module is only the HTTP shape.
 
+P-140 (Part IX, DERIVED scope) adds the replace-impact preview road: for one stored definition, the bindings a PUT replace would leave pinning a superseded revision - split by their pinned revision against the current one - the organisation row that stays live, and the next revision, all read before any replace is committed. The service lives in runmal.scenarios.replacepreview; this module is only the HTTP shape.
+
 No road here plays a scenario back or executes anything a
 definition carries (P-027: content is data, never code).
 """
@@ -91,6 +93,7 @@ from runmal.scenarios.store import (
 from runmal.scenarios.bindpreview import preview_bind_plan
 from runmal.scenarios.chatpreview import preview_bind_for_chat
 from runmal.scenarios.deletepreview import preview_delete_impact
+from runmal.scenarios.replacepreview import preview_replace_impact
 from runmal.scenarios.storedexport import (
     DEFAULT_FORMAT,
     FORMATS,
@@ -670,6 +673,49 @@ async def preview_scenario_bind_plan_for_chat(
         )
     return envelope
 
+
+# --------------------------- replace-impact preview (P-140)
+
+
+@router.get(
+    "/scenarios/{definition_id}/replace-impact",
+    status_code=status.HTTP_200_OK,
+)
+async def preview_scenario_replace_impact(
+    definition_id: str,
+    user_id: str = Depends(get_owner_id),
+):
+    """What replacing this definition WOULD supersede (P-140).
+
+    The envelope names the definition (id, name, its
+    current revision, its source format), the next
+    revision a successful replace would pin (current + 1,
+    the P-131 replace law), the bindings read through
+    P-135 summaries verbatim with the pinned split read
+    from those summaries (pinned at the current revision,
+    already pinned older, and pinned newer - impossible
+    by construction, counted so a hand-damaged store is
+    named, never hidden), the organisation view read
+    through P-134 verbatim plus whether a persisted row
+    exists at all, and five standing honesty notes: the
+    preview replaces, writes and cascades nothing; a
+    successful replace is permanent for the current body
+    with no un-replace and no definition history; no
+    binding is re-materialised and seeded content stays
+    the chats own truth; the organisation row stays live
+    against this id, unlike deletion, which orphans it;
+    and no candidate body is judged here. Unknown or
+    foreign answers 404 (existence never leaks). The PUT
+    road remains the only replacer."""
+    record = _store().get(definition_id, user_id)
+    if record is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="scenario definition not found",
+        )
+    live = {row.id for row in _store().list_for_owner(user_id)}
+    return preview_replace_impact(
+        record, _bindings(), _organisation(), live)
 
 # ------------------------------------ stored export (P-133)
 
