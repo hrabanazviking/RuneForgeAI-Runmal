@@ -6502,3 +6502,59 @@ P-097 BANKED - Plugin conformance kit (Part VI)
     (= 3955 P-096 confirmation + 30,
     exact).
     Next in roadmap order: P-098.
+P-098 BANKED - Plugin settings UI generated from declared schemas (Part VI)
+    - team-01 commit c60f521 merged (no-ff)
+    into yrsa/two-mirrors-build as 7d27d4b
+    and pushed; ls-remote verified
+    7d27d4bed2a126d9f4e16d3f22580a69f55207e6.
+    Evidence (team-01 worktree
+    hidden_files/P098_EVIDENCE.md):
+    battery 32 passed, neighbours 542
+    passed, team full suite 3987 passed /
+    4 skipped / 0 failed (= 3955 P-096
+    forge confirmation + 32, exact).
+    Slice:
+    src/runmal/plugins/settings_ui.py (new,
+    857 lines - one schema-driven renderer:
+    form document + escaped HTML, strict
+    named-error validation, and a
+    custody-shaped declared file store for
+    owner values),
+    src/runmal/plugins/router.py (+99 lines,
+    append-only: four settings routes),
+    tests/test_p098_plugin_settings_ui.py
+    (32 tests),
+    docs/PLUGIN_SETTINGS_UI_2026-11-07.md,
+    clean-room log append. 5 files, +1514.
+    Migration: NONE (head stays 0041; no
+    migration taken).
+    Honest limitations: stored owner values
+    do not yet change a running citizen's
+    behaviour - shipped citizens still read
+    manifest defaults at runtime; this slice
+    is the generated UI + strict validation
+    + the durable owner-value store.
+    runmal.plugin-settings-ui is not in
+    P-094 custody's fixed citizen list (the
+    same carried class as runmal.game-bridge
+    from P-096); its sections export/delete
+    through its own custody-shaped verbs.
+    Merge conflict in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md only
+    (append-vs-append), resolved as an
+    additive union keeping the P-097 and
+    P-098 entries exactly once; router.py
+    auto-merged; no other conflicts.
+    Banking heal: none needed. Corpus: on
+    the merged tree the P-098 citizen
+    runmal.plugin-settings-ui joins the
+    P-097 conformance corpus by
+    auto-discovery, giving 16 citizens, and
+    passes as shipped. Combined batteries
+    on the merged tree: 62 passed / 0
+    failed (= 30 P-097 + 32 P-098, exact).
+    Forge confirmation suite: 4017 passed
+    / 4 skipped / 0 failed (= 3985 P-097
+    confirmation + 32, exact; log
+    hidden_files/p098_forge_confirmation.log).
+    Next in roadmap order: P-099.
