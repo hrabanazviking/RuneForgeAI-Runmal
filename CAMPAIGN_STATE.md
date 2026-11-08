@@ -12853,3 +12853,149 @@ P-151 BANKED - Library Definition Census (Part IX)
     PART IX OPEN (P-131..P-154).
     Next in roadmap order: P-152 (Part
     IX, in roadmap order).
+P-152 BANKED - Chat Coverage Census (Part IX)
+    Part IX twenty-second slice.
+    - team-01 commit 2501dc6 merged (no-
+    ff) into yrsa/two-mirrors-build as
+    94e4661 (parents b5a8738 + 2501dc6);
+    merge pushed and ls-remote verified
+    at 94e4661 before this record;
+    banking record commit follows this
+    entry and is pushed after it.
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only its
+    part line (P-131..P-154), no per-
+    slice entries; the slice scope is
+    derived from Runmal's own in-tree
+    record (every Part IX census rows
+    bindings - P-144, P-148, P-150 -
+    definitions - P-151 - or report rows
+    - P-145; the binding censuses' rows
+    are binding rows, so a chat with no
+    binding appears in no census at all
+    and no road answered the chat-side
+    coverage question except walking
+    every chat by hand through the P-132
+    per-chat binding read - the by-hand
+    gap P-144's derivation named,
+    transposed to the chat axis, the
+    exact mirror of the gap P-151 closed
+    for definitions; P-152 rows every
+    chat the caller holds and classifies
+    it by the coverage of the binding it
+    carries, stated plainly as derived
+    in the slice doc.
+    Evidence (team-01 worktree
+    hidden_files/ P152_EVIDENCE.md +
+    logs P152_BATTERY.log,
+    P152_NEIGHBOURS.log,
+    P152_FULLSUITE.log): battery 21
+    passed / 0 failed; neighbour fence
+    445 passed / 0 failed (the P-151
+    banking record's combined fence
+    through P-151 counted 424; 424 + 21
+    = 445, exact); team full suite 4990
+    passed / 5 skipped / 0 failed in
+    303.18s, reconciling exactly with
+    its base (4969 + 21 = 4990); no
+    failure occurred, so no timing-
+    failure classification or solo re-
+    run was needed.
+    Combined batteries on the merged
+    tree: 445 passed / 0 failed (P-026 +
+    P-131..P-152 scenario batteries),
+    run by the banking coordinator with
+    PYTHONPATH=src on the merged tree.
+    Log hidden_files/P152_COMBINED.log
+    in the forge.
+    Forge confirmation suite on the
+    merged tree: 4990 passed / 5 skipped
+    / 0 failed in 297.29s, exit 0.
+    Expectation check: 4969 + 21 = 4990
+    - exact match, as counted from the
+    log. Log
+    hidden_files/P152_FORGE_CONFIRM.log
+    in the forge.
+    Slice scope: the chat coverage
+    census - scenarios/chatcoverage.py
+    (new: every chat the caller holds
+    rowed as the census subject -
+    identity facts only: chat_id, title,
+    is_group, created_at - classified by
+    the coverage of the binding it
+    carries, P-144 census_bindings
+    verdicts composed per chat: unbound
+    / sound / definition_drift /
+    definition_gone; orphaned bindings
+    counted in the totals, rowing under
+    no chat; pure read: binds, unbinds,
+    deletes and writes nothing), one
+    additive road (GET
+    /scenarios/chats/census, appended at
+    the router's end after the P-147
+    handler), scenarios/router.py
+    (additive, +44),
+    scenarios/__init__.py (additive,
+    +17),
+    tests/test_p152_chat_coverage_census.py
+    (new, 21 tests),
+    docs/SCENARIO_CHAT_COVERAGE_CENSUS_2026-11-08.md
+    (new), clean-room log append (+1).
+    Team delta 6 files (+1232/-0),
+    purely additive, no hidden_files
+    paths in the slice commit.
+    One test-only defect found and fixed
+    in-slice: the group-chat battery
+    test planted a Group and its Chat in
+    one flush and hit an FK
+    IntegrityError (flush ordering); the
+    plant now commits the Group first,
+    then the Chat. Test-only; no
+    production code was touched.
+    Honest limitations: the census is a
+    pure read; it changes no write
+    behaviour. The delete_chat cascade
+    into the binding store remains OPEN
+    and deliberately untaken: P-149
+    reserved the decision expressly for
+    Volmarr and P-150 and P-151 declined
+    it again; this slice records the
+    same position with the full argument
+    in the slice doc, rather than
+    overriding three fresh in-tree
+    reservations. The coverage state
+    reads the chat's first binding row
+    in binding order; a hand-damaged
+    second row for the same chat is
+    named by bindings_surplus_rows in
+    the totals, and the per-binding
+    truth stays on P-144 / P-148 /
+    P-150, untouched beside it. A group
+    room rows exactly as any standing
+    chat: custody judges existence, not
+    bindability (bind's refusal law is
+    bind's). No pre-slice full-suite run
+    was taken in the team worktree; the
+    no-regression claim rests on the
+    post-slice full suite's zero
+    failures plus the 445-test neighbour
+    fence, reconciling exactly with the
+    banked counts. No playback, runtime
+    or execution of any stored content
+    (P-027 law).
+    Migration: NONE (head stays 0041).
+    Merge: clean no-ff merge, no
+    conflicts; merged
+    scenarios/router.py grep-verified
+    carrying BOTH the P-151 GET
+    /scenarios/library/census road AND
+    the P-152 GET
+    /scenarios/chats/census road; merged
+    scenarios modules py_compile clean;
+    merged diff vs b5a8738 is exactly
+    the 6 slice files (+1232/-0). No
+    heal was needed at merge.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-153 (Part
+    IX, in roadmap order).
