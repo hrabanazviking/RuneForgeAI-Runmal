@@ -800,6 +800,20 @@ async def delete_chat(session: AsyncSession, user_id: str, chat_id: str) -> bool
         ).purge_chat(chat_id)
     except Exception:
         pass
+    try:
+        # P-121 custody (wired at banking): the chat's folder-
+        # watch registrations and their ingested records die
+        # with the chat, like its attachments above.
+        import os as _os_w
+        from pathlib import Path as _Path_w
+
+        from runmal.vision.watcher import WatchStore
+
+        WatchStore(
+            _Path_w(_os_w.environ.get("RUNMAL_DATA_DIR", ".runmal-data"))
+        ).purge_chat(chat_id)
+    except Exception:
+        pass
     await _dispatch_plugin("chat.deleted", chat_id=chat_id, data={"chat_id": chat_id})
     return True
 

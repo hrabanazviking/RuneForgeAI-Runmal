@@ -11,7 +11,7 @@ recursion and the per-scan cap behave as stated), the
 disabled/missing-folder plain refusals, the lazy-attacher
 honesty in a tree without P-120 (a scan with no injected
 attacher refuses plainly naming the absence — skipped when
-the attachments module IS present), custody purge, the HTTP
+the attachments module IS present), custody purge and its chat-deletion wiring (banked with P-121), the HTTP
 roads + 404/422 shapes, and the migration head pin (0041).
 No network, no daemon: fakes/fixtures only.
 """
@@ -414,3 +414,39 @@ def test_migration_head_stays_0041(tmp_path):
     db_path = tmp_path / "m.db"
     migrate_to_head(db_path)
     assert current_revision(db_path) == MIGRATIONS[-1][0] == "0041"
+
+
+# --------------------------------------- custody wiring (banking)
+
+
+def test_chat_deletion_purges_watch_registrations(tmp_path, monkeypatch):
+    # Banking wiring pin: delete_chat purges the chat's watch
+    # registrations + ingested records (P-121), alongside the
+    # P-118 vision purge and the P-120 attachment purge.
+    client = make_client(tmp_path, monkeypatch)
+    doomed_id = _chat(client, title="doomed")
+    keeper_id = _chat(client, title="keeper")
+    folder = tmp_path / "inbox"
+    folder.mkdir()
+    store = w.WatchStore(tmp_path)
+    doomed_watch = w.register_watch(
+        store, owner_id="owner", chat_id=doomed_id,
+        path=str(folder), now=NOW)
+    keeper_watch = w.register_watch(
+        store, owner_id="owner", chat_id=keeper_id,
+        path=str(folder), now=NOW)
+    store.record_ingested(w.IngestedRecord(
+        watch_id=doomed_watch.id, source_path=str(folder / "a.png"),
+        sha256=hashlib.sha256(PNG).hexdigest(), size=len(PNG),
+        attachment_id="att-doomed", ingested_at=NOW))
+    store.record_ingested(w.IngestedRecord(
+        watch_id=keeper_watch.id, source_path=str(folder / "b.png"),
+        sha256=hashlib.sha256(PNG2).hexdigest(), size=len(PNG2),
+        attachment_id="att-keeper", ingested_at=NOW))
+    res = client.delete(f"/api/v1/chats/{doomed_id}")
+    assert res.status_code in (200, 204), res.text
+    assert store.list_for_chat(doomed_id) == []
+    assert store.list_ingested(doomed_watch.id) == []
+    assert [r.id for r in store.list_for_chat(keeper_id)] == [
+        keeper_watch.id]
+    assert len(store.list_ingested(keeper_watch.id)) == 1
