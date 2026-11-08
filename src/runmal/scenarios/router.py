@@ -5,6 +5,7 @@
   preview (P-136) + definition duplication (P-137) + chat-scoped bind preview (P-138).
 + definition delete-impact preview (P-139) + definition replace-impact preview (P-140)
 + scenario definition sharing packs (P-141).
++ library-scoped pack import preview (P-143).
 
 P-026 roads (stateless): parse a scenario file and report
 honestly, and re-export it. Those roads are unchanged.
@@ -67,6 +68,17 @@ runmal.scenarios.packs; this module is only the HTTP
 shape. No organisation row and no binding travels in
 a pack.
 
+P-143 (Part IX, DERIVED scope) adds the library-scoped
+pack import preview road: P-141's pack verdicts — the
+exact duplicate, the name collision and the
+on_conflict=reject refusal — judged AS DATA against
+the caller's own library BEFORE any import, through
+P-141's own inspect_pack validation and import's own
+decision order, in an envelope whose would_refuse is
+data at 200, never the road's own refusal. The service
+lives in runmal.scenarios.packpreview; this module is
+only the HTTP shape. The preview writes nothing.
+
 No road here plays a scenario back or executes anything a
 definition carries (P-027: content is data, never code).
 """
@@ -109,6 +121,7 @@ from runmal.scenarios.chatpreview import preview_bind_for_chat
 from runmal.scenarios.deletepreview import preview_delete_impact
 from runmal.scenarios.replacepreview import preview_replace_impact
 from runmal.scenarios.packs import build_pack, import_pack, inspect_pack
+from runmal.scenarios.packpreview import preview_pack_import
 from runmal.scenarios.storedexport import (
     DEFAULT_FORMAT,
     FORMATS,
@@ -274,6 +287,36 @@ async def inspect_scenario_pack(
     """
     try:
         return inspect_pack(body)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)
+        ) from exc
+
+
+@router.post("/scenarios/pack/import-preview", status_code=status.HTTP_200_OK)
+async def preview_scenario_pack_import(
+    body: dict,
+    on_conflict: str = "create_new",
+    user_id: str = Depends(get_owner_id),
+):
+    """Preview one pack against the caller's library (P-143).
+
+    P-141's import verdicts judged AS DATA before any
+    import: would it create, is it an exact duplicate
+    (and of which record), would it collide by name
+    (and with which records), and would the named
+    on_conflict mode refuse it — in import's own
+    decision order. A would_refuse verdict is data at
+    200, never this road's own answer; a malformed pack
+    or an unknown mode answers 422 (PackError, the
+    router's ValueError mapping). Declared with the
+    literal pack roads before the {definition_id}
+    roads, so "pack" is never read as a definition id.
+    Pure read: nothing is written.
+    """
+    try:
+        return preview_pack_import(
+            _store(), user_id, body, on_conflict=on_conflict)
     except ValueError as exc:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)
