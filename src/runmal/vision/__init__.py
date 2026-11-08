@@ -16,7 +16,9 @@
 - ``attachments`` — user-supplied images attached to a
   chat or one of its messages: bytes + honest sniffed
   metadata on the same JSON-store pattern, describable
-  through the describe road (P-120).
+  through the describe road (P-120); thumbnails are
+  derived on read through the P-023 PNG engine - PNG-only,
+  plain refusals, nothing derived stored (P-123).
 - ``service`` history + custody (P-122) - owner-scoped
   get / list / literal search over the description store,
   single-record remove, and purge_source source custody:

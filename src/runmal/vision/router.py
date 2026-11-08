@@ -30,6 +30,10 @@ search over the description store), single-record read
 and delete under /vision/descriptions/{id}, and source
 custody - deleting an attachment also purges the
 descriptions derived from it.
+P-123 adds the attachment thumbnail road on the same
+prefix: the stored bytes derived on read through the
+P-023 PNG engine, PNG-only with plain refusals, nothing
+derived ever stored.
 """
 
 from __future__ import annotations
@@ -367,6 +371,26 @@ async def get_attachment_content(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="attachment bytes not found")
     return Response(content=data, media_type=record.media_type)
+
+
+@router.get("/vision/attachments/{attachment_id}/thumbnail")
+async def get_attachment_thumbnail(
+    attachment_id: str,
+    max_dim: int = att_service.THUMBNAIL_DEFAULT_MAX_DIM,
+    owner_id: str = Depends(get_owner_id),
+):
+    record = _attachment_or_404(attachment_id, owner_id)
+    try:
+        data = att_service.thumbnail_bytes(
+            _attachment_store(), record, max_dim=max_dim)
+    except att_service.AttachmentError as exc:
+        code = (
+            status.HTTP_404_NOT_FOUND
+            if str(exc).startswith("attachment bytes not found")
+            else status.HTTP_422_UNPROCESSABLE_ENTITY)
+        raise HTTPException(
+            status_code=code, detail=str(exc)) from None
+    return Response(content=data, media_type="image/png")
 
 
 @router.delete("/vision/attachments/{attachment_id}")
