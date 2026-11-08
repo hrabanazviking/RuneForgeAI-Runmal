@@ -38,6 +38,17 @@ chat-scoped. An attachment is the missing first-class citizen:
   is PNG-only, so a non-PNG attachment refuses plainly;
   thumbnail availability is a request-time fact and is
   never pre-claimed in the attachment record.
+- history/search (P-125) is the P-122 parity surface for
+  this store: an owner can list and find their attachments
+  ACROSS chats, not only per-chat. Search is LITERAL
+  case-insensitive substring matching over the filename
+  and the image sha256 only - the two text identifiers the
+  record honestly holds - with owner scoping FIRST (foreign
+  rows are never matched, counted, or returned), exact
+  chat / message / format filters, and paging with the
+  full total. It is never semantic and never ranked, and
+  it reads no image bytes: the record claims no content
+  text, so there is nothing semantic to search.
 """
 
 from __future__ import annotations
@@ -61,6 +72,11 @@ ATTACHMENTS_DIRNAME = "vision_attachments"
 MAX_ATTACHMENT_BYTES = 16 * 1024 * 1024
 
 _FORMAT_EXT = {"png": "png", "jpeg": "jpg", "gif": "gif", "webp": "webp"}
+
+# The sniffed format vocabulary (the _FORMAT_EXT keys): the
+# only values an attachment record can honestly carry, and
+# the validation set for the P-125 history format filter.
+KNOWN_FORMATS = ("png", "jpeg", "gif", "webp")
 _FORMAT_MEDIA_TYPE = {
     "png": "image/png",
     "jpeg": "image/jpeg",
@@ -246,6 +262,58 @@ class AttachmentStore:
 
     def list_for_message(self, message_id: str) -> list[ImageAttachment]:
         return [row for row in self._load() if row.message_id == message_id]
+
+    # -- history / search (P-125) ---------------------------
+
+    def list_for_owner(self, owner_id: str) -> list[ImageAttachment]:
+        return [row for row in self._load() if row.owner_id == owner_id]
+
+    def search(
+        self,
+        owner_id: str,
+        query: str = "",
+        *,
+        chat_id: str | None = None,
+        message_id: str | None = None,
+        image_format: str | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> tuple[list[ImageAttachment], int]:
+        """Owner-scoped history search over the stored rows.
+
+        LITERAL case-insensitive substring matching over the
+        filename and the image sha256 only - never semantic,
+        never ranked; rows keep store append order. Owner
+        scoping happens FIRST: foreign rows are never matched,
+        counted, or returned. An empty query matches every
+        owned row (that is the history listing). An unknown
+        image_format is a plain AttachmentError refusal.
+        Returns (page, total) where total is the full match
+        count before paging.
+        """
+        if image_format is not None and image_format not in KNOWN_FORMATS:
+            raise AttachmentError(
+                f"unknown image_format {image_format!r}; known formats: "
+                f"{', '.join(KNOWN_FORMATS)}")
+        needle = (query or "").strip().lower()
+        rows = self.list_for_owner(owner_id)
+        if chat_id is not None:
+            rows = [row for row in rows if row.chat_id == chat_id]
+        if message_id is not None:
+            rows = [row for row in rows if row.message_id == message_id]
+        if image_format is not None:
+            rows = [row for row in rows if row.image_format == image_format]
+        if needle:
+            rows = [
+                row
+                for row in rows
+                if needle in row.filename.lower()
+                or needle in row.image_sha256.lower()
+            ]
+        total = len(rows)
+        effective_limit = max(1, min(200, int(limit)))
+        effective_offset = max(0, int(offset))
+        return rows[effective_offset:effective_offset + effective_limit], total
 
     def remove(self, attachment_id: str) -> ImageAttachment | None:
         rows = self._load()
