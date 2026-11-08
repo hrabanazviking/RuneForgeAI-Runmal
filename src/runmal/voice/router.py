@@ -382,6 +382,7 @@ async def start_voice_session(
         user_id=owner_id,
         character_id=chat.character_id,
         settings=settings,
+        auto_project=bool(payload.get("auto_project", False)),
     )
     return created.to_dict()
 
@@ -421,7 +422,12 @@ async def stop_voice_session(session_id: str, payload: dict, request: Request) -
 
 
 @router.post("/voice/sessions/{session_id}/turns", status_code=status.HTTP_201_CREATED)
-async def record_voice_turn(session_id: str, payload: dict, request: Request) -> dict:
+async def record_voice_turn(
+    session_id: str,
+    payload: dict,
+    request: Request,
+    db: AsyncSession = Depends(get_session),
+) -> dict:
     store = _session_store(request)
     found = store.get(session_id)
     if found is None:
@@ -454,7 +460,15 @@ async def record_voice_turn(session_id: str, payload: dict, request: Request) ->
             detail="turn fields are malformed",
         ) from None
     store.save_session(found)
-    return turn.to_dict()
+    result = turn.to_dict()
+    # P-104: an opted-in session auto-projects through the async
+    # host; the report rides along only when one was attempted.
+    from runmal.voice import autoproject as _auto
+
+    report = await _auto.autoproject_session(db, session=found, store=store)
+    if report["attempted"]:
+        result["auto_projection"] = report
+    return result
 
 
 @router.delete("/voice/chats/{chat_id}/sessions")

@@ -220,6 +220,22 @@ class LiveVoiceController:
     def live_session_ids(self) -> list[str]:
         return sorted(self._hosts)
 
+    def session_for(self, session_id: str):
+        """The live host's session citizen, or None (P-104).
+
+        Read-only accessor for async host layers (the
+        auto-projection host above all): the controller stays
+        synchronous and DB-free; hosts that need the citizen
+        behind a live host ask for it here instead of reaching
+        into the host table."""
+        host = self._hosts.get(session_id)
+        return host.session if host is not None else None
+
+    def store_for(self, session_id: str):
+        """The store the live host persists through, or None."""
+        host = self._hosts.get(session_id)
+        return host.store if host is not None else None
+
     # ---------------------------------------------------------- status
 
     def status(self, session_id: str | None = None):

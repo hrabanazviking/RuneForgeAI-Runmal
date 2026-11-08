@@ -17,7 +17,10 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from fastapi import APIRouter, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from runmal.db.deps import get_session
 
 from runmal.voice.audio import DeviceRole
 from runmal.voice.live import LiveVoiceController, LiveVoiceError
@@ -121,7 +124,12 @@ async def get_live(session_id: str, request: Request) -> dict:
 
 
 @router.post("/voice/sessions/{session_id}/live/speak", status_code=status.HTTP_201_CREATED)
-async def speak_live(session_id: str, payload: dict, request: Request) -> dict:
+async def speak_live(
+    session_id: str,
+    payload: dict,
+    request: Request,
+    db: AsyncSession = Depends(get_session),
+) -> dict:
     _session_or_404(request, session_id)
     controller = _controller(request)
     if not controller.is_live(session_id):
@@ -135,11 +143,15 @@ async def speak_live(session_id: str, payload: dict, request: Request) -> dict:
             detail="speak text must not be empty",
         )
     try:
-        return controller.speak(session_id, text)
+        result = controller.speak(session_id, text)
     except LiveVoiceError as exc:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail=str(exc)
         ) from None
+    # P-104: the async host auto-projects an opted-in session's
+    # turn (the controller itself stays synchronous/DB-free).
+    result = await _maybe_autoproject(request, controller, session_id, db, result)
+    return result
 
 
 @router.post("/voice/sessions/{session_id}/live/interrupt")
@@ -154,8 +166,33 @@ async def interrupt_live(session_id: str, request: Request) -> dict:
     return {"interrupted": interrupted, **controller.status(session_id)}
 
 
+async def _maybe_autoproject(request: Request, controller, session_id: str, db, result: dict) -> dict:
+    """P-104 wiring shared by the speak/stop roads: when the live
+    host's session opted into auto-projection, project its
+    pending turns through P-103's service and ride the report
+    on the response (only when a projection was attempted).
+    Duck-typed test doubles without the flag are untouched."""
+    if not hasattr(controller, "session_for"):
+        return result
+    host_session = controller.session_for(session_id)
+    if host_session is None or not getattr(host_session, "auto_project", False):
+        return result
+    from runmal.voice import autoproject as _auto
+
+    report = await _auto.autoproject_session(
+        db, session=host_session, store=controller.store_for(session_id))
+    if report["attempted"]:
+        return {**result, "auto_projection": report}
+    return result
+
+
 @router.post("/voice/sessions/{session_id}/live/stop")
-async def stop_live(session_id: str, payload: dict, request: Request) -> dict:
+async def stop_live(
+    session_id: str,
+    payload: dict,
+    request: Request,
+    db: AsyncSession = Depends(get_session),
+) -> dict:
     _session_or_404(request, session_id)
     controller = _controller(request)
     if not controller.is_live(session_id):
@@ -163,8 +200,21 @@ async def stop_live(session_id: str, payload: dict, request: Request) -> dict:
             status_code=status.HTTP_409_CONFLICT, detail="voice session is not live"
         )
     try:
-        return controller.stop(session_id, note=str(payload.get("note", "") or ""))
+        result = controller.stop(session_id, note=str(payload.get("note", "") or ""))
     except LiveVoiceError as exc:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail=str(exc)
         ) from None
+    # P-104: stopping an opted-in session projects whatever is
+    # still pending (feed_frames turns land here — they have no
+    # HTTP road of their own). The host is dropped by stop, so
+    # the citizen is re-read through the store for this pass.
+    store = _store(request)
+    found = store.get(session_id) if store is not None else None
+    if found is not None and getattr(found, "auto_project", False):
+        from runmal.voice import autoproject as _auto
+
+        report = await _auto.autoproject_session(db, session=found, store=store)
+        if report["attempted"]:
+            result = {**result, "auto_projection": report}
+    return result
