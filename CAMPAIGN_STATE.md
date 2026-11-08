@@ -11613,3 +11613,242 @@ P-144 BANKED - Global Binding Census (Part IX)
     PART IX OPEN (P-131..P-154).
     Next in roadmap order: P-145
     (Part IX, in roadmap order).
+P-145 BANKED - Library Unmappable-Content Census (Part IX)
+    Part IX fifteenth slice.
+    - team-03 commit ceb4c6a merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 49407cb (parents 1499ca8 +
+    ceb4c6a); merge pushed and
+    ls-remote verified at 49407cb
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Cross-base banking: team-03 built
+    on 336b204 (the P-143 banking
+    record); P-144 is NOT in its base
+    by design, so reconciliation at
+    banking was the keeper's (below).
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only
+    its part line (P-131..P-154), no
+    per-slice entries; the slice scope
+    is derived from Runmal's own
+    in-tree record (every P-131 record
+    carries its P-026 import report as
+    data, and the report's unmappable
+    list is the one naming of the
+    machinery a file carried that
+    Runmal cannot map - recorded,
+    never executed (P-027); P-139 calls
+    that report "the only naming" of a
+    definition's unmappable elements
+    and warns that deleting the record
+    loses it; yet the naming was
+    reachable only one record at a
+    time - the P-131 single read,
+    P-133's per-definition
+    not_restored, P-141's
+    per-definition provenance - while
+    the library list shape reduces the
+    whole list to one bool,
+    has_unmappable, with kinds, counts,
+    paths and reasons in no list or
+    aggregate surface; this slice
+    joins every stored report across
+    the caller's library in one pure
+    read - the same shape of gap
+    P-144 closed for bindings,
+    transposed to the definition
+    reports P-144 never reads), stated
+    plainly as derived in the slice
+    doc.
+    Evidence (team-03 worktree
+    hidden_files/ P145_EVIDENCE.md +
+    logs P145_BATTERY.log,
+    P145_NEIGHBOURS.log,
+    P145_FULLSUITE.log):
+    battery 15 passed / 0 failed;
+    neighbours 301 passed / 0 failed
+    (Part IX fence on this base:
+    P-026 + P-131..P-143 = 286 banked,
+    + 15 P-145 = 301 exact; the P-144
+    battery is absent from this base
+    by design and is therefore honestly
+    not in the fence - the keeper
+    runs it at banking reconciliation,
+    below); team full suite
+    4846 passed / 5 skipped /
+    0 failed - a clean run in
+    420.49s, reconciling exactly with
+    its base (4831 + 15 = 4846); no
+    contention failure occurred, so
+    no solo re-run was needed.
+    One defect in the battery itself
+    (not in the service) was found by
+    ruff and fixed in-slice: B905 -
+    zip() without strict= in one test;
+    fixed with strict=True; battery
+    re-ran 15/15 and ruff check on
+    both new files clean. No service
+    defect was found. Ruff check on
+    scenarios/router.py and
+    scenarios/__init__.py shows 4
+    pre-existing errors (E501 x2 on
+    banked P-140-era lines, I001 x2
+    import-block order), verified
+    identical on the untouched base
+    via git stash (base 4, with this
+    slice still 4; the slice adds
+    none) and deliberately NOT
+    rewritten here: rewriting banked
+    import blocks would break the
+    additive-delta discipline.
+    Recorded honestly as a standing
+    remainder; no banked defect was
+    introduced by this slice.
+    Combined batteries on the merged
+    tree: 319 passed / 0 failed
+    (P-131 29 + P-132 18 + P-133 24
+    + P-134 12 + P-135 16 + P-136 11
+    + P-137 12 + P-138 16 + P-139 11
+    + P-140 12 + P-141 34 + P-142 16
+    + P-143 13 + P-144 18 + P-145 15
+    + P-026 62;
+    = 304 counted at the P-144
+    banking + 15). Log
+    hidden_files/P145_COMBINED.log
+    on purplelongship.
+    Forge confirmation suite on the
+    merged tree: 4864 passed /
+    5 skipped / 0 failed - a clean
+    run in 276.29s with no contention
+    re-runs needed. Expectation check:
+    4849 + 15 = 4864 - exact match,
+    as counted from the log (also
+    4846 + 18 = 4864 across the
+    cross-base reconciliation). Log
+    hidden_files/P145_FORGE_CONFIRM.log
+    on purplelongship.
+    Slice scope: the library
+    unmappable-content census -
+    scenarios/reportcensus.py (new:
+    census_unmappable takes the
+    caller's own records (the store's
+    list_for_owner answer) and answers
+    rows in store order for only the
+    definitions whose stored report
+    names at least one unmappable
+    element; each row names its
+    definition by P-131's summary()
+    verbatim and carries the report's
+    elements verbatim, in report
+    order, with the kinds listed per
+    element so they sum to the row's
+    count; elements are read through
+    P-133's exact reading law
+    (missing/malformed report = no
+    elements; non-dict rows skipped;
+    fields str-coerced) - no second
+    report law; by_kind rolls the
+    same elements up per kind in
+    first-appearance order across
+    the rows, and every count
+    (definitions_total,
+    definitions_with_unmappable,
+    definitions_clean,
+    unmappable_total,
+    kinds_represented) is summed from
+    the rows themselves, so the census
+    cannot drift from its own
+    evidence (the P-144 construction);
+    five standing honesty notes in
+    fixed order; pure read), one
+    additive road
+    (GET /scenarios/library/unmappable,
+    declared in the library block
+    after GET /scenarios/library/tags
+    and before the bindings block, so
+    the literal "library" is never
+    read as a definition id (the
+    P-134 declaration-order precedent,
+    battery-pinned by contrast with
+    the per-definition read and the
+    tags road); no 404 case - an
+    owner with no definitions, or
+    none with unmappable elements,
+    answers the honest zero census),
+    scenarios/router.py (additive),
+    scenarios/__init__.py (additive,
+    one subsystem-map bullet +
+    census_unmappable export),
+    tests/test_p145_unmappable_census.py
+    (new, 15 tests),
+    docs/SCENARIO_UNMAPPABLE_CENSUS_2026-11-08.md
+    (new), clean-room log append (+1).
+    Team delta 6 files (+771/-1);
+    the merged diff against 1499ca8
+    is exactly the six slice files
+    (+770/-0) - the team's one
+    deletion was a router header
+    punctuation variant of the banked
+    header line, not taken; the union
+    kept the banked line.
+    Honest limitations: a census,
+    not a cleanup - nothing is
+    removed, converted or repaired;
+    unmappable elements stay recorded
+    on their definitions until those
+    records are themselves replaced
+    or deleted under their own roads;
+    the report is the record - the
+    census claims only what the
+    stored reports name, as they
+    stand now: a missing or malformed
+    report reads as clean here,
+    exactly as P-133's export reads
+    it; a replace re-parses and
+    replaces the report, so the
+    census judges the current report
+    of the current revision and keeps
+    no history; kinds are whatever
+    the reports name, counted as
+    named (the parser's kind strings
+    - scripting, action, hud_widget,
+    and kin - are data here, never a
+    closed enum the census enforces);
+    the census carries the reports'
+    unmappable rows themselves - that
+    is its purpose - but no definition
+    content: no scenario text, roles
+    or bootstrap bodies; the full
+    record stays on the P-131
+    single-read road; it judges
+    reports only: nothing about
+    bindings (P-144), filing (P-134),
+    chats or liveness; no filters,
+    sorts or paging: store order, the
+    whole owner set (the P-135 /
+    P-144 bounded-surface precedent).
+    Team counts exclude P-144 (absent
+    from this base by design);
+    reconciliation is the keeper's
+    at banking (combined batteries +
+    forge confirmation above).
+    Migration: NONE (head stays 0041).
+    Merge: additive union with
+    P-144's banked work; merged
+    scenarios/router.py grep-verified
+    carrying BOTH the P-145 GET
+    /scenarios/library/unmappable road
+    (library block, before the
+    bindings block) AND the P-144 GET
+    /scenarios/bindings/census road;
+    the merged clean-room log holds
+    the P-144 and P-145 entries
+    exactly once each; merged
+    scenarios modules py_compile
+    clean.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-146
+    (Part IX, in roadmap order).
