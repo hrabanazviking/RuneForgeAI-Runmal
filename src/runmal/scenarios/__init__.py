@@ -51,6 +51,17 @@
   before the irreversible act, in an envelope with
   standing honesty notes (P-139, Part IX, DERIVED
   scope).
+- ``packs`` — scenario definition sharing packs: one
+  stored definition sealed in an envelope (a manifest
+  with a SHA-256 content checksum over the canonical
+  native payload, provenance carrying the source
+  record's facts and its P-131 import report as data),
+  validated and reported by inspect WITHOUT importing,
+  and imported under the never-overwrite collision
+  discipline (exact duplicate returns the existing
+  record; same-name creates fresh or refuses) —
+  the P-045 pack discipline over the JSON store
+  (P-141, Part IX, DERIVED scope).
 - ``router`` — the HTTP roads: the stateless P-026
   import/export roads plus the P-131 definition CRUD
   roads on the same /scenarios prefix.
@@ -89,6 +100,23 @@ from runmal.scenarios.organisation import (
 from runmal.scenarios.bindpreview import preview_bind_plan
 from runmal.scenarios.chatpreview import preview_bind_for_chat
 from runmal.scenarios.deletepreview import preview_delete_impact
+from runmal.scenarios.packs import (
+    CONFLICT_CREATE_NEW,
+    CONFLICT_MODES,
+    CONFLICT_REJECT,
+    MAX_PACK_BYTES,
+    PACK_FORMAT,
+    PACK_KIND,
+    PACK_SCHEMA,
+    PACK_VERSION,
+    PackError,
+    build_pack,
+    content_checksum,
+    import_pack,
+    inspect_pack,
+    pack_to_bytes,
+    parse_pack,
+)
 from runmal.scenarios.fileexport import (
     export_native,
     export_native_bytes,
@@ -199,6 +227,21 @@ __all__ = [
     "preview_bind_plan",
     "preview_bind_for_chat",
     "preview_delete_impact",
+    "CONFLICT_CREATE_NEW",
+    "CONFLICT_MODES",
+    "CONFLICT_REJECT",
+    "MAX_PACK_BYTES",
+    "PACK_FORMAT",
+    "PACK_KIND",
+    "PACK_SCHEMA",
+    "PACK_VERSION",
+    "PackError",
+    "build_pack",
+    "content_checksum",
+    "import_pack",
+    "inspect_pack",
+    "pack_to_bytes",
+    "parse_pack",
     "query_definitions",
     "get_binding",
     "list_bindings",
