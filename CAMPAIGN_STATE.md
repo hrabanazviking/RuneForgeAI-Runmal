@@ -8248,3 +8248,117 @@ P-116 BANKED - Part VII Gate - Voice, the Voxta Way (Part VII)
     (Part VIII opening slice; the F2
     openapi fix is its commissioned
     first business).
+P-117 BANKED - Vision Foundation + OpenAPI fix (Part VIII)
+    PART VIII OPEN (P-117 is its first slice).
+    - team-02 commit 6ac3f27 merged (no-ff)
+    into yrsa/two-mirrors-build as 4cefef1
+    (parents ee235a2 + 6ac3f27); banking
+    record commit follows this entry and
+    is pushed with the merge; ls-remote
+    verification is reported in the keeper
+    run log.
+    Evidence (team-02 worktree
+    hidden_files/P117_EVIDENCE.md):
+    battery 15 passed / 0 failed;
+    neighbours 130 passed / 0 failed;
+    team full suite 4345 passed /
+    4 skipped / 0 failed on its base
+    3886cd2 (P-115 banking record;
+    P-116's gate files are NOT in that
+    base, reconciled at this merge in
+    roadmap order). Expectation check:
+    4330 P-115 confirmation + 15 new
+    = 4345 - exact match.
+    Commissioned fix F2 FIXED in-slice:
+    root cause - src/runmal/app.py
+    registered /voice and /memories with
+    an explicit response_class=None,
+    replacing FastAPI's default sentinel
+    and breaking app.openapi() app-wide
+    (gate finding F2, P-116 record).
+    Both registrations now declare
+    response_class=HTMLResponse. The
+    battery pins it: openapi.json 200,
+    both paths carry 200 responses,
+    both pages serve HTML 200. The gate
+    named the voice page; the memories
+    page carried the identical defect
+    and is fixed by the same change.
+    Slice scope (DERIVED, as Part VIII's
+    per-slice definitions are derived -
+    the filed roadmap gives Part VIII
+    only its part line): vision
+    descriptions as first-class
+    chat-bound records behind a provider
+    seam in src/runmal/vision/, with
+    provider truth carried as data;
+    MetadataVisionProvider, which never
+    fabricates - its description is only
+    the sniffed metadata truth about the
+    bytes, and a non-image is refused;
+    a durable vision_descriptions.json
+    store; owner-scoped describe /
+    descriptions / last-description
+    roads. No content is invented: a
+    metadata-only description is stated
+    as metadata-only.
+    Slice: src/runmal/app.py (F2 fix +
+    vision router wiring),
+    src/runmal/vision/__init__.py,
+    src/runmal/vision/service.py,
+    src/runmal/vision/router.py,
+    tests/test_p117_vision_foundation.py
+    (15 tests),
+    docs/VISION_FOUNDATION_2026-11-08.md,
+    clean-room log append (+1). 7 files,
+    +815/-2.
+    Migration: NONE (head stays 0041,
+    pinned in the battery).
+    Merge conflict only in the clean-room
+    log (append-vs-append), resolved as
+    an additive union at merge time by
+    the banking coordinator; the merged
+    tree carries P-116's gate entry AND
+    P-117's entry, each exactly once.
+    app.py auto-merged (P-116 touched no
+    app code); the merged app.py was
+    grep-verified to carry the F2 fix
+    (both HTMLResponse registrations,
+    no response_class=None remaining),
+    all P-116-era wiring, and the vision
+    router; create_app().openapi() on
+    the merged tree returns 260 paths
+    including the vision roads.
+    No banking heal needed.
+    Combined batteries on the merged
+    tree by the banking coordinator:
+    46 passed / 0 failed (P-116 gate
+    battery 31 + P-117 battery 15 -
+    exact). Log hidden_files/
+    p117_combined.log (forge) on
+    purplelongship.
+    Forge confirmation suite:
+    4376 passed / 4 skipped / 0 failed
+    in 289.83s, exit 0 - a clean run
+    with no contention re-runs needed.
+    (= 4361 P-116 confirmation + 15
+    P-117 battery - exact.) Log
+    hidden_files/p117_confirm.log
+    (forge) on purplelongship.
+    Derived scope ACCEPTED as banked.
+    Named-open carried items (not
+    dropped): semantic caption
+    providers; Capabilities.vision
+    truth wired into provider
+    selection; template-variable wiring
+    (prompt-composer consumption of the
+    last description as the VX-43/VX-50
+    template variable); screen capture /
+    folder watcher / camera flow / OCR /
+    message image attachments; vision
+    description custody on chat
+    deletion; app.py I001 import-order
+    cleanup (pre-existing on the base,
+    recorded in the slice evidence).
+    Next in roadmap order: P-118
+    (Part VIII continues).
