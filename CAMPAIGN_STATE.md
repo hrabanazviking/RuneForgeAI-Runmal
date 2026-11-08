@@ -7602,3 +7602,111 @@ P-110 BANKED - Voice Turn Latency Evidence (Part VII)
     character-asks repeat half and
     P-108's limitations stay open.
     Next in roadmap order: P-111.
+P-111 BANKED - Voice Repeat-Acknowledgement Housekeeping (Part VII)
+    - team-02 commit 3a3ae47 merged (no-ff)
+    into yrsa/two-mirrors-build as 4b9d292;
+    merge pushed; ls-remote verified
+    4b9d292f7050eb78a934f79e5e6ff1fabee7090e.
+    Evidence (team-02 worktree
+    hidden_files/P111_EVIDENCE.md):
+    battery 18 passed, neighbours
+    320 passed / 2 skipped / 0 failed,
+    team full suite
+    4239 passed / 4 skipped / 0 failed
+    on the 2e7864c base (P-108 banking
+    record; the slice was built on
+    that base while P-109 and P-110
+    banked ahead of it, and was
+    reconciled at this merge in
+    roadmap order).
+    Derived scope ACCEPTED by the keeper:
+    P-111 closes the limitation P-108
+    recorded plainly: a deleted session's
+    repeat-request acknowledgements
+    became inert records naming a session
+    that no longer exists, and no road
+    could ever remove them (the only
+    housekeeping road hung off a session
+    view answering 404 for a deleted
+    session). Inert means exactly one
+    thing: the record's session id is
+    absent from the P-101 session store
+    - no age, count or heuristic
+    threshold invented. Housekeeping
+    removes acknowledgement handling
+    records only: P-105 detection truth
+    is never touched, a live session's
+    acknowledged requests stay
+    acknowledged through any prune, and
+    no road creates a chat message.
+    The roadmap gives Part VII only
+    its part line.
+    Slice:
+    src/runmal/voice/repeat_requests.py
+    (extended: AcknowledgementStore
+    session_ids / record_count /
+    prune_orphans, plus the pure
+    housekeeping_view and
+    prune_inert_acknowledgements views;
+    a no-op prune leaves the store
+    document byte-identical and creates
+    no file for an absent store),
+    src/runmal/voice/repeat_router.py
+    (extended: GET
+    /voice/repeat-requests/housekeeping
+    pure-read view + POST
+    /voice/repeat-requests/housekeeping/prune,
+    install-wide, bearer-gated),
+    src/runmal/voice/router.py
+    (DELETE session road extended: the
+    drop act now prunes every orphaned
+    acknowledgement in the same act and
+    reports the act total additively as
+    repeat_acknowledgements_pruned),
+    tests/test_p111_voice_repeat_housekeeping.py
+    (18 tests),
+    docs/VOICE_REPEAT_HOUSEKEEPING_2026-11-08.md,
+    clean-room log append (+1). 6 files,
+    +658/-2.
+    Migration: NONE (head stays 0041).
+    Merge conflict only in the clean-room
+    log (append-vs-append), resolved as
+    an additive union: the log keeps the
+    P-108, P-109, P-110 and P-111 entries
+    exactly once each. voice/router.py
+    auto-merged; the merged tree carries
+    P-109 affects (both founding-road
+    affect routes), P-110 latency (the
+    /latency road), P-108 repeat_requests
+    AND P-111 housekeeping + prune roads
+    (incl. the drop-road prune), py_compile
+    green on all touched Python files.
+    No banking heal needed.
+    Combined batteries on the merged
+    tree: 201 passed / 0 failed
+    (28 + 24 + 19 + 17 + 21 + 18 + 12 + 15 + 13 + 16 + 18).
+    Log hidden_files/p111_combined.log
+    (forge) on purplelongship.
+    Forge confirmation suite:
+    4268 passed / 4 skipped / 0 failed
+    in 282.46s, exit 0 - exact match to
+    expectation (= 4250 + 18), no
+    contention re-runs needed. Log
+    hidden_files/p111_confirm.log (forge).
+    Honest limitations carried:
+    the housekeeping roads are
+    install-wide, exactly like the
+    acknowledgement store itself - any
+    bearer-authenticated host can view
+    the inert set and prune it, stated
+    plainly. No periodic sweeper exists:
+    inert records are removed when a
+    host calls the prune road, or
+    opportunistically when any chat's
+    sessions are dropped. The
+    character-asks half of VX-11 stays
+    open on the P-102 responder seam.
+    VX-12's engine half, VX-13 and
+    P-108's remaining limitations stay
+    open.
+    Next in roadmap order: P-112.
