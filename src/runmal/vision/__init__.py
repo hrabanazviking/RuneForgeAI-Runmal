@@ -18,7 +18,10 @@
   metadata on the same JSON-store pattern, describable
   through the describe road (P-120); thumbnails are
   derived on read through the P-023 PNG engine - PNG-only,
-  plain refusals, nothing derived stored (P-123).
+  plain refusals, nothing derived stored (P-123);
+  describe-on-attach is an explicit opt-in on the attach
+  road only - atomic, and the service still describes
+  nothing on its own (P-126).
 - ``service`` history + custody (P-122) - owner-scoped
   get / list / literal search over the description store,
   single-record remove, and purge_source source custody:

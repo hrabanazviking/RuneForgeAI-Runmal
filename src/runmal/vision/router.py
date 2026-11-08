@@ -34,6 +34,12 @@ P-123 adds the attachment thumbnail road on the same
 prefix: the stored bytes derived on read through the
 P-023 PNG engine, PNG-only with plain refusals, nothing
 derived ever stored.
+P-126 adds describe-on-attach opt-in on the attach road:
+the request may explicitly ask for the new attachment to
+be described in the same call (provider selected through
+P-119 BEFORE anything is stored; atomic - attachment and
+description land together or neither does). Plain attach
+is unchanged and still describes nothing.
 """
 
 from __future__ import annotations
@@ -293,6 +299,10 @@ class AttachRequest(BaseModel):
     message_id: str | None = None
     filename: str = ""
     image_b64: str
+    describe: bool = False
+    describe_question: str = ""
+    describe_provider: str | None = None
+    require_semantic: bool = False
 
 
 def _attachment_or_404(attachment_id: str, owner_id: str):
@@ -323,6 +333,36 @@ async def attach(
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="image_b64 is not valid base64") from None
+    if body.describe:
+        # P-126 opt-in: selection BEFORE anything is stored,
+        # so a selection refusal leaves the data dir untouched.
+        try:
+            provider = vision_selection.select_provider(
+                body.describe_provider,
+                semantic_required=body.require_semantic)
+        except vision_service.VisionError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=str(exc)) from None
+        try:
+            record, description = att_service.attach_and_describe(
+                _attachment_store(),
+                _store(),
+                chat_id=chat.id,
+                owner_id=owner_id,
+                data=image_bytes,
+                message_id=body.message_id,
+                filename=body.filename or "",
+                question=body.describe_question or "",
+                provider=provider,
+            )
+        except (att_service.AttachmentError,
+                vision_service.VisionError) as exc:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=str(exc)) from None
+        return {**record.to_dict(),
+                "description": description.to_dict()}
     try:
         record = att_service.attach_image(
             _attachment_store(),
