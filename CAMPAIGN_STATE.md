@@ -8016,3 +8016,107 @@ P-114 BANKED - Voice Mishearing Session Report (Part VII)
     fuzzy matching); no UI renders
     the report in this slice.
     Next in roadmap order: P-115.
+P-115 BANKED - Voice Repeat-Request Digest & Aging (Part VII)
+    - team-03 commit 07c1e03 merged (no-ff)
+    into yrsa/two-mirrors-build as 26c7eb6;
+    banking record commit follows this
+    entry and is pushed with the merge;
+    ls-remote verification is reported
+    in the keeper run log.
+    Evidence (team-03 worktree
+    hidden_files/P115_EVIDENCE.md):
+    battery 16 passed, neighbours
+    423 passed / 2 skipped / 0 failed,
+    team full suite effective
+    4312 passed / 4 skipped / 0 failed
+    on the 93229da base (P-113 banking
+    record; the slice was built on
+    that base while P-114 banked
+    ahead of it, and was reconciled
+    at this merge in roadmap order).
+    Derived scope ACCEPTED by the keeper:
+    P-115 is the cross-session
+    repeat-request digest with
+    wall-clock aging - candidate (a)
+    from the P-114 scout's named-open
+    list. The digest counts are the
+    per-session P-108 views' sums by
+    construction (session_repeat_requests
+    is called per session; agreement
+    pinned field by field), and aging
+    is plain arithmetic with an
+    injected now: pending age =
+    now - recorded_at, acknowledged
+    age = now - acknowledged_at,
+    delay = acknowledged_at -
+    recorded_at. NO buckets, NO
+    thresholds, NO staleness verdict -
+    answering the P-114 scout's named
+    cost. Missing, unparseable or
+    future stamps and negative delays
+    yield no age: counted in
+    without_count, excluded from
+    oldest/newest/mean, never clamped
+    (the P-110 negative-span law).
+    The HTTP road is owner-scoped: a
+    foreign owner's doubted session is
+    entirely absent from the digest,
+    unlike the install-wide P-111
+    housekeeping roads. Digest reads
+    never write. Slice:
+    src/runmal/voice/repeat_requests.py
+    (extended: repeat_digest +
+    stamp/age helpers; recorded_at
+    added to turn_repeat_request
+    additively),
+    src/runmal/voice/repeat_router.py
+    (extended: GET /voice/repeat-requests/
+    digest, owner-scoped),
+    src/runmal/voice/__init__.py
+    (module-map line),
+    tests/test_p115_voice_repeat_digest.py
+    (16 tests),
+    docs/VOICE_REPEAT_DIGEST_2026-11-08.md,
+    clean-room log append (+1). 6 files,
+    +624/-1.
+    Migration: NONE (head stays 0041).
+    Merge conflict only in the clean-room
+    log (append-vs-append), resolved as
+    an additive union: the log keeps
+    the P-114 and P-115 entries exactly
+    once each. voice/__init__.py
+    auto-merged as an additive union;
+    the merged tree carries P-114
+    mishearing report AND P-115 repeat
+    digest, py_compile green on all
+    touched Python files.
+    No banking heal needed.
+    Combined batteries on the merged
+    tree: 917 passed / 0 failed
+    (= 901 P-114 combined family + 16
+    exact). Log hidden_files/p115_combined.log
+    (forge) on purplelongship.
+    Forge confirmation suite:
+    4330 passed / 4 skipped / 0 failed
+    in 281.80s, exit 0 - exact match
+    to expectation (= 4314 + 16),
+    a clean run with no contention
+    re-runs needed. Log
+    hidden_files/p115_confirm.log
+    (forge) on purplelongship.
+    Honest limitations carried:
+    the digest reports how long, never
+    "too long" (no staleness verdict;
+    thresholds are host policy); ages
+    inherit wall-clock skew honestly
+    (future stamps count as
+    without-age, never repaired); the
+    digest is a snapshot poll, not a
+    subscription, and no UI renders
+    it; the character half of VX-11's
+    ask stays open on the P-102
+    responder seam; VX-12's engine
+    half and L3 auto-registration
+    remain as the scout records them.
+    Next in roadmap order: P-116
+    (Part VII gate).
