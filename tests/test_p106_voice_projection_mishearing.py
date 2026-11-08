@@ -31,6 +31,7 @@ from runmal.voice import projection as proj
 from runmal.voice.session import (
     VoiceSessionStore,
     VoiceTurnRecord,
+    WordConfidence,
     resolve_session_settings,
     start_session,
 )
@@ -313,7 +314,7 @@ def test_service_landing_carries_mark_and_content_law(tmp_path):
     user_id, chat_id = _seed_chat(factory)
     store = _store(tmp_path)
     s = _session(store, chat_id=chat_id, user_id=user_id)
-    t = _turn(s, words=(FakeWord("alpha", 0.9), FakeWord("zxlow", 0.2)),
+    t = _turn(s, words=(WordConfidence("alpha", 0.9), WordConfidence("zxlow", 0.2)),
               transcript_text="alpha zxlow",
               response_text="Ok.", heard_certain="Ok.",
               chunks_total=1, chunks_played=1)
@@ -344,7 +345,7 @@ def test_service_idempotent_reprojection_keeps_mark(tmp_path):
     user_id, chat_id = _seed_chat(factory)
     store = _store(tmp_path)
     s = _session(store, chat_id=chat_id, user_id=user_id)
-    _turn(s, words=(FakeWord("low", 0.1),), transcript_text="low")
+    _turn(s, words=(WordConfidence("low", 0.1),), transcript_text="low")
     store.save_session(s)
     first = _project(factory, s, store, user_id)
     assert first["messages_created"] == 1
