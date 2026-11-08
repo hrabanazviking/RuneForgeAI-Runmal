@@ -10616,3 +10616,103 @@ P-137 BANKED - Scenario Definition Duplication (Part IX)
     PART IX OPEN (P-131..P-154).
     Next in roadmap order: P-138
     (Part IX, in roadmap order).
+P-138 BANKED - Chat-Scoped Bind Preview (Part IX)
+    Part IX eighth slice.
+    - team-02 commit 1e8327c merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 2383807 (parents 3f66b48 +
+    1e8327c); merge pushed and
+    ls-remote verified at 2383807
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only
+    its part line (P-131..P-154), no
+    per-slice entries; the slice scope
+    is derived from the in-tree record
+    (P-136's own standing notes name
+    bind-time refusals and already-
+    present skips as knowable only
+    against a specific chat; P-137's
+    scout weighed this exact candidate
+    and named it a future candidate),
+    stated plainly as derived in the
+    slice doc and the evidence.
+    Evidence (team-02 worktree
+    hidden_files/P138_EVIDENCE.md):
+    battery 16 passed / 0 failed;
+    neighbours 196 passed / 0 failed;
+    team full suite 4732 passed /
+    5 skipped / 1 failed, the single
+    failure being the p077 longchat
+    timing tripwire on code the slice
+    does not touch (solo re-run of
+    the p077 file 4/4 green -
+    classified shared-machine
+    contention, not a defect).
+    Combined batteries on the merged
+    tree: 200 passed / 0 failed
+    (P-131 29 + P-132 18 + P-133 24
+    + P-134 12 + P-135 16 + P-136 11
+    + P-137 12 + P-138 16 + P-026 62).
+    Forge confirmation suite on the
+    merged tree: 4745 passed /
+    5 skipped / 0 failed - a clean
+    run in 283.86s with no contention
+    re-runs needed. Expectation check:
+    4729 + 16 = 4745 - exact match,
+    as counted from the log. Log
+    hidden_files/P138_FORGE_CONFIRM.log
+    on purplelongship.
+    Slice scope: owner-scoped
+    chat-scoped bind preview -
+    GET /scenarios/{definition_id}/bind-plan/{chat_id}
+    returning P-136's bind-plan
+    envelope judged against one named
+    chat (blockers as data in bind's
+    decision order; seedable keys
+    split would_seed / already_present
+    by P-093's own presence law);
+    scenarios/chatpreview.py (new),
+    scenarios/router.py (additive road),
+    scenarios/__init__.py (additive),
+    tests/test_p138_chat_scoped_bind_preview.py
+    (new),
+    docs/SCENARIO_BIND_PLAN_CHAT_PREVIEW_2026-11-08.md
+    (new), clean-room log append (+1).
+    Honest limitations: would_bind
+    judges the chat as it stands at
+    preview time, never a promise
+    (bind re-decides every fact when
+    it runs); the preview reports
+    every applicable blocker while
+    bind's first-refusal order stays
+    its writing law; already-present
+    is judged under the scenario
+    writer by P-093's own presence
+    law; playback / runtime /
+    condition evaluation remain
+    declined absolutely (P-027 law).
+    Migration: NONE (head stays 0041).
+    Merge: conflicts in
+    scenarios/router.py +
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    resolved as pure additive unions
+    keeping BOTH P-137 and P-138 work
+    exactly once each (scenarios/
+    __init__.py merged clean as an
+    additive union); merged router
+    grep-verified carrying P-131 CRUD
+    + P-132 binding + P-133 export
+    + P-134 organisation + P-135
+    bindings list/inspect + P-136
+    bind-plan + P-137 duplicate
+    + P-138 bind-plan/{chat_id} roads
+    (GET /scenarios/bindings before
+    the {definition_id} roads);
+    py_compile clean.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-139
+    (Part IX, in roadmap order).
