@@ -10716,3 +10716,123 @@ P-138 BANKED - Chat-Scoped Bind Preview (Part IX)
     PART IX OPEN (P-131..P-154).
     Next in roadmap order: P-139
     (Part IX, in roadmap order).
+P-139 BANKED - Definition Delete-Impact Preview (Part IX)
+    Part IX ninth slice.
+    - team-03 commit a86485d merged
+    (no-ff) into yrsa/two-mirrors-build
+    as f44ae79 (parents 74a0c17 +
+    a86485d); merge pushed and
+    ls-remote verified at f44ae79
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only
+    its part line (P-131..P-154), no
+    per-slice entries; the slice scope
+    is derived from the in-tree record
+    (deletion cascading nowhere by
+    design, its consequences named
+    only after the fact at the
+    surfaces that suffer them -
+    P-135's definition_exists
+    staleness, P-134's orphan
+    filtering, the P-131 import
+    report going with the record;
+    P-138's scout weighed this exact
+    candidate and named it a future
+    candidate), stated plainly as
+    derived in the slice doc and
+    the evidence.
+    Evidence (team-03 worktree
+    hidden_files/P139_EVIDENCE.md):
+    battery 11 passed / 0 failed;
+    neighbours 184 passed / 0 failed;
+    team full suite 4740 passed /
+    5 skipped / 0 failed - a clean
+    run, reconciling exactly with
+    the base (4729 + 11 = 4740);
+    no contention failure occurred,
+    so no solo re-run was needed.
+    Combined batteries on the merged
+    tree: 211 passed / 0 failed
+    (P-131 29 + P-132 18 + P-133 24
+    + P-134 12 + P-135 16 + P-136 11
+    + P-137 12 + P-138 16 + P-139 11
+    + P-026 62).
+    Forge confirmation suite on the
+    merged tree: 4756 passed /
+    5 skipped / 0 failed - a clean
+    run in 274.63s with no contention
+    re-runs needed. Expectation check:
+    4745 + 11 = 4756 - exact match,
+    as counted from the log. Log
+    hidden_files/P139_FORGE_CONFIRM.log
+    on purplelongship.
+    Slice scope: owner-scoped
+    definition delete-impact preview -
+    GET /scenarios/{definition_id}/delete-impact
+    naming, before any deletion, what
+    deleting one stored definition
+    would orphan (bindings going
+    stale per P-135's
+    definition_exists, the P-134
+    organisation row becoming a
+    filtered orphan, and the P-131
+    import report going with the
+    record), every fact read through
+    the owning slice's own verb,
+    with five standing honesty notes
+    in every answer;
+    scenarios/deletepreview.py (new),
+    scenarios/router.py (additive road),
+    scenarios/__init__.py (additive),
+    tests/test_p139_delete_impact_preview.py
+    (new),
+    docs/SCENARIO_DELETE_IMPACT_2026-11-08.md
+    (new), clean-room log append (+1).
+    Honest limitations: the preview
+    is a statement about the world
+    as it stands when read, never a
+    promise about delete time (a
+    binding created between preview
+    and delete is deleted-around
+    exactly as the standing
+    no-cascade law provides); the
+    preview performs no cleanup and
+    no cascade (stale bindings remain
+    removable per chat by unbinding,
+    P-132; the orphan organisation
+    row remains filtered at every
+    read, P-134); deletion stays
+    permanent - no undelete, no
+    history, the import report goes
+    with the record, and P-133's
+    stored-export road is the way
+    to keep a file copy first, under
+    its own stated limits; playback /
+    runtime / condition evaluation
+    remain declined absolutely
+    (P-027 law).
+    Migration: NONE (head stays 0041).
+    Merge: conflicts in
+    scenarios/router.py +
+    scenarios/__init__.py +
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    resolved as pure additive unions
+    keeping BOTH P-138 and P-139 work
+    exactly once each; merged router
+    grep-verified carrying P-131 CRUD
+    + P-132 binding + P-133 export
+    + P-134 organisation + P-135
+    bindings list/inspect + P-136
+    bind-plan + P-137 duplicate
+    + P-138 bind-plan/{chat_id}
+    + P-139 delete-impact roads
+    (GET /scenarios/bindings before
+    the {definition_id} roads);
+    py_compile clean.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-140
+    (Part IX, in roadmap order).
