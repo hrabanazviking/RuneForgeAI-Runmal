@@ -40,6 +40,12 @@ watcher ingested records (the scan dedupe memory), and
 the watch roads gain the single-watch read and the
 enabled toggle (PATCH) that make a registration's
 enabled flag reachable for the first time.
+P-125 adds the attachment history road on the same
+prefix: GET /vision/attachments/history - owner-scoped
+literal search over the attachment store (the P-122
+parity surface for attachments), declared BEFORE the
+{attachment_id} roads so the literal segment is not
+captured as an id.
 """
 
 from __future__ import annotations
@@ -355,6 +361,57 @@ async def list_attachments(
     rows = _attachment_store().list_for_chat(chat.id)
     return {"chat_id": chat.id,
             "attachments": [r.to_dict() for r in rows]}
+
+
+@router.get("/vision/attachments/history")
+async def attachment_history(
+    q: str = "",
+    chat_id: str | None = None,
+    message_id: str | None = None,
+    image_format: str | None = None,
+    limit: int = 50,
+    offset: int = 0,
+    session: AsyncSession = Depends(get_session),
+    owner_id: str = Depends(get_owner_id),
+):
+    # P-125: owner-scoped history + literal search over the
+    # attachment store (P-122 parity). Declared BEFORE the
+    # {attachment_id} roads below so FastAPI does not
+    # capture the literal segment "history" as an id. Search
+    # is literal substring matching over the filename and
+    # the image sha256 only (see AttachmentStore.search) -
+    # never semantic, never ranked. A chat_id filter must
+    # name an owned chat (404 otherwise, the P-122 history
+    # precedent); an unknown image_format is 422 via the
+    # store refusal.
+    chat = None
+    if chat_id is not None:
+        chat = await _chat_or_404(session, owner_id, chat_id)
+    try:
+        rows, total = _attachment_store().search(
+            owner_id,
+            q,
+            chat_id=chat.id if chat is not None else None,
+            message_id=message_id,
+            image_format=image_format,
+            limit=limit,
+            offset=offset,
+        )
+    except att_service.AttachmentError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(exc)) from None
+    return {
+        "attachments": [row.to_dict() for row in rows],
+        "total": total,
+        "returned": len(rows),
+        "limit": max(1, min(200, int(limit))),
+        "offset": max(0, int(offset)),
+        "q": q,
+        "chat_id": chat_id,
+        "message_id": message_id,
+        "image_format": image_format,
+    }
 
 
 @router.get("/vision/attachments/{attachment_id}")
