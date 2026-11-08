@@ -1,6 +1,7 @@
 """Scenario API: file interop (P-026) + stored definitions (P-131)
 + scenario-to-chat binding (P-132) + stored-definition file export (P-133)
-+ scenario library organisation (P-134).
++ scenario library organisation (P-134)
++ binding plan preview (P-136).
 
 P-026 roads (stateless): parse a scenario file and report
 honestly, and re-export it. Those roads are unchanged.
@@ -19,6 +20,14 @@ exporters, with an honest export report naming whatever
 cannot round-trip (a Voxta file's unmappable raw values
 never persisted — P-131). The service lives in
 runmal.scenarios.storedexport; this module is only the
+HTTP shape.
+P-136 (Part IX, DERIVED scope) adds the bind-plan preview
+road: P-132's pure plan_materialisation for one stored
+definition, handed back read-only in an envelope naming
+the definition's current revision — what binding WOULD
+plant and honestly skip, visible before any chat is
+committed. The service lives in
+runmal.scenarios.bindpreview; this module is only the
 HTTP shape.
 
 No road here plays a scenario back or executes anything a
@@ -56,6 +65,7 @@ from runmal.scenarios.store import (
     ScenarioStoreError,
     definitions_path,
 )
+from runmal.scenarios.bindpreview import preview_bind_plan
 from runmal.scenarios.storedexport import (
     DEFAULT_FORMAT,
     FORMATS,
@@ -437,6 +447,41 @@ async def delete_scenario_binding(
         "unbound": True,
         "seeded_content_kept": True,
     }
+
+
+# ------------------------------------- bind-plan preview (P-136)
+
+
+@router.get(
+    "/scenarios/{definition_id}/bind-plan",
+    status_code=status.HTTP_200_OK,
+)
+async def preview_scenario_bind_plan(
+    definition_id: str,
+    user_id: str = Depends(get_owner_id),
+):
+    """What binding this definition WOULD do, as data (P-136).
+
+    The envelope names the definition (id, name, its
+    current revision, its source format), the plan
+    P-132's bind computes from the definition alone
+    (bootstrap lines mapped to chat roles with
+    cast-resolved speakers, seedable flags / variables,
+    and every skip with its reason), counts read from
+    the plan itself, and the standing honesty notes: no
+    chat has been consulted, bind-time refusals are not
+    judged here, and keys a specific chat already holds
+    are knowable only at bind time. Unknown or foreign
+    answers 404 (existence never leaks). The road writes
+    nothing and executes nothing.
+    """
+    record = _store().get(definition_id, user_id)
+    if record is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="scenario definition not found",
+        )
+    return preview_bind_plan(record)
 
 
 # ------------------------------------ stored export (P-133)
