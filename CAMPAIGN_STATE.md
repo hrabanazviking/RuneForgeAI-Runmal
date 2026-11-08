@@ -9230,3 +9230,111 @@ P-124 BANKED - Watcher Custody & Control Completion (Part VIII)
     camera.
     Next in roadmap order: P-125
     (Part VIII continues).
+P-125 BANKED - Attachment History & Search (Part VIII)
+    PART VIII continues (ninth slice).
+    - team-01 commit 6eefa77 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as ad804d8 (parents 0ba0cd9 +
+    6eefa77); merge pushed and
+    ls-remote verified at ad804d8
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Evidence (team-01 worktree
+    hidden_files/P125_EVIDENCE.md):
+    battery 17 passed / 0 failed
+    (finisher re-run also 17 passed /
+    0 failed); neighbours 113 passed
+    / 1 skipped / 0 failed; team full
+    suite 4491 passed / 5 skipped /
+    0 failed on its base f2bb0c2
+    (P-123 banking record; P-124 is
+    NOT in that base, reconciled at
+    this merge in roadmap order).
+    Expectation check: 4474 (banked
+    base) + 17 new = 4491 - exact
+    match. Combined vision fence on
+    the merged tree (P-117 through
+    P-125): 143 passed / 1 skipped /
+    0 failed (126 P-124 fence + 17).
+    Forge confirmation suite on the
+    merged tree: 4504 passed /
+    5 skipped / 0 failed.
+    Expectation check: 4487 (P-124
+    banking confirmation) + 17 new =
+    4504 - exact match.
+    Slice scope (DERIVED, as Part
+    VIII's per-slice definitions are
+    derived - the filed roadmap gives
+    Part VIII only its part line):
+    the P-124 scout's standing
+    candidate and the parity gap it
+    named - P-122 gave vision
+    descriptions an owner-wide history
+    with literal search while P-120's
+    attachments could still be listed
+    only per-chat. The P-122
+    discipline ported exactly onto
+    the attachment store:
+    AttachmentStore.list_for_owner +
+    search - owner-scoped FIRST
+    (foreign rows are never matched,
+    counted, or returned), literal
+    case-insensitive substring over
+    filename + image_sha256 only,
+    never semantic, never ranked;
+    exact chat / message / format
+    filters with an unknown format
+    refused plainly; paging with the
+    full total; and one new road,
+    GET /vision/attachments/history,
+    declared BEFORE the
+    {attachment_id} roads so the
+    literal segment is not captured
+    as an id.
+    Slice: src/runmal/vision/
+    attachments.py, src/runmal/vision/
+    router.py, src/runmal/vision/
+    __init__.py,
+    tests/test_p125_attachment_
+    history_search.py (new, 17 tests),
+    docs/VISION_ATTACHMENT_HISTORY_
+    2026-11-08.md (new), clean-room
+    log append (+1).
+    6 files, +586/-1.
+    Migration: NONE (head stays 0041;
+    the provisional 0042 was NOT
+    needed and NOT taken - the
+    attachment store is a versioned
+    JSON index; no SQL surface is
+    touched).
+    Merge conflicts in the clean-room
+    log (append-vs-append; P-124's
+    entry AND P-125's entry kept,
+    each exactly once) and
+    vision/router.py (additive union:
+    P-124 watch roads AND the
+    /vision/attachments/history road
+    both present, history declared
+    before the {attachment_id} roads),
+    resolved as additive unions by
+    the banking coordinator before
+    this banking.
+    Derived scope ACCEPTED as
+    banked. Declined plainly, with
+    evidence in the scout and slice
+    doc: a semantic caption provider,
+    OCR, capture / camera, a watcher
+    daemon, non-PNG thumbnail
+    decoding, watcher scan-history
+    persistence, vision settings,
+    describe-on-attach, search over
+    descriptions from this surface
+    (already P-122's road), and bulk
+    export.
+    Named-open carried items (not
+    dropped): a real local semantic
+    caption provider; OCR; capture /
+    camera.
+    Next in roadmap order: P-126
+    (Part VIII continues).
