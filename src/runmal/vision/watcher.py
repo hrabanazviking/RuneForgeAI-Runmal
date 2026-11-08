@@ -43,6 +43,14 @@ plainly:
   migration. Custody: ``purge_chat`` removes a chat's watch
   registrations and their ingested records (the attachments
   themselves remain P-120 custody).
+- custody & control completion (P-124): an attachment's
+  death forgets its ingested records (``forget_attachment``),
+  so the dedupe memory never tombstones a file whose
+  attachment the owner deleted — a later scan judges the
+  file fresh and may ingest it anew. And a registration's
+  ``enabled`` flag gains its missing handle
+  (``set_enabled``): until P-124 no road could ever change
+  it, though the scan has always refused a disabled watch.
 - Scanning generates NO description or caption and performs
   NO safety scan; ingestion inherits P-120's sniff-only
   stance, and no record claims otherwise.
@@ -54,7 +62,7 @@ import hashlib
 import json
 import os
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -259,6 +267,31 @@ class WatchStore:
         self._save(kept, kept_ingested)
         return removed[0]
 
+    def set_enabled(self, watch_id: str, enabled: bool) -> WatchFolder | None:
+        """Control (P-124): set a registration's enabled flag.
+
+        Returns the updated registration, or None for an
+        unknown watch (nothing is written). Every other
+        field and all ingested records are preserved. This
+        is the flag's first handle: registration always
+        created enabled watches and the scan has always
+        refused a disabled one, but until P-124 no road
+        could change the flag.
+        """
+        watches, ingested = self._load()
+        updated = None
+        out: list[WatchFolder] = []
+        for row in watches:
+            if row.id == watch_id:
+                updated = replace(row, enabled=bool(enabled))
+                out.append(updated)
+            else:
+                out.append(row)
+        if updated is None:
+            return None
+        self._save(out, ingested)
+        return updated
+
     def purge_chat(self, chat_id: str) -> int:
         """Custody: drop a chat's watches + their ingested records."""
         watches, ingested = self._load()
@@ -281,6 +314,31 @@ class WatchStore:
         watches, ingested = self._load()
         self._save(watches, ingested + [record])
         return record
+
+    def forget_attachment(self, attachment_id: str) -> int:
+        """Custody (P-124): forget one attachment's ingested records.
+
+        Called when an attachment dies (a single delete, or
+        its message's deletion): the records naming it are
+        the scan's dedupe memory, and left behind they would
+        skip the source file as already-ingested forever,
+        though the attachment they produced is gone.
+        Forgetting claims nothing about the source file —
+        it still sits in its folder, and the next scan
+        judges it fresh. An empty id names no attachment
+        and forgets nothing; when nothing matches, the
+        store file is left byte-untouched. Returns the
+        number of records forgotten.
+        """
+        if not attachment_id:
+            return 0
+        watches, ingested = self._load()
+        kept = [row for row in ingested
+                if row.attachment_id != attachment_id]
+        removed = len(ingested) - len(kept)
+        if removed:
+            self._save(watches, kept)
+        return removed
 
 
 # ----------------------------------------------------------- service

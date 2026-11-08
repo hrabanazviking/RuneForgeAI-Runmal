@@ -1046,6 +1046,10 @@ async def delete_message(
         # P-122 source custody: descriptions derived from those
         # attachments are purged with them, so derived text
         # never outlives the deleted bytes.
+        # P-124 watcher custody: watcher ingested records
+        # naming those attachments are forgotten with them,
+        # so the scan dedupe memory never tombstones a file
+        # whose attachment died with this message.
         import os as _os
         from pathlib import Path as _Path
 
@@ -1068,6 +1072,11 @@ async def delete_message(
             _vis_store = VisionStore(descriptions_path(_att_store.data_dir))
             for _att_id in _att_ids:
                 _vis_store.purge_source(SOURCE_ATTACHMENT, _att_id)
+            from runmal.vision.watcher import WatchStore as _WatchStore
+
+            _watch_store = _WatchStore(_att_store.data_dir)
+            for _att_id in _att_ids:
+                _watch_store.forget_attachment(_att_id)
     except Exception:
         pass
     await _dispatch_plugin(
