@@ -223,3 +223,83 @@ The Heathen Third Path and Cyber-Viking Solarpunk philosophy merges **ancient No
 ![cybervikingsolarpunk1.png](cybervikingsolarpunk1.png)
 
 ---
+
+---
+
+<!-- RUNMAL-VERIFIED-DEVELOPMENT-UPDATE-2026-11-07 -->
+## ⚒️ Forge report: development progress on \`main\` (2026-11-07)
+
+> **Status snapshot, not a release announcement.** This report describes code and repository records present on \`main\` at commit [\`994bb1e\`](https://github.com/hrabanazviking/RuneForgeAI-Runmal/commit/994bb1e30e57c0e9d83fb4cef6b46d192c2faae7), after [PR #2, *Yrsa/two mirrors build*](https://github.com/hrabanazviking/RuneForgeAI-Runmal/pull/2) was merged. The forge records and per-slice tests provide the cited evidence; the suite was **not rerun independently as part of this README update**. Earlier roadmap figures and narrative above are preserved as historical project material, not the current completion count.
+
+### 📍 Where the forge stands
+
+| Workstream | Verified repository status | Evidence |
+| --- | --- | --- |
+| Original Rúnmál foundation | **94/94 original S-slices completed** across eight campaigns, plus an additional UI campaign; founding close dated 2026-10-13. The original 68-slice roadmap summary earlier in this README is historical. | [Founding status](docs/STATUS.md), [changelog](CHANGELOG.md), [94-slice roadmap](docs/ROADMAP.md) |
+| Two Mirrors, Part I: audit and gap census | **P-001–P-014 complete; gate passed.** Founding audit, SillyTavern/Voxta behaviour censuses, compatibility delta table, baseline, backend and voice investigations, clean-room traceability. | [Part I gate](docs/PART_I_GATE_2026-10-30.md) |
+| Part II: content interoperability | **P-015–P-030 complete; gate passed with explicitly reported format/store limitations.** | [Part II gate](docs/PART_II_GATE_2026-11-06.md) |
+| Part III: lorebook depth | **P-031–P-048 complete; gate passed.** | [Part III gate](docs/PART_III_GATE_2026-11-06.md) |
+| Part IV: prompt and sampler depth | **P-049–P-064 complete; gate passed with pinned live-generation integration limitations.** | [Part IV gate](docs/PART_IV_GATE_2026-11-07.md) |
+| Part V: conversation editing and history | **P-065–P-080 complete; gate passed.** The branch/checkpoint/swipe/group surgery drill passed. A stale fork-history test expectation identified during gate preparation was corrected at P-079 banking. | [Part V gate](docs/PART_V_GATE_2026-11-07.md), [campaign banking record](CAMPAIGN_STATE.md) |
+| Part VI: extensions | **P-081–P-099 implemented and banked; P-100 gate is next.** Plugin framework and its first-party extension modules are in-tree, with dedicated tests. **Do not mark Part VI complete yet.** | [Plugin contract](docs/PLUGIN_API_V1_2026-11-07.md), [campaign record](CAMPAIGN_STATE.md) |
+| Subsequent parity roadmap | **P-101–P-232 are planned, not completed.** Parts VII–XIV have named themes, but their full per-slice definitions are absent from the filed roadmap and require specification before implementation can be claimed. | [Two Mirrors roadmap](docs/RUNMAL_TWO_MIRRORS_PARITY_ROADMAP_2026-10-30.md), [Part I gate](docs/PART_I_GATE_2026-10-30.md) |
+| Desktop installation | Cross-platform launcher, Control Center and **local** packaging scripts have landed. Native package artifacts are present in the repository; owner-platform field verification and release signing remain separate gates. | [PR #1](https://github.com/hrabanazviking/RuneForgeAI-Runmal/pull/1), [desktop verification](docs/DESKTOP_DISTRIBUTION_VERIFICATION.md) |
+
+**Most recent recorded whole-suite confirmation:** **4,041 passed, 4 skipped, 0 failed** at P-099 banking on the merged Two Mirrors development branch, before its merge into \`main\`. This is the test-run count documented in [\`CAMPAIGN_STATE.md\`](CAMPAIGN_STATE.md), **not** a claimed fresh post-merge \`main\` execution, Windows/macOS field test, or production certification. The repository still declares application version **\`0.1.0\`** in [\`pyproject.toml\`](pyproject.toml); development progress should not be confused with a new versioned GitHub release.
+
+### 🧱 Capabilities actually added to the codebase
+
+**Foundation, inference and sovereignty (original S-campaigns).** The implementation contains a local-first FastAPI app and browser interface, SQLAlchemy/SQLite persistence and versioned migrations; character/chat/group APIs; prompt tracing; separate chat and embedding backend contracts; adapters for **Ollama, OpenRouter, Aesir and generic OpenAI-compatible chat endpoints** (plus a test/fake backend); backend profiles and capability reporting; memory extraction, provenance, retrieval and vector/FTS paths; real-time voice infrastructure including VAD, STT, TTS and interruption handling; scoped external bridge endpoints; diagnostics, portable \`.runmal\` archives, backups, staged restore and upgrade/resurrection checks. These are code-backed subsystems, not a claim that every optional external provider, voice model or target device is available without its own setup. See [architecture](docs/DESIGN.md), [backend contract](docs/BACKEND_CONTRACT.md), [memory architecture](docs/MEMORY_ARCHITECTURE.md), [voice architecture](docs/VOICE_ARCHITECTURE.md) and [release record](CHANGELOG.md).
+
+**Card, persona and library interop (P-015–P-030).** The tree now provides TavernCard v2/v3 JSON/PNG parsing and export paths, preservation/reporting of unknown card fields, character image/asset and version handling, persona file interop, lorebook/world-info interchange, preset and chat file interchange, bulk character/lorebook import, duplicate handling, provenance reporting and expanded portable-archive carriage. The Part II gate deliberately distinguishes **lossless file-format round trips** from **mapped-only database projections**; not every foreign field becomes a native editable feature. Bulk folder import is presently for cards and lorebooks, not an unrestricted importer for every content type. See [card tests](tests/test_p030_part2_gate.py) and the [gate limitations](docs/PART_II_GATE_2026-11-06.md).
+
+**Deep lorebook engine (P-031–P-048).** Beyond keyword matching, implemented modules cover recursive activation, secondary-key/selective logic, inclusion groups, constant/key/vector activation distinctions, per-entry sticky/cooldown/delay states, seeded probability decisions, scanning windows, context-placement and token budgets, global/character/persona/chat scopes, asset/character book binding, vector matching with labelled fallback, migration and inspection tooling. The Part III gate verifies explainable inclusion/exclusion decisions and timed state persistence; its documented budgets, depth clamps and fallbacks still apply. See [lorebook sources](src/runmal/lorebooks/) and [gate evidence](docs/PART_III_GATE_2026-11-06.md).
+
+**Prompt and model controls (P-049–P-064).** New prompt layout management, instruct/context templates, sampler capability matrices, preset bundles/packs, macro expansion, author's notes, post-history instructions, token-budget governing, model profiles, preview/inspection and structured-output negotiation are in the tree. Controls unsupported by the selected backend are reported as unavailable rather than silently accepted. **Important boundary:** the Part IV gate proves the prompt *preview/composition* path; it explicitly does **not** prove that every live generation request is already routed through that new composer. Grammar-constrained output remains unavailable across the tested backend set. See [prompt sources](src/runmal/prompt/) and [Part IV gate](docs/PART_IV_GATE_2026-11-07.md).
+
+**Conversation surgery and scale (P-065–P-080).** The chat layer adds alternate message swipes and selected variants, branching/fork/merge-back, file checkpoints and restore-as-new, message edit/delete/reorder/pin/copy operations, bounded undo, message provenance and metadata, chat search, larger-history paging, imported chat recovery, group-chat deepening, continue/impersonate tools and configurable greeting/quiet starts. Branch copies preserve complete swipe decks, chosen indexes and per-swipe provenance. The undo journal is deliberately bounded to **50 entries per chat**; checkpoints/branches/merges/imports create new records rather than destructive in-place rewinds. The P-080 surgery drill covers branch, checkpoint, swipe-storm and group scene without unintended history loss. See [chat sources](src/runmal/chats/), [drill](scripts/drill_p080_surgery.py) and [Part V gate](docs/PART_V_GATE_2026-11-07.md).
+
+### 🧩 The extensions row: P-081 through P-099
+
+The latest development wave adds the following **implemented Python modules and test contracts** to [\`src/runmal/plugins/\`](src/runmal/plugins/):
+
+| Slice | In-tree addition |
+| --- | --- |
+| **P-081** | Versioned plugin manifest/API, lifecycle, chat events, prompt hooks, UI contributions and failure containment. |
+| **P-082** | Declared capability/permission sandbox policy and guarded execution surfaces; **not** a kernel/OS security sandbox. |
+| **P-083** | Local **data-only JSON plugin packs**, explicit permission cards, install/update/enable/uninstall ledger and restart rehydration; pack installation does not execute arbitrary imported Python. |
+| **P-084** | Rolling chat-memory summarisation extension. |
+| **P-085** | Vector-storage extension for the existing memory architecture. |
+| **P-086** | Translation extension with declared provider paths. |
+| **P-087** | Image-generation extension with recorded generation history and manual/scene-prompt routes. |
+| **P-088** | Opt-in web-search extension; disabled-by-default and explicitly scoped. |
+| **P-089** | Quick Replies, including reusable named actions and execution records. |
+| **P-090** | Regex-script transformation surface, with constrained dialect and timeout enforcement. |
+| **P-091** | The existing TTS/STT systems exposed through the common plugin API. |
+| **P-092** | Character expression/sprite sets, chat-specific selection and asset-binding reports. |
+| **P-093** | Namespaced, provenance-bearing per-chat variables and boolean flags, with macro/scenario bridge hooks. |
+| **P-094** | Plugin-owned data export and deletion/custody contracts. |
+| **P-095** | Per-chat image gallery with preserved generation provenance, explicit ingestion and curation. |
+| **P-096** | Inspectable seeded dice rolls and durable bridge-event records for game integration; **no new VRChat/Skyrim transport socket** is claimed by this slice. |
+| **P-097** | Plugin conformance checks and deterministic readiness reports for plugin authors. |
+| **P-098** | Settings forms generated from plugin schemas, strict validation and durable per-owner settings values. |
+| **P-099** | Plain failure reports, guarded sync/async calls, sandbox failure mirroring and self-disable after **three consecutive failures**, followed only by deliberate re-enable. |
+
+These modules have per-slice tests (\`tests/test_p081_plugin_api.py\` through \`tests/test_p099_failure_manners.py\`) and detailed slice notes in [\`docs/\`](docs/). **Integration caveat:** the default plugin registry boots with no automatically registered in-tree citizen plugins; first-party citizen modules generally expose explicit registration/service APIs rather than a promise that every extension is visible and active in the default end-user UI. P-098's stored custom settings are validated and persisted, **but the existing citizen runtimes still use manifest defaults** until their read paths are wired to those values. P-099 failure history is process-local and does not survive restart. These are meaningful implementation milestones, not grounds to claim a complete turnkey extension marketplace.
+
+### 🖥️ Desktop launcher and current distribution truth
+
+The [desktop launcher work](docs/DESKTOP_INSTALLATION.md) adds background server lifecycle management, duplicate-server avoidance, a graphical Control Center, optional sign-in autostart, one-use browser bootstrap nonces, signed HttpOnly session cookies and same-origin checks. Local packaging/build scripts exist for **Windows, macOS and Linux** in [\`scripts/\`](scripts/); root artifacts include \`Runmal-Setup.exe\`, two macOS DMGs and Linux AMD64/ARM64 DEBs.
+
+**Packages existing in Git are not the same as completed native device acceptance tests or published signed releases.** The [distribution verification matrix](docs/DESKTOP_DISTRIBUTION_VERIFICATION.md) still marks the target-platform local reruns pending and keeps D010's Windows owner install → launch → chat field test open. Development packages may trigger SmartScreen/Gatekeeper warnings. The project has chosen **local, owner-controlled package building** rather than GitHub Actions release packaging.
+
+### 🔬 Evidence, open gates and immediate next work
+
+- **Test evidence:** the latest logged P-099 forge confirmation is **4,041 passed / 4 skipped / 0 failed**. This is a documented historical run, not a new test execution performed for this report. The gate-specific batteries and implementation/test pairs are linked through [\`CAMPAIGN_STATE.md\`](CAMPAIGN_STATE.md), with upstream merge traceability in [PR #2](https://github.com/hrabanazviking/RuneForgeAI-Runmal/pull/2).
+- **Database/version caution:** migrations currently reach **0041**, whereas the published \`0.1.0\` changelog described the earlier 0018 schema. The new parity work is in the repository without a new versioned release declaration.
+- **Next defined slice:** **P-100, Part VI gate**, to assess the full extensions row together, including a third-party-shaped blind conformance/install/use path. Do not mark it passed before its own gate evidence exists.
+- **Future roadmap specification:** define and validate the still-untold individual slices for Parts **VII–XIV (P-101–P-232)** before describing those parts as implemented. They cover deeper voice/vision/scenarios/avatars/workspaces/content exchange/assistant surfaces and final parity proof.
+- **Known follow-through:** connect the preview/composer pathway to live generation where intended; propagate stored plugin settings into runtime behaviour; reconcile newer plugin custody registrations; finish installer acceptance/signing and real-device/provider checks; retain honest format-interop loss reports and bounded-history semantics.
+- **Documentation reconciliation:** [\`docs/STATUS.md\`](docs/STATUS.md) was last updated for the founding completion and does not supersede the newer [\`CAMPAIGN_STATE.md\`](CAMPAIGN_STATE.md) or merged source. This dated section supplies the newer README-facing checkpoint without deleting the existing README or rewriting the historical roadmaps.
+
+**The next rune on the anvil: P-100.** Keep the public story aligned with actual code, test evidence and explicit limitations as the forge grows.
