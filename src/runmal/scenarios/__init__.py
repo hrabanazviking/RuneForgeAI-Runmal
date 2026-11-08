@@ -76,6 +76,14 @@
   construction; a hand-damaged store, named) or stale,
   with per-definition rollups and counts summed from the
   rows themselves (P-144, Part IX, DERIVED scope).
+- ``chatcensus`` - binding chat-custody census: every
+  binding the caller holds, read through P-135 summaries
+  verbatim and classified against the live Chat table
+  as live or orphaned (its chat gone - deleting a chat
+  never touches the binding store, and no surface
+  judged that axis), with per-definition rollups and
+  counts summed from the rows themselves (P-148,
+  Part IX, DERIVED scope).
 - ``packs`` — scenario definition sharing packs: one
   stored definition sealed in an envelope (a manifest
   with a SHA-256 content checksum over the canonical
@@ -154,6 +162,10 @@ from runmal.scenarios.bindingcensus import (
     census_bindings,
 )
 from runmal.scenarios.reportcensus import census_unmappable
+from runmal.scenarios.chatcensus import (
+    CHAT_CUSTODY_STATES,
+    census_binding_chats,
+)
 from runmal.scenarios.packs import (
     CONFLICT_CREATE_NEW,
     CONFLICT_MODES,
@@ -287,6 +299,8 @@ __all__ = [
     "preview_pack_import",
     "BINDING_STATES",
     "census_bindings",
+    "CHAT_CUSTODY_STATES",
+    "census_binding_chats",
     "census_unmappable",
     "CONFLICT_CREATE_NEW",
     "CONFLICT_MODES",

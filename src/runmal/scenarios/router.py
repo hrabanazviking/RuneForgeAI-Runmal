@@ -10,6 +10,7 @@
 + library unmappable-content census (P-145).
 + candidate replace preview (P-146).
 + chat-scoped candidate bind preview (P-147).
++ binding chat-custody census (P-148).
 
 P-026 roads (stateless): parse a scenario file and report
 honestly, and re-export it. Those roads are unchanged.
@@ -110,6 +111,17 @@ service lives in runmal.scenarios.reportcensus; this
 module is only the HTTP shape. The census writes,
 deletes and repairs nothing: it names, never executes
 and never cleans up.
+P-148 (Part IX, DERIVED scope) adds the binding
+chat-custody census road: every binding the caller
+holds, read through P-135 summaries and classified
+against the live Chat table as live or orphaned -
+deleting a chat cleans its checkpoints, databank,
+undo store, vision links, attachments and watcher
+registrations but never the binding store, and no
+surface judged that axis (P-144 judges the
+definition axis only and says so). The service
+lives in runmal.scenarios.chatcensus; this module
+is only the HTTP shape.
 
 No road here plays a scenario back or executes anything a
 definition carries (P-027: content is data, never code).
@@ -159,6 +171,7 @@ from runmal.scenarios.candidatepreview import (
     preview_candidate_replace,
 )
 from runmal.scenarios.bindingcensus import census_bindings
+from runmal.scenarios.chatcensus import census_binding_chats
 from runmal.scenarios.reportcensus import census_unmappable
 from runmal.scenarios.storedexport import (
     DEFAULT_FORMAT,
@@ -325,6 +338,35 @@ async def census_scenario_bindings(
     """
     definitions = _store().list_for_owner(user_id)
     return census_bindings(_bindings(), user_id, definitions)
+
+
+@router.get(
+    "/scenarios/bindings/chat-census", status_code=status.HTTP_200_OK
+)
+async def census_scenario_binding_chats(
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Every binding the caller holds, judged by chat (P-148).
+
+    The chat-custody census over the P-135 list
+    surface: each binding summary verbatim, enriched
+    with chat_exists and its chat_state - live (its
+    chat row still exists for this owner) or orphaned
+    (the chat is gone: deleted, never existed, or
+    another owner's - the three answer exactly alike,
+    so existence never leaks) - plus per-definition
+    rollups and census counts summed from the rows
+    themselves. Declared before the {chat_id} binding
+    road so the literal "chat-census" is never read
+    as a chat id (the P-135 declaration-order
+    precedent). Owner-scoped; an owner with no
+    bindings answers the honest zero census. Pure
+    read: writes, unbinds and deletes nothing.
+    """
+    live = {row.id for row in _store().list_for_owner(user_id)}
+    return await census_binding_chats(
+        session, _bindings(), user_id, live)
 
 
 @router.post("/scenarios/import-pack", status_code=status.HTTP_201_CREATED)
