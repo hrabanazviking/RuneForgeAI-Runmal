@@ -7355,3 +7355,113 @@ P-108 BANKED - Voice Repeat-Request Signal (Part VII)
     VX-12 and VX-13 stay open, as
     recorded in the slice doc.
     Next in roadmap order: P-109.
+P-109 BANKED - Voice Affects as Carried Data (Part VII)
+    - team-03 commit 5bb15ec merged (no-ff)
+    into yrsa/two-mirrors-build as 805e5e1;
+    merge pushed; ls-remote verified
+    805e5e130f68b7d6c9a16034f93b99261750cc84.
+    Evidence (team-03 worktree
+    hidden_files/P109_EVIDENCE.md):
+    battery 13 passed, neighbours
+    133 passed / 0 failed (battery +
+    neighbours combined 146 passed =
+    P-101..P-106 + S512 profiles),
+    team full suite 4207 passed /
+    4 skipped / 0 failed on the
+    dfdd07c base (P-106 banking record;
+    the slice was built on that base
+    while P-107 and P-108 banked ahead
+    of it, and was reconciled at this
+    banking in roadmap order).
+    Derived scope ACCEPTED by the keeper:
+    P-109 is the first step of VX-12
+    (voices carry emotion) - the DATA
+    half only. The census row's named
+    affects (anger, whispering,
+    laughing) plus neutral form one
+    closed vocabulary in
+    voice/affects.py, imported never
+    copied; profiles validate
+    params[affect] strictly at the
+    write door (unknown affect =
+    ValueError); SessionSettings
+    carries affect + affect_source,
+    snapshotted once at session start
+    under the P-101 snapshot law, with
+    tolerant read fallback NAMED (a
+    corrupt stored affect never bricks
+    a stored session; pre-P-109
+    snapshots construct unchanged).
+    Every surface states the truth
+    consumed: False with the reason as
+    data - no backend consumes an
+    affect and no fake prosody is
+    claimed anywhere. The roadmap
+    gives Part VII only its part line.
+    Slice:
+    src/runmal/voice/affects.py
+    (new: the closed vocabulary as
+    data + normalize / tolerant
+    from-params / with_affect /
+    consumption views),
+    src/runmal/voice/profiles.py
+    (set_character_voice validates
+    params[affect] strictly),
+    src/runmal/voice/session.py
+    (SessionSettings affect +
+    affect_source, snapshot law),
+    src/runmal/voice/router.py
+    (founding road, additive: GET
+    /voice/affects and GET
+    /voice/sessions/{id}/affect),
+    src/runmal/voice/__init__.py
+    (module-map entry, additive),
+    tests/test_p109_voice_affects.py
+    (13 tests),
+    docs/VOICE_AFFECTS_2026-11-08.md,
+    clean-room log append (+1). 8 files,
+    +478/-0.
+    Migration: NONE (head stays 0041).
+    Merge completed by the previous
+    banking coordinator and finished
+    at this banking: the merged tree
+    was verified to carry P-107
+    markings, P-108 repeat_requests +
+    repeat_router AND P-109 affects
+    (py_compile green on all touched
+    Python files; the combined
+    batteries below prove the union).
+    In-slice fix recorded in the
+    evidence: the SessionSettings
+    round trip silently rewrote
+    affect_source for a neutral affect;
+    fixed in _stored_affect and pinned
+    by added battery assertions.
+    Combined batteries on the merged
+    tree: 167 passed / 0 failed
+    (28 + 24 + 19 + 17 + 21 + 18 + 12 + 15 + 13).
+    Log hidden_files/p109_combined.log
+    (forge) on purplelongship.
+    Forge confirmation suite:
+    4234 passed / 4 skipped / 0 failed
+    in 214.13s, exit 0 - exact match to
+    expectation (= 4221 + 13), no
+    contention re-runs needed. Log
+    hidden_files/p109_confirm.log (forge).
+    Honest limitations carried:
+    no backend consumes an affect -
+    synthesis is byte-identical with
+    or without one; the engine half
+    of VX-12 (a backend seam accepting
+    affect, prosody rendering) stays
+    open for its own slice. Per-turn
+    affect changes are not modelled:
+    the affect is the profile's
+    standing intention, snapshotted
+    at session start. The vocabulary
+    is the census three + neutral;
+    widening it is a design act for a
+    later slice. VX-13, the
+    character-asks repeat half and
+    P-108's limitations stay open.
+    Next in roadmap order: P-110.
