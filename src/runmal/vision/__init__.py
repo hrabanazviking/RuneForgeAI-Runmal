@@ -17,6 +17,11 @@
   chat or one of its messages: bytes + honest sniffed
   metadata on the same JSON-store pattern, describable
   through the describe road (P-120).
+- ``service`` history + custody (P-122) - owner-scoped
+  get / list / literal search over the description store,
+  single-record remove, and purge_source source custody:
+  descriptions derived from a deleted attachment die
+  with it.
 - ``router`` — the owner-scoped HTTP road
   (/api/v1/vision/*).
 - ``watcher`` — folder-watcher registrations and the

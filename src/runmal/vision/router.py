@@ -24,6 +24,12 @@ read / deleted owner-scoped, and describable through the
 describe road as source_kind "attachment". An attachment
 record claims sniffed truth only; attaching invents no
 description.
+P-122 adds the history/search/custody surface on the
+same prefix: GET /vision/history (owner-scoped literal
+search over the description store), single-record read
+and delete under /vision/descriptions/{id}, and source
+custody - deleting an attachment also purges the
+descriptions derived from it.
 """
 
 from __future__ import annotations
@@ -188,6 +194,89 @@ async def last_description(
     return record.to_dict()
 
 
+
+# ------------------------------------------------- history (P-122)
+# Owner-scoped history + literal search over the description
+# store, single-record read/delete, and source custody. Search
+# is literal substring matching over stored text (see
+# VisionStore.search) - never semantic, never ranked.
+
+
+def _description_or_404(description_id: str, owner_id: str):
+    record = _store().get(description_id)
+    if record is None or record.owner_id != owner_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="vision description not found")
+    return record
+
+
+@router.get("/vision/history")
+async def history(
+    q: str = "",
+    chat_id: str | None = None,
+    source_kind: str | None = None,
+    provider_road: str | None = None,
+    limit: int = 50,
+    offset: int = 0,
+    session: AsyncSession = Depends(get_session),
+    owner_id: str = Depends(get_owner_id),
+):
+    chat = None
+    if chat_id is not None:
+        chat = await _chat_or_404(session, owner_id, chat_id)
+    if provider_road is not None:
+        known = {row.road for row in vision_selection.provider_catalogue()}
+        if provider_road not in known:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=("unknown provider_road "
+                        f"{provider_road!r}; known roads: "
+                        f"{', '.join(sorted(known))}"))
+    try:
+        rows, total = _store().search(
+            owner_id,
+            q,
+            chat_id=chat.id if chat is not None else None,
+            source_kind=source_kind,
+            provider_road=provider_road,
+            limit=limit,
+            offset=offset,
+        )
+    except vision_service.VisionError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(exc)) from None
+    return {
+        "descriptions": [row.to_dict() for row in rows],
+        "total": total,
+        "returned": len(rows),
+        "limit": max(1, min(200, int(limit))),
+        "offset": max(0, int(offset)),
+        "q": q,
+        "chat_id": chat_id,
+        "source_kind": source_kind,
+        "provider_road": provider_road,
+    }
+
+
+@router.get("/vision/descriptions/{description_id}")
+async def get_description(
+    description_id: str,
+    owner_id: str = Depends(get_owner_id),
+):
+    return _description_or_404(description_id, owner_id).to_dict()
+
+
+@router.delete("/vision/descriptions/{description_id}")
+async def delete_description(
+    description_id: str,
+    owner_id: str = Depends(get_owner_id),
+):
+    record = _description_or_404(description_id, owner_id)
+    removed = _store().remove(record.id)
+    return {"deleted": removed is not None, "id": record.id}
+
 # ------------------------------------------------------- attachments
 # P-120: user-supplied images attached to a chat / message.
 # Owner scoping matches the describe roads: an attachment that
@@ -287,7 +376,15 @@ async def delete_attachment(
 ):
     record = _attachment_or_404(attachment_id, owner_id)
     removed = _attachment_store().remove(record.id)
-    return {"deleted": removed is not None, "id": record.id}
+    purged = 0
+    if removed is not None:
+        # P-122 source custody: descriptions derived from this
+        # attachment die with it, so derived text never
+        # outlives the bytes the owner deleted.
+        purged = _store().purge_source(
+            vision_service.SOURCE_ATTACHMENT, record.id)
+    return {"deleted": removed is not None, "id": record.id,
+            "descriptions_purged": purged}
 
 
 def _watch_store() -> watcher_service.WatchStore:
