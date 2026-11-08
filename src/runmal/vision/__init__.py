@@ -39,4 +39,10 @@
   set_enabled (the registration's enabled flag gains its
   first handle; the scan has always refused a disabled
   watch).
+- ``watcher`` history & search (P-127) - owner-wide
+  history + literal search across chats: registrations
+  searchable by folder path, ingested records by source
+  path and sha256, owner-scoped first - the P-122/P-125
+  parity surface for the watcher store. Nothing new is
+  persisted; the scan report stays a synchronous result.
 """
