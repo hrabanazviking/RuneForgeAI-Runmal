@@ -350,6 +350,7 @@ from runmal.db.deps import get_owner_id, get_session  # noqa: E402
 from runmal.db.models import Chat  # noqa: E402
 from runmal.voice import session as voice_session  # noqa: E402
 from runmal.voice.profiles import resolve_character_voice  # noqa: E402
+from runmal.voice import affects as affects_mod  # noqa: E402
 
 
 def _session_store(request: Request) -> voice_session.VoiceSessionStore:
@@ -396,6 +397,24 @@ async def list_voice_sessions(request: Request, chat_id: str = "") -> dict:
         "sessions": [s.summary_dict() for s in sessions],
         "active_session_id": active.session_id if active else None,
     }
+
+
+@router.get("/voice/affects")
+async def list_voice_affects() -> dict:
+    return affects_mod.vocabulary_view()
+
+
+@router.get("/voice/sessions/{session_id}/affect")
+async def get_voice_session_affect(session_id: str, request: Request) -> dict:
+    found = _session_store(request).get(session_id)
+    if found is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="voice session not found"
+        )
+    view = affects_mod.affect_view(found.settings.affect, found.settings.affect_source)
+    view["session_id"] = found.session_id
+    view["chat_id"] = found.chat_id
+    return view
 
 
 @router.get("/voice/sessions/{session_id}")
