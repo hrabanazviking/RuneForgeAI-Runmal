@@ -1,6 +1,6 @@
 """Scenario API: file interop (P-026) + stored definitions (P-131)
-+ scenario-to-chat binding (P-132) + stored-definition file
-export (P-133).
++ scenario-to-chat binding (P-132) + stored-definition file export (P-133)
++ scenario library organisation (P-134).
 
 P-026 roads (stateless): parse a scenario file and report
 honestly, and re-export it. Those roads are unchanged.
@@ -27,7 +27,7 @@ definition carries (P-027: content is data, never code).
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.db.deps import get_owner_id, get_session
@@ -43,6 +43,14 @@ from runmal.scenarios.binding import (
 from runmal.scenarios.fileexport import export_native, export_voxta
 from runmal.scenarios.fileimport import parse_scenario_file
 from runmal.scenarios.filemodels import ScenarioParseError
+from runmal.scenarios.organisation import (
+    ScenarioOrganisationError,
+    ScenarioOrganisationStore,
+    list_tags,
+    organisation_path,
+    organisation_view,
+    query_definitions,
+)
 from runmal.scenarios.store import (
     ScenarioStore,
     ScenarioStoreError,
@@ -125,16 +133,64 @@ async def create_scenario_definition(
     return record.to_dict()
 
 
-@router.get("/scenarios", status_code=status.HTTP_200_OK)
-async def list_scenario_definitions(
+def _organisation() -> ScenarioOrganisationStore:
+    return ScenarioOrganisationStore(organisation_path())
+
+
+def _records_by_id(user_id: str) -> dict:
+    return {
+        row.definition_id: row for row in _organisation().list_for_owner(user_id)
+    }
+
+
+@router.get("/scenarios/library/tags", status_code=status.HTTP_200_OK)
+async def list_scenario_library_tags(
     user_id: str = Depends(get_owner_id),
 ):
-    """The caller's definitions, summary shape, creation order."""
+    """The caller's tag census over their definitions (P-134)."""
     rows = _store().list_for_owner(user_id)
-    return {
-        "scenarios": [row.summary() for row in rows],
-        "total": len(rows),
-    }
+    tags = list_tags(rows, _records_by_id(user_id))
+    return {"tags": tags, "total": len(tags)}
+
+
+@router.get("/scenarios", status_code=status.HTTP_200_OK)
+async def list_scenario_definitions(
+    q: str | None = None,
+    tag: list[str] | None = Query(default=None),
+    tag_mode: str = "any",
+    favourites_only: bool = False,
+    sort: str = "oldest",
+    limit: int | None = None,
+    offset: int = 0,
+    user_id: str = Depends(get_owner_id),
+):
+    """The caller's definitions, enriched summary shape.
+
+    With no query parameters this is exactly the P-131
+    answer (creation order, every row). P-134 adds the
+    library surface: q search, repeatable tag filters
+    (tag_mode any / all), favourites_only, named sorts
+    and limit / offset paging; total is the filtered
+    count before paging. Invalid parameters answer 422.
+    """
+    rows = _store().list_for_owner(user_id)
+    try:
+        page, total = query_definitions(
+            rows,
+            _records_by_id(user_id),
+            q=q,
+            tags=tag,
+            tag_mode=tag_mode,
+            favourites_only=favourites_only,
+            sort=sort,
+            limit=limit,
+            offset=offset,
+        )
+    except ScenarioOrganisationError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)
+        ) from exc
+    return {"scenarios": page, "total": total}
 
 
 @router.get("/scenarios/{definition_id}", status_code=status.HTTP_200_OK)
@@ -192,6 +248,111 @@ async def delete_scenario_definition(
             detail="scenario definition not found",
         )
     return {"id": record.id, "deleted": True}
+
+
+# --------------------------------------- organisation (P-134)
+
+
+def _owned_definition_or_404(definition_id: str, user_id: str):
+    record = _store().get(definition_id, user_id)
+    if record is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="scenario definition not found",
+        )
+    return record
+
+
+def _view(definition_id: str, user_id: str) -> dict:
+    definition = _owned_definition_or_404(definition_id, user_id)
+    return organisation_view(definition, _organisation().get(definition_id, user_id))
+
+
+@router.get(
+    "/scenarios/{definition_id}/organisation", status_code=status.HTTP_200_OK
+)
+async def get_scenario_organisation(
+    definition_id: str,
+    user_id: str = Depends(get_owner_id),
+):
+    """One owned definition's organisation view, or 404."""
+    return _view(definition_id, user_id)
+
+
+@router.put("/scenarios/{definition_id}/tags", status_code=status.HTTP_200_OK)
+async def replace_scenario_tags(
+    definition_id: str,
+    body: dict,
+    user_id: str = Depends(get_owner_id),
+):
+    """Replace one owned definition's tag set, or 404 / 422.
+
+    Existence is decided before the body is judged, so a
+    foreign id with invalid tags still answers 404.
+    """
+    _owned_definition_or_404(definition_id, user_id)
+    try:
+        _organisation().set_tags(definition_id, user_id, body.get("tags"))
+    except ScenarioOrganisationError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)
+        ) from exc
+    return _view(definition_id, user_id)
+
+
+@router.post("/scenarios/{definition_id}/tags", status_code=status.HTTP_200_OK)
+async def add_scenario_tags(
+    definition_id: str,
+    body: dict,
+    user_id: str = Depends(get_owner_id),
+):
+    """Add to one owned definition's tag set, or 404 / 422."""
+    _owned_definition_or_404(definition_id, user_id)
+    try:
+        _organisation().add_tags(definition_id, user_id, body.get("tags"))
+    except ScenarioOrganisationError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)
+        ) from exc
+    return _view(definition_id, user_id)
+
+
+@router.delete(
+    "/scenarios/{definition_id}/tags/{tag}", status_code=status.HTTP_200_OK
+)
+async def remove_scenario_tag(
+    definition_id: str,
+    tag: str,
+    user_id: str = Depends(get_owner_id),
+):
+    """Remove one tag (absent is a no-op), or 404 / 422."""
+    _owned_definition_or_404(definition_id, user_id)
+    try:
+        _organisation().remove_tag(definition_id, user_id, tag)
+    except ScenarioOrganisationError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)
+        ) from exc
+    return _view(definition_id, user_id)
+
+
+@router.put("/scenarios/{definition_id}/favourite", status_code=status.HTTP_200_OK)
+async def set_scenario_favourite(
+    definition_id: str,
+    body: dict,
+    user_id: str = Depends(get_owner_id),
+):
+    """Set one owned definition's favourite flag, or 404 / 422."""
+    _owned_definition_or_404(definition_id, user_id)
+    try:
+        _organisation().set_favourite(
+            definition_id, user_id, body.get("is_favourite")
+        )
+    except ScenarioOrganisationError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)
+        ) from exc
+    return _view(definition_id, user_id)
 
 
 # --------------------------------------------- binding (P-132)

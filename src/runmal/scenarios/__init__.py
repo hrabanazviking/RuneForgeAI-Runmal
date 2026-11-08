@@ -19,6 +19,10 @@
   materialisation plan, and the bind service that seeds
   a definition's bootstrap lines and initial state into
   an empty chat (P-132, Part IX, DERIVED scope).
+- ``organisation`` — scenario library organisation:
+  tags, favourites and findability over stored
+  definitions in their own versioned JSON document,
+  on P-024's tag law (P-134, Part IX, DERIVED scope).
 - ``router`` — the HTTP roads: the stateless P-026
   import/export roads plus the P-131 definition CRUD
   roads on the same /scenarios prefix.
@@ -37,6 +41,20 @@ from runmal.scenarios.binding import (
     get_binding,
     plan_materialisation,
     unbind,
+)
+from runmal.scenarios.organisation import (
+    ORGANISATION_FILENAME,
+    ORGANISATION_VERSION,
+    SORTS,
+    TAG_MODES,
+    ScenarioOrganisation,
+    ScenarioOrganisationError,
+    ScenarioOrganisationStore,
+    enrich_summary,
+    list_tags,
+    organisation_path,
+    organisation_view,
+    query_definitions,
 )
 from runmal.scenarios.fileexport import (
     export_native,
@@ -107,6 +125,10 @@ __all__ = [
     "KIND_TEMPLATE",
     "KIND_TOOL",
     "MAX_SCENARIO_BYTES",
+    "ORGANISATION_FILENAME",
+    "ORGANISATION_VERSION",
+    "SORTS",
+    "TAG_MODES",
     "SOURCE_NATIVE",
     "SOURCE_VOXTA",
     "STYLES",
@@ -122,6 +144,9 @@ __all__ = [
     "ScenarioBinding",
     "ScenarioBindingError",
     "ScenarioBindingStore",
+    "ScenarioOrganisation",
+    "ScenarioOrganisationError",
+    "ScenarioOrganisationStore",
     "ScenarioStore",
     "BindingNotFoundError",
     "ScenarioStoreError",
@@ -134,6 +159,11 @@ __all__ = [
     "definitions_path",
     "export_stored_definition",
     "scenario_file_from_stored",
+    "enrich_summary",
+    "list_tags",
+    "organisation_path",
+    "organisation_view",
+    "query_definitions",
     "get_binding",
     "plan_materialisation",
     "unbind",
