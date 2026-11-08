@@ -795,3 +795,174 @@ async def plugin_custody_delete(
         raise _visible(exc) from exc
     await session.commit()
     return report
+
+
+# -- Dice & Game Bridge surface (P-096) -----------------------------------
+# Seeded, inspectable dice rolls plus the declared
+# game-bridge event record surface, in the house router
+# idiom (owner dep, chat ownership verified before
+# acting, ValueError -> 422 via _visible, missing rolls
+# -> 404). The citizen lives in runmal.plugins.game_bridge;
+# imports are lazy so this router's import graph is
+# unchanged at module load. HTTP writes carry host
+# provenance: the caller is the owner acting through the
+# host, recorded as exactly that. No route here opens a
+# connection to any game client - the records are the
+# surface (see docs/DICE_GAME_BRIDGE_2026-11-07.md).
+
+
+@router.post("/game-bridge/roll")
+async def game_bridge_roll(
+    body: dict,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    from runmal.plugins import game_bridge as gb
+
+    chat_id = await _owned_chat(session, user_id, body)
+    try:
+        return gb.roll_for_chat(
+            user_id, chat_id, body.get("notation"),
+            seed=body.get("seed"), context=body.get("context") or "",
+            target=body.get("target"))
+    except ValueError as exc:
+        raise _visible(exc) from exc
+
+
+@router.get("/game-bridge/rolls")
+async def game_bridge_rolls(
+    chat_id: str,
+    limit: int = 100,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    from runmal.chats import service as chats_svc
+    from runmal.plugins import game_bridge as gb
+
+    if await chats_svc.get_chat(session, user_id, chat_id) is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"unknown chat: {chat_id}")
+    try:
+        return {"chat_id": chat_id,
+                "rolls": gb.list_rolls(user_id, chat_id, limit=limit)}
+    except ValueError as exc:
+        raise _visible(exc) from exc
+
+
+@router.get("/game-bridge/rolls/{roll_id}")
+async def game_bridge_roll_detail(
+    roll_id: str,
+    chat_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    from runmal.chats import service as chats_svc
+    from runmal.plugins import game_bridge as gb
+
+    if await chats_svc.get_chat(session, user_id, chat_id) is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"unknown chat: {chat_id}")
+    try:
+        return gb.verify_persisted_roll(user_id, chat_id, roll_id)
+    except gb.DiceBridgeNotFoundError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(exc)) from exc
+    except ValueError as exc:
+        raise _visible(exc) from exc
+
+
+@router.post("/game-bridge/events")
+async def game_bridge_events_emit(
+    body: dict,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    from runmal.plugins import game_bridge as gb
+
+    chat_id = await _owned_chat(session, user_id, body)
+    try:
+        return gb.emit_bridge_event(
+            user_id, chat_id, body.get("kind"), body.get("payload"),
+            target=body.get("target"))
+    except ValueError as exc:
+        raise _visible(exc) from exc
+
+
+@router.get("/game-bridge/events")
+async def game_bridge_events_list(
+    chat_id: str,
+    after_seq: int = 0,
+    limit: int = 100,
+    kind: str | None = None,
+    target: str | None = None,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    from runmal.chats import service as chats_svc
+    from runmal.plugins import game_bridge as gb
+
+    if await chats_svc.get_chat(session, user_id, chat_id) is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"unknown chat: {chat_id}")
+    try:
+        return {"chat_id": chat_id,
+                "events": gb.list_bridge_events(
+                    user_id, chat_id, after_seq=after_seq, limit=limit,
+                    kind=kind, target=target)}
+    except ValueError as exc:
+        raise _visible(exc) from exc
+
+
+@router.post("/game-bridge/events/ack")
+async def game_bridge_events_ack(
+    body: dict,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    from runmal.plugins import game_bridge as gb
+
+    chat_id = await _owned_chat(session, user_id, body)
+    try:
+        return gb.ack_bridge_events(
+            user_id, chat_id, body.get("consumer"), body.get("up_to_seq"))
+    except ValueError as exc:
+        raise _visible(exc) from exc
+
+
+@router.get("/game-bridge/inspect")
+async def game_bridge_inspect(
+    chat_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    from runmal.chats import service as chats_svc
+    from runmal.plugins import game_bridge as gb
+
+    if await chats_svc.get_chat(session, user_id, chat_id) is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"unknown chat: {chat_id}")
+    try:
+        return gb.inspect_chat(user_id, chat_id)
+    except ValueError as exc:
+        raise _visible(exc) from exc
+
+
+@router.post("/game-bridge/clear")
+async def game_bridge_clear(
+    body: dict,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    from runmal.plugins import game_bridge as gb
+
+    chat_id = await _owned_chat(session, user_id, body)
+    try:
+        removed = gb.clear_chat(user_id, chat_id)
+    except ValueError as exc:
+        raise _visible(exc) from exc
+    return {"cleared": True, "chat_id": chat_id, "removed": removed}
