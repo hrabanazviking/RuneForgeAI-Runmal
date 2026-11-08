@@ -7710,3 +7710,98 @@ P-111 BANKED - Voice Repeat-Acknowledgement Housekeeping (Part VII)
     P-108's remaining limitations stay
     open.
     Next in roadmap order: P-112.
+P-112 BANKED - Voice Live-Start Back-Projection (Part VII)
+    - team-03 commit 00feeae merged (no-ff)
+    into yrsa/two-mirrors-build as 20565c5;
+    merge pushed; ls-remote verified
+    20565c5438f9df1313ab9122dadd824227eea909.
+    Evidence (team-03 worktree
+    hidden_files/P112_EVIDENCE.md):
+    battery 11 passed, neighbours
+    372 passed / 2 skipped / 0 failed,
+    team full suite
+    4261 passed / 4 skipped / 0 failed
+    on the ff48970 base (P-110 banking
+    record; the slice was built on
+    that base while P-111 banked
+    ahead of it, and was reconciled
+    at this merge in roadmap order).
+    Derived scope ACCEPTED by the keeper:
+    P-112 closes the limitation P-104's
+    slice doc section 4 records
+    verbatim - Live start does not
+    back-project pre-existing turns -
+    the one projection-aware road (of
+    manual turns POST, live speak,
+    live stop, live start) that never
+    walked P-104's autoproject service.
+    The live/start HTTP road now walks
+    the module's existing shared
+    _maybe_autoproject helper strictly
+    after a successful start; an
+    opted-in session's pre-existing
+    unprojected turns land in their
+    chat at live start through P-103's
+    one landing service, and the
+    report rides only when a
+    projection was attempted. The
+    P-102/P-104 design law stands:
+    the LiveVoiceController stays
+    synchronous and DB-free.
+    Slice:
+    src/runmal/voice/live_router.py
+    (+15/-2: the start road gains the
+    speak/stop roads' db dependency
+    and walks _maybe_autoproject),
+    src/runmal/voice/autoproject.py
+    (+3/-1: docstring road list names
+    live start; no code change),
+    tests/test_p112_voice_live_start_projection.py
+    (11 tests),
+    docs/VOICE_LIVE_START_PROJECTION_2026-11-08.md,
+    clean-room log append (+1). 5 files,
+    +393/-3.
+    Migration: NONE (head stays 0041).
+    Merge conflict only in the clean-room
+    log (append-vs-append), resolved as
+    an additive union: the log keeps
+    the P-111 and P-112 entries exactly
+    once each. live_router.py and
+    autoproject.py auto-merged; the
+    merged tree carries P-111
+    housekeeping + prune roads (incl.
+    the drop-road prune) AND P-112
+    live-start back-projection (the
+    start road's _maybe_autoproject
+    walk), py_compile green on all
+    touched Python files.
+    No banking heal needed.
+    Combined batteries on the merged
+    tree: 212 passed / 0 failed
+    (28 + 24 + 19 + 17 + 21 + 18 + 12 + 15 + 13 + 16 + 18 + 11).
+    Log hidden_files/p112_combined.log
+    (forge) on purplelongship.
+    Forge confirmation suite:
+    4279 passed / 4 skipped / 0 failed
+    in 226.97s, exit 0 - exact match to
+    expectation (= 4268 + 11), no
+    contention re-runs needed. Log
+    hidden_files/p112_confirm.log (forge).
+    Honest limitations carried:
+    HTTP road only - an in-process
+    LiveVoiceController.start does not
+    back-project (it cannot, being
+    DB-free by design); the catch-up
+    point exists where a DB session
+    exists: the HTTP host.
+    Back-projection covers turns
+    pending at start; later turns
+    land through the standing
+    speak/stop/manual roads. The
+    character-asks half of VX-11
+    (P-102 responder seam), VX-12's
+    engine half, VX-13 and L3
+    (deliberate host-explicit
+    registration) stay open exactly
+    where P-110 and P-111 left them.
+    Next in roadmap order: P-113.
