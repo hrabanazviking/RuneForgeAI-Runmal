@@ -43,6 +43,15 @@
   seedable keys split by P-093's own presence law into
   would-seed and already-present (P-138, Part IX,
   DERIVED scope).
+- ``candidatechatpreview`` - chat-scoped candidate
+  bind preview: a candidate replace body judged
+  through the store door, its would-be bind plan
+  judged against one named chat - bind refusal
+  facts as data, would_bind as if stored at the
+  next revision, and the candidate plan seedable
+  keys split by P-093 own presence law beside the
+  stored plan split and the full-key deltas
+  (P-147, Part IX, DERIVED scope).
 - ``deletepreview`` — definition delete-impact
   preview: what deleting one stored definition would
   orphan — its bindings, which do not cascade and
@@ -131,6 +140,9 @@ from runmal.scenarios.organisation import (
 )
 from runmal.scenarios.bindpreview import preview_bind_plan
 from runmal.scenarios.chatpreview import preview_bind_for_chat
+from runmal.scenarios.candidatechatpreview import (
+    preview_candidate_for_chat,
+)
 from runmal.scenarios.deletepreview import preview_delete_impact
 from runmal.scenarios.replacepreview import preview_replace_impact
 from runmal.scenarios.candidatepreview import (
@@ -268,6 +280,7 @@ __all__ = [
     "organisation_view",
     "preview_bind_plan",
     "preview_bind_for_chat",
+    "preview_candidate_for_chat",
     "preview_delete_impact",
     "preview_replace_impact",
     "preview_candidate_replace",
