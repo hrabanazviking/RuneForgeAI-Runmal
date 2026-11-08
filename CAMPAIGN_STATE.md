@@ -9338,3 +9338,114 @@ P-125 BANKED - Attachment History & Search (Part VIII)
     camera.
     Next in roadmap order: P-126
     (Part VIII continues).
+P-126 BANKED - Describe-on-Attach Opt-In (Part VIII)
+    PART VIII continues (tenth slice).
+    - team-02 commit 431f777 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 249318a (parents f29b712 +
+    431f777); merge pushed and
+    ls-remote verified at 249318a
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Evidence (team-02 worktree
+    hidden_files/P126_EVIDENCE.md):
+    battery 14 passed / 0 failed;
+    neighbours 113 passed / 1 skipped
+    / 0 failed (P-117..P-123 fence);
+    team full suite 4488 passed /
+    5 skipped / 0 failed on its base
+    f2bb0c2 (P-123 banking record;
+    P-124 and P-125 are NOT in that
+    base, reconciled at this merge in
+    roadmap order).
+    Expectation check: 4474 (banked
+    base) + 14 new = 4488 - exact
+    match. Combined vision fence on
+    the merged tree (P-117 through
+    P-126): 157 passed / 1 skipped /
+    0 failed (143 P-125 fence + 14).
+    Forge confirmation suite on the
+    merged tree: 4518 passed /
+    5 skipped / 0 failed - a clean run
+    with no contention re-runs needed.
+    Expectation check: 4504 (P-125
+    banking confirmation) + 14 new =
+    4518 - exact match. Log
+    hidden_files/P126_FORGE_CONFIRM.log
+    on purplelongship.
+    Slice scope (DERIVED, as Part
+    VIII per-slice definitions are
+    derived - the filed roadmap gives
+    Part VIII only its part line):
+    the attach road gains an explicit
+    per-request opt-in to describe the
+    new attachment in the same call.
+    attach_and_describe is an atomic
+    pair: provider selection via
+    P-119 runs BEFORE anything is
+    stored, and a describe failure
+    after the attach removes the
+    just-created attachment before
+    the refusal rides out. Plain
+    attach is byte-for-byte P-120
+    (no description key, no row).
+    attach_image itself is unchanged,
+    so the P-121 watcher scan keeps
+    its no-description bound exactly.
+    Honest rollback note: after a
+    describe-failure rollback an
+    emptied attachments index file
+    legitimately remains on disk -
+    no row, no bytes, and no
+    description survives; the file
+    is the store normal empty state,
+    not residue of the attachment.
+    Slice: src/runmal/vision/
+    attachments.py, src/runmal/vision/
+    router.py, src/runmal/vision/
+    __init__.py,
+    tests/test_p126_describe_on_
+    attach.py (new, 14 tests),
+    docs/VISION_DESCRIBE_ON_ATTACH_
+    2026-11-08.md (new), clean-room
+    log append (+1).
+    6 files, +556/-1.
+    Migration: NONE (head stays 0041;
+    the provisional 0042 was NOT
+    needed and NOT taken - both
+    records ride the existing v1
+    JSON stores).
+    Merge conflicts in the clean-room
+    log (append-vs-append; P-124,
+    P-125, and P-126 entries kept,
+    each exactly once) and
+    vision/router.py, vision/
+    __init__.py, and vision/
+    attachments.py (additive unions:
+    P-124 watch roads, the P-125
+    /vision/attachments/history road
+    with list_for_owner/search, and
+    the P-126 describe opt-in fields
+    with attach_and_describe all
+    present; history still declared
+    before the {attachment_id}
+    roads), resolved as additive
+    unions by the banking
+    coordinator before this banking.
+    Derived scope ACCEPTED as
+    banked. Declined plainly, with
+    evidence in the scout and slice
+    doc: a semantic caption provider,
+    OCR, capture / camera, a watcher
+    daemon, non-PNG thumbnails,
+    watcher scan-history persistence,
+    vision settings, describe-batch,
+    portable-archive inclusion, and
+    fork-carry.
+    Named-open carried items (not
+    dropped): a real local semantic
+    caption provider; OCR; capture /
+    camera.
+    Next in roadmap order: P-127
+    (Part VIII continues).
