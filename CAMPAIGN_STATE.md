@@ -8977,3 +8977,143 @@ P-122 BANKED - Vision Description History, Search & Custody Completion (Part VII
     camera.
     Next in roadmap order: P-123
     (Part VIII continues).
+P-123 BANKED - Attachment Thumbnails for Vision Surfaces (Part VIII)
+    PART VIII continues (seventh slice).
+    - team-02 commit 44ac59b merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 154522b (parents e0bac3f +
+    44ac59b); merge pushed and
+    ls-remote verified at 154522b
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Evidence (team-02 worktree
+    hidden_files/P123_EVIDENCE.md):
+    battery 14 passed / 0 failed;
+    neighbours 96 passed / 1 skipped
+    / 0 failed (vision fence P-117 +
+    P-118 + P-119 + P-120 + P-121 +
+    P-123; the skip is P-121's
+    lazy-absence honesty design
+    skip); team full suite 4457
+    passed / 5 skipped / 0 failed
+    on its base 3726782 (P-121 banking
+    record; P-122 is NOT in that base,
+    reconciled at this merge in
+    roadmap order). Expectation check:
+    4443 (P-121 merged confirmation)
+    + 14 new = 4457 - exact match.
+    Slice scope (DERIVED, as Part
+    VIII's per-slice definitions are
+    derived - the filed roadmap gives
+    Part VIII only its part line):
+    P-120 chat attachments could only
+    be fetched at full size; this
+    slice adds the attachment
+    thumbnail road riding the proven
+    P-023 PNG engine
+    (assets/imaging.make_png_thumbnail)
+    through a new thumbnail_bytes()
+    service in vision/attachments.py
+    and GET /vision/attachments/{id}/
+    thumbnail. Thumbnails are DERIVED
+    ON READ and NOTHING derived is
+    stored: no byte file, no index
+    change, no new custody surface -
+    P-120 custody remains the whole
+    custody story. Availability is a
+    request-time fact; the attachment
+    record carries no thumbnail claim
+    (pinned by battery).
+    Slice: src/runmal/vision/
+    attachments.py, src/runmal/vision/
+    router.py, src/runmal/vision/
+    __init__.py,
+    tests/test_p123_attachment_
+    thumbnails.py (new, 14 tests),
+    docs/VISION_ATTACHMENT_
+    THUMBNAILS_2026-11-08.md (new),
+    clean-room log append (+1).
+    6 files, +457/-2.
+    Migration: NONE (head stays 0041;
+    the provisional 0042 was NOT
+    needed and NOT taken - derivation
+    stores nothing, so no SQL index
+    and no store change).
+    Merge conflicts in the clean-room
+    log (append-vs-append; P-122's
+    entry AND P-123's entry kept,
+    each exactly once) and
+    vision/router.py + vision/
+    __init__.py (P-122 history/custody
+    text vs P-123 thumbnail appends
+    at the same anchors), resolved as
+    additive unions by the banking
+    coordinator. The merged tree
+    carries all 17 P-122-era vision
+    routes PLUS the new thumbnail
+    road (18 vision routes total:
+    describe, providers, descriptions,
+    last, history, descriptions/{id}
+    get+delete, 6 attachments roads
+    incl. thumbnail, 5 watch-folders
+    roads), grep-verified, py_compile
+    clean. attachments.py verified
+    purely additive against the
+    P-122-era tree: docstring
+    paragraph, one import, and
+    thumbnail_bytes() only - no index
+    or byte-file change. No banking
+    heal needed.
+    Combined batteries on the merged
+    tree by the banking coordinator:
+    vision fence P-117..P-123 113
+    passed / 1 skipped / 0 failed
+    (P-117 15 + P-118 17 + P-119 16 +
+    P-120 15 + P-121 19 passes + its
+    1 design skip + P-122 17 + P-123
+    14 - exact). Log
+    /tmp/p123_fence.log on
+    purplelongship.
+    Forge confirmation suite:
+    4474 passed / 5 skipped /
+    0 failed in 232.50s - a clean
+    run with no contention re-runs
+    needed. (= 4460 P-122
+    confirmation + 14 P-123 battery -
+    exact; skipped stays 5 - P-121's
+    lazy-absence honesty test skips
+    by design on any tree carrying
+    P-120.) Log /tmp/p123_confirm.log
+    on purplelongship.
+    Honest limitation (the PNG-only
+    bound, stated plainly): the
+    P-023 engine decodes PNG only, so
+    JPEG / GIF / WebP attachments
+    refuse 422 naming the bound and
+    the full bytes are never
+    substituted in a thumbnail's
+    place; PNGs outside the engine's
+    decodable subset (interlaced
+    etc.) likewise refuse 422 naming
+    that bound. Derivation is
+    per-request CPU with no cache -
+    the honest trade for storing
+    nothing.
+    Derived scope ACCEPTED as
+    banked. Declined plainly, with
+    evidence in the scout and slice
+    doc: watcher scan-history
+    persistence, vision settings via
+    the P-098 pattern, describe-on-
+    attach opt-in, a semantic caption
+    provider, OCR, capture / camera,
+    a watcher daemon, and non-PNG
+    thumbnails (no in-tree decoder
+    for any of them).
+    Named-open carried items (not
+    dropped): a real local semantic
+    caption provider; OCR; capture /
+    camera.
+    Next in roadmap order: P-124
+    (Part VIII continues).
