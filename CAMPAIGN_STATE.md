@@ -8457,3 +8457,103 @@ P-118 BANKED - The Last Vision Description Reaches the Prompt (Part VIII)
     camera / OCR / attachments.
     Next in roadmap order: P-119
     (Part VIII continues).
+P-119 BANKED - Vision Provider Selection + Capability Truth (Part VIII)
+    PART VIII continues (third slice).
+    - team-01 commit fea41e9 merged (no-ff)
+    into yrsa/two-mirrors-build as 8e4bdd7
+    (parents 8065234 + fea41e9); banking
+    record commit follows this entry and
+    is pushed with the merge; ls-remote
+    verification is reported in the keeper
+    run log.
+    Evidence (team-01 worktree
+    hidden_files/P119_EVIDENCE.md):
+    battery 16 passed / 0 failed;
+    battery + neighbours (P-119 + P-117
+    + P-053) 71 passed / 0 failed
+    (battery-inclusive fence); team full
+    suite 4392 passed / 4 skipped /
+    0 failed on its base 6e523e3 (P-117
+    banking record; P-118 is NOT in that
+    base, reconciled at this merge in
+    roadmap order). Expectation check:
+    4376 base + 16 new = 4392 - exact
+    match.
+    Slice scope (DERIVED, as Part VIII's
+    per-slice definitions are derived -
+    the filed roadmap gives Part VIII
+    only its part line): the vision
+    provider catalogue as data - the
+    metadata provider and the
+    deterministic labelled TEST provider
+    (road deterministic_test, the
+    P-086/P-087 house pattern), both
+    semantic=False and never presented
+    as semantic anywhere; per-backend
+    Capabilities.vision truth read live
+    from the adapters' own declarations
+    via the P-053 road (all five
+    backends declare vision False);
+    plain refusals - an unknown provider
+    is refused naming the known roads,
+    and require_semantic with no
+    semantic provider available raises
+    VisionUnavailableError with no
+    silent fallback to a non-semantic
+    provider; additive provider /
+    require_semantic fields on
+    POST /vision/describe plus the
+    inspectable GET /vision/providers
+    surface (semantic_caption_available
+    stated as data).
+    Slice: src/runmal/vision/
+    selection.py (new),
+    src/runmal/vision/router.py,
+    src/runmal/vision/__init__.py,
+    tests/test_p119_vision_provider_
+    selection.py (new, 16 tests),
+    docs/VISION_PROVIDER_SELECTION_
+    2026-11-08.md (new), clean-room log
+    append (+1). 6 files, +674/-1.
+    Migration: NONE (head stays 0041).
+    Merge conflict only in the clean-room
+    log (append-vs-append), resolved as
+    an additive union at merge time by
+    the banking coordinator; the merged
+    tree carries P-118's entry AND
+    P-119's entry, each exactly once.
+    The merged tree was verified:
+    vision/selection.py present, the
+    GET /vision/providers road live in
+    the router, and py_compile clean on
+    all touched modules.
+    No banking heal needed.
+    Combined batteries on the merged
+    tree by the banking coordinator:
+    33 passed / 0 failed (P-118 battery
+    17 + P-119 battery 16 - exact).
+    Forge confirmation suite:
+    4409 passed / 4 skipped / 0 failed
+    in 278.53s - a clean run with no
+    contention re-runs needed.
+    (= 4393 P-118 confirmation + 16
+    P-119 battery - exact.) Log
+    /tmp/p119_confirm.log on
+    purplelongship.
+    Derived scope ACCEPTED as banked.
+    Honest limitation (explicit, not
+    faked): NO semantic caption exists
+    anywhere in Runmal yet - no vision
+    model, endpoint, or image wire
+    exists in-tree to call honestly;
+    the gap is queryable data, and the
+    deterministic test provider is
+    labelled a test provider in code,
+    catalogue data, output text, API,
+    and docs.
+    Named-open carried items (not
+    dropped): a real local semantic
+    caption provider; capture / watcher
+    / camera / OCR / attachments.
+    Next in roadmap order: P-120
+    (Part VIII continues).
