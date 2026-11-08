@@ -9802,3 +9802,122 @@ P-129 BANKED - Watcher Registration Control Parity (Part VIII)
     inclusion of the vision stores.
     Next in roadmap order: P-130
     (Part VIII gate).
+P-130 BANKED - Part VIII Gate - Vision Services (Part VIII)
+    PART VIII COMPLETE / GATE PASSED.
+    Part VIII (P-117..P-130) is closed.
+    - team-03 commit dca7dd1 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as ba5666e (parents 500516f +
+    dca7dd1); merge pushed and
+    ls-remote verified at ba5666e
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Gate verdict: Part VIII COMPLETE,
+    PASS on all areas - Census PASS,
+    Together PASS, Custody PASS,
+    Accounting PASS; all 13 rows
+    P-117..P-129 PASS.
+    Evidence (team-03 worktree
+    hidden_files/P130_EVIDENCE.md):
+    gate battery 26 passed / 0 failed;
+    gate-record module 10 passed
+    standalone (36 passed run together
+    with the battery); neighbours -
+    the full P-117..P-129 vision fence
+    - 210 passed / 1 skipped /
+    0 failed; team full suite
+    4597 passed / 5 skipped / 0 failed
+    on its base 500516f (P-129 banking
+    record).
+    Arithmetic reconciliation (stated
+    honestly, P-116 precedent): the
+    team's full-suite figure 4597 =
+    4571 (P-129 banking confirmation)
+    + 26 (gate battery only) - the
+    gate-record module's 10 tests were
+    NOT counted in that run's
+    arithmetic. On the merged tree the
+    full suite collects BOTH P-130
+    modules, verified explicitly:
+    pytest --collect-only on the whole
+    suite lists all 10 tests of
+    tests/test_p130_gate_record.py and
+    all 26 tests of
+    tests/test_p130_part_viii_gate.py,
+    4612 tests collected in total
+    (= 4607 passed + 5 skipped).
+    Combined batteries on the merged
+    tree (gate battery + gate-record
+    module + full P-117..P-129 vision
+    fence): 246 passed / 1 skipped /
+    0 failed (210 + 36 - exact match).
+    Forge confirmation suite on the
+    merged tree: 4607 passed /
+    5 skipped / 0 failed - a clean run
+    in 249.25s with no contention
+    re-runs needed. Expectation check:
+    4571 (P-129 banking confirmation)
+    + 36 (26 battery + 10 gate-record)
+    = 4607 - exact match, as counted
+    from the log. Log
+    hidden_files/P130_FORGE_CONFIRM.log
+    on purplelongship.
+    Findings: F1 - no new engine
+    defect was found by this gate.
+    F2 - the P-116 gate's openapi
+    finding is verified CLOSED (fixed
+    by P-117; the gate battery's
+    census re-measures app.openapi()
+    succeeding and naming the vision
+    roads).
+    Carried items named by the gate
+    (not dropped): K1 - a real local
+    semantic caption provider stays
+    open; K2 - OCR stays open;
+    K3 - capture / camera stays open;
+    K4 - a watcher daemon stays open,
+    deliberately; K5 - non-PNG
+    thumbnails stay open; K6 - watcher
+    scan-report persistence stays
+    open; K7 - vision settings stay
+    open; K8 - portable-archive
+    inclusion of the vision stores
+    stays open. Also carried without
+    separate rows: describe-batch and
+    fork-carry of vision rows.
+    Slice scope (DERIVED, as Part
+    VIII per-slice definitions are
+    derived - the filed roadmap gives
+    Part VIII only its part line):
+    the gate slice itself - a census,
+    togetherness, custody and honesty
+    battery over the whole banked
+    Part VIII surface, plus the
+    gate-record module pinning the
+    gate document. No banked code
+    changed by the gate (one probe
+    correction inside the battery
+    itself, recorded as part of F1
+    in the evidence). Slice:
+    tests/test_p130_part_viii_gate.py
+    (new, 26 tests),
+    tests/test_p130_gate_record.py
+    (new, 10 tests),
+    docs/PART_VIII_GATE_2026-11-08.md
+    (new), clean-room log append (+1).
+    4 files, +1343/-0.
+    Migration: NONE (head stays 0041;
+    no migration was added by this
+    gate).
+    Merge: CLEAN - no conflicts at
+    all, not even the clean-room log
+    (append-vs-append did not collide
+    this time); the merged diff vs
+    the forge head is exactly the
+    team slice (+1343/-0). No banking
+    heal needed.
+    Derived scope ACCEPTED as banked.
+    Next in roadmap order: P-131
+    (Part IX opening, in roadmap
+    order).
