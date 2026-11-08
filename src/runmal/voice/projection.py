@@ -37,6 +37,17 @@ hook is wired into its persist road; a host calls
 complete. The session store stays the truth record -
 projected messages are its transcript shadow, and later
 edits or deletes of a message never write back to it.
+
+P-106 adds the mishearing mark: when a turn is projected,
+its persisted per-word STT confidence (P-105) is read back
+as scalar provenance facts and as per-turn data on the
+status/report views, so a doubted transcript no longer
+looks identical in history to a certain one. The content
+law is unchanged: the transcript lands verbatim, P-105's
+suggested text never lands, and the stored transcript is
+never rewritten. The mark itself holds counts, flags and
+probability summaries only in provenance (P-075 scalars);
+word texts appear only in the status/report receipt data.
 """
 
 from __future__ import annotations
@@ -47,6 +58,7 @@ from runmal.chats import provenance as prov_mod
 
 __all__ = [
     "ProjectionError",
+    "transcript_mishearing_mark",
     "transcript_provenance",
     "response_provenance",
     "plan_turn",
@@ -63,6 +75,67 @@ def _now_iso() -> str:
     return datetime.now(UTC).isoformat()
 
 
+# -------------------------------------------------- mishearing mark
+
+_FALLBACK_THRESHOLD = 0.5
+
+
+def _threshold() -> float:
+    try:
+        from runmal.voice.mishearing import LOW_CONFIDENCE_THRESHOLD
+        value = float(LOW_CONFIDENCE_THRESHOLD)
+    except Exception:
+        return _FALLBACK_THRESHOLD
+    if 0.0 <= value <= 1.0:
+        return value
+    return _FALLBACK_THRESHOLD
+
+
+def _entry_text_prob(entry):
+    if isinstance(entry, dict):
+        text = entry.get("text", "")
+        prob = entry.get("probability")
+    else:
+        text = getattr(entry, "text", "")
+        prob = getattr(entry, "probability", None)
+    if isinstance(prob, bool) or not isinstance(prob, (int, float)):
+        return None
+    prob_f = float(prob)
+    if not (0.0 <= prob_f <= 1.0):
+        return None
+    if text is None:
+        text = ""
+    elif not isinstance(text, str):
+        text = str(text)
+    return text, prob_f
+
+
+def transcript_mishearing_mark(turn) -> dict:
+    threshold = _threshold()
+    raw = getattr(turn, "transcript_words", None) or ()
+    try:
+        entries_in = list(raw)
+    except TypeError:
+        entries_in = []
+    usable = []
+    for entry in entries_in:
+        parsed = _entry_text_prob(entry)
+        if parsed is not None:
+            usable.append(parsed)
+    probs = [prob for _txt, prob in usable]
+    low = [(txt, prob) for txt, prob in usable if prob < threshold]
+    return {
+        "has_confidence_evidence": bool(usable),
+        "word_count": len(usable),
+        "low_confidence_words": [txt for txt, _p in low],
+        "low_confidence_count": len(low),
+        "min_probability": min(probs) if probs else None,
+        "mean_probability": (round(sum(probs) / len(probs), 4) if probs else None),
+        "needs_repeat": bool(low),
+        "threshold": threshold,
+    }
+
+
 # ----------------------------------------------------- provenance
 
 
@@ -73,6 +146,7 @@ def transcript_provenance(session, turn) -> dict:
     doctrine); the STT fact is named in origin facts, so the
     model section is honestly not_applicable.
     """
+    mark = transcript_mishearing_mark(turn)
     return prov_mod.build_record(
         origin_kind="manual",
         origin={
@@ -82,6 +156,13 @@ def transcript_provenance(session, turn) -> dict:
             "voice_side": "transcript",
             "stt_backend": turn.stt_backend or session.settings.stt_backend,
             "transcript_language": turn.transcript_language or None,
+            "mishearing_evidence": bool(mark["has_confidence_evidence"]),
+            "mishearing_needs_repeat": bool(mark["needs_repeat"]),
+            "mishearing_word_count": int(mark["word_count"]),
+            "mishearing_low_word_count": int(mark["low_confidence_count"]),
+            "mishearing_min_probability": mark["min_probability"],
+            "mishearing_mean_probability": mark["mean_probability"],
+            "mishearing_threshold": float(mark["threshold"]),
         },
         model=prov_mod.model_section(status="not_applicable"),
         preset=prov_mod.preset_section(status="unknown"),
@@ -154,7 +235,10 @@ def projection_status(session) -> dict:
     """Per-turn projection state, as data (pure)."""
     turns = []
     messages = 0
+    marks = []
     for turn in session.turns:
+        mark = transcript_mishearing_mark(turn)
+        marks.append((turn, mark))
         ids = [turn.projected_user_message_id,
                turn.projected_assistant_message_id]
         messages += sum(1 for i in ids if i)
@@ -165,6 +249,7 @@ def projection_status(session) -> dict:
             "assistant_message_id": (
                 turn.projected_assistant_message_id or None),
             "projected_at": turn.projected_at or None,
+            "mishearing": mark,
         })
     return {
         "session_id": session.session_id,
@@ -172,6 +257,12 @@ def projection_status(session) -> dict:
         "turns_total": len(session.turns),
         "turns_projected": sum(1 for t in session.turns if t.projected),
         "messages_projected": messages,
+        "turns_with_mishearing_evidence": sum(
+            1 for _t, m in marks if m["has_confidence_evidence"]),
+        "turns_needing_repeat": [
+            turn.turn_no for turn, m in marks if m["needs_repeat"]],
+        "low_confidence_words_total": sum(
+            m["low_confidence_count"] for _t, m in marks),
         "turns": turns,
     }
 
@@ -204,6 +295,7 @@ async def project_session_turns(db, *, user_id: str, session, store=None) -> dic
         character = await get_character(db, user_id, session.character_id)
         if character is not None:
             char_name = character.name or None
+    all_marks = {t.turn_no: transcript_mishearing_mark(t) for t in session.turns}
     report = {
         "session_id": session.session_id,
         "chat_id": session.chat_id,
@@ -211,6 +303,11 @@ async def project_session_turns(db, *, user_id: str, session, store=None) -> dic
         "already_projected": 0,
         "no_content_turns": 0,
         "messages_created": 0,
+        "turns_needing_repeat": [
+            t.turn_no for t in sorted(session.turns, key=lambda x: x.turn_no)
+            if all_marks[t.turn_no]["needs_repeat"]],
+        "low_confidence_words_total": sum(
+            m["low_confidence_count"] for m in all_marks.values()),
         "turns": [],
     }
     for turn in sorted(session.turns, key=lambda t: t.turn_no):
@@ -221,6 +318,7 @@ async def project_session_turns(db, *, user_id: str, session, store=None) -> dic
                 "user_message_id": turn.projected_user_message_id or None,
                 "assistant_message_id": (
                     turn.projected_assistant_message_id or None),
+                "mishearing": all_marks[turn.turn_no],
             })
             continue
         plan = plan_turn(session, turn)
@@ -255,5 +353,6 @@ async def project_session_turns(db, *, user_id: str, session, store=None) -> dic
             "user_message_id": turn.projected_user_message_id or None,
             "assistant_message_id": (
                 turn.projected_assistant_message_id or None),
+            "mishearing": all_marks[turn.turn_no],
         })
     return report
