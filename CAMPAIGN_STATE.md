@@ -9117,3 +9117,116 @@ P-123 BANKED - Attachment Thumbnails for Vision Surfaces (Part VIII)
     camera.
     Next in roadmap order: P-124
     (Part VIII continues).
+P-124 BANKED - Watcher Custody & Control Completion (Part VIII)
+    PART VIII continues (eighth slice).
+    - team-03 commit 409689e merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 5b50bc6 (parents f2bb0c2 +
+    409689e); merge pushed and
+    ls-remote verified at 5b50bc6
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Evidence (team-03 worktree
+    hidden_files/P124_EVIDENCE.md):
+    battery 13 passed / 0 failed;
+    neighbours 105 passed / 1 skipped
+    / 0 failed (P-117 + P-118 + P-119 +
+    P-120 + P-121 + P-122 + s307; the
+    skip is P-121's lazy-absence
+    honesty design skip); team full
+    suite 4473 passed / 5 skipped /
+    0 failed on its base e0bac3f
+    (P-122 banking record; P-123 is
+    NOT in that base, reconciled at
+    this merge in roadmap order).
+    Expectation check: 4460 (P-122
+    banking confirmation) + 13 new =
+    4473 - exact match.
+    Slice scope (DERIVED, as Part
+    VIII's per-slice definitions are
+    derived - the filed roadmap gives
+    Part VIII only its part line):
+    two proven gaps in the P-121
+    watcher store. (1) Dedupe
+    tombstone: ingested records
+    outlived their attachment - a
+    single attachment delete and a
+    message delete both left the
+    watch record behind, and the
+    source file was then skipped as
+    already-ingested forever (the
+    P-122 custody hole one store
+    over). Fixed by a new
+    WatchStore.forget_attachment,
+    wired into the attachment DELETE
+    road (which now also reports
+    watch_records_forgotten) and into
+    chats/service delete_message
+    custody inside the existing
+    guarded block.
+    (2) Unreachable control:
+    WatchFolder.enabled could never
+    be set - no verb and no road
+    reached it, though scan refuses
+    a disabled watch - and no
+    single-watch read road existed.
+    Fixed by WatchStore.set_enabled
+    plus a PATCH road for the enabled
+    flag and a GET-single watch road.
+    Slice: src/runmal/vision/
+    watcher.py, src/runmal/vision/
+    router.py, src/runmal/chats/
+    service.py, src/runmal/vision/
+    __init__.py,
+    tests/test_p124_watcher_custody_
+    control.py (new, 13 tests),
+    docs/VISION_WATCHER_CUSTODY_
+    CONTROL_2026-11-08.md (new),
+    clean-room log append (+1).
+    7 files, +599/-2.
+    Migration: NONE (head stays 0041;
+    the provisional 0042 was NOT
+    needed and NOT taken - both new
+    verbs ride the existing watcher
+    JSON store).
+    Merge conflicts in the clean-room
+    log (append-vs-append; P-123's
+    entry AND P-124's entry kept,
+    each exactly once) and
+    vision/router.py (additive
+    union), resolved as additive
+    unions by the banking
+    coordinator before this banking.
+    Combined batteries on the merged
+    tree by the banking coordinator:
+    vision fence 126 passed / 1
+    skipped / 0 failed (113 P-123
+    fence + 13 - exact). Log
+    /tmp/p124_fence.log on
+    purplelongship.
+    Forge confirmation suite:
+    4487 passed / 5 skipped /
+    0 failed - a clean run with no
+    contention re-runs needed.
+    (= 4474 P-123 confirmation + 13
+    P-124 battery - exact; skipped
+    stays 5.) Log
+    /tmp/p124_confirm.log on
+    purplelongship.
+    Derived scope ACCEPTED as
+    banked. Declined plainly, with
+    evidence in the scout and slice
+    doc: a semantic caption provider,
+    OCR, capture / camera, a watcher
+    daemon, and non-PNG thumbnails
+    (no in-tree basis for any of
+    them); attachment history/search
+    stands as the named P-125
+    candidate.
+    Named-open carried items (not
+    dropped): a real local semantic
+    caption provider; OCR; capture /
+    camera.
+    Next in roadmap order: P-125
+    (Part VIII continues).
