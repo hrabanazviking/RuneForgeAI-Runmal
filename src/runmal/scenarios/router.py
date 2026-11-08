@@ -2,7 +2,7 @@
 + scenario-to-chat binding (P-132) + stored-definition file export (P-133)
 + scenario library organisation (P-134) + binding
   lifecycle read surface (P-135) + binding plan
-  preview (P-136) + definition duplication (P-137).
+  preview (P-136) + definition duplication (P-137) + chat-scoped bind preview (P-138).
 
 P-026 roads (stateless): parse a scenario file and report
 honestly, and re-export it. Those roads are unchanged.
@@ -29,6 +29,16 @@ the definition's current revision — what binding WOULD
 plant and honestly skip, visible before any chat is
 committed. The service lives in
 runmal.scenarios.bindpreview; this module is only the
+HTTP shape.
+
+P-138 (Part IX, DERIVED scope) adds the chat-scoped
+bind-plan road: P-136's preview judged against one
+named chat — bind's refusal facts (group room,
+already bound, non-empty) reported as data in bind's
+decision order, and the plan's seedable keys split by
+P-093's own presence law into would-seed and
+already-present. The service lives in
+runmal.scenarios.chatpreview; this module is only the
 HTTP shape.
 
 No road here plays a scenario back or executes anything a
@@ -69,6 +79,7 @@ from runmal.scenarios.store import (
     definitions_path,
 )
 from runmal.scenarios.bindpreview import preview_bind_plan
+from runmal.scenarios.chatpreview import preview_bind_for_chat
 from runmal.scenarios.storedexport import (
     DEFAULT_FORMAT,
     FORMATS,
@@ -564,6 +575,50 @@ async def preview_scenario_bind_plan(
             detail="scenario definition not found",
         )
     return preview_bind_plan(record)
+
+# --------------------------- chat-scoped bind preview (P-138)
+
+
+@router.get(
+    "/scenarios/{definition_id}/bind-plan/{chat_id}",
+    status_code=status.HTTP_200_OK,
+)
+async def preview_scenario_bind_plan_for_chat(
+    definition_id: str,
+    chat_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """What binding this definition WOULD do to THIS chat (P-138).
+
+    P-136's envelope judged against one named chat:
+    bind's refusal facts reported as data in bind's
+    decision order (group room, already bound — naming
+    the standing binding — and non-empty, with its
+    message count), would_bind, and the plan's seedable
+    keys split by the P-093 store's own presence law
+    into would-seed and already-present. The definition
+    is decided first: unknown or foreign answers 404
+    ("scenario definition not found"); an unknown or
+    foreign chat answers 404 ("chat not found") —
+    existence never leaks on either side. The road
+    writes nothing, refuses nothing and executes
+    nothing; bind re-decides every fact when it runs.
+    """
+    record = _store().get(definition_id, user_id)
+    if record is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="scenario definition not found",
+        )
+    envelope = await preview_bind_for_chat(
+        session, record, user_id, chat_id)
+    if envelope is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="chat not found",
+        )
+    return envelope
 
 
 # ------------------------------------ stored export (P-133)
