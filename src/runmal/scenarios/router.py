@@ -173,6 +173,10 @@ from runmal.scenarios.candidatepreview import (
 from runmal.scenarios.bindingcensus import census_bindings
 from runmal.scenarios.chatcensus import census_binding_chats
 from runmal.scenarios.reportcensus import census_unmappable
+from runmal.scenarios.definitioncensus import (
+    DEFINITION_CUSTODY_STATES,
+    census_definitions,
+)
 from runmal.scenarios.storedexport import (
     DEFAULT_FORMAT,
     FORMATS,
@@ -295,6 +299,41 @@ async def census_scenario_unmappable(
     case. Pure read.
     """
     return census_unmappable(_store().list_for_owner(user_id))
+
+
+@router.get(
+    "/scenarios/library/census", status_code=status.HTTP_200_OK
+)
+async def census_scenario_library_definitions(
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """The caller's library definition census (P-151).
+
+    Every definition the caller holds, rowed as the
+    census subject - the P-131 summary verbatim,
+    enriched with the custody of its bindings: each
+    binding joined on P-144's definition verdict and
+    P-148's chat verdict (sound, definition_drift,
+    chat_orphaned, doubly_broken), the definition's own
+    state under the precedence law (unbound when it
+    holds no bindings), its distinct chat counts, and
+    census counts summed from the rows themselves -
+    stale bindings, whose definition is gone, counted
+    in the totals and rowing under no definition.
+    Declared with the library roads before the
+    {definition_id} roads so the literal "library" is
+    never read as a definition id (the P-134
+    library/tags precedent). Owner-scoped; an owner
+    with no definitions answers the honest zero census
+    and an owner with definitions but no bindings
+    answers every definition unbound. No 404 case.
+    Pure read: writes, binds, unbinds and deletes
+    nothing.
+    """
+    definitions = _store().list_for_owner(user_id)
+    return await census_definitions(
+        session, _bindings(), user_id, definitions)
 
 
 @router.get("/scenarios/bindings", status_code=status.HTTP_200_OK)
