@@ -8669,3 +8669,168 @@ P-120 BANKED - Image Attachments on Chat Messages (Part VIII)
     named follow-on.
     Next in roadmap order: P-121
     (Part VIII continues).
+
+P-121 BANKED - Folder Watcher: Watched Folders Ingest as Attachments (Part VIII)
+    PART VIII continues (fifth slice).
+    - team-03 commit fdfe3ae merged
+    (no-ff) into yrsa/two-mirrors-build
+    as a890b48 (parents 5692069 +
+    fdfe3ae); banking heal commit
+    3c4e9ea followed on top; merge +
+    heal pushed and ls-remote verified
+    at 3c4e9ea before this record;
+    banking record commit follows this
+    entry and is pushed after it.
+    Evidence (team-03 worktree
+    hidden_files/P121_EVIDENCE.md):
+    battery 19 passed / 0 failed;
+    neighbours 52 passed / 0 failed
+    (P-117 + P-118 + P-119 + s503
+    fence); team full suite 4428
+    passed / 4 skipped / 0 failed on
+    its base 09dc4dd (P-119 banking
+    record; P-120 is NOT in that base,
+    reconciled at this merge in
+    roadmap order).
+    Slice scope (DERIVED, as Part
+    VIII's per-slice definitions are
+    derived - the filed roadmap gives
+    Part VIII only its part line):
+    watch-folder registrations bound
+    to a designated chat plus an
+    explicit polling scan that ingests
+    new image files as P-120
+    chat-level attachments; the P-117
+    versioned JSON-store pattern
+    (vision_watcher.json, version 1);
+    plain total registration/scan
+    refusals and per-file named skips
+    store nothing; (path, sha256)
+    dedupe - an unchanged file never
+    duplicates, a changed file
+    ingests anew; candidates sorted,
+    files-only, capped at 200 per
+    scan with truncation named;
+    owner-scoped watch-folder roads
+    (create / list / delete / scan /
+    ingested) under
+    /vision/watch-folders.
+    Slice: src/runmal/vision/
+    watcher.py (new, 435 lines),
+    src/runmal/vision/router.py
+    (+102), src/runmal/vision/
+    __init__.py (+4),
+    tests/test_p121_folder_watcher.py
+    (new, 19 tests),
+    docs/FOLDER_WATCHER_2026-11-08.md
+    (new), clean-room log append
+    (+1). 6 files, +1081.
+    Migration: NONE (head stays 0041;
+    the provisional 0042 was NOT
+    needed and NOT taken - watch
+    registrations and ingested
+    records are JSON in the data dir,
+    not SQL-queryable and not in DB
+    backups, like the P-117 vision
+    store).
+    Merge conflicts in the clean-room
+    log (append-vs-append) and
+    vision/router.py (both slices
+    appended at the same anchor),
+    resolved as additive unions by
+    the banking coordinator;
+    vision/__init__.py auto-merged.
+    The merged tree carries P-120's
+    entries AND P-121's entries, each
+    exactly once, and both road sets
+    (5 /vision/attachments roads AND
+    5 /vision/watch-folders roads;
+    14 vision routes total),
+    py_compile clean. The union
+    reconstruction at first dropped
+    the watcher import line; the
+    merged battery caught it (4 HTTP
+    tests) and it was restored into
+    the merge commit before any push.
+    Reconciliation (a) - lazy
+    attacher: the watcher resolves
+    P-120's attach_image lazily at
+    scan time; verified at banking
+    against the landed P-120
+    signature (store positional;
+    chat_id / owner_id / data /
+    filename keywords - exact fit,
+    no heal needed) and end-to-end
+    through the real merged
+    attachments module: a real PNG
+    ingested as a chat-level
+    attachment with matching sha256
+    and size, a non-image file
+    refused by the real sniff, and a
+    second scan reporting
+    already_ingested with nothing
+    duplicated.
+    Reconciliation (b) - custody
+    wiring: watcher.purge_chat
+    shipped unwired in the slice; at
+    banking it was wired into
+    chats/service.py delete_chat
+    alongside the P-118 vision purge
+    and the P-120 AttachmentStore
+    purge, in the same guarded
+    lazy-import idiom (banking heal
+    commit 3c4e9ea), with a pinning
+    test (test_chat_deletion_purges_
+    watch_registrations) added to
+    the P-121 battery at banking: a
+    deleted chat's watch
+    registrations and ingested
+    records are purged; a surviving
+    chat's are untouched. The
+    battery on the merged tree is
+    20 collected: 19 passed + 1
+    skipped - the lazy-absence
+    honesty test skips by design
+    when the attachments module IS
+    present (recon (a) covers that
+    road end-to-end instead).
+    Combined batteries on the merged
+    tree by the banking coordinator:
+    vision fence 82 passed / 1
+    skipped / 0 failed (P-117 15 +
+    P-118 17 + P-119 16 + P-120 15 +
+    P-121 19 passes + its 1 design
+    skip - exact).
+    Forge confirmation suite:
+    4443 passed / 5 skipped /
+    0 failed in 325.03s - a clean
+    run with no contention re-runs
+    needed (a Mythic Coder suite
+    shared the machine throughout).
+    (= 4424 P-120 confirmation + 18
+    P-121 battery passes + 1 banking
+    pinning test; skipped 5 = the
+    standing 4 + the honesty test's
+    design skip.) Log
+    /tmp/p121_confirm.log on
+    purplelongship.
+    Derived scope ACCEPTED as
+    banked. Declined plainly, with
+    evidence in the slice doc: no
+    live watcher daemon (no such
+    machinery exists in-tree - the
+    scan is a deliberate polling
+    operation, stated plainly), no
+    semantic caption provider, no
+    OCR, no screen capture / camera
+    flow. Ingestion claims sniffed
+    truth only: no caption is
+    generated and no safety scan is
+    performed or claimed.
+    Named-open carried items (not
+    dropped): a real local semantic
+    caption provider; OCR; capture /
+    camera; a live watcher daemon
+    if honest machinery ever lands.
+    Next in roadmap order: P-122
+    (Part VIII continues).
