@@ -6925,3 +6925,85 @@ P-104 BANKED - Voice Auto-Projection (Part VII)
     L3 (P-091 citizen registration)
     remains open by design.
     Next in roadmap order: P-105.
+P-105 BANKED - Voice Mishearing Truth (Part VII)
+    - team-02 commit 41c9dd4 merged (no-ff)
+    into yrsa/two-mirrors-build as 2a24cf8
+    and pushed; ls-remote verified
+    2a24cf89aaa36c74d8216325d7e43f64b0e85df0.
+    Evidence (team-02 worktree
+    hidden_files/P105_EVIDENCE.md):
+    battery 21 passed, neighbours
+    249 passed / 2 skipped (fence
+    S501-S514 + P-010/P-091/P-101/P-102/
+    P-103; P-104's battery could not run
+    on its base, reconciled at this
+    merge; skips are pre-existing
+    environmental optionals), team full
+    suite 4159 passed / 4 skipped /
+    0 failed (= 4138 + 21 exact, on the
+    c53d053 base).
+    Derived scope ACCEPTED by the keeper:
+    P-105 is the census VX-11 truth layer -
+    the roadmap gives Part VII only its
+    part line. NOT taken, with reasons
+    recorded in the slice doc: L3
+    registration, VX-12, VX-13.
+    Slice:
+    src/runmal/voice/session.py
+    (WordConfidence + transcript_words on
+    the turn record, persisted verbatim
+    from S503 TranscriptWord.probability;
+    tolerant legacy load),
+    src/runmal/voice/mishearing.py (new,
+    low-confidence detection under a
+    predeclared 0.5 threshold,
+    needs_repeat as data; versioned JSON
+    replacement lexicon whose output is a
+    SUGGESTED correction view - the stored
+    transcript is never rewritten),
+    src/runmal/voice/mishearing_router.py
+    (new, GET session mishearings
+    owner-scoped 404; GET/PUT/DELETE
+    lexicon, 422 roads),
+    src/runmal/voice/router.py (manual
+    /turns accepts optional
+    transcript_words, malformed -> 422),
+    src/runmal/app.py,
+    src/runmal/voice/__init__.py,
+    tests/test_p105_voice_mishearing.py
+    (21 tests),
+    docs/VOICE_MISHEARING_2026-11-07.md,
+    clean-room log append (+1). 9 files,
+    +988/-0.
+    Migration: NONE (head stays 0041).
+    Combined batteries on the merged
+    tree: 109 passed / 0 failed
+    (28 + 24 + 19 + 17 + 21). Log
+    hidden_files/p105_combined.log
+    (forge) on purplelongship.
+    Forge confirmation suite:
+    4176 passed / 4 skipped / 0 failed
+    in 217.21s, exit 0 - exact match to
+    expectation (= 4155 + 21), no
+    contention re-runs needed.
+    Merge heals: conflicts in app.py,
+    voice/__init__.py and the clean-room
+    log resolved as additive unions
+    (P-104 and P-105 entries/imports kept
+    exactly once each); session.py
+    auto-merged and verified to carry
+    BOTH P-104 auto_project and P-105
+    transcript_words.
+    Honest limitations carried:
+    confidence is the backend's own
+    uncalibrated estimate, persisted
+    verbatim; turns with no word evidence
+    report has_confidence_evidence false,
+    never "all confident"; detection is
+    data, not dialogue - no character
+    asks for a repeat; P-103 projection
+    still lands the original transcript
+    unmarked; the lexicon is whole-word
+    only and install-wide; no UI renders
+    the markings.
+    Next in roadmap order: P-106.
