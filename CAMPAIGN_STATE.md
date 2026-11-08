@@ -8557,3 +8557,115 @@ P-119 BANKED - Vision Provider Selection + Capability Truth (Part VIII)
     / camera / OCR / attachments.
     Next in roadmap order: P-120
     (Part VIII continues).
+P-120 BANKED - Image Attachments on Chat Messages (Part VIII)
+    PART VIII continues (fourth slice).
+    - team-02 commit ee6a943 merged (no-ff)
+    into yrsa/two-mirrors-build as 6b56ef9
+    (parents 09dc4dd + ee6a943); banking
+    record commit follows this entry and
+    is pushed with the merge; ls-remote
+    verification is reported in the keeper
+    run log.
+    Evidence (team-02 worktree
+    hidden_files/P120_EVIDENCE.md):
+    battery 15 passed / 0 failed;
+    neighbours 132 passed / 0 failed
+    (P-117, P-118, s107, P-068, P-023,
+    P-075 fences); team full suite
+    4408 passed / 4 skipped / 0 failed
+    on its base 8065234 (P-118 banking
+    record; P-119 is NOT in that base,
+    reconciled at this merge in roadmap
+    order). Expectation check:
+    4393 base + 15 new = 4408 - exact
+    match. s503 solo 4/4 green.
+    Slice scope (DERIVED, as Part VIII's
+    per-slice definitions are derived -
+    the filed roadmap gives Part VIII
+    only its part line): the attachments
+    truth layer - vision_attachments.json
+    index plus per-attachment byte files
+    named by id with the extension taken
+    from the sniffed format; total
+    refusals storing nothing (empty,
+    over the shared 16 MiB image cap,
+    non-image bytes); owner-scoped
+    attachment roads (create / list /
+    read / content / delete) under
+    /vision/attachments; the P-117
+    describe road gains source_kind
+    attachment as a third named source;
+    an additive attachments view on the
+    message-history surface; custody
+    purges on message deletion and on
+    chat deletion (the P-118 lazy
+    custody-purge idiom).
+    Slice: src/runmal/vision/
+    attachments.py (new),
+    src/runmal/vision/router.py,
+    src/runmal/vision/service.py,
+    src/runmal/vision/__init__.py,
+    src/runmal/chats/router.py,
+    src/runmal/chats/service.py,
+    tests/test_p120_chat_image_
+    attachments.py (new, 15 tests),
+    docs/CHAT_IMAGE_ATTACHMENTS_
+    2026-11-08.md (new), clean-room log
+    append (+1). 9 files, +1005/-6.
+    Migration: NONE (head stays 0041;
+    the provisional 0042 was NOT needed
+    and NOT taken - attachments are not
+    SQL-queryable and do not ride the
+    chat tables' backups, like the
+    P-117 vision store).
+    Merge conflicts in the clean-room
+    log, vision/__init__.py and
+    vision/router.py, all resolved as
+    additive unions at merge time by
+    the banking coordinator; the merged
+    tree carries P-119's entries AND
+    P-120's entries, each exactly once,
+    and both road sets (GET
+    /vision/providers AND the
+    /vision/attachments roads). The
+    merged tree was verified:
+    chats/service.py carries P-118's
+    vision_link purge_chat AND P-120's
+    AttachmentStore purge idiom (chat
+    delete + message delete) together,
+    and py_compile clean on all touched
+    modules. No banking heal needed.
+    Combined batteries on the merged
+    tree by the banking coordinator:
+    31 passed / 0 failed (P-119 battery
+    16 + P-120 battery 15 - exact).
+    Forge confirmation suite:
+    4424 passed / 4 skipped / 0 failed
+    in 239.40s - a clean run with no
+    contention re-runs needed.
+    (= 4409 P-119 confirmation + 15
+    P-120 battery - exact.) Log
+    /tmp/p120_confirm.log on
+    purplelongship.
+    Derived scope ACCEPTED as banked.
+    Declined plainly, with evidence in
+    the slice doc: no semantic caption
+    provider and no OCR (no honest
+    in-tree engine exists for either);
+    no capture or camera surface (no
+    in-tree surface exists); the folder
+    watcher is deferred as the named
+    follow-on - attachments are its
+    destination, and it had no
+    destination until this slice.
+    Attaching performs no content
+    moderation: bytes are sniffed as
+    images only, and no record claims
+    a safety scan.
+    Named-open carried items (not
+    dropped): a real local semantic
+    caption provider; OCR; capture /
+    camera; the folder watcher as the
+    named follow-on.
+    Next in roadmap order: P-121
+    (Part VIII continues).
