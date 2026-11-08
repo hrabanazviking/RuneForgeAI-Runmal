@@ -22,6 +22,19 @@ value. Book-level unknowns in ``extra`` ride back as well, under
 The native shape is the clean-data rule instead: it carries only
 typed fields plus ``extra``, in a fixed full set -- no ``raw``,
 no import ``report`` and no ``unmappable_values``.
+
+P-142 (Part IX, DERIVED scope) amends the overlay law for
+one origin: a parse whose ``source_format`` is native has
+no Voxta raw to overlay -- its ``raw`` IS the native dict,
+so overlaying it leaked every native key verbatim beside
+its Voxta spelling (P-133 finding F1, re-probed on the
+P-142 base: the hybrid even re-parsed as native, so the
+stateless road never produced a Voxta file from a native
+one at all). For a native-origin file the export is the
+clean typed-fields conversion P-133's stored export
+already produced for the same content: it starts from an
+empty object and treats every element's ``raw`` as empty.
+The Voxta-origin overlay above is unchanged, byte for byte.
 """
 
 from __future__ import annotations
@@ -29,7 +42,7 @@ from __future__ import annotations
 import copy
 import json
 
-from .filemodels import FLOW_TO_VOXTA, STYLE_TO_VOXTA, ScenarioFile
+from .filemodels import FLOW_TO_VOXTA, SOURCE_NATIVE, STYLE_TO_VOXTA, ScenarioFile
 
 
 def _put(obj, raw, primary, alias, value, emit):
@@ -44,6 +57,22 @@ def _put(obj, raw, primary, alias, value, emit):
         obj[alias] = value
     elif primary in raw or emit:
         obj[primary] = value
+
+
+def _rawless(element):
+    """A shallow copy of *element* with ``raw`` cleared.
+
+    The native-origin export path (P-142): a native
+    element's ``raw`` holds its native spelling, which is
+    not Voxta carriage, so the element exporters must see
+    no raw at all -- exactly the reconstruction P-133's
+    stored export performs before calling these exporters.
+    The typed fields ride on the copy untouched; the
+    original element is not mutated.
+    """
+    clone = copy.copy(element)
+    clone.raw = {}
+    return clone
 
 
 def _role_object(role) -> dict:
@@ -102,9 +131,19 @@ def export_voxta(scenario: ScenarioFile) -> dict:
     Starts from a deep copy of ``scenario.raw`` and overlays the
     normalized fields in a fixed order; keys already in raw keep
     their position and new keys append in overlay order.
+
+    A native-origin scenario (P-142) has no Voxta raw to
+    overlay: its ``raw`` IS the native dict, so the export
+    starts from an empty object, treats every element's
+    ``raw`` as empty, and writes only the Voxta spellings
+    from the typed fields -- the clean conversion P-133's
+    stored export produces for the same content.
     """
-    raw = scenario.raw or {}
-    obj: dict = copy.deepcopy(scenario.raw) if scenario.raw else {}
+    native_origin = scenario.source_format == SOURCE_NATIVE
+    raw = {} if native_origin else (scenario.raw or {})
+    obj: dict = {} if native_origin else (
+        copy.deepcopy(scenario.raw) if scenario.raw else {}
+    )
     # 1. name: always.
     obj["name"] = scenario.name
     # 2. description.
@@ -136,15 +175,25 @@ def export_voxta(scenario: ScenarioFile) -> dict:
         obj["systemPrompt"] = scenario.system_prompt_text
     # 8. roles.
     if scenario.roles or "roles" in raw:
-        obj["roles"] = [_role_object(role) for role in scenario.roles]
+        roles = (
+            [_rawless(role) for role in scenario.roles]
+            if native_origin
+            else scenario.roles
+        )
+        obj["roles"] = [_role_object(role) for role in roles]
     # 9. bootstrap_messages.
+    messages = (
+        [_rawless(msg) for msg in scenario.bootstrap_messages]
+        if native_origin
+        else scenario.bootstrap_messages
+    )
     _put(
         obj,
         raw,
         "bootstrapMessages",
         "bootstrap",
-        [_bootstrap_message_object(msg) for msg in scenario.bootstrap_messages],
-        bool(scenario.bootstrap_messages),
+        [_bootstrap_message_object(msg) for msg in messages],
+        bool(messages),
     )
     # 10. impersonation.
     impersonation_raw = raw.get("impersonation")
@@ -209,7 +258,12 @@ def export_voxta(scenario: ScenarioFile) -> dict:
     )
     # 15. contexts.
     if scenario.contexts or "contexts" in raw:
-        obj["contexts"] = [_context_object(ctx) for ctx in scenario.contexts]
+        contexts = (
+            [_rawless(ctx) for ctx in scenario.contexts]
+            if native_origin
+            else scenario.contexts
+        )
+        obj["contexts"] = [_context_object(ctx) for ctx in contexts]
     # 16. parent_ref.
     _put(obj, raw, "parent", "parentScenario", scenario.parent_ref, bool(scenario.parent_ref))
     # 17. thumbnail_ref.
