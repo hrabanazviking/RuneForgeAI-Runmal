@@ -1,0 +1,254 @@
+"""Voice repeat-request signal (P-108, Part VII - DERIVED scope, VX-11).
+
+The Voxta census row VX-11: mishearing is handled, not
+hidden - characters can detect misheard words and ask the
+user to repeat. Part VII has built the row in halves, each
+honest about what it is: P-105 detection (the truth layer:
+per-word confidence persisted, needs_repeat as data),
+P-106 the receipt (the mark in projected provenance and
+status), P-107 the rendering (confidence markings in the
+founding web thread). The remaining named half - "ask the
+user to repeat" - splits in two:
+
+- The CHARACTER half (a character speaks the ask inside
+  the dialogue) stays open: the live responder is P-102's
+  honest-unavailable seam, and fabricating the ask would
+  cross it. This module does not fabricate dialogue, does
+  not create a chat message, and never calls a responder.
+- The HOST half (something outside the dialogue learns a
+  repeat is needed and decides what to do) is what lands
+  here, as a SIGNAL: pending repeat requests derived from
+  P-105's truth, plus a durable record of which requests
+  a host has already handled, so two hosts sharing one
+  install do not ask twice.
+
+Laws held (see docs/VOICE_REPEAT_REQUESTS_2026-11-08.md):
+
+- ONE TRUTH SOURCE: every fact here is derived from
+  runmal.voice.mishearing.turn_mishearing - the threshold,
+  the bands, the suggestion view. Nothing is recomputed
+  and no second threshold exists, so the signal can never
+  disagree with P-105's view, P-106's receipt or P-107's
+  rendering.
+- NO EVIDENCE IS NOT A REQUEST: a turn with no recorded
+  word evidence has needs_repeat False under P-105's law,
+  so it never appears here - the signal never invents
+  doubt.
+- ACKNOWLEDGEMENT IS HANDLING, NOT TRUTH: the store below
+  records that a host acted (and when, and an optional
+  host note). Detection is recomputed from the evidence
+  on every read; acknowledging never changes it, and
+  clearing an acknowledgement returns the request to
+  pending with the truth untouched.
+- CONTENT LAW UNCHANGED: the stored transcript is never
+  rewritten; the suggested text rides as a view only.
+
+Storage is one versioned JSON document in the voice house
+pattern (the P-105 lexicon stance); NO migration - the
+head stays 0041.
+"""
+
+from __future__ import annotations
+
+import json
+import os
+from datetime import UTC, datetime
+from pathlib import Path
+
+from runmal.voice.mishearing import (
+    LOW_CONFIDENCE_THRESHOLD,
+    turn_mishearing,
+)
+
+ACK_VERSION = 1
+ACK_FILENAME = "voice_repeat_acknowledgements.json"
+
+STATE_PENDING = "pending"
+STATE_ACKNOWLEDGED = "acknowledged"
+
+
+def acks_path(data_dir: Path | None = None) -> Path:
+    base = data_dir or Path(os.environ.get("RUNMAL_DATA_DIR", ".runmal-data"))
+    return base / ACK_FILENAME
+
+
+def _now_iso() -> str:
+    return datetime.now(UTC).isoformat()
+
+
+# ------------------------------------------------------------ views
+
+
+def turn_repeat_request(turn, pairs=None, ack=None) -> dict | None:
+    """One turn's repeat request, or None when it is not one.
+
+    A turn is a request exactly when P-105's own view says
+    needs_repeat. ``ack`` is the acknowledgement record for
+    this turn ({"acknowledged_at": ..., "note": ...}) or
+    None; it decides the state field and nothing else.
+    """
+    view = turn_mishearing(turn, pairs or {})
+    if not view["needs_repeat"]:
+        return None
+    handled = bool(ack)
+    return {
+        "turn_no": view["turn_no"],
+        "stt_backend": view["stt_backend"],
+        "state": STATE_ACKNOWLEDGED if handled else STATE_PENDING,
+        "low_confidence_words": view["low_confidence_words"],
+        "low_confidence_count": view["low_confidence_count"],
+        "word_count": view["word_count"],
+        "min_probability": view["min_probability"],
+        "mean_probability": view["mean_probability"],
+        "transcript_text": view["transcript_text"],
+        "suggested_text": view["suggested_text"],
+        "replacements_applied": view["replacements_applied"],
+        "acknowledged_at": (ack or {}).get("acknowledged_at", ""),
+        "acknowledged_note": (ack or {}).get("note", ""),
+    }
+
+
+def session_repeat_requests(session, pairs=None, store=None) -> dict:
+    """One session's repeat-request signal, as data (pure
+    apart from reading ``store``'s in-memory records).
+
+    The signal a host polls: has_pending / pending_count
+    say whether anything still needs a repeat; requests
+    lists every request in turn order, pending and
+    acknowledged alike - the acknowledged ones are the
+    record that a host already acted, which is the point.
+    """
+    acks = store.acks_for(session.session_id) if store is not None else {}
+    requests = []
+    for turn in session.turns:
+        request = turn_repeat_request(
+            turn, pairs, acks.get(int(turn.turn_no)))
+        if request is not None:
+            requests.append(request)
+    pending = [r for r in requests if r["state"] == STATE_PENDING]
+    return {
+        "session_id": session.session_id,
+        "chat_id": session.chat_id,
+        "threshold": LOW_CONFIDENCE_THRESHOLD,
+        "has_pending": bool(pending),
+        "pending_count": len(pending),
+        "acknowledged_count": len(requests) - len(pending),
+        "pending_turns": [r["turn_no"] for r in pending],
+        "requests": requests,
+    }
+
+
+# ------------------------------------------------------------ store
+
+
+class AcknowledgementStore:
+    """The host handling record: a versioned JSON document.
+
+    Install-wide, like the P-105 lexicon (stated plainly -
+    not per-host): two hosts sharing one install share one
+    handling record, which is precisely the do-not-ask-
+    twice protection. Load is tolerant, the voice house
+    pattern: a missing file is an empty record; a corrupt
+    document reads as empty; a malformed entry is skipped -
+    the store never bricks the voice surface.
+    """
+
+    def __init__(self, path: Path | None = None):
+        self.path = path or acks_path()
+        # session_id -> {turn_no (int): {"acknowledged_at", "note"}}
+        self._acks: dict[str, dict[int, dict]] = {}
+        self._load()
+
+    def _load(self) -> None:
+        if not self.path.exists():
+            return
+        try:
+            doc = json.loads(self.path.read_text())
+            sessions = (
+                doc.get("acknowledgements") if isinstance(doc, dict)
+                else None)
+            if not isinstance(sessions, dict):
+                return
+            for session_id, turns in sessions.items():
+                if not isinstance(turns, dict):
+                    continue
+                loaded: dict[int, dict] = {}
+                for raw_no, record in turns.items():
+                    if not isinstance(record, dict):
+                        continue
+                    try:
+                        turn_no = int(raw_no)
+                    except (TypeError, ValueError):
+                        continue
+                    loaded[turn_no] = {
+                        "acknowledged_at": str(
+                            record.get("acknowledged_at", "") or ""),
+                        "note": str(record.get("note", "") or ""),
+                    }
+                if loaded:
+                    self._acks[str(session_id)] = loaded
+        except (ValueError, TypeError, OSError):
+            self._acks = {}
+
+    def save(self) -> None:
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        doc = {
+            "version": ACK_VERSION,
+            "acknowledgements": {
+                session_id: {
+                    str(turn_no): self._acks[session_id][turn_no]
+                    for turn_no in sorted(self._acks[session_id])
+                }
+                for session_id in sorted(self._acks)
+                if self._acks[session_id]
+            },
+        }
+        self.path.write_text(json.dumps(doc, indent=2, sort_keys=True))
+
+    def acks_for(self, session_id: str) -> dict[int, dict]:
+        """This session's records, keyed by turn number."""
+        return {
+            turn_no: dict(record)
+            for turn_no, record in self._acks.get(session_id, {}).items()
+        }
+
+    def get(self, session_id: str, turn_no: int) -> dict | None:
+        record = self._acks.get(session_id, {}).get(int(turn_no))
+        return dict(record) if record is not None else None
+
+    def acknowledge(
+        self, session_id: str, turn_no: int,
+        note: str = "", *, at: str = "",
+    ) -> dict:
+        """Record that a host handled one request.
+
+        Idempotent - first acknowledgement wins: when a
+        record already exists it is returned unchanged, so
+        the receipt names when a host FIRST acted and a
+        second host's call changes nothing (and never
+        overwrites the first host's note).
+        """
+        existing = self.get(session_id, turn_no)
+        if existing is not None:
+            return existing
+        record = {
+            "acknowledged_at": at or _now_iso(),
+            "note": str(note or ""),
+        }
+        self._acks.setdefault(session_id, {})[int(turn_no)] = record
+        self.save()
+        return dict(record)
+
+    def clear(self, session_id: str, turn_no: int) -> bool:
+        """Remove one record (housekeeping: absence is not
+        an error). Returns whether a record existed. The
+        request itself, if its evidence still says so,
+        returns to pending - handling removed, truth kept."""
+        turns = self._acks.get(session_id)
+        if not turns or int(turn_no) not in turns:
+            return False
+        del turns[int(turn_no)]
+        if not turns:
+            del self._acks[session_id]
+        self.save()
+        return True
