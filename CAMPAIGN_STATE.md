@@ -10524,3 +10524,95 @@ P-136 BANKED - Binding Plan Preview (Part IX)
     PART IX OPEN (P-131..P-154).
     Next in roadmap order: P-137
     (Part IX, in roadmap order).
+P-137 BANKED - Scenario Definition Duplication (Part IX)
+    Part IX seventh slice.
+    - team-01 commit 8ea0afb merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 6f4d679 (parents d93521f +
+    8ea0afb); merge pushed and
+    ls-remote verified at 6f4d679
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only
+    its part line (P-131..P-154), no
+    per-slice entries; the slice scope
+    is derived from the in-tree record
+    (P-136 weighed duplication and
+    declined it only for want of a
+    naming law; the characters S303
+    " (copy)" law answers that in-tree),
+    stated plainly as derived in the
+    slice doc and the evidence.
+    Evidence (team-01 worktree
+    hidden_files/P137_EVIDENCE.md):
+    battery 12 passed / 0 failed;
+    neighbours 161 passed / 0 failed
+    (P-131 + P-132 + P-133 + P-134
+    + P-135 + P-026 batteries; P-136
+    battery absent from the team base
+    and honestly not run there); team
+    full suite 4718 passed / 5 skipped
+    / 0 failed = 4706 banked base + 12
+    battery - exact.
+    Combined batteries on the merged
+    tree: 184 passed / 0 failed
+    (P-131 29 + P-132 18 + P-133 24
+    + P-134 12 + P-135 16 + P-136 11
+    + P-137 12 + P-026 62).
+    Forge confirmation suite on the
+    merged tree: 4729 passed /
+    5 skipped / 0 failed - a clean
+    run in 285.19s with no contention
+    re-runs needed. Expectation check:
+    4717 + 12 = 4729 - exact match,
+    as counted from the log. Log
+    hidden_files/P137_FORGE_CONFIRM.log
+    on purplelongship.
+    Slice scope: owner-scoped
+    duplication of one stored
+    definition - ScenarioStore.duplicate
+    + POST /scenarios/{definition_id}/duplicate
+    (201 full record, 404 unknown or
+    foreign); the clone is faithful
+    (definition + P-131 import report
+    + source_format preserved exactly),
+    fresh id, revision restarts at 1,
+    name gains " (copy)" per the S303
+    law on record and definition name;
+    scenarios/store.py (additive verb),
+    scenarios/router.py (additive road),
+    scenarios/__init__.py (additive map
+    line), tests/test_p137_definition_duplication.py
+    (new), docs/SCENARIO_DUPLICATION_2026-11-08.md
+    (new), clean-room log append (+1).
+    Honest limitations: no organisation
+    carry (clone reads with the computed
+    unorganised default; organisation
+    document byte-untouched), no binding
+    carry (the source's chats stay bound
+    to the source), revision restarts
+    at 1 by design, and duplicating a
+    copy appends " (copy)" again.
+    Migration: NONE (head stays 0041).
+    Merge: conflicts in
+    scenarios/router.py +
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    resolved as pure additive unions
+    keeping BOTH P-136 and P-137 work
+    exactly once each (scenarios/
+    __init__.py and scenarios/store.py
+    merged clean); merged router
+    grep-verified carrying P-131 CRUD
+    + P-132 binding + P-133 export
+    + P-134 organisation + P-135
+    binding-read + P-136 bind-plan
+    + P-137 duplicate roads (GET
+    /scenarios/bindings before the
+    {definition_id} roads);
+    py_compile clean.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-138
+    (Part IX, in roadmap order).
