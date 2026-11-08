@@ -88,7 +88,11 @@ def _role_playback_factory(request: Request):
 
 
 @router.post("/voice/sessions/{session_id}/live/start", status_code=status.HTTP_201_CREATED)
-async def start_live(session_id: str, request: Request) -> dict:
+async def start_live(
+    session_id: str,
+    request: Request,
+    db: AsyncSession = Depends(get_session),
+) -> dict:
     store, session = _session_or_404(request, session_id)
     controller = _controller(request)
     if not session.active:
@@ -100,7 +104,7 @@ async def start_live(session_id: str, request: Request) -> dict:
             status_code=status.HTTP_409_CONFLICT, detail="voice session is already live"
         )
     try:
-        return controller.start(
+        result = controller.start(
             session,
             store=store,
             playback_factory=(
@@ -111,6 +115,15 @@ async def start_live(session_id: str, request: Request) -> dict:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc)
         ) from None
+    # P-112: starting live back-projects an opted-in session's
+    # pre-existing turns (the P-104 limitation this closes:
+    # live start was the one projection-aware road that never
+    # walked the service). The async host layer decides, the
+    # controller stays synchronous/DB-free, and the report
+    # rides only when a projection was attempted - exactly
+    # the speak road's contract, through the same helper.
+    result = await _maybe_autoproject(request, controller, session_id, db, result)
+    return result
 
 
 @router.get("/voice/sessions/{session_id}/live")

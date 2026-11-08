@@ -9,7 +9,9 @@ live controller is synchronous and DB-free, so no projection
 hook lives inside it. Auto-projection lives HERE, in the
 async host layer, and the HTTP roads (live speak / live stop
 / the P-101 manual turns road) call it after a turn has been
-recorded and persisted:
+recorded and persisted; since P-112 the live start road also
+calls it, back-projecting a session's pre-existing turns at
+the moment it goes live:
 
 - opt-in per session: ``VoiceSession.auto_project`` (durable
   in the P-101 JSON store, default False). A session that
