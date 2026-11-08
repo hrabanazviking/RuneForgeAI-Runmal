@@ -10050,3 +10050,158 @@ P-131 BANKED - Scenario Definitions: the Scenario Truth Layer (Part IX)
     PART IX OPEN (P-131..P-154).
     Next in roadmap order: P-132
     (Part IX, in roadmap order).
+P-132 BANKED - Scenario-to-Chat Binding (Part IX)
+    Part IX's second slice.
+    - team-02 commit 7397c2c merged
+    (no-ff) into yrsa/two-mirrors-build
+    as beefd17 (parents 1341c1d +
+    7397c2c); merge pushed and
+    ls-remote verified at beefd17
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only
+    its part line (P-131..P-154), no
+    per-slice entries; the slice scope
+    is derived from Runmal's own
+    in-tree record (P-131's slice doc
+    naming instantiation / seeding as
+    the next slice's seam via the
+    P-093 seed_variables contract),
+    stated plainly as derived in the
+    slice doc and the evidence.
+    The binding rides that contract:
+    a definition's initial flags and
+    variables seed through P-093's
+    seed_variables under writer kind
+    "scenario" (MISSING keys only -
+    live state is never overwritten),
+    its bootstrap lines land as the
+    chat's opening messages through
+    the chat service with P-075
+    provenance, and the binding
+    record is written last from what
+    actually landed. Unbind removes
+    only the record; seeded messages
+    and variables are the chat's own
+    truth and stay, and the DELETE
+    answer says so.
+    Evidence (team-02 worktree
+    hidden_files/P132_EVIDENCE.md):
+    battery 18 passed / 0 failed;
+    neighbours combined run 203
+    passed / 0 failed (the battery +
+    P-131's battery + P-026 + P-075 +
+    P-079 + P-093 + P-012); team full
+    suite 4625 passed / 5 skipped /
+    0 failed on its base be86774
+    (P-130 banking record; P-131 is
+    NOT in its base). Arithmetic:
+    4607 (P-130 forge confirmation)
+    + 18 battery = 4625 - exact.
+    Reconciliation (verified at
+    banking): the team worktree
+    carried P-131's
+    src/runmal/scenarios/store.py
+    byte-identical to the banked
+    version (sha256 e5b15a85...,
+    landed by on-device copy, no
+    tool re-emission), and its
+    router / __init__ changes are
+    the ground P-132's hunks append
+    to - most of the apparent delta
+    vs be86774 is P-131 itself. The
+    merged tree's store.py was
+    verified byte-identical to
+    P-131's banked version (same
+    sha256). The true P-132 delta
+    over P-131: 7 files, +1324/-4.
+    Combined batteries on the merged
+    tree: P-131 battery + P-132
+    battery 47 passed / 0 failed
+    (29 + 18 - exact match); the
+    P-132 neighbour fence (both
+    batteries + P-026 + P-075 +
+    P-079 + P-093 + P-012) 203
+    passed / 0 failed.
+    Forge confirmation suite on the
+    merged tree: 4654 passed /
+    5 skipped / 0 failed - a clean
+    run in 263.85s with no contention
+    re-runs needed (no s503 STT timing
+    contract or P-077 tripwire failure
+    occurred). Expectation check:
+    4636 (P-131 banking confirmation)
+    + 18 = 4654 - exact match, as
+    counted from the log. Log
+    hidden_files/P132_FORGE_CONFIRM.log
+    on purplelongship.
+    No in-slice engine defect found.
+    The team's only corrections were
+    battery-vs-contract (seeded
+    messages carry position None -
+    the append road's legacy-ordering
+    law; seeded-key order follows
+    the stored definition's key
+    order, P-131's store writing
+    sort_keys), pinned as such in
+    the battery; no engine change.
+    Slice scope: src/runmal/scenarios/
+    binding.py (new - versioned
+    scenario_bindings.json store,
+    materialisation plan, bind
+    service), src/runmal/scenarios/
+    router.py (three binding roads
+    appended - POST
+    /scenarios/{definition_id}/bind
+    201/404/409/422, GET + DELETE
+    /scenarios/bindings/{chat_id}),
+    src/runmal/scenarios/__init__.py
+    (binding exports),
+    pyproject.toml (one B008
+    per-file-ignore line for
+    scenarios/router.py),
+    tests/test_p132_scenario_binding.py
+    (new, 18 tests),
+    docs/SCENARIO_BINDING_2026-11-08.md
+    (new), clean-room log append (+1).
+    Migration: NONE (head stays 0041;
+    the binding rides the house JSON
+    pattern - scenario_bindings.json;
+    provisional 0042 NOT taken).
+    Merge: conflicts in 3 files,
+    all resolved as additive unions
+    keeping BOTH slices' work exactly
+    once - CLEAN_ROOM_LOG
+    (append-vs-append; the P-131 and
+    P-132 entries each kept exactly
+    once), scenarios/router.py and
+    scenarios/__init__.py (the team
+    versions verified as supersets:
+    P-131's five CRUD roads and
+    exports verbatim, plus P-132's
+    binding roads and exports).
+    Merged router grep-verified
+    carrying BOTH P-131's CRUD roads
+    AND P-132's binding roads;
+    py_compile clean on all touched
+    modules. No banking heal needed.
+    Declined candidates (recorded in
+    the slice doc): store-to-file
+    export by id - the one missing
+    leg of import / export parity -
+    named the natural P-133
+    candidate; scenario library
+    organisation (the P-073 SQL
+    pattern does not transfer to a
+    JSON store; organisation follows
+    consumption); playback / runtime
+    / condition evaluation (no
+    machinery exists); executing
+    stored scripting (refused
+    absolutely under P-027).
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-133
+    (Part IX, in roadmap order).
