@@ -35,6 +35,8 @@ from runmal.prompt.router import router as prompt_router
 from runmal.scenarios.router import router as scenarios_router
 from runmal.tools.router import router as tools_router
 from runmal.voice.router import router as voice_router
+from runmal.voice.live import LiveVoiceController
+from runmal.voice.live_router import router as live_router
 from runmal.voice.router import voice_page
 from runmal.web.router import _HERE as _WEB_DIR
 from runmal.web.router import router as web_router
@@ -65,6 +67,9 @@ def create_app(
     app = FastAPI(title="Rúnmál", version=__version__)
     app.state.session_factory = session_factory or default_session_factory()
     _reg = plugin_service.build_registry()
+    _live_controller = LiveVoiceController()
+    _live_controller.attach_app(app)
+    app.state.live_voice_controller = _live_controller
     plugin_service.set_default_registry(_reg)
     app.state.plugin_registry = _reg
 
@@ -148,6 +153,11 @@ def create_app(
         dependencies=[Depends(require_local_auth)],
     )
     app.get("/voice", response_class=None)(voice_page)
+    app.include_router(
+        live_router,
+        prefix="/api/v1",
+        dependencies=[Depends(require_local_auth)],
+    )
     app.include_router(
         prompt_router,
         prefix="/api/v1",

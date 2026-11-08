@@ -230,6 +230,37 @@ class VoiceOrchestrator:
                 self._frame_hook(turn_id, played)
         return played
 
+    def speak_text(self, text: str) -> TurnRecord:
+        """Speak a known text as one turn (P-102, the live-host road).
+
+        The tail of a mic turn without STT/responder: allocates a
+        turn, runs the same _speak road (SYNTHESIZING -> SPEAKING
+        -> LISTENING, interruption and error recovery identical to
+        _run_turn), and returns the completed record. An empty
+        text is a quiet record, mirroring the mic road's empty
+        response. Playback-truth hooks fire exactly as for a mic
+        turn, so the S508 ledger subscribed by the host sees it.
+        """
+        turn_id = next(self._turn_counter)
+        record = TurnRecord(turn_id=turn_id)
+        self.turns.append(record)
+        self._cancel = threading.Event()
+        record.response_text = text
+        try:
+            if not text.strip():
+                self._set_state(VoiceState.LISTENING, turn_id, "empty text")
+                return record
+            self._speak(turn_id, record)
+            if record.interrupted:
+                self._finish_interruption(turn_id)
+            else:
+                self._set_state(VoiceState.LISTENING, turn_id)
+        except Exception as exc:  # recovery is a state, not a crash
+            record.error = f"{type(exc).__name__}: {exc}"
+            self._set_state(VoiceState.ERROR_RECOVERY, turn_id, record.error)
+            self._set_state(VoiceState.LISTENING, turn_id, "recovered")
+        return record
+
     # ------------------------------------------------------- interruption
 
     def interrupt(self, note: str = "barge-in") -> bool:
