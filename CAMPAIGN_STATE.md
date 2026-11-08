@@ -6798,3 +6798,64 @@ P-102 BANKED - Live Voice Orchestrator (Part VII)
     and /tmp/p102_forge_suite.log on
     purplelongship.
     Next in roadmap order: P-103.
+P-103 BANKED - Voice Turn Projection (Part VII)
+    - team-03 commit b7bc52e merged (no-ff)
+    into yrsa/two-mirrors-build as 7219996
+    and pushed; ls-remote verified
+    7219996697708ed3cebf2811d29425d82a00c944.
+    Evidence (team-03 worktree
+    hidden_files/P103_EVIDENCE.md):
+    battery 19 passed, neighbours
+    335 passed / 2 skipped, team full suite
+    4138 passed / 4 skipped / 0 failed
+    (on the reconciled 0e24e32 base).
+    Derived scope L2 ACCEPTED: the roadmap
+    gives Part VII only its part line;
+    P-103 is derived as the voice turn
+    projection that closes P-102
+    limitation L2 (session turns not
+    projected into chat messages).
+    Slice:
+    src/runmal/voice/projection.py (new,
+    planner + provenance builders under
+    the P-075/P-089 doctrine - origin kind
+    stays manual, via="voice_session";
+    unplayed text never lands, error turns
+    land no assistant message),
+    src/runmal/voice/projection_router.py
+    (new, POST project / GET projection),
+    src/runmal/voice/session.py
+    (projection state on VoiceTurnRecord
+    with tolerant from_dict),
+    src/runmal/app.py (wiring),
+    src/runmal/voice/__init__.py,
+    tests/test_p103_voice_projection.py
+    (19 tests),
+    docs/VOICE_TURN_PROJECTION_2026-11-07.md,
+    clean-room log append (+1). 8 files,
+    +943.
+    Migration: NONE (head stays 0041).
+    Combined batteries on the merged
+    tree: 71 passed / 0 failed
+    (28 + 24 + 19). Log
+    /tmp/p103_combined.log on
+    purplelongship.
+    Forge confirmation suite: raw
+    4137 passed / 4 skipped / 1 failed -
+    the one failure the P-077 longchat
+    timing tripwire under shared load,
+    solo re-run 17/17 green (contention,
+    not a defect); effective confirmation
+    4138 passed / 4 skipped / 0 failed
+    (= 4119 P-102 effective + 19, exact).
+    Logs /tmp/p103_confirm.log and
+    /tmp/p103_p077_solo.log on
+    purplelongship.
+    Honest limitations carried: projection
+    is explicit, not automatic - the
+    P-102 controller is synchronous and
+    DB-free by design, so projection is a
+    deliberate host act; L3 P-091 citizen
+    registration remains deliberate
+    host-explicit, unchanged.
+    Next in roadmap order: P-104.
