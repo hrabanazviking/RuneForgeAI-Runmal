@@ -27,7 +27,9 @@ Layered, provider-isolated pieces (see docs/VOICE_ARCHITECTURE.md):
   turns are recorded (P-104).
 - ``mishearing`` / ``mishearing_router`` — STT word-confidence
   truth: low-confidence detection + replacement suggestions
-  over the persisted evidence (P-105, VX-11).
+  over the persisted evidence (P-105, VX-11); the session
+  aggregate report - pooled statistics, often-missed words,
+  lexicon coverage (P-114).
 - ``repeat_requests`` / ``repeat_router`` - the repeat-request
   signal: pending requests derived from the P-105 truth +
   the durable host acknowledgement record (P-108, VX-11).

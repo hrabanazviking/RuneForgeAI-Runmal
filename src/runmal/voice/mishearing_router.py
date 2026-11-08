@@ -1,5 +1,6 @@
 """Voice mishearing HTTP surface (P-105): a session's
 mishearing truth (confidence evidence, low-confidence words,
+the P-114 session aggregate report,
 replacement suggestions) and the user replacement lexicon -
 on the founding ``/api/v1/voice`` road (bearer-gated like
 every API, wired in app.py).
@@ -56,6 +57,17 @@ async def get_voice_mishearings(
 ) -> dict:
     found = _session_or_404(request, session_id, owner_id)
     return mis_mod.session_mishearing(found, _replacement_store().pairs())
+
+
+@router.get("/voice/sessions/{session_id}/mishearing-report")
+async def get_voice_mishearing_report(
+    session_id: str,
+    request: Request,
+    owner_id: str = Depends(get_owner_id),
+) -> dict:
+    found = _session_or_404(request, session_id, owner_id)
+    return mis_mod.session_mishearing_report(
+        found, _replacement_store().pairs())
 
 
 @router.get("/voice/mishearing-replacements")

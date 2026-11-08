@@ -46,6 +46,8 @@ import json
 import os
 from pathlib import Path
 
+from runmal.voice.metrics import percentile
+
 #: Predeclared marking threshold (P-105 design): below even
 #: odds, the model's own estimate says the word is more
 #: likely wrong than right. Rúnmál's threshold, not a
@@ -176,7 +178,132 @@ def session_mishearing(session, pairs: dict[str, str] | None = None) -> dict:
             t["turn_no"] for t in turns if t["needs_repeat"]],
         "low_confidence_words_total": sum(
             t["low_confidence_count"] for t in turns),
+        "aggregate": mishearing_aggregate(session, pairs),
         "turns": turns,
+    }
+
+
+# ------------------------------------------------- session report
+
+
+def _word_group_key(text: str) -> str:
+    """The lexicon-law group key for one recorded word: the
+    punctuation-stripped, lower-cased core (the split
+    apply_replacements uses), so a frequent-low-word key IS
+    the key a lexicon entry must use. A token with no core
+    groups under its lower-cased text."""
+    _lead, core, _trail = _split_affixes(str(text or ""))
+    return core.lower() if core else str(text or "").lower()
+
+
+def mishearing_aggregate(session, pairs: dict[str, str] | None = None) -> dict:
+    """One session confidence evidence, aggregated (pure).
+
+    P-114: P-105 built the per-turn truth and the session
+    totals; this is the aggregate half P-110 built for
+    latency - pooled probability statistics, the
+    often-missed-word table and lexicon coverage, derived
+    ONLY from turn_mishearing views (one truth source: the
+    bands, the threshold and the probabilities are never
+    recomputed here). NO EVIDENCE IS NOT ZERO: with no
+    evidenced words every statistic is None and
+    has_confidence_evidence is False - never a 0.0 mean,
+    never all-confident.
+    """
+    pairs = pairs or {}
+    turn_views = [turn_mishearing(t, pairs) for t in session.turns]
+    probabilities: list[float] = []
+    low_total = 0
+    groups: dict[str, dict] = {}
+    backends: dict[str, dict] = {}
+    for view in turn_views:
+        slot = backends.setdefault(
+            view["stt_backend"], {"words": 0, "words_low": 0, "probs": []})
+        for entry in view["words"]:
+            prob = entry["probability"]
+            probabilities.append(prob)
+            slot["words"] += 1
+            slot["probs"].append(prob)
+            if entry["band"] != "low":
+                continue
+            low_total += 1
+            slot["words_low"] += 1
+            key = _word_group_key(entry["text"])
+            group = groups.setdefault(
+                key, {"count": 0, "turns": [], "probs": []})
+            group["count"] += 1
+            if view["turn_no"] not in group["turns"]:
+                group["turns"].append(view["turn_no"])
+            group["probs"].append(prob)
+    frequent = []
+    for key in sorted(groups, key=lambda k: (-groups[k]["count"], k)):
+        group = groups[key]
+        probs = group["probs"]
+        frequent.append({
+            "word": key,
+            "count": group["count"],
+            "turns": sorted(group["turns"]),
+            "min_probability": min(probs),
+            "mean_probability": round(sum(probs) / len(probs), 4),
+            "has_replacement": key in pairs,
+            "replacement": pairs.get(key),
+        })
+    covered = sorted(k for k in groups if k in pairs)
+    uncovered = sorted(k for k in groups if k not in pairs)
+    covered_occ = sum(groups[k]["count"] for k in covered)
+    count = len(probabilities)
+    return {
+        "has_confidence_evidence": bool(count),
+        "words_total": count,
+        "words_low": low_total,
+        "words_ok": count - low_total,
+        "low_rate": round(low_total / count, 4) if count else None,
+        "probability": {
+            "count": count,
+            "mean": round(sum(probabilities) / count, 4) if count else None,
+            "min": min(probabilities) if probabilities else None,
+            "p50": percentile(probabilities, 50) if count else None,
+            "p95": percentile(probabilities, 95) if count else None,
+        },
+        "frequent_low_words": frequent,
+        "lexicon_coverage": {
+            "low_occurrences": low_total,
+            "covered_occurrences": covered_occ,
+            "uncovered_occurrences": low_total - covered_occ,
+            "distinct_low_words": len(groups),
+            "covered_words": covered,
+            "uncovered_words": uncovered,
+        },
+        "backends": [
+            {
+                "stt_backend": name,
+                "words": slot["words"],
+                "words_low": slot["words_low"],
+                "mean_probability": (
+                    round(sum(slot["probs"]) / len(slot["probs"]), 4)
+                    if slot["probs"] else None),
+            }
+            for name, slot in sorted(backends.items())
+            if slot["words"]
+        ],
+    }
+
+
+def session_mishearing_report(session, pairs: dict[str, str] | None = None) -> dict:
+    """The light session report (pure): the session totals
+    session_mishearing already states, plus the aggregate -
+    and NO per-turn detail, for hosts that need the
+    judgement without the per-word record."""
+    view = session_mishearing(session, pairs)
+    return {
+        "session_id": view["session_id"],
+        "chat_id": view["chat_id"],
+        "threshold": view["threshold"],
+        "turns_total": view["turns_total"],
+        "turns_with_evidence": view["turns_with_evidence"],
+        "turns_needing_repeat": view["turns_needing_repeat"],
+        "low_confidence_words_total": view["low_confidence_words_total"],
+        "aggregate": view["aggregate"],
     }
 
 
