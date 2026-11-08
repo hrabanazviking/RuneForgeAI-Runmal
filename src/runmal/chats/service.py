@@ -780,6 +780,12 @@ async def delete_chat(session: AsyncSession, user_id: str, chat_id: str) -> bool
         remove_chat_undo(user_id, chat_id)
     except Exception:
         pass
+    try:
+        from runmal.prompt.vision_link import purge_chat
+
+        purge_chat(chat_id)
+    except Exception:
+        pass
     await _dispatch_plugin("chat.deleted", chat_id=chat_id, data={"chat_id": chat_id})
     return True
 
