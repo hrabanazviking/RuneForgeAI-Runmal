@@ -178,6 +178,7 @@ from runmal.scenarios.chatdeletepreview import (
     preview_chat_delete_impact,
 )
 from runmal.scenarios.custodycensus import census_binding_custody
+from runmal.scenarios.chatcoverage import census_chat_coverage
 from runmal.scenarios.reportcensus import census_unmappable
 from runmal.scenarios.definitioncensus import (
     DEFINITION_CUSTODY_STATES,
@@ -1257,3 +1258,46 @@ async def preview_scenario_candidate_for_chat(
             detail="chat not found",
         )
     return envelope
+
+
+# -------------------------------- chat coverage census (P-152)
+
+
+@router.get(
+    "/scenarios/chats/census", status_code=status.HTTP_200_OK
+)
+async def census_scenario_chat_coverage(
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """Every chat the caller holds, judged by coverage (P-152).
+
+    The chat coverage census over the caller's FULL
+    chat list: each chat rowed as the census subject -
+    identity facts only (id, title, group flag,
+    creation stamp) - carrying its standing binding as
+    P-144's census row verbatim (or None) and its
+    coverage_state, the plain reading of P-144's
+    verdict on the chat axis: unbound (no binding row
+    names it - the one census a never-bound chat
+    appears in at all), sound (current), definition_drift
+    (superseded or ahead) or definition_gone (stale -
+    the definition is gone, split from drift because a
+    drifted pin can be refreshed by unbind and bind
+    against a living definition while a gone definition
+    leaves nothing to rebind to). Orphaned bindings -
+    their chat gone - are counted in the totals and
+    row under no chat. Appended at the router's end
+    after the P-147 handler: the road is two segments
+    and no existing two-segment GET road has a variable
+    second segment, so "chats" / "census" can be
+    captured by no {definition_id} road and captures
+    none. Owner-scoped; an owner with no chats answers
+    the honest zero census and an owner with chats but
+    no bindings answers every chat unbound. No 404
+    case. Pure read: writes, binds, unbinds and
+    deletes nothing.
+    """
+    definitions = _store().list_for_owner(user_id)
+    return await census_chat_coverage(
+        session, _bindings(), user_id, definitions)
