@@ -6360,3 +6360,86 @@ P-095 BANKED - The gallery plugin (Part VI)
     log
     hidden_files/p095_forge_confirmation.log).
     Next in roadmap order: P-096.
+P-096 BANKED - Dice & game-bridge plugin surface (Part VI)
+    - team-02 commit abbb72b merged (no-ff)
+    into yrsa/two-mirrors-build as a771299
+    and pushed; ls-remote verified
+    a7712991253e6b00fb6279c8126143043692e874
+    (see WAVE_PLAN update). Evidence
+    (team-02 worktree
+    hidden_files/P096_EVIDENCE.md):
+    battery 33 passed, neighbours 209
+    passed, team full suite 3928 passed /
+    4 skipped / 0 failed on its base (base
+    predates P-095; reconciled at this
+    banking).
+    Slice:
+    src/runmal/plugins/game_bridge.py (new
+    - the citizen runmal.game-bridge,
+    seeded inspectable rolls, durable
+    store, bridge event surface),
+    src/runmal/plugins/router.py (+171,
+    /game-bridge/* routes appended),
+    tests/test_p096_game_bridge.py (33
+    tests),
+    docs/DICE_GAME_BRIDGE_2026-11-07.md,
+    clean-room log append. 5 files, +1709.
+    Migration: NONE (head stays 0041; no
+    migration taken - the store rides the
+    P-089 durable file idiom; no 0042).
+    Defects: page-limit coupling (product
+    defect, caught by the battery
+    cap/prune tests): list_rolls and
+    list_bridge_events validated the
+    caller page limit against the
+    RETENTION caps (MAX_ROLLS_PER_CHAT /
+    MAX_EVENTS_PER_CHAT), so a smaller
+    retention cap would make ordinary
+    listing refuse instead of paginating.
+    Fixed in-slice: limits now validate
+    against a dedicated MAX_PAGE_SIZE =
+    1000; retention caps govern storage
+    only. One battery-authoring fix in
+    test code only. No defect was found in
+    banked code.
+    Design honesty: seeded inspectable
+    rolls (algorithm runmal-p096-dice-v1,
+    the P-036 discipline): a roll is a
+    pure function of seed, context,
+    canonical notation, roll key and die
+    index, recorded with every face and
+    draw; verify_roll is honest about
+    unseeded rolls - labelled and
+    unverifiable, never dressed as
+    reproducible. Bridge events are a
+    closed vocabulary of kinds and targets
+    (VRChat / Skyrim named), with per-chat
+    sequence numbers and monotonic
+    per-consumer ack cursors, bounded
+    retention with the prune count kept.
+    No transport is claimed: the citizen
+    records bridge events and opens no
+    socket; the existing bridge adapters
+    own transport.
+    Carried item: P-094 custody does not
+    yet name runmal.game-bridge (fixed
+    citizen list); export for this id
+    answers unknown-plugin honestly. Named
+    in the P-096 design (section 7) as a
+    later-reconciliation item. The event
+    handler observation list is in-memory
+    and lost on restart, stated plainly in
+    the code.
+    Merge conflict in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md only
+    (append-vs-append), resolved keeping
+    the P-095 and P-096 entries exactly
+    once; no other conflicts. Banking
+    heal: none needed. Combined batteries
+    on the merged tree: 60 passed / 0
+    failed (= 27 P-095 + 33 P-096, exact).
+    Forge confirmation suite: 3955 passed
+    / 4 skipped / 0 failed (= 3922 P-095
+    confirmation + 33, exact; log
+    hidden_files/p096_forge_fullsuite.log).
+    Next in roadmap order: P-097.
