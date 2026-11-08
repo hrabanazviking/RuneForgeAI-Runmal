@@ -31,6 +31,11 @@ Truth discipline:
 - a turn with no playback-ledger evidence claims NOTHING as
   certainly heard: without evidence the response is uncertain
   (some chunks played) or unplayed (none did) — INV-020.
+- a turn's STT word confidences persist verbatim (P-105,
+  VX-11): the backend's own per-word probability estimates,
+  never recomputed; a turn recorded without them carries NO
+  confidence evidence, a fact the mishearing views report
+  as such — never as "all words confident".
 """
 
 from __future__ import annotations
@@ -220,6 +225,34 @@ def resolve_session_settings(
 # ------------------------------------------------------------ turns
 
 
+@dataclass(frozen=True)
+class WordConfidence:
+    """One transcribed word and the STT backend's own
+    probability estimate for it (P-105, VX-11), persisted
+    verbatim on the turn record. The estimate is the
+    backend's, never recomputed or upgraded here; a
+    probability outside [0, 1] is not an estimate and is
+    refused at the door."""
+
+    text: str
+    probability: float = 1.0
+
+    def __post_init__(self) -> None:
+        if not 0.0 <= float(self.probability) <= 1.0:
+            raise ValueError(
+                f"word probability outside [0, 1]: {self.probability!r}")
+
+    def to_dict(self) -> dict:
+        return {"text": self.text, "probability": self.probability}
+
+    @classmethod
+    def from_dict(cls, data: dict) -> WordConfidence:
+        return cls(
+            text=str(data.get("text", "")),
+            probability=float(data.get("probability", 1.0)),
+        )
+
+
 @dataclass
 class VoiceTurnRecord:
     """One completed voice turn, persisted with its session.
@@ -241,6 +274,10 @@ class VoiceTurnRecord:
     chunks_total: int = 0
     chunks_played: int = 0
     recorded_at: str = ""
+    # Word-confidence evidence (P-105, VX-11): the STT
+    # backend's own per-word probability estimates, verbatim.
+    # Empty means NO evidence was recorded — not certainty.
+    transcript_words: tuple[WordConfidence, ...] = ()
     # Projection state (P-103): the chat-message shadow of this
     # turn. ``projected`` means projection has fully considered
     # the turn; the per-side ids make a half-projected turn
@@ -278,6 +315,10 @@ class VoiceTurnRecord:
             turn_no=turn_no,
             transcript_text=transcript.text if transcript else "",
             transcript_language=transcript.language if transcript else "",
+            transcript_words=tuple(
+                WordConfidence(w.text, float(w.probability))
+                for w in (transcript.words if transcript else ())
+            ),
             stt_backend=stt_backend,
             response_text=record.response_text,
             heard_certain=certain,
@@ -311,6 +352,7 @@ class VoiceTurnRecord:
             "chunks_total": self.chunks_total,
             "chunks_played": self.chunks_played,
             "recorded_at": self.recorded_at,
+            "transcript_words": [w.to_dict() for w in self.transcript_words],
             "projected": self.projected,
             "projected_user_message_id": self.projected_user_message_id,
             "projected_assistant_message_id": self.projected_assistant_message_id,
@@ -333,6 +375,11 @@ class VoiceTurnRecord:
             chunks_total=int(data.get("chunks_total", 0)),
             chunks_played=int(data.get("chunks_played", 0)),
             recorded_at=str(data.get("recorded_at", "")),
+            transcript_words=tuple(
+                WordConfidence.from_dict(w)
+                for w in data.get("transcript_words") or []
+                if isinstance(w, dict)
+            ),
             projected=bool(data.get("projected", False)),
             projected_user_message_id=str(data.get("projected_user_message_id", "")),
             projected_assistant_message_id=str(
@@ -389,6 +436,7 @@ class VoiceSession:
         error: str = "",
         chunks_total: int = 0,
         chunks_played: int = 0,
+        transcript_words: tuple[WordConfidence, ...] = (),
         recorded_at: str = "",
     ) -> VoiceTurnRecord:
         if not self.active:
@@ -412,6 +460,7 @@ class VoiceSession:
             error=error,
             chunks_total=chunks_total,
             chunks_played=chunks_played,
+            transcript_words=tuple(transcript_words),
             recorded_at=recorded_at or _now_iso(),
         )
         self.turns.append(turn)

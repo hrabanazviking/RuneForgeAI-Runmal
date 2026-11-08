@@ -25,6 +25,9 @@ Layered, provider-isolated pieces (see docs/VOICE_ARCHITECTURE.md):
 - ``autoproject`` / ``autoproject_router`` — the async
   auto-projecting host: opted-in sessions project as their
   turns are recorded (P-104).
+- ``mishearing`` / ``mishearing_router`` — STT word-confidence
+  truth: low-confidence detection + replacement suggestions
+  over the persisted evidence (P-105, VX-11).
 - ``routing``   — persisted logical device routes (S513).
 - ``benchmark`` — reproducible voice benchmark harness (S514).
 
