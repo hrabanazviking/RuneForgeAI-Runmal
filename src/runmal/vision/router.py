@@ -43,6 +43,7 @@ from runmal.db.deps import get_owner_id, get_session
 from runmal.vision import attachments as att_service
 from runmal.vision import selection as vision_selection
 from runmal.vision import service as vision_service
+from runmal.vision import watcher as watcher_service
 
 router = APIRouter(tags=["vision"])
 
@@ -287,3 +288,104 @@ async def delete_attachment(
     record = _attachment_or_404(attachment_id, owner_id)
     removed = _attachment_store().remove(record.id)
     return {"deleted": removed is not None, "id": record.id}
+
+
+def _watch_store() -> watcher_service.WatchStore:
+    base = Path(os.environ.get("RUNMAL_DATA_DIR", ".runmal-data"))
+    return watcher_service.WatchStore(base)
+
+
+def _scan_attacher():
+    """The scan's attacher: None = resolve P-120 lazily (P-121).
+
+    Tests monkeypatch this to inject a fake attacher; in
+    production the watcher resolves runmal.vision.attachments
+    at scan time and refuses plainly when it is absent.
+    """
+    return None
+
+
+async def _watch_or_404(store, owner_id: str, watch_id: str):
+    watch = store.get_watch(watch_id)
+    if watch is None or watch.owner_id != owner_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="watch folder not found")
+    return watch
+
+
+class WatchFolderRequest(BaseModel):
+    chat_id: str
+    path: str
+    recursive: bool = False
+
+
+@router.post("/vision/watch-folders", status_code=201)
+async def create_watch_folder(
+    body: WatchFolderRequest,
+    session: AsyncSession = Depends(get_session),
+    owner_id: str = Depends(get_owner_id),
+):
+    chat = await _chat_or_404(session, owner_id, body.chat_id)
+    try:
+        watch = watcher_service.register_watch(
+            _watch_store(), owner_id=owner_id, chat_id=chat.id,
+            path=body.path, recursive=body.recursive)
+    except watcher_service.WatchError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(exc)) from None
+    return watch.to_dict()
+
+
+@router.get("/vision/watch-folders")
+async def list_watch_folders(
+    chat_id: str,
+    session: AsyncSession = Depends(get_session),
+    owner_id: str = Depends(get_owner_id),
+):
+    chat = await _chat_or_404(session, owner_id, chat_id)
+    rows = _watch_store().list_for_chat(chat.id)
+    rows = [r for r in rows if r.owner_id == owner_id]
+    return {"chat_id": chat.id,
+            "watch_folders": [r.to_dict() for r in rows]}
+
+
+@router.delete("/vision/watch-folders/{watch_id}")
+async def delete_watch_folder(
+    watch_id: str,
+    owner_id: str = Depends(get_owner_id),
+):
+    store = _watch_store()
+    watch = await _watch_or_404(store, owner_id, watch_id)
+    store.remove_watch(watch.id)
+    return {"deleted": watch.id}
+
+
+@router.post("/vision/watch-folders/{watch_id}/scan")
+async def scan_watch_folder(
+    watch_id: str,
+    owner_id: str = Depends(get_owner_id),
+):
+    store = _watch_store()
+    watch = await _watch_or_404(store, owner_id, watch_id)
+    try:
+        report = watcher_service.scan_watch(
+            store, watch, attacher=_scan_attacher())
+    except watcher_service.WatchError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(exc)) from None
+    return report.to_dict()
+
+
+@router.get("/vision/watch-folders/{watch_id}/ingested")
+async def list_watch_ingested(
+    watch_id: str,
+    owner_id: str = Depends(get_owner_id),
+):
+    store = _watch_store()
+    watch = await _watch_or_404(store, owner_id, watch_id)
+    rows = store.list_ingested(watch.id)
+    return {"watch_id": watch.id,
+            "ingested": [r.to_dict() for r in rows]}
