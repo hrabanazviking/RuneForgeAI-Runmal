@@ -13353,3 +13353,117 @@ P-154 BANKED - Part IX Gate - Scenarios, the
     Next in roadmap order: P-155 (Part
     X - Faces That Speak, P-155..P-168,
     in roadmap order).
+P-155 BANKED - Face Presentation
+    Foundation (Part X - Faces That
+    Speak, P-155..P-168) PART X OPENER.
+    - team-01 commit 25d7ef5 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 3c6b71a (parents 8824e95 +
+    25d7ef5); merge pushed and
+    ls-remote verified at 3c6b71a
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Derived scope ACCEPTED as banked
+    by the keeper: the roadmap gives
+    Part X only its part-table line
+    (P-155..P-168), no per-slice
+    entries; this slice is derived
+    from the P-092 / P-023 / P-087
+    record, as the slice doc states
+    plainly.
+    Scope: a pure-read resolution
+    service (src/runmal/faces/
+    presentation.py - resolve_
+    presentation composes P-092
+    inspect_state VERBATIM, its set /
+    bindings / current / counts riding
+    whole) plus one road (GET /faces/
+    presentation?chat_id= on the
+    /api/v1 mount, after the vision
+    router). Every declared entry
+    resolves to a renderable
+    descriptor (asset facts verbatim +
+    the P-023 content / thumbnail
+    roads as URL data, present only
+    when bound; renderable == bound);
+    the current face is classified
+    under the closed PRESENTATION_
+    STATES law (ready / current_
+    unbound - problem verbatim, or
+    not_declared / no_selection /
+    no_set / no_character); face is
+    the current descriptor only when
+    ready, NEVER substituted; the
+    declared default and the character
+    avatar ride as fallback DATA;
+    five standing honesty notes in
+    fixed order.
+    Evidence (team-01 worktree
+    hidden_files/ P155_EVIDENCE.md +
+    logs P155_BATTERY.log,
+    P155_NEIGHBOURS.log,
+    P155_FULLSUITE.log): battery 14
+    passed / 0 failed; neighbours
+    fence (P-092 expressions, P-023
+    assets, P-095 gallery, P-117
+    vision) 109 passed / 0 failed;
+    team full suite 5059 passed / 5
+    skipped / 0 failed, exit 0, run
+    TWICE with identical counts,
+    reconciling exactly (5045 base +
+    14 battery = 5059).
+    Combined batteries on the merged
+    tree: 123 passed / 0 failed
+    (14 + 109, exact), run by the
+    banking coordinator with
+    PYTHONPATH=src on the campaign
+    venv runmal-venv312.
+    Forge confirmation suite on the
+    merged tree: 5059 passed / 5
+    skipped / 0 failed in 435.28s,
+    exit 0, exact. No failure
+    occurred, so no contention
+    classification was needed.
+    Defects: one in-slice lint fix -
+    ruff E501 (line too long) at
+    presentation.py:138, wrapped in
+    parentheses across two lines, no
+    logic change; battery and full
+    suite re-run on the fixed tree
+    with identical counts. No other
+    defect found.
+    Slice scope: src/runmal/faces/
+    __init__.py (new), src/runmal/
+    faces/presentation.py (new),
+    src/runmal/faces/router.py (new),
+    src/runmal/app.py (+6),
+    tests/test_p155_face_
+    presentation.py (new, 14 tests),
+    docs/FACE_PRESENTATION_2026-11-08
+    .md (new), docs/CLEAN_ROOM_LOG_
+    2026-10-30.md (+1 entry, exactly
+    once in the merged tree). Team
+    delta 7 files (+822/-0), purely
+    additive, no hidden_files paths
+    in the slice commit.
+    Migration: NONE (head stays 0041,
+    no 0042, battery-pinned).
+    Merge: clean no-ff merge, no
+    conflicts; merged diff vs 8824e95
+    is exactly the 7 slice files
+    (+822/-0). No heal was needed.
+    Honest limitations: Runmal
+    renders, selects, animates,
+    stores and generates nothing in
+    this slice - the presentation
+    document is the contract a later
+    Part X slice builds a stage on;
+    nothing here fetches the named
+    URLs. No playback, runtime or
+    execution of any stored content
+    (P-027 law).
+    Derived scope ACCEPTED as banked.
+    PART X OPEN (P-155..P-168).
+    Next in roadmap order: P-156 (Part
+    X, in roadmap order).
