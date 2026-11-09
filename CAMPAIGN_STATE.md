@@ -17313,3 +17313,111 @@ P-162 BANKED - Character Face History
     XI OPEN (P-169..P-186). Next
     in roadmap order: P-181 (Part
     XI in roadmap order).
+    P-181 BANKED - Workspace
+    Tree Census (Part XI,
+    DERIVED). Part XI continues.
+    - team-01 commit 10b0322
+    merged (no-ff) into yrsa/two-
+    mirrors-build as 61b03f2
+    (parents 9300cd5 + 10b0322).
+    BANKING NOTE, recorded
+    honestly: the first banking
+    of this slice was cut
+    mid-merge by a cron timeout -
+    the merge stood unresolved
+    (3 conflicted files), nothing
+    pushed, no record written.
+    This record is written by
+    the finisher run that
+    completed that same merge:
+    the 3 conflicts (docs/CLEAN_R
+    OOM_LOG_2026-10-30.md
+    append-vs-append; src/runmal/
+    app.py, 2 conflicts; src/
+    runmal/workspaces/__init__.py,
+    1 conflict) were resolved as
+    pure additive unions keeping
+    the P-180 content-search and
+    P-181 tree-census roads
+    exactly once each; the
+    tree-census router lands in
+    its OWN include_router block
+    in app.py, verified in the
+    merged tree - the P-174
+    fused-call defect class does
+    not land. Merged diff vs
+    9300cd5 is exactly the 7
+    slice files, +1099/-0;
+    py_compile clean on all
+    resolved and touched modules.
+    Merge pushed and ls-remote
+    verified at 61b03f2 before
+    this record; banking record
+    commit follows this entry and
+    is pushed after it.
+    Scope: workspaces/tree_
+    census.py + tree_census_
+    router.py (GET /workspaces/
+    tree-census) composing
+    P-176's tree verbatim at
+    MAX_DEPTH through resolve_
+    chat_tree and summing only
+    the composed document's own
+    node fields; NO tree,
+    listing, content, search,
+    content-search or bindings
+    file modified. Slice doc
+    docs/WORKSPACE_TREE_CENSUS_
+    2026-11-09.md, tests/test_
+    p181_workspace_tree_census.py
+    (18 tests), clean-room log
+    +1 entry; 7 files, +1099/-0.
+    Evidence (team-01
+    hidden_files/P181_EVIDENCE.md
+    + logs): battery 18 passed;
+    neighbours 156 passed
+    (P-169..P-179 workspace
+    batteries on its base);
+    full suite on its base 5481
+    passed / 5 skipped / 0
+    failed, exit 0 (5463 + 18,
+    exact). Combined batteries on
+    the merged tree (run by the
+    finisher): P-169..P-181
+    workspace fence 190 passed /
+    0 failed (172 at P-180
+    banking + 18, exact). Forge
+    confirmation full suite on
+    the merged tree (counts read
+    back from the log file):
+    5497 passed / 5 skipped / 0
+    failed, exit 0, in 337.74s
+    (5479 + 18, exact).
+    Migration: NONE (head stays
+    0041).
+    Defects: none in the banked
+    surfaces; nothing left
+    unfixed (one miscount in the
+    slice's own battery draft was
+    caught and corrected before
+    its first run).
+    Carried items, exactly as
+    named open: (1) a binding
+    label update stays named open
+    (unbind-then-bind law); (2)
+    automatic retention / bulk
+    clear of history awaits the
+    ruling of Volmarr - none
+    invented. Writes inside bound
+    folders stay fenced behind
+    the VX-57 guard; execution is
+    declined ABSOLUTELY (VX-55/56,
+    P-027); watching stays
+    declined (P-169). Part XI gate
+    is P-186; P-182..P-185 remain.
+    team-01 reset to the record
+    head after banking. Banked
+    now P-001..P-181. PART XI
+    OPEN (P-169..P-186). Next in
+    roadmap order: P-182 (Part
+    XI in roadmap order).
