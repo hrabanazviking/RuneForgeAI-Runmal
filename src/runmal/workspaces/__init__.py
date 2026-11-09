@@ -35,6 +35,14 @@ the Companion That Works).
   (folder_not_ready / empty / no_files / has_files)
   on GET /workspaces/folder-census. It reads no
   file contents, writes nothing and grants nothing.
+- ``tree`` + ``tree_router`` - the workspace folder
+  tree (P-176, Part XI, DERIVED scope): one chat's
+  bound folder as a depth-limited tree - every level
+  composed verbatim from P-170's listing, directories
+  expanded to a stated depth under a stated node cap,
+  symlinks never descended, caps and mid-walk refusals
+  carried as data - on GET /workspaces/tree. It opens
+  no file, writes nothing and grants nothing.
 - ``router`` - the owner-scoped HTTP road
   (/api/v1/workspaces/*).
 - ``census`` + ``census_router`` - the workspace
