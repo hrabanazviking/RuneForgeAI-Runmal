@@ -43,6 +43,16 @@ the Companion That Works).
   symlinks never descended, caps and mid-walk refusals
   carried as data - on GET /workspaces/tree. It opens
   no file, writes nothing and grants nothing.
+- ``search`` + ``search_router`` - the workspace
+  filename search (P-178, Part XI, DERIVED scope):
+  one chat's bound folder searched by entry name -
+  P-176's tree composed verbatim at its maximum
+  depth and filtered by name only, each match
+  carrying its folder-relative path (the input
+  P-172's read consumes), coverage the expanded
+  tree only and partiality named - on GET
+  /workspaces/search. It opens no file, writes
+  nothing and grants nothing.
 - ``router`` - the owner-scoped HTTP road
   (/api/v1/workspaces/*).
 - ``census`` + ``census_router`` - the workspace
