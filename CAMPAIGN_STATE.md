@@ -12999,3 +12999,190 @@ P-152 BANKED - Chat Coverage Census (Part IX)
     PART IX OPEN (P-131..P-154).
     Next in roadmap order: P-153 (Part
     IX, in roadmap order).
+P-153 BANKED - Library Bind-Plan Census (Part IX)
+    Part IX twenty-third slice.
+    - team-02 commit 4d35cff merged (no-
+    ff) into yrsa/two-mirrors-build as
+    62c6042 (parents 1e2b4de + 4d35cff);
+    merge pushed and ls-remote verified
+    at 62c6042 before this record;
+    banking record commit follows this
+    entry and is pushed after it.
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only its
+    part line (P-131..P-154), no per-
+    slice entries; the slice scope is
+    derived from Runmal's own in-tree
+    record (every Part IX census joins
+    one computed judgement across its
+    library - bindings P-144 / P-148 /
+    P-150, definitions P-151, chats
+    P-152, reports P-145 - except the
+    bind plan: what a definition would
+    actually plant exists only inside
+    per-definition P-136 envelopes, so
+    an owner choosing which definition
+    to bind could learn each plan only
+    by walking every definition by hand
+    through the P-136 road - the by-
+    hand gap P-144's derivation named,
+    transposed to the plan axis; P-153
+    rows every definition the caller
+    holds by the state of its plan,
+    stated plainly as derived in the
+    slice doc.
+    Finisher provenance: the slice was
+    left part-built by a predecessor
+    run that timed out (plancensus.py,
+    the battery and the slice doc
+    landed intact); the finisher
+    reviewed that work line by line
+    against the design, found no
+    defect, changed nothing in it, and
+    completed the slice - router and
+    __init__ wiring plus the clean-room
+    entry - and committed it as
+    4d35cff. The slice doc's base note
+    (b5a8738, P-151 record) is the
+    design-time base; the finisher
+    re-verified and built on 1e2b4de
+    (P-152 banking record), so P-152 IS
+    in this slice's base and the merged
+    tree carries both censuses, proven
+    by the combined fence and the forge
+    confirmation below.
+    Evidence (team-02 worktree
+    hidden_files/ P153_EVIDENCE.md +
+    logs P153_BATTERY.log,
+    P153_NEIGHBOURS.log, P153_FULL.log):
+    battery 19 passed / 0 failed;
+    neighbour fence 445 passed / 0
+    failed (the P-152 banking record's
+    combined fence through P-152);
+    team full suite 5009 passed / 5
+    skipped / 0 failed in 300.78s,
+    reconciling exactly with its base
+    (4990 + 19 = 5009); no failure
+    occurred in the team run, so no
+    contention classification was
+    needed there.
+    Combined batteries on the merged
+    tree: 464 passed / 0 failed (P-026 +
+    P-131..P-153 scenario batteries;
+    445 + 19 = 464, exact), run by the
+    banking coordinator with
+    PYTHONPATH=src on the merged tree.
+    Log hidden_files/P153_COMBINED.log
+    in the forge. (The coordinator's
+    first combined launch used the
+    system python3, which has no
+    fastapi, and died at collection with
+    24 import errors - a coordinator
+    environment error, not a slice
+    defect; that log is preserved as
+    hidden_files/
+    P153_COMBINED_ATTEMPT1_ENVFAIL.log
+    and the fence was re-run green with
+    the campaign venv runmal-venv312.)
+    Forge confirmation suite on the
+    merged tree: 5008 passed / 1 failed
+    / 5 skipped in 439.57s, exit 1. The
+    lone failure is
+    tests/test_p077_longchat_performance.py
+    test_longchat_tripwires, a timing
+    tripwire (page under 1.0s, append
+    median under 0.2s), failed under
+    shared load (load 4.8-7.05 with
+    Mythic Coder and team suites
+    running concurrently on the shared
+    machine); its solo re-run by the
+    banking coordinator is green: 17
+    passed in 5.27s, exit 0 (log
+    hidden_files/P153_P077_SOLO.log in
+    the forge). This is the established
+    p077 contention class, classified
+    honestly with both figures: the
+    counts reconcile exactly
+    (5008 + 1 = 5009 = 4990 + 19). Log
+    hidden_files/P153_FORGE_CONFIRM.log
+    in the forge.
+    Slice scope: the library bind-plan
+    census - scenarios/plancensus.py
+    (new: census_bind_plans rows every
+    definition the caller holds, in
+    caller list order, judged by the
+    owning service preview_bind_plan
+    called verbatim per record; each
+    row carries the P-131 summary
+    verbatim, the envelope counts and
+    the plan's skipped rows verbatim,
+    and one plan state under the plan
+    law read from P-136's own counts -
+    clean / partial / skips_only /
+    empty, named by BIND_PLAN_STATES;
+    by_where rollup in first-appearance
+    order; every count summed from the
+    rows themselves; five standing
+    notes; pure read, stores nothing),
+    one additive road (GET
+    /scenarios/library/bind-plans,
+    declared in the library block after
+    the P-151 library census road and
+    before the bindings block, so the
+    literal library is never read as a
+    definition id; no 404 case),
+    scenarios/router.py (additive,
+    +28), scenarios/__init__.py
+    (additive, +18),
+    tests/test_p153_bind_plan_census.py
+    (new, 19 tests),
+    docs/SCENARIO_BIND_PLAN_CENSUS_2026-11-08.md
+    (new), clean-room log append (+1).
+    Team delta 6 files (+1050/-0),
+    purely additive, no hidden_files
+    paths in the slice commit. No
+    defect was found in review, so no
+    in-slice fix was needed.
+    Honest limitations: the census is a
+    pure read; it changes no write
+    behaviour. The delete_chat cascade
+    into the binding store remains OPEN
+    and deliberately untaken: P-149
+    reserved the decision expressly for
+    Volmarr and P-150, P-151 and P-152
+    declined it again; this slice
+    records the same position with the
+    full argument in the slice doc.
+    Definition-side only: no chat is
+    consulted, bind-time refusals are
+    not judged, and seedable is not
+    landed (keys a chat already holds
+    seed nothing at bind time, knowable
+    only at bind). The census carries
+    counts and skipped rows only - no
+    message text, no flag or variable
+    value, no seedable key. Each plan
+    is computed from its definition's
+    current revision; a replace re-
+    plans and no history is kept. No
+    playback, runtime or execution of
+    any stored content (P-027 law).
+    Migration: NONE (head stays 0041).
+    Merge: clean no-ff merge, no
+    conflicts; merged
+    scenarios/router.py grep-verified
+    carrying BOTH the P-151 GET
+    /scenarios/library/census road AND
+    the P-153 GET
+    /scenarios/library/bind-plans road,
+    bind-plans declared after census;
+    merged clean-room log holds the
+    P-153 entry exactly once; merged
+    scenarios modules py_compile clean;
+    merged diff vs 1e2b4de is exactly
+    the 6 slice files (+1050/-0). No
+    heal was needed at merge.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-154 (Part
+    IX, in roadmap order).
