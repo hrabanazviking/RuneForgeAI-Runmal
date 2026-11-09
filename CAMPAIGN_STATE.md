@@ -19942,3 +19942,107 @@ P-162 BANKED - Character Face History
     commissioned binding depth/role slice. PART XII
     OPEN (P-187..P-202). Next in roadmap order:
     P-200 (Part XII, DERIVED).
+    P-200 BANKED - Hub schema census (Part
+    XII, DERIVED). Part XII continues. - team-02
+    commit 894ffbe merged (no-ff) into
+    yrsa/two-mirrors-build as f868089 (parents
+    63605b5 + 894ffbe). The team-02 base PREDATES
+    P-199 (parent fd86f65, the P-198 banking
+    record), so the merge met the expected
+    conflicts in src/runmal/hub/router.py and
+    docs/CLEAN_ROOM_LOG_2026-10-30.md ONLY - the
+    two files both slices touch, each delta
+    additive there - resolved as additive unions
+    keeping BOTH slices' work exactly once;
+    merged diff vs fd86f65 exactly the union of
+    the two slices (9 files, +2789/-0, the P-199
+    banking record's own CAMPAIGN_STATE.md entry
+    included). Router verification per the P-192
+    banking lesson: the merged router was diffed
+    against BOTH parents' router deltas and
+    grep-verified - the hub_content_census,
+    hub_content_search, hub_unified_search,
+    hub_unified_search_census,
+    hub_duplicate_census, hub_content_shape_census,
+    hub_size_census, hub_breadth_census,
+    hub_distinct_census and hub_schema_census
+    imports are all present (ten hub census/search
+    modules) and every GET road survives (census,
+    content-census, duplicate-census,
+    content-shape-census, size-census,
+    breadth-census, distinct-census,
+    schema-census, search, content-search,
+    unified-search, unified-search-census, entry
+    read, browse, list, delete), py_compile clean.
+    NO heal was needed beyond the union itself:
+    the resolution kept each side's lines exactly
+    as authored, no blank separator was dropped,
+    and no import or road was lost. Derived
+    scope ACCEPTED: hub schema census - the
+    object-shape identity grain no banked hub
+    document states, in the house census shape.
+    src/runmal/hub/schema_census.py
+    (schema_census_document(entries), schema
+    runmal-p200-hub-schema-census-v1) counts
+    DISTINCT object shapes (key-sets) in the
+    verified payloads - P-196 counts every
+    payload node and dict key and P-198 measures
+    every container width, but both discard which
+    keys any one object holds together, and
+    P-199 compares string values, so how many
+    distinct shapes an estate uses, how many
+    repeat inside one pack or across packs, and
+    how many are shared between entries is
+    derivable from no banked document, because
+    no banked document carries a key name or a
+    key-set. Shapes are compared for exact
+    identity in memory only: neither a key name,
+    a signature digest, a value nor an excerpt
+    ever enters the document (the P-183 law,
+    extended to key-sets). Rows carry outcomes
+    under P-193's imported OUTCOMES law;
+    shared counts are computed over parsed
+    entries only; census_state under the closed
+    SCHEMA_CENSUS_STATES law (no_entries /
+    no_schema / some_schema / all_schema);
+    counts only - no key name, digest, value,
+    excerpt or payload field anywhere in the
+    document. One new road: GET
+    /hub/schema-census, bearer-gated and
+    owner-scoped like the distinct-census road;
+    the census writes nothing and records no
+    history. Slice doc
+    docs/HUB_SCHEMA_CENSUS_2026-11-09.md +
+    clean-room log +1. Evidence (team-02
+    hidden_files/P200_EVIDENCE.md + logs):
+    battery 19 passed. Neighbours on the team
+    tree 245 passed / 0 failed. Team full suite
+    5859 passed / 5 skipped / 0 failed on its
+    P-198 base (= 5840 banked at P-198 + 19,
+    exact), clean at first run. Combined fence
+    on the merged tree (P-187..P-200 hub
+    batteries + P-045 / P-054 / P-063 / P-141
+    pack batteries, run at banking in the forge
+    tree): 379 passed / 0 failed (360 at P-199's
+    fence + 19, exact). Forge confirmation full
+    suite on the merged tree (counts read back
+    from forge hidden_files/P200_FORGE_CONFIRM.log):
+    5878 passed / 5 skipped / 0 failed in
+    368.26s, exit 0 - clean at first run, no
+    contention failure and no solo re-run needed;
+    merged expectation 5878 (= 5859 banked at
+    P-199 + 19, exact). Migration: NONE (head
+    stays 0041). Defects: none discovered in
+    banked code and none at banking; no bug left
+    unfixed. Carried items untouched, exactly as
+    recorded at P-186 through P-199: (1) binding
+    label update stays named open
+    (unbind-then-bind law); (2) automatic
+    retention / bulk clear of history awaits the
+    ruling of Volmarr - none invented; (3)
+    unified-search history stays named open (this
+    census records nothing). Hub schema census
+    is now BANKED. Banked now P-001..P-200 + the
+    commissioned binding depth/role slice. PART
+    XII OPEN (P-187..P-202). Next in roadmap
+    order: P-201 (Part XII, DERIVED).
