@@ -20146,3 +20146,126 @@ P-162 BANKED - Character Face History
     depth/role slice. PART XII OPEN
     (P-187..P-202). Next in roadmap order:
     P-202 (Part XII, DERIVED).
+    P-202 BANKED - Part XII gate
+    (Part XII, DERIVED). GATE PASSES -
+    Part XII COMPLETE. - team-01 commit
+    2be6354 merged (no-ff) into
+    yrsa/two-mirrors-build as 1474390
+    (parents c0366f2 + 2be6354). The
+    team-01 base IS the forge HEAD
+    (parent c0366f2, the P-201 banking
+    record), so the merge was CLEAN -
+    no conflicts in any file; merged
+    diff vs c0366f2 exactly the 4 slice
+    files (+1805/-0):
+    tests/test_p202_part_xii_gate.py,
+    tests/test_p202_gate_record.py,
+    docs/PART_XII_GATE_2026-11-09.md,
+    clean-room log +1. NO src change,
+    no new road, NO migration. Derived
+    scope ACCEPTED: the Part XII gate -
+    34 gate tests in four areas (A
+    census x9, B together x12, C
+    custody x5, D accounting x6, plus
+    hygiene x2) and a 10-test gate-
+    record module, judging the whole
+    banked Part XII hub surface
+    (P-187..P-201: 15 slice docs, 15
+    hub modules, 17 operations on 16
+    paths) as one estate. Gate verdict
+    per area: Census PASS, Together
+    PASS, Custody PASS, Accounting
+    PASS - Part XII COMPLETE / gate
+    PASSES. Slice doc
+    docs/PART_XII_GATE_2026-11-09.md +
+    clean-room log +1 (entry count
+    161 -> 162). Evidence (team-01
+    hidden_files/P202_EVIDENCE.md +
+    logs): gate battery 34 passed;
+    neighbours on the team tree 405
+    passed / 0 failed (hub batteries
+    P-187..P-201 + pack batteries
+    P-045 / P-054 / P-063 / P-141; the
+    gate battery NOT in that batch, per
+    design); gate-record module 10
+    passed; final combined re-run on
+    the committed tree 44 passed (34 +
+    10). Team full suite raw 5947
+    passed / 5 skipped / 1 failed in
+    592.52s - the sole failure the
+    s503 STT timing contract case,
+    solo re-run 4 passed, classified
+    CONTENTION (a Mythic Coder full
+    suite ran concurrently; 592.52s
+    against the 359.51s P-201 baseline
+    is the same signature); adjusted
+    expectation 5948 / 5 / 0 (= 5904
+    banked at P-201 + 34 + 10, exact)
+    stands by the solo re-run.
+    Combined fence on the merged tree
+    (P-187..P-202 hub batteries +
+    P-045 / P-054 / P-063 / P-141 pack
+    batteries + both P-202 test files,
+    run at banking in the forge tree):
+    449 passed / 0 failed (405 at
+    P-201's fence + 34 + 10, exact).
+    Forge confirmation full suite on
+    the merged tree (counts read back
+    from forge
+    hidden_files/P202_FORGE_CONFIRM.log):
+    5948 passed / 5 skipped / 0 failed
+    in 417.60s, exit 0 - clean at
+    first run, no contention failure
+    and no solo re-run needed; merged
+    expectation 5948 (= 5904 + 34 +
+    10, exact). Migration: NONE (head
+    stays 0041; no 0042 anywhere).
+    Defects: NO defect found in banked
+    code (P-187..P-201 surface);
+    nothing in banked code was
+    touched; no bug left unfixed. One
+    design-text discrepancy handled
+    per instructions - tree followed,
+    discrepancy noted: the design's
+    L-2 wording called an oversize
+    payload UNAVAILABLE; the banked
+    tree and its batteries pin INVALID
+    on browse, all six parse censuses
+    and content search, and the gate
+    battery and gate doc (finding F1)
+    pin the tree's verdict. The old
+    P-116 F2 openapi candidate does
+    NOT reproduce on this tree and is
+    NOT carried. In-slice defects in
+    the gate material's first draft
+    (ruff I001 import order + two B007
+    unused loop variables) were fixed
+    in-slice before banking; ruff
+    clean. Carried items named
+    plainly, exactly as recorded at
+    P-186 through P-201: STILL OPEN -
+    K-A binding label update stays
+    named open (no entry-update road
+    exists; remove-then-register,
+    never a silent in-place update);
+    K-B automatic retention / bulk
+    clear of history awaits the ruling
+    of Volmarr - none invented; K-C
+    unified-search history stays named
+    open (every Part XII census/search
+    records NO history). DECLINED for
+    Part XII (named declines, NOT
+    shipped and NOT gaps): K-D signing
+    / attestation; K-E friend-instance
+    exchange transport; K-F hub-side
+    import / install; K-G entry
+    lifecycle depth beyond
+    register/remove; K-H central store
+    / catalogue / creator profiles
+    (ruled out by VX-59). Part XII
+    gate is now BANKED. Banked now
+    P-001..P-202 + the commissioned
+    binding depth/role slice. PART XII
+    CLOSED (P-187..P-202). Next in
+    roadmap order: P-203 (opening
+    Part XIII).
