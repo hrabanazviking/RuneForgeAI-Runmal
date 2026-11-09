@@ -20046,3 +20046,103 @@ P-162 BANKED - Character Face History
     commissioned binding depth/role slice. PART
     XII OPEN (P-187..P-202). Next in roadmap
     order: P-201 (Part XII, DERIVED).
+    P-201 BANKED - Hub reconciliation
+    battery (Part XII, DERIVED). Part XII
+    continues. - team-03 commit 671d031
+    merged (no-ff) into yrsa/two-mirrors-
+    build as 1a85e3a (parents 6d69720 +
+    671d031). The team-03 base IS the forge
+    HEAD (parent 6d69720, the P-200 banking
+    record), so the merge was CLEAN - no
+    conflicts in any file; merged diff vs
+    6d69720 exactly the 3 slice files
+    (+1457/-0):
+    tests/test_p201_hub_reconciliation.py,
+    docs/HUB_RECONCILIATION_2026-11-09.md,
+    clean-room log +1. NO src change, no new
+    road. Derived scope ACCEPTED: hub
+    reconciliation battery - the durable
+    whole-estate agreement probe no banked
+    slice had done: 26 tests in four
+    sections (A presence/shape x7, B cross-
+    surface agreement x12, C fences x5, D
+    carried items / orphan closure x2)
+    judging that the banked hub documents
+    (P-187..P-200: one registry, one browse
+    road, nine censuses, three searches plus
+    their census) agree with each other and
+    with independently computed fixture
+    truth, not merely with their own
+    batteries. F-1 union verified sound
+    BEFORE fixtures and re-pinned by the
+    battery (test A4): the merged
+    src/runmal/hub/router.py carries ALL hub
+    roads - 17 operations on 16 paths,
+    distinct-census and schema-census both
+    present, declaration order breadth ->
+    distinct -> schema -> search. F-2
+    respected: P-189 / P-190 documents
+    mapped by their own pre-coverage shapes,
+    the P-193 shape never asserted against
+    them. Slice doc
+    docs/HUB_RECONCILIATION_2026-11-09.md +
+    clean-room log +1. Evidence (team-03
+    hidden_files/P201_EVIDENCE.md + logs):
+    battery 26 passed. Neighbours on the
+    team tree 405 passed / 0 failed (hub
+    batteries P-187..P-200 + pack batteries
+    P-045 / P-054 / P-063 / P-141 + this
+    battery; 379 on the merged tree at P-200
+    + 26, exact). Team full suite 5904
+    passed / 5 skipped / 0 failed, exit 0 (=
+    5878 banked at P-200 + 26, exact), clean
+    at first run; the s503 STT timing
+    contract did NOT fire, no contention
+    classification needed. Combined fence on
+    the merged tree (P-187..P-201 hub
+    batteries + P-045 / P-054 / P-063 /
+    P-141 pack batteries, run at banking in
+    the forge tree): 405 passed / 0 failed
+    (379 at P-200's fence + 26, exact).
+    Forge confirmation full suite on the
+    merged tree (counts read back from forge
+    hidden_files/P201_FORGE_CONFIRM.log):
+    5904 passed / 5 skipped / 0 failed in
+    359.51s, exit 0 - clean at first run, no
+    contention failure and no solo re-run
+    needed; merged expectation 5904 (= 5878
+    + 26, exact). Migration: NONE (head
+    stays 0041; battery test A6 pins
+    MIGRATIONS[-1] == current_revision ==
+    "0041" and the absence of any m0042
+    file). Defects: no disagreement found
+    anywhere in the banked hub surface -
+    every reconciliation claim B1..B12 held;
+    no banked-code bug discovered and none
+    at banking; no bug left unfixed. One
+    defect in the battery's OWN first-run
+    expectation was fixed in-slice (D2's
+    known-handler-calls list omitted the
+    registry store verbs get_entry /
+    remove_entry the DELETE handler lawfully
+    calls; first run 25 passed / 1 failed,
+    after correction 26 passed). One design-
+    text correction recorded in the slice
+    doc: P201_DESIGN.md section A3 says "16
+    schema tags"; the enumerated truth is 15
+    (P-187 entry + list, one per slice
+    P-188..P-200), which the battery pins -
+    not a code defect. Carried items
+    untouched, exactly as recorded at P-186
+    through P-200: (1) binding label update
+    stays named open (unbind-then-bind law);
+    (2) automatic retention / bulk clear of
+    history awaits the ruling of Volmarr -
+    none invented; (3) unified-search
+    history stays named open (this battery
+    records nothing). Hub reconciliation
+    battery is now BANKED. Banked now
+    P-001..P-201 + the commissioned binding
+    depth/role slice. PART XII OPEN
+    (P-187..P-202). Next in roadmap order:
+    P-202 (Part XII, DERIVED).
