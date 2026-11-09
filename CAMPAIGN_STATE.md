@@ -20269,3 +20269,89 @@ P-162 BANKED - Character Face History
     CLOSED (P-187..P-202). Next in
     roadmap order: P-203 (opening
     Part XIII).
+    P-203 BANKED - composed Inspector
+    overview (Part XIII, DERIVED).
+    PART XIII OPENED at P-203. -
+    team-02 commit a0288af merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 8ade4b1 (parents 6e287d8 +
+    a0288af). The team-02 base IS the
+    forge HEAD (parent 6e287d8, the
+    P-202 banking record), so the
+    merge was CLEAN - no conflicts in
+    any file; merged diff vs 6e287d8
+    exactly the 7 slice files
+    (+745/-0): src/runmal/inspector/
+    __init__.py, overview.py,
+    router.py, src/runmal/app.py (one
+    import + one include_router
+    block), docs/INSPECTOR_OVERVIEW_
+    2026-11-09.md, clean-room log +1,
+    tests/test_p203_inspector_
+    overview.py. Derived scope
+    ACCEPTED: one read-only
+    schema-versioned document
+    (runmal-p203-inspector-overview-
+    v1) per owned chat on GET
+    /inspector/chats/{chat_id},
+    joining the three roadmap-named
+    banked sources plus scenario-
+    binding state: the P-075
+    provenance summary carried
+    verbatim from list_chat_
+    provenance; the P-059 prompt
+    section as availability plus
+    pointers to the banked POST
+    roads, never composed inside the
+    GET (a read must not consume
+    activation rolls); the P-043
+    bound lorebooks resolved via the
+    banked P-040 resolve_scoped_books
+    with per-book inspect pointers;
+    scenario state via the banked
+    binding store summary (identity
+    and counts only). Every section
+    carries an honest closed-
+    vocabulary status (available /
+    empty / not_applicable /
+    unavailable) with a reason when
+    not available. Calls the banked
+    surfaces only, re-implements
+    none, persists nothing. NO
+    migration, head stays 0041.
+    Evidence (team-02 hidden_files/
+    P203_EVIDENCE.md + logs): battery
+    11 passed; neighbours 276 passed
+    / 0 failed; team full suite 5959
+    passed / 5 skipped / 0 failed.
+    Banking: combined fence in the
+    forge 287 passed / 0 failed;
+    forge confirmation 5959 passed /
+    5 skipped / 0 failed in 399.46s,
+    exit 0 (= 5948 banked at P-202 +
+    11 exact), clean at first run, no
+    solo re-run needed. Defects: none
+    in banked code; the one failure
+    seen was in the battery itself
+    (a MIGRATIONS pin unpacking 2
+    fields from 3-tuples), fixed in
+    the battery and re-run green
+    before banking. Ruff: clean on
+    the new package and battery;
+    router.py carries only B008, the
+    house idiom of every banked
+    router. Declined with reasons in
+    the design: Assistant View /
+    reasoning display (no reasoning
+    content exists in-tree), bot
+    runtime (no substrate), live
+    composition inside the overview
+    GET, persisted event/flag log
+    (named as the natural P-204+
+    question). Carried items K-A /
+    K-B / K-C stay untouched. Banked
+    now P-001..P-203 + the
+    commissioned binding depth/role
+    slice. PART XIII OPEN
+    (P-203..P-218). Next in roadmap
+    order: P-204 (Part XIII, DERIVED).
