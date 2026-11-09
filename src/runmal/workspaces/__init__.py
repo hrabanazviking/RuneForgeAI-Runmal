@@ -53,6 +53,18 @@ the Companion That Works).
   tree only and partiality named - on GET
   /workspaces/search. It opens no file, writes
   nothing and grants nothing.
+- ``content_search`` + ``content_search_router`` -
+  the workspace content search (P-180, Part XI,
+  DERIVED scope): one chat's bound folder searched
+  by file content - P-176's tree composed verbatim
+  at its maximum depth, every candidate file read
+  through P-172's own read under its stated cap,
+  binary / oversize / unreadable / refused files
+  named as skips (never searched in part, never
+  silently omitted), partial coverage named by
+  truncated / coverage_complete - on GET
+  /workspaces/content-search. It writes nothing
+  and grants nothing.
 - ``router`` - the owner-scoped HTTP road
   (/api/v1/workspaces/*).
 - ``census`` + ``census_router`` - the workspace
