@@ -19632,3 +19632,104 @@ P-162 BANKED - Character Face History
     binding depth/role slice. PART XII OPEN
     (P-187..P-202). Next in roadmap order: P-197 (Part
     XII, DERIVED).
+    P-197 BANKED - Hub byte-size census (Part
+    XII, DERIVED). Part XII continues. - team-02 commit
+    c7a5720 merged (no-ff) into yrsa/two-mirrors-build
+    as 938c68e (parents 2275c1f + c7a5720). The team-02
+    base predated P-196 (parent ff191c1, the P-195
+    record), so the merge reconciled P-196's hub delta
+    (content_shape_census) with P-197's
+    (size_census). Merge conflicts in 2 files
+    (src/runmal/hub/router.py - docstring and road
+    regions only - and docs/CLEAN_ROOM_LOG_2026-10-30.md)
+    resolved as additive unions keeping the P-196 and
+    P-197 work exactly once each; merged diff vs
+    2275c1f exactly the 5 slice files (+1101/-0).
+    Router verification per the P-192 banking lesson:
+    the merged router was diffed against BOTH parents'
+    router deltas and grep-verified - the
+    hub_content_census, hub_content_search,
+    hub_unified_search, hub_unified_search_census,
+    hub_duplicate_census, hub_content_shape_census and
+    hub_size_census imports are all present and every
+    GET road survives (census, content-census,
+    duplicate-census, content-shape-census,
+    size-census, search, content-search,
+    unified-search, unified-search-census, entry read,
+    browse, list, delete), py_compile clean. NO import
+    or road was dropped and no heal was needed.
+    Derived scope ACCEPTED: hub byte-size census -
+    the estate cell no banked hub document takes, in
+    the house census shape.
+    src/runmal/hub/size_census.py
+    (size_census_document(entries), schema
+    runmal-p197-hub-size-census-v1) measures the FILE
+    each verified pack came from - no banked hub
+    document carries any file-size field; every hub
+    surface stats each ready pack file only to enforce
+    the 16 MiB bound and discards the size, and a
+    locator is not a size. The document embeds
+    P-187's list document whole and verbatim; each
+    entry is judged under P-188's locator law and its
+    imported 16 MiB bound, then parsed through the
+    owning layer's OWN verified parse road, dispatched
+    exactly as P-193 dispatches; the module contains
+    no pack parser of its own. The byte law is split
+    in two: file_bytes is a filesystem fact carried
+    for every ready row whether or not its pack
+    verifies (null when the locator is not ready or
+    the stat fails), and the verified axes
+    (total_verified_bytes, per-kind verified bytes,
+    the closed SIZE_BUCKETS buckets, largest and
+    smallest) sum parsed rows only, so verified never
+    exceeds total; bytes are per FILE and never
+    deduplicated - byte-equal copies count twice.
+    Rows carry outcomes under P-193's imported
+    OUTCOMES law; no file content, excerpt or payload
+    appears anywhere in the document. One new road:
+    GET /hub/size-census, bearer-gated and
+    owner-scoped like the content-census road; the
+    census writes nothing and records no history.
+    Slice doc docs/HUB_SIZE_CENSUS_2026-11-09.md
+    + clean-room log +1.
+    Evidence (team-02 hidden_files/P197_EVIDENCE.md +
+    logs): battery 20 passed. Neighbours on the team
+    tree 305 passed / 0 failed (= 282 P-196
+    neighbours - 16 P-196 battery + 19 P-195 battery
+    + 20 P-197, exact). Team full suite 5804 passed /
+    5 skipped / 0 failed (= 5784 banked at P-195 +
+    20, exact), clean, no contention classification
+    needed. One in-slice finding was fixed in-slice:
+    ruff B905 on a zip without strict= (fixed with
+    strict=True); no banked-code defect. Combined
+    fence on the merged tree (P-187..P-197 hub
+    batteries + P-045 / P-054 / P-063 / P-141 pack
+    batteries, forge hidden_files/P197_FENCE.log):
+    321 passed / 0 failed (301 at P-196's fence + 20,
+    exact). Forge confirmation full suite on the
+    merged tree (counts read back from forge
+    hidden_files/P197_FORGE_CONFIRM.log): 5819 passed /
+    5 skipped / 1 failed in 501.45s - the single
+    failure the P-077 longchat tripwire alone
+    (tests/test_p077_longchat_performance.py::
+    test_longchat_tripwires, a timing tripwire on a
+    machine shared with the other campaigns), solo
+    re-run 17 passed / 0 failed (forge
+    hidden_files/P197_P077_SOLO.log), CONTENTION
+    class, both figures recorded; merged expectation
+    5820 passed / 5 skipped / 0 failed (= 5800 banked
+    at P-196 + 20, exact) stands by the solo re-run.
+    Migration: NONE (head stays 0041). Defects: none
+    discovered in banked code and none at banking; no
+    bug left unfixed.
+    Carried items untouched, exactly as recorded at
+    P-186 through P-196: (1) binding label update stays
+    named open (unbind-then-bind law); (2) automatic
+    retention / bulk clear of history awaits the ruling
+    of Volmarr - none invented; (3) unified-search
+    history stays named open (this census records
+    nothing). Hub byte-size census is now
+    BANKED. Banked now P-001..P-197 + the commissioned
+    binding depth/role slice. PART XII OPEN
+    (P-187..P-202). Next in roadmap order: P-198 (Part
+    XII, DERIVED).
