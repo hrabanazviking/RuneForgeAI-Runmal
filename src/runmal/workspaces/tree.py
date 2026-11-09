@@ -179,6 +179,17 @@ def build_tree(root_listing: dict, max_depth: int = DEFAULT_DEPTH) -> dict:
         node["children"] = children
         node["expanded"] = True
         if level >= max_depth:
+            # P-179 (fix for the defect P-178 found in
+            # P-176): a directory among this capped level's
+            # composed children is left unexpanded, so this
+            # is a partial tree - name it in truncated,
+            # read from the composed children themselves
+            # (P-178's document-side rule, at the source).
+            # Files and symlinks at the cap are leaves and
+            # never make a tree partial.
+            if any(child["kind"] == KIND_DIRECTORY
+                   for child in children):
+                state["truncated"] = True
             return
         for child in children:
             if child["kind"] != KIND_DIRECTORY:
