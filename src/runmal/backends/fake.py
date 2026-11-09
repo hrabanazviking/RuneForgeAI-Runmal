@@ -13,7 +13,7 @@ from collections.abc import AsyncIterator
 
 from runmal.backends.base import ChatBackend
 from runmal.backends.errors import BackendError, GenerationCancelled, InvalidRequest
-from runmal.backends.events import Done, Event, TextDelta, UsageUpdate
+from runmal.backends.events import Done, Event, ReasoningDelta, TextDelta, UsageUpdate
 from runmal.backends.messages import ChatMessage
 from runmal.backends.models import Capabilities, HealthStatus, ModelInfo
 from runmal.backends.params import SamplingParams
@@ -30,12 +30,14 @@ class FakeChatBackend(ChatBackend):
         self,
         chunks: tuple[str, ...] = ("Rúnmál ", "hears ", "you."),
         usage: UsageUpdate | None = None,
+        reasoning_chunks: tuple[str, ...] = (),
         fail_with: BackendError | None = None,
         fail_after: int | None = None,
         api_key: str | None = None,
         model_id: str = FAKE_MODEL_ID,
     ):
         self._chunks = tuple(chunks)
+        self._reasoning_chunks = tuple(reasoning_chunks)
         self._usage = usage
         self._fail_with = fail_with
         self._fail_after = fail_after
@@ -71,6 +73,11 @@ class FakeChatBackend(ChatBackend):
         _ = (messages, params)
         if self._fail_with is not None and self._fail_after is None:
             raise self._fail_with
+        for chunk in self._reasoning_chunks:
+            if cancel.is_set():
+                raise GenerationCancelled("generation cancelled")
+            yield ReasoningDelta(chunk)
+            await asyncio.sleep(0)
         emitted = 0
         for chunk in self._chunks:
             if cancel.is_set():

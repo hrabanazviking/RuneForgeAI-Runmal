@@ -21,7 +21,7 @@ import uuid
 
 from runmal.backends.base import ChatBackend
 from runmal.backends.errors import BackendError, GenerationCancelled
-from runmal.backends.events import Done, ErrorEvent, Event, TextDelta, UsageUpdate
+from runmal.backends.events import Done, ErrorEvent, Event, ReasoningDelta, TextDelta, UsageUpdate
 from runmal.backends.fake import FakeChatBackend
 from runmal.backends.messages import ChatMessage
 from runmal.backends.params import SamplingParams
@@ -65,6 +65,8 @@ def bridge_event(event: Event) -> dict | None:
     """Bridge one normalized backend event to the UI's SSE dict shape."""
     if isinstance(event, TextDelta):
         return {"type": "token", "text": event.text}
+    if isinstance(event, ReasoningDelta):
+        return {"type": "reasoning", "text": event.text}
     if isinstance(event, Done):
         return {"type": "done", "finish_reason": event.reason}
     if isinstance(event, UsageUpdate):

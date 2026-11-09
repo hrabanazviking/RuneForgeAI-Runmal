@@ -25,7 +25,7 @@ from runmal.backends.errors import (
     ProviderError,
     RateLimited,
 )
-from runmal.backends.events import Done, TextDelta, UsageUpdate
+from runmal.backends.events import Done, ReasoningDelta, TextDelta, UsageUpdate
 from runmal.backends.models import Capabilities, HealthStatus, ModelInfo
 from runmal.backends.structured import wire_payload
 from runmal.tokens import TokenQuality
@@ -137,7 +137,11 @@ class OpenRouterChatBackend(ChatBackend):
                     choices = obj.get("choices") or []
                     if choices:
                         choice = choices[0]
-                        content = (choice.get("delta") or {}).get("content")
+                        delta = choice.get("delta") or {}
+                        reasoning = delta.get("reasoning") or delta.get("reasoning_content")
+                        if reasoning:
+                            yield ReasoningDelta(reasoning)
+                        content = delta.get("content")
                         if content:
                             yield TextDelta(content)
                         if choice.get("finish_reason"):
