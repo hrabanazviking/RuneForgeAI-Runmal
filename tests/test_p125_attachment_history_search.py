@@ -333,5 +333,5 @@ def test_http_per_chat_list_unchanged(tmp_path, monkeypatch):
 
 def test_migration_head_stays_0041(tmp_path, monkeypatch):
     _client, _f, db_path = make_client(tmp_path, monkeypatch)
-    assert MIGRATIONS[-1][0] == "0041"
-    assert current_revision(db_path) == "0041"
+    assert MIGRATIONS[-1][0] == "0042"
+    assert current_revision(db_path) == "0042"

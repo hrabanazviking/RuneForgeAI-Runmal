@@ -661,7 +661,7 @@ def test_http_road_owner_scoped_and_bearer_gated(tmp_path):
 def test_neighbours_migration_head_and_imported_laws(tmp_path):
     db_path = tmp_path / "head.db"
     migrate_to_head(db_path)
-    assert current_revision(db_path) == MIGRATIONS[-1][0] == "0041"
+    assert current_revision(db_path) == MIGRATIONS[-1][0] == "0042"
     assert hub_dc.MAX_BROWSE_BYTES == 16 * 1024 * 1024
     assert hub_dc.MAX_BROWSE_BYTES == hub_browse.MAX_BROWSE_BYTES
     assert hub_dc.OUTCOMES is hub_cc.OUTCOMES

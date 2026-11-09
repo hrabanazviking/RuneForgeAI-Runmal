@@ -494,7 +494,7 @@ def test_http_road_owner_scoped_and_bearer_gated(tmp_path):
 def test_neighbours_migration_head_and_bound_law(tmp_path):
     db_path = tmp_path / "head.db"
     migrate_to_head(db_path)
-    assert current_revision(db_path) == MIGRATIONS[-1][0] == "0041"
+    assert current_revision(db_path) == MIGRATIONS[-1][0] == "0042"
     assert hub_cc.MAX_BROWSE_BYTES == 16 * 1024 * 1024
     import runmal.hub.browse as browse_module
     assert hub_cc.MAX_BROWSE_BYTES == browse_module.MAX_BROWSE_BYTES

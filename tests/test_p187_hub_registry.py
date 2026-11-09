@@ -333,8 +333,8 @@ def test_kind_formats_match_the_pack_layers(tmp_path):
 
 
 def test_migration_head_stays_0041(tmp_path):
-    assert MIGRATIONS[-1][0] == "0041"
+    assert MIGRATIONS[-1][0] == "0042"
     assert "0042" not in MIGRATIONS
     db_path = tmp_path / "head.db"
     migrate_to_head(db_path)
-    assert current_revision(db_path) == "0041"
+    assert current_revision(db_path) == "0042"

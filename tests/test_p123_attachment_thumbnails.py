@@ -246,4 +246,4 @@ def test_http_thumbnail_bad_max_dim_and_undecodable_are_422(
 
 def test_migration_head_stays_0041(tmp_path, monkeypatch):
     _, db_path = make_client(tmp_path, monkeypatch)
-    assert current_revision(db_path) == "0041"
+    assert current_revision(db_path) == "0042"

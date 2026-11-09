@@ -566,7 +566,7 @@ def test_api_requires_auth(app_client):
 def test_no_new_migration(tmp_path):
     db_path = tmp_path / "test.db"
     migrate_to_head(db_path)
-    assert current_revision(db_path) == "0041"
+    assert current_revision(db_path) == "0042"
     assert "0042" not in MIGRATIONS
 
 

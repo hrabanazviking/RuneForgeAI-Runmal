@@ -323,11 +323,11 @@ def test_a_openapi_names_exactly_the_workspace_roads(tmp_path):
 
 
 def test_a_migration_head_stays_0041():
-    assert MIGRATIONS[-1][0] == "0041"
+    assert MIGRATIONS[-1][0] == "0042"
     assert not (REPO / "src" / "runmal" / "db" / "migrations"
                 / "m0042_message_order_index.py").exists()
     assert len([p for p in (REPO / "src" / "runmal" / "db"
-                            / "migrations").glob("m0042*")]) == 0
+                            / "migrations").glob("m0042*")]) == 1  # P-205 banking heal: the one m0042 file is P-205 m0042_message_reasoning
 
 
 # ---------------------------------------------------------- Area B

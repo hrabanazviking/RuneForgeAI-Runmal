@@ -500,12 +500,12 @@ def test_a6_p201_itself_judged_present_exactly_once():
 
 
 def test_a7_migration_head_stays_0041(tmp_path):
-    assert MIGRATIONS[-1][0] == "0041"
+    assert MIGRATIONS[-1][0] == "0042"
     db_path = tmp_path / "head.db"
     migrate_to_head(db_path)
-    assert current_revision(db_path) == "0041"
+    assert current_revision(db_path) == "0042"
     migrations_dir = REPO / "src" / "runmal" / "db" / "migrations"
-    assert not list(migrations_dir.glob("m0042*"))
+    assert [p.name for p in migrations_dir.glob("m0042*")] == ["m0042_message_reasoning.py"]  # P-205 banking heal
 
 
 def test_a8_one_law_objects_hold():
@@ -1276,7 +1276,7 @@ def test_d6_limitations_at_full_strength(tmp_path, monkeypatch):
 
 
 def test_h_migration_head_and_gate_scope():
-    assert MIGRATIONS[-1][0] == "0041"
+    assert MIGRATIONS[-1][0] == "0042"
     assert hub_browse.MAX_BROWSE_BYTES == 16 * 1024 * 1024
 
 

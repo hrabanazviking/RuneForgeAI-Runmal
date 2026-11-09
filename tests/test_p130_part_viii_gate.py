@@ -948,10 +948,10 @@ def test_d_scan_report_persists_nothing_and_no_daemon(tmp_path):
 
 
 def test_h_migration_head_stays_0041(tmp_path):
-    assert MIGRATIONS[-1][0] == "0041"
+    assert MIGRATIONS[-1][0] == "0042"
     db_path = tmp_path / "head.db"
     migrate_to_head(db_path)
-    assert current_revision(db_path) == "0041"
+    assert current_revision(db_path) == "0042"
 
 
 def test_h_gate_world_lives_only_in_this_battery():

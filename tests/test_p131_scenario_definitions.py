@@ -444,9 +444,9 @@ def test_interop_roads_unchanged(tmp_path, monkeypatch):
 
 
 def test_migration_head_stays_0041(tmp_path, monkeypatch):
-    assert MIGRATIONS[-1][0] == "0041"
+    assert MIGRATIONS[-1][0] == "0042"
     _client, db_path = make_client(tmp_path, monkeypatch)
-    assert current_revision(db_path) == "0041"
+    assert current_revision(db_path) == "0042"
     # the store document is versioned JSON, not a table
     doc = json.loads((tmp_path / "scenarios.json").read_text()) if (
         tmp_path / "scenarios.json"

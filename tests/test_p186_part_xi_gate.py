@@ -343,9 +343,9 @@ def test_a_p185_reconciliation_battery_stands_in_base():
 
 
 def test_a_migration_head_stays_0041():
-    assert MIGRATIONS[-1][0] == "0041"
+    assert MIGRATIONS[-1][0] == "0042"
     assert len([p for p in (REPO / "src" / "runmal" / "db"
-                            / "migrations").glob("m0042*")]) == 0
+                            / "migrations").glob("m0042*")]) == 1  # P-205 banking heal: the one m0042 file is P-205 m0042_message_reasoning
 
 # ---------------------------------------------------------- Area B
 # Re-measured on the fresh gate world (query "copper");
@@ -652,7 +652,7 @@ async def test_d_depth_cap_truncation_reconciles(tmp_path):
 # ---------------------------------------------------------- Hygiene
 
 def test_h_migration_head_and_gate_scope():
-    assert MIGRATIONS[-1][0] == "0041"
+    assert MIGRATIONS[-1][0] == "0042"
 
 
 def test_h_gate_world_marker_lives_only_in_gate_files():

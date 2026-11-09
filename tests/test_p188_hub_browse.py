@@ -376,10 +376,10 @@ def test_http_browse_unavailable_is_data_at_200(tmp_path):
 
 
 def test_neighbours_head_and_dispatch_coverage(tmp_path):
-    assert MIGRATIONS[-1][0] == "0041"
+    assert MIGRATIONS[-1][0] == "0042"
     assert "0042" not in MIGRATIONS
     make_factory(tmp_path)
-    assert current_revision(tmp_path / "test.db") == "0041"
+    assert current_revision(tmp_path / "test.db") == "0042"
     assert hub_browse.BROWSE_STATES == {
         "inspected", "unavailable", "invalid"}
     assert set(hub.HUB_KINDS) == {

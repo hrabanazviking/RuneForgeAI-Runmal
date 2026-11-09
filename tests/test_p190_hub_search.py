@@ -356,10 +356,10 @@ def test_http_search_never_includes_foreign_entries(tmp_path):
 
 
 def test_neighbours_heads_and_closed_laws(tmp_path):
-    assert MIGRATIONS[-1][0] == "0041"
+    assert MIGRATIONS[-1][0] == "0042"
     assert "0042" not in MIGRATIONS
     make_factory(tmp_path)
-    assert current_revision(tmp_path / "test.db") == "0041"
+    assert current_revision(tmp_path / "test.db") == "0042"
     assert hub_search.SEARCH_STATES == {
         "no_matches", "matches", "matches_truncated"}
     assert hub_search.SEARCH_FIELDS == (

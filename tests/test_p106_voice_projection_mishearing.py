@@ -361,5 +361,5 @@ def test_service_idempotent_reprojection_keeps_mark(tmp_path):
 
 def test_migration_head_stays_0041(tmp_path):
     _factory, db_path = _db(tmp_path)
-    assert MIGRATIONS[-1][0] == "0041"
-    assert current_revision(db_path) == "0041"
+    assert MIGRATIONS[-1][0] == "0042"
+    assert current_revision(db_path) == "0042"

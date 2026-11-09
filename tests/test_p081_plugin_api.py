@@ -919,7 +919,7 @@ def test_no_migration_head_stays_0041_and_app_boots_empty_registry(
         tmp_path, app_client):
     db_path = tmp_path / "mig.db"
     migrate_to_head(db_path)
-    assert current_revision(db_path) == "0041"
+    assert current_revision(db_path) == "0042"
     assert "0042" not in MIGRATIONS
     registry = plugin_service.get_default_registry()
     assert registry is not None

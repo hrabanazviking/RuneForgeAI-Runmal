@@ -369,4 +369,4 @@ def test_http_reregister_after_delete_scans_fresh(tmp_path, monkeypatch):
 
 
 def test_migration_head_stays_0041():
-    assert MIGRATIONS[-1][0] == "0041"
+    assert MIGRATIONS[-1][0] == "0042"

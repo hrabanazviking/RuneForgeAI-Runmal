@@ -568,4 +568,4 @@ def test_http_optin_disabled_watch_is_422(tmp_path, monkeypatch):
 
 def test_migration_head_stays_0041(tmp_path, monkeypatch):
     _, db_path = make_client(tmp_path, monkeypatch)
-    assert current_revision(db_path) == "0041"
+    assert current_revision(db_path) == "0042"

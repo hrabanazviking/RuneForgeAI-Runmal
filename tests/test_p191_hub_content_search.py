@@ -565,10 +565,10 @@ def test_http_content_search_requires_bearer(tmp_path):
 
 
 def test_migration_head_stays_0041_and_bound_is_p188s(tmp_path):
-    assert MIGRATIONS[-1][0] == "0041"
+    assert MIGRATIONS[-1][0] == "0042"
     assert "0042" not in MIGRATIONS
     make_factory(tmp_path)
-    assert current_revision(tmp_path / "test.db") == "0041"
+    assert current_revision(tmp_path / "test.db") == "0042"
     assert hub_cs.MAX_BROWSE_BYTES == hub_browse.MAX_BROWSE_BYTES
     assert hub_cs.OUTCOMES == {"searched", "unavailable", "invalid"}
     assert hub_cs.SEARCH_STATES == {

@@ -470,8 +470,8 @@ def test_http_empty_format_is_422_and_unknown_id_still_404(
 
 
 def test_migration_head_stays_0041(tmp_path, monkeypatch):
-    assert MIGRATIONS[-1][0] == "0041"
+    assert MIGRATIONS[-1][0] == "0042"
     client = make_client(tmp_path, monkeypatch)
     created = client.post("/api/v1/scenarios", json=native_body())
     assert created.status_code == 201
-    assert current_revision(tmp_path / "test.db") == "0041"
+    assert current_revision(tmp_path / "test.db") == "0042"

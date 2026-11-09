@@ -109,7 +109,7 @@ def test_migration_note_and_head_0041() -> None:
     assert "no migration was added by this slice" in text
     assert "committed on yrsa/runmal-team-03 for the keeper to bank in roadmap order" in text
     from runmal.db.migrations import MIGRATIONS
-    assert MIGRATIONS[-1][0] == "0041"
+    assert MIGRATIONS[-1][0] == "0042"
 
 
 def test_measured_counts_are_recorded() -> None:

@@ -547,10 +547,10 @@ def test_d_no_evidence_is_not_zero(tmp_path):
 
 
 def test_hygiene_migration_head_and_part_span(tmp_path):
-    assert MIGRATIONS[-1][0] == "0041"
+    assert MIGRATIONS[-1][0] == "0042"
     db_path = tmp_path / "test.db"
     migrate_to_head(db_path)
-    assert current_revision(db_path) == "0041"
+    assert current_revision(db_path) == "0042"
     roadmap = (REPO / "docs"
                / "RUNMAL_TWO_MIRRORS_PARITY_ROADMAP_2026-10-30.md"
                ).read_text(encoding="utf-8")
