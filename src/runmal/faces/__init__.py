@@ -132,6 +132,24 @@
   kept history and names no voice.
 - ``census_router`` - the owner-scoped census road
   (GET /api/v1/faces/census).
+- ``speaking_chats`` - character speaking chats
+  (P-166): one pure-read board per character
+  composing P-160's face-chats board whole - the
+  board state, the rows whole, the counts - paired
+  with the character's CURRENT voice resolution
+  (S512, stated once at board level). Both halves
+  are current: the board reads no kept history, so
+  no voice_scope rides here (P-157 / P-159
+  precedent); the current_only law binds wherever
+  history is involved (P-161 / P-163). ``paired``
+  is True exactly when a voice resolved and at
+  least one chat shows a ready face. A character
+  has no single current face: selection stays per
+  chat (P-092).
+- ``speaking_chats_router`` - the owner-scoped
+  speaking-chats board road
+  (GET /api/v1/faces/speaking-chats
+  ?character_id=).
 """
 
 from runmal.faces.character_history import (
@@ -169,6 +187,18 @@ from runmal.faces.census import (
     resolve_face_census,
 )
 from runmal.faces.census import NOTES as CENSUS_NOTES
+from runmal.faces.speaking_chats import (
+    SPEAKING_CHATS_SCHEMA,
+    SPEAKING_CHATS_STATE_ALL_READY,
+    SPEAKING_CHATS_STATE_NO_CHATS,
+    SPEAKING_CHATS_STATE_NONE_READY,
+    SPEAKING_CHATS_STATE_SOME_READY,
+    SPEAKING_CHATS_STATES,
+    resolve_character_speaking_chats,
+)
+from runmal.faces.speaking_chats import (
+    NOTES as SPEAKING_CHATS_NOTES,
+)
 from runmal.faces.chats import (
     BOARD_STATE_ALL_READY,
     BOARD_STATE_NO_CHATS,
@@ -259,6 +289,13 @@ __all__ = [
     "CENSUS_STATE_NONE_READY",
     "CENSUS_STATE_SOME_READY",
     "CENSUS_STATES",
+    "SPEAKING_CHATS_NOTES",
+    "SPEAKING_CHATS_SCHEMA",
+    "SPEAKING_CHATS_STATE_ALL_READY",
+    "SPEAKING_CHATS_STATE_NO_CHATS",
+    "SPEAKING_CHATS_STATE_NONE_READY",
+    "SPEAKING_CHATS_STATE_SOME_READY",
+    "SPEAKING_CHATS_STATES",
     "FACE_STATES",
     "ENTRY_STATE_CLEARED",
     "ENTRY_STATE_DECLARED_UNBOUND",
@@ -295,6 +332,7 @@ __all__ = [
     "resolve_character_face_history",
     "resolve_character_speaking_history",
     "resolve_face_census",
+    "resolve_character_speaking_chats",
     "resolve_face_history",
     "resolve_character_speaking_roster",
     "resolve_presentation",
