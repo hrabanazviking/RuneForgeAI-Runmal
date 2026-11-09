@@ -13624,3 +13624,177 @@ P-156 BANKED - Character Face Roster
     PART X OPEN (P-155..P-168).
     Next in roadmap order: P-157 (Part
     X, in roadmap order).
+P-157 BANKED - Speaking Face
+    (Part X - Faces That Speak,
+    P-155..P-168).
+    - team-03 commit e2afb5b merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 4ffa80e (parents 01c48b2 +
+    e2afb5b); merge pushed and
+    ls-remote verified at 4ffa80e
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Derived scope ACCEPTED as banked
+    by the keeper: the roadmap gives
+    Part X only its part-table line
+    (P-155..P-168), no per-slice
+    entries; this slice is derived
+    from Runmal's own in-tree record
+    only (the part title itself -
+    the faces P-155 and P-156 resolve
+    are silent - plus S512
+    per-character voice profiles,
+    P-109 voice affects, P-092
+    expression inspection and P-023
+    asset roads), as the slice doc
+    states plainly.
+    Scope: a pure-read resolution
+    service (src/runmal/faces/
+    speaking.py -
+    resolve_speaking_face) pairing,
+    on the one shared key of the
+    chat's bound character, the face
+    half and the voice half for one
+    chat, plus one road (GET
+    /faces/speaking?chat_id= on the
+    /api/v1 mount, after the vision
+    router, with the local-auth
+    dependency; 404 for a missing or
+    foreign chat - existence never
+    leaks; every non-ready state is
+    data, never an error). The face
+    half is composed from P-092's
+    inspect_state and classified
+    under the same closed five-state
+    law P-155 uses (ready /
+    current_unbound / no_selection /
+    no_set / no_character, with
+    not_declared for a selection
+    outliving its set); current rides
+    verbatim with its provenance and
+    face names the current entry's
+    descriptor (the P-155 shape, with
+    the P-023 content / thumbnail
+    roads as URL data) only when the
+    state is ready, else None. The
+    voice half is composed from S512
+    verbatim (resolve_character_voice
+    for the resolved reference,
+    get_character_voice for the
+    stored row) and classified under
+    a closed voice-state law
+    (profile / profile_fallback /
+    default_voice); the row's named
+    backend rides as stored_backend
+    so a fallback is visible, never
+    silent. The P-109 affect view
+    rides whole (affect, source,
+    consumed: False and the
+    consumption truth). paired is
+    True exactly when the face state
+    is ready and a voice resolved;
+    the halves are independent
+    modalities and neither is ever
+    substituted for the other.
+    Evidence (team-03 worktree
+    hidden_files/ P157_EVIDENCE.md +
+    logs P157_BATTERY.log,
+    P157_NEIGHBOURS.log,
+    P157_FULLSUITE.log): battery 16
+    passed / 0 failed; neighbours
+    fence (P-092 + P-109 + S512 +
+    P-117) 58 passed / 0 failed;
+    team full suite 5061 passed / 5
+    skipped / 0 failed in 314.96s,
+    exit 0, reconciling exactly
+    (5045 on its base 8824e95 + 16
+    battery = 5061; P-155 and P-156
+    were NOT in that base and are
+    reconciled at this merge).
+    Combined batteries on the merged
+    tree: 100 passed / 0 failed
+    (P-155 battery 14 + P-156 battery
+    12 + P-157 battery 16 +
+    neighbours fence 58, exact), run
+    by the banking coordinator with
+    PYTHONPATH=src on the campaign
+    venv runmal-venv312.
+    Forge confirmation suite on the
+    merged tree: 5087 passed / 5
+    skipped / 0 failed in 299.95s,
+    exit 0, exact (5071 + 16).
+    Reconciliation: all three Part X
+    slices created src/runmal/faces/
+    __init__.py on the same base and
+    appended a router include in
+    app.py at the same anchor (after
+    the vision router); this merge
+    conflicted on the clean-room
+    log, app.py and faces/__init__.py
+    and all three were resolved as
+    pure additive unions by the
+    banking coordinator. The merged
+    tree carries all three faces
+    routers; the speaking road is
+    grep-verified live in app.py
+    (import + include). Clean-room
+    log: the P-157 entry appears
+    exactly once. py_compile clean
+    on all merged surfaces.
+    Slice scope: src/runmal/faces/
+    speaking.py (new), src/runmal/
+    faces/speaking_router.py (new),
+    src/runmal/faces/__init__.py
+    (union), src/runmal/app.py (+6),
+    tests/test_p157_speaking_face.py
+    (new, 16 tests),
+    docs/SPEAKING_FACE_2026-11-08.md
+    (new), docs/CLEAN_ROOM_LOG_
+    2026-10-30.md (+1 entry, exactly
+    once in the merged tree). Team
+    delta 7 files (+789/-0); merged
+    diff vs 01c48b2 is exactly those
+    7 files (+789/-0), purely
+    additive, no hidden_files paths
+    in the slice commit.
+    Migration: NONE (head stays 0041,
+    no 0042, battery-pinned).
+    Defects: none discovered
+    in-slice and none found at
+    banking; no heal was needed
+    beyond the flagged union
+    reconciliation above.
+    Honest limitations: pairing is
+    data only - no synthesis, no
+    rendering, no lip-sync or
+    animation (no timing contract
+    exists in-tree); the affect is
+    carried data with consumed:
+    False (no TTS backend renders an
+    affect yet); a character can
+    speak without a ready face, and
+    a voice resolving while the face
+    is unbound is stated, never
+    upgraded. No playback, runtime
+    or execution of any stored
+    content (P-027 law).
+    Banking note (honest): the
+    banking was interrupted by a
+    cron timeout after the merge and
+    the forge confirmation had
+    completed; the merge push, this
+    record and the team reset were
+    completed by the banking
+    finisher WITHOUT re-running the
+    full suite - the combined and
+    confirmation counts above are
+    read back from the coordinator's
+    logs on the merged tree
+    (hidden_files/P157_COMBINED.log
+    and P157_CONFIRM.log with its
+    exit file, 0).
+    Derived scope ACCEPTED as banked.
+    PART X OPEN (P-155..P-168).
+    Next in roadmap order: P-158 (Part
+    X, in roadmap order).
