@@ -13965,3 +13965,181 @@ P-158 BANKED - Face Selection
     PART X OPEN (P-155..P-168).
     Next in roadmap order: P-159 (Part
     X, in roadmap order).
+P-159 BANKED - Speaking Roster
+    (Part X - Faces That Speak,
+    P-155..P-168).
+    - team-02 commit caaef51 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as a4c9ca1 (parents 1975169 +
+    caaef51); merge pushed and
+    ls-remote verified at a4c9ca1
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Derived scope ACCEPTED as banked
+    by the keeper: the roadmap gives
+    Part X only its part-table line
+    (P-155..P-168), no per-slice
+    entries; this slice is derived
+    from the in-tree record of Runmal
+    only (the banked Part X grid -
+    per chat: P-155 faces, P-157
+    faces + voice; per character:
+    P-156 faces, nothing with voice -
+    and P-157's own design, which
+    weighed a per-character chat-less
+    speaking document and named it
+    open), as the slice doc states
+    plainly.
+    Scope: a pure-read resolution
+    service (src/runmal/faces/
+    speaking_roster.py -
+    resolve_character_speaking_roster)
+    resolving, for one character, the
+    speaking document: the roster half
+    composed from P-156
+    resolve_character_roster WHOLE
+    (character, set, every entry's
+    descriptor in the P-155 shape with
+    the P-023 roads as data present
+    only when bound, counts, the state
+    under the same closed ROSTER_STATES
+    law, selection_scope per_chat, the
+    declared default and the avatar as
+    fallback DATA never applied), plus
+    one road (GET
+    /faces/speaking-roster?character_id=
+    on the /api/v1 mount, after the
+    speaking router, with the
+    local-auth dependency; 404 for a
+    missing or foreign character -
+    existence never leaks; every
+    non-ready state is data, never an
+    error). The voice half is composed
+    from S512 verbatim in substance
+    exactly as P-157 composes it -
+    resolve_character_voice for the
+    resolved reference,
+    get_character_voice for the stored
+    row - classified under the same
+    closed VOICE_STATES law (profile /
+    profile_fallback with the row's
+    named backend carried as
+    stored_backend / default_voice),
+    the P-109 affect view carried
+    whole with consumed False; paired
+    true exactly when the roster is
+    ready and a voice resolved, the
+    halves independent and neither
+    ever substituted. NO current face
+    anywhere in the document - no
+    current, face or chat_id key -
+    because selection is per chat and
+    always an explicit act (P-092).
+    No store, no migration.
+    Evidence (team-02 worktree
+    hidden_files/ P159_EVIDENCE.md +
+    logs P159_BATTERY.log,
+    P159_NEIGHBOURS.log,
+    P159_FULL_SUITE.log): battery 17
+    passed / 0 failed; neighbours
+    fence (P-092 + P-109 + S512 +
+    P-155 + P-156 + P-157) 85 passed /
+    0 failed; team full suite 5104
+    passed / 5 skipped / 0 failed in
+    375.64s, exit 0, reconciling
+    exactly (5087 on its base d94e2a0
+    + 17 battery = 5104; P-158 was NOT
+    in that base and is reconciled at
+    this merge).
+    Combined batteries on the merged
+    tree: 178 passed / 0 failed
+    (P-155 battery 14 + P-156 battery
+    12 + P-157 battery 16 + P-158
+    battery 18 + P-159 battery 17 +
+    neighbour union fence 101 (P-092
+    + P-023 + P-109 + P-117 + S512),
+    exact), run by the banking
+    coordinator with PYTHONPATH=src
+    on the campaign venv
+    runmal-venv312.
+    Forge confirmation suite on the
+    merged tree: 5122 passed / 5
+    skipped / 0 failed in 310.36s,
+    exit 0 (hidden_files/
+    P159_CONFIRM.log with its exit
+    file, 0) - a clean run, no
+    contention re-runs needed,
+    reconciling exactly (5105 + 17).
+    Reconciliation: this slice was
+    built on the P-157 record base
+    d94e2a0; the merge into the forge
+    (carrying P-158) conflicted on the
+    clean-room log, app.py and
+    faces/__init__.py and all three
+    were resolved as pure additive
+    unions by the banking
+    coordinator. The merged tree
+    carries all five faces routers
+    (presentation, roster, speaking,
+    history, speaking-roster); the
+    speaking-roster road is
+    grep-verified live in app.py
+    (import + include). Clean-room
+    log: the P-159 entry appears
+    exactly once (and the P-158 entry
+    exactly once). py_compile clean
+    on all merged surfaces.
+    Slice scope: src/runmal/faces/
+    speaking_roster.py (new),
+    src/runmal/faces/
+    speaking_roster_router.py (new),
+    src/runmal/faces/__init__.py
+    (union), src/runmal/app.py (+6),
+    tests/test_p159_speaking_roster.py
+    (new, 17 tests),
+    docs/SPEAKING_ROSTER_2026-11-08.md
+    (new), docs/CLEAN_ROOM_LOG_
+    2026-10-30.md (+1 entry, exactly
+    once in the merged tree). Team
+    delta 7 files (+783/-0); merged
+    diff vs 1975169 is exactly those
+    7 files (+783/-0), purely
+    additive, no hidden_files paths
+    in the slice commit.
+    Migration: NONE (head stays 0041,
+    no 0042, battery-pinned).
+    Defects: the team fixed in-slice
+    a ruff I001 on faces/__init__.py
+    caused by its own added block
+    (blank-line shape matched to
+    siblings; one redundant alias
+    export dropped, the schema +
+    resolver re-verified importable
+    after the change). Pre-existing
+    app.py I001 and router B008 house
+    patterns were verified on the
+    banked tree as not introduced by
+    this slice. No defect was found
+    at banking; no heal was needed
+    beyond the flagged union
+    reconciliation above.
+    Honest limitations: Runmal
+    renders nothing in this slice;
+    the speaking-roster document is
+    data a client reads, carrying no
+    image bytes. The voice half is a
+    resolved reference, never
+    synthesized audio; nothing is
+    performed, animated or lip-synced.
+    The roster names what a character
+    CAN show; it names no current
+    face, because no explicit
+    per-chat selection stands behind
+    a chat-less document. No playback,
+    runtime or execution of any
+    stored content (P-027 law).
+    Derived scope ACCEPTED as banked.
+    PART X OPEN (P-155..P-168).
+    Next in roadmap order: P-160 (Part
+    X, in roadmap order).
