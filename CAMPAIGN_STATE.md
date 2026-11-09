@@ -19733,3 +19733,93 @@ P-162 BANKED - Character Face History
     binding depth/role slice. PART XII OPEN
     (P-187..P-202). Next in roadmap order: P-198 (Part
     XII, DERIVED).
+    P-198 BANKED - Hub breadth census (Part
+    XII, DERIVED). Part XII continues. - team-03 commit
+    824d316 merged (no-ff) into yrsa/two-mirrors-build
+    as 546027b (parents 1c18009 + 824d316). The team-03
+    base IS the forge HEAD (parent 1c18009, the P-197
+    banking record), so the merge was clean with NO
+    conflicts; merged diff vs 1c18009 exactly the 5
+    slice files (+1195/-0). Router verification per
+    the P-192 banking lesson: the merged router was
+    diffed against BOTH parents' router deltas and
+    grep-verified - the hub_content_census,
+    hub_content_search, hub_unified_search,
+    hub_unified_search_census, hub_duplicate_census,
+    hub_content_shape_census, hub_size_census and
+    hub_breadth_census imports are all present (eight
+    hub census/search modules) and every GET road
+    survives (census, content-census,
+    duplicate-census, content-shape-census,
+    size-census, breadth-census, search,
+    content-search, unified-search,
+    unified-search-census, entry read, browse, list,
+    delete), py_compile clean; the merged router is
+    byte-identical to the team commit's router. NO
+    import or road was dropped and no heal was needed.
+    Derived scope ACCEPTED: hub breadth census -
+    the estate cell no banked hub document takes, in
+    the house census shape.
+    src/runmal/hub/breadth_census.py
+    (breadth_census_document(entries), schema
+    runmal-p198-hub-breadth-census-v1) measures the
+    WIDTH of the verified payloads - P-196's
+    content-shape census measures the DEPTH axis and
+    discards how wide any single container spreads;
+    no banked hub document carries a single
+    container-size field. Every container (dict or
+    list) in a verified payload has a width, its
+    immediate child count; a member under a
+    content_sha256 key is excluded WHOLE, exactly as
+    P-196 excludes it. Breadth is measured over
+    PARSED rows only, through the owning layer's OWN
+    verified parse road, dispatched exactly as P-193
+    dispatches; the module contains no pack parser of
+    its own. Per payload: container count, summed
+    breadth, widest container / object / array width;
+    the bucket law is closed (BREADTH_BUCKETS: empty
+    0, narrow 1-2, medium 3-5, wide 6-10, vast 11+)
+    over the containers of parsed rows. Rows carry
+    outcomes under P-193's imported OUTCOMES law;
+    census_state under the closed
+    BREADTH_CENSUS_STATES law (no_entries /
+    no_breadth / some_breadth / all_breadth); no key
+    name, value, excerpt or payload appears anywhere
+    in the document. One new road:
+    GET /hub/breadth-census, bearer-gated and
+    owner-scoped like the content-census road; the
+    census writes nothing and records no history.
+    Slice doc docs/HUB_BREADTH_CENSUS_2026-11-09.md
+    + clean-room log +1.
+    Evidence (team-03 hidden_files/P198_EVIDENCE.md +
+    logs): battery 20 passed. Neighbours on the team
+    tree 156 passed / 0 failed (P-187..P-198 hub
+    batteries). Team full suite 5840 passed /
+    5 skipped / 0 failed (= 5820 banked at P-197 +
+    20, exact), clean, no contention classification
+    needed. Combined fence on the merged tree
+    (P-187..P-198 hub batteries + P-045 / P-054 /
+    P-063 / P-141 pack batteries, forge
+    hidden_files/P198_FENCE.log): 341 passed /
+    0 failed (321 at P-197's fence + 20, exact).
+    Forge confirmation full suite on the merged
+    tree (counts read back from forge
+    hidden_files/P198_FORGE_CONFIRM.log): 5840 passed /
+    5 skipped / 0 failed in 357.34s, exit 0 - clean at
+    first run, no contention failure and no solo
+    re-run needed; merged expectation 5840
+    (= 5820 banked at P-197 + 20, exact). Migration:
+    NONE (head stays 0041). Defects: none discovered
+    in banked code and none at banking; no bug left
+    unfixed.
+    Carried items untouched, exactly as recorded at
+    P-186 through P-197: (1) binding label update stays
+    named open (unbind-then-bind law); (2) automatic
+    retention / bulk clear of history awaits the ruling
+    of Volmarr - none invented; (3) unified-search
+    history stays named open (this census records
+    nothing). Hub breadth census is now
+    BANKED. Banked now P-001..P-198 + the commissioned
+    binding depth/role slice. PART XII OPEN
+    (P-187..P-202). Next in roadmap order: P-199 (Part
+    XII, DERIVED).
