@@ -99,6 +99,26 @@
 - ``character_history_router`` - the owner-scoped
   history board road
   (GET /api/v1/faces/character-history?character_id=).
+- ``character_speaking_history`` - character speaking
+  history (P-163): one pure-read board per character
+  composing, for every owned chat bound to it, that
+  chat's P-158 history document verbatim - the kept
+  events with provenance judged against today, the
+  counts, the kept window - the board classified under
+  a closed law (no_chats / no_history / some_history /
+  all_history), paired with the character's CURRENT
+  voice resolution (S512, stated once at board level).
+  Voice honesty law: S512 stores NO voice history, so
+  the voice half is today's resolution only
+  (voice_scope: current_only) and no kept event in any
+  chat is ever claimed to have been spoken in today's
+  voice. The pairing synthesizes nothing, renders
+  nothing and performs no lip-sync. Events stay grouped
+  per chat; a character has no single history stream.
+- ``character_speaking_history_router`` - the
+  owner-scoped speaking-history board road
+  (GET /api/v1/faces/character-speaking-history
+  ?character_id=).
 """
 
 from runmal.faces.character_history import (
@@ -121,6 +141,9 @@ from runmal.faces.character_speaking_history import (
     SPEAKING_BOARD_STATE_SOME_HISTORY,
     SPEAKING_BOARD_STATES,
     resolve_character_speaking_history,
+)
+from runmal.faces.character_speaking_history import (
+    NOTES as CHARACTER_SPEAKING_HISTORY_NOTES,
 )
 from runmal.faces.chats import (
     BOARD_STATE_ALL_READY,
