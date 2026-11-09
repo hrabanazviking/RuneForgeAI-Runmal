@@ -19045,3 +19045,235 @@ P-162 BANKED - Character Face History
     in roadmap order:
     P-192 (Part XII,
     DERIVED).
+    P-192 BANKED - Hub un
+    ified search (Part XI
+    I, DERIVED). Part XII
+     continues. - team-03
+     commit 3387f14 merge
+    d (no-ff) into yrsa/t
+    wo-mirrors-build as 0
+    39f386 (parents ebcc3
+    c8 + 3387f14); the me
+    rge commit was amende
+    d in place before pus
+    h to heal a merge def
+    ect (see Defects belo
+    w), so the pushed mer
+    ge is the amended 039
+    f386, not the first-s
+    truck 0784758. Merged
+     diff exactly the 5 s
+    lice files (+1032/-0)
+    . Derived scope ACCEP
+    TED: hub unified sear
+    ch - the exact cell t
+    he P-191 banking reco
+    rd names open for a l
+    ater Part XII slice. 
+    src/runmal/hub/unifie
+    d_search.py (unified_
+    search_document(entri
+    es, query, kind=None)
+    , schema runmal-p192-
+    hub-unified-search-v1
+    ) composes the P-190 
+    metadata search and t
+    he P-191 content sear
+    ch verbatim over the 
+    same entry list, clea
+    ned query and kind, e
+    mbeds both banked doc
+    uments whole, and uni
+    ons their matches by 
+    entry id in store ord
+    er. Each union row ca
+    rries matched_by unde
+    r the closed MATCHED_
+    BY law (metadata / co
+    ntent / both), the me
+    tadata side matched_f
+    ields verbatim (empty
+     for a content-only m
+    atch) and the content
+     side occurrences, ex
+    cerpt and verified_co
+    ntent_sha256 verbatim
+     (null for all three 
+    on a metadata-only ma
+    tch - no content fact
+     is invented). Cap ho
+    nesty composed: total
+    _matches is the union
+     true size before the
+     cap; truncated is tr
+    ue when either source
+     truncated or the uni
+    on runs past MAX_MATC
+    HES (100, the P-190 c
+    ap both sources carry
+    ). Coverage honesty i
+    s P-191 law carried v
+    erbatim: coverage_com
+    plete is false whenev
+    er the answer was tru
+    ncated or the content
+     search skipped any e
+    ntry. The query and k
+    ind are validated fir
+    st under this module 
+    own law (HubUnifiedSe
+    archError) so the roa
+    d answers one refusal
+     shape. One new road:
+     GET /hub/unified-sea
+    rch?q=&kind=, bearer-
+    gated and owner-scope
+    d like the other hub 
+    roads; search writes 
+    nothing. Slice doc do
+    cs/HUB_UNIFIED_SEARCH
+    _2026-11-09.md + clea
+    n-room log +1. Judged
+     and not taken: signi
+    ng/attestation and fr
+    iend-instance exchang
+    e stay DECLINED until
+     real machinery exist
+    s in-tree - none exis
+    ts and none is faked.
+     Evidence (team-03 hi
+    dden_files/P192_EVIDE
+    NCE.md + logs): batte
+    ry 24 passed (one fir
+    st-run battery failur
+    e was a test fixture 
+    slip - three entries 
+    registered at the sam
+    e locator under the s
+    ame kind, which P-187
+     law rightly refuses;
+     the fixture was corr
+    ected to distinct loc
+    ators and the battery
+     re-ran green; no pro
+    duction code was touc
+    hed). Neighbours on t
+    he team tree 204 pass
+    ed / 3 failed: the 3 
+    failures are all P-19
+    1 HTTP tests answerin
+    g 404, expected paral
+    lel-banking disjointn
+    ess (the content-sear
+    ch road lives in the 
+    P-191 router delta, a
+    bsent from this slice
+     base), NOT a defect;
+     on the merged tree t
+    hose tests pass (fenc
+    e below). Team full s
+    uite 5701 passed / 5 
+    skipped / 1 failed in
+     532.19s - the single
+     failure the named P-
+    077 longchat timing t
+    ripwire under content
+    ion; solo re-run of t
+    he P-077 file green, 
+    17 passed in 4.31s; c
+    lassified CONTENTION 
+    per the standing rule
+    , both figures record
+    ed. Combined fence on
+     the merged tree (for
+    ge hidden_files/p192_
+    fence_healed.log): 23
+    1 passed / 0 failed, 
+    exit 0 (207 + 24, exa
+    ct). Forge confirmati
+    on full suite on the 
+    merged tree (counts r
+    ead back from forge h
+    idden_files/p192_conf
+    irm.log): 5730 passed
+     / 5 skipped / 0 fail
+    ed, exit 0, in 371.99
+    s (exact; 5706 banked
+     at P-191 + 24). Migr
+    ation: NONE (head sta
+    ys 0041). Defects: on
+    e real merge defect w
+    as found at banking a
+    nd healed before push
+    . The first-struck me
+    rge dropped the impor
+    t line (from runmal.h
+    ub import unified_sea
+    rch as hub_unified_se
+    arch) from src/runmal
+    /hub/router.py - a sa
+    me-region collision w
+    ith the P-191 content
+    _search import at mer
+    ge - while the unifie
+    d-search endpoint bod
+    y survived, so the co
+    mbined fence on the f
+    irst-struck merged tr
+    ee ran 229 passed / 2
+     failed (both failure
+    s P-192 HTTP tests, N
+    ameError: hub_unified
+    _search is not define
+    d, at router.py lines
+     124 and 126; forge h
+    idden_files/p192_fenc
+    e.log; the 3 P-191 HT
+    TP tests passed on th
+    at tree). The import 
+    was restored exactly 
+    where the slice commi
+    t carries it, the sti
+    ll-local unpushed mer
+    ge commit was amended
+     in place (0784758 be
+    came 039f386, parents
+     unchanged), py_compi
+    le clean, and the fen
+    ce re-ran 231 passed 
+    / 0 failed before any
+     push. Nothing reache
+    d the remote unhealed
+    : the remote stood at
+     ebcc3c8 throughout; 
+    the amended merge was
+     pushed with an expli
+    cit refspec and ls-re
+    mote verified at 039f
+    386 before this recor
+    d. Carried items unto
+    uched, exactly as rec
+    orded at P-186 throug
+    h P-191: (1) binding 
+    label update stays na
+    med open (unbind-then
+    -bind law); (2) autom
+    atic retention / bulk
+     clear of history awa
+    its the ruling of Vol
+    marr - none invented;
+     (3) unified-search h
+    istory stays named op
+    en. Named open for la
+    ter Part XII: hub con
+    tent census. Unified 
+    hub search is now BAN
+    KED, no longer named 
+    open. Banked now P-00
+    1..P-192 + the commis
+    sioned binding depth/
+    role slice. PART XII 
+    OPEN (P-187..P-202). 
+    Next in roadmap order
+    : P-193 (Part XII, DE
+    RIVED).
