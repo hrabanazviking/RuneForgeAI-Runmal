@@ -562,6 +562,23 @@ async def get_message_provenance(
     return payload
 
 
+@router.get("/chats/{chat_id}/messages/{message_id}/reasoning")
+async def get_message_reasoning(
+    chat_id: str,
+    message_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """A message's full reasoning document: the recorded thinking
+    for every swipe (P-205). Legacy and unwired-road messages
+    read as an explicit not_recorded document, never a 404."""
+    payload = await service.get_message_reasoning(
+        session, user_id, chat_id, message_id)
+    if payload is None:
+        raise HTTPException(status_code=404, detail="message not found")
+    return payload
+
+
 @router.get("/chats/{chat_id}/provenance")
 async def list_chat_provenance(
     chat_id: str,

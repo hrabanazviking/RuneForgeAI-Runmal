@@ -30,6 +30,7 @@ from runmal.cards import CardParseError, parse_json_card
 from runmal.characters.service import get_character
 from runmal.chats import service as chats
 from runmal.chats import provenance as prov_mod
+from runmal.chats import reasoning as reasoning_mod
 from runmal.chats.service import chat_to_dict, message_to_dict
 from runmal.db.models import Chat, Message
 from runmal.generation import service as generation_service
@@ -250,6 +251,7 @@ async def stream_generation(
     yield started
     summary: list[dict] = [started]
     parts: list[str] = []
+    reasoning_parts: list[str] = []
     finish: str | None = None
     saw_error = False
     async for event in generation_service.generate_events(
@@ -257,6 +259,8 @@ async def stream_generation(
     ):
         if event["type"] == "token":
             parts.append(event["text"])
+        elif event["type"] == "reasoning":
+            reasoning_parts.append(event["text"])
         elif event["type"] == "error":
             saw_error = True
         elif event["type"] == "done":
@@ -299,6 +303,9 @@ async def stream_generation(
             generation={"request_id": request_id},
             speaker={"speaker_id": persona_id, "speaker_name": persona_name},
         )
+        reasoning_text = "".join(reasoning_parts)
+        reasoning_record = reasoning_mod.build_record(
+            status="recorded", text=reasoning_text) if reasoning_text             else reasoning_mod.build_record(status="not_present")
         message = await chats.append_message(
             session,
             user_id,
@@ -313,6 +320,7 @@ async def stream_generation(
                 "request_id": request_id,
             },
             provenance=record,
+            reasoning=reasoning_record,
         )
         from runmal.bridge import outbox
 
