@@ -17194,3 +17194,122 @@ P-162 BANKED - Character Face History
     (P-169). Next in roadmap order:
     P-180 (Part XI in roadmap
     order).
+    P-180 BANKED - Workspace
+    Content Search (Part XI,
+    DERIVED). Part XI continues.
+    - team-03 commit d04d333
+    merged (no-ff) into yrsa/two-
+    mirrors-build as 3a0237e
+    (parents a3ddcca + d04d333);
+    CROSS-BASE: team-03 built on
+    the P-178 record head b6982a0
+    while P-179 banked ahead in
+    parallel, so P-179 is NOT in
+    this slice's base and the
+    merge onto the P-179 record
+    head a3ddcca reconciled as
+    flagged in the evidence: the
+    only conflict was docs/CLEAN_R
+    OOM_LOG_2026-10-30.md (append-
+    vs-append), resolved as a pure
+    additive union keeping the
+    P-179 and P-180 entries
+    exactly once each, in roadmap
+    order, byte-identical to their
+    source versions (line
+    sha256-verified). app.py and
+    workspaces/__init__.py merged
+    clean as pure additive hunks;
+    the content-search router
+    lands in its OWN
+    include_router block in
+    app.py, verified in the merged
+    tree - the P-174 fused-call
+    defect class does not land.
+    Merged diff vs a3ddcca is
+    exactly the 7 slice files,
+    +915/-0; the four new files
+    are sha256-identical to
+    team-03's committed versions;
+    py_compile clean on all
+    touched modules. Merge pushed
+    and ls-remote verified at
+    3a0237e before this record;
+    banking record commit follows
+    this entry and is pushed after
+    it.
+    Scope:
+    workspaces/content_search.py +
+    content_search_router.py (GET
+    /workspaces/content-search)
+    composing P-176's tree
+    verbatim and reading every
+    candidate through P-172's
+    build_content_read under its
+    stated cap; NO tree, listing,
+    content, search or bindings
+    file modified. Slice doc docs/
+    WORKSPACE_CONTENT_SEARCH_2026-
+    11-09.md, tests/test_p180_work
+    space_content_search.py (16
+    tests), clean-room log +1
+    entry; 7 files, +915/-0.
+    Evidence (team-03
+    hidden_files/P180_EVIDENCE.md
+    + logs): battery 16 passed;
+    neighbours 147 passed
+    (P-169..P-178 workspace
+    batteries on its base); full
+    suite on its base 5470 passed
+    / 5 skipped / 0 failed, exit 0
+    (5454 on its base + 16,
+    exact). Combined batteries on
+    the merged tree: P-169..P-180
+    workspace fence 172 passed / 0
+    failed (156 at P-179 banking +
+    16, exact) - the P-179 battery
+    (9) passes on the merged tree,
+    so content search composing
+    the FIXED tree is verified,
+    not just reasoned. Forge
+    confirmation full suite on the
+    merged tree (counts read back
+    from the log file): 5479
+    passed / 5 skipped / 0 failed,
+    exit 0, in 334.28s (5463 + 16,
+    exact). Migration: NONE (head
+    stays 0041).
+    Honesty law, as the slice
+    states it: coverage is the
+    expanded tree only; the P-172
+    read cap is carried as data,
+    never silently widened; no
+    silent omission -
+    files_considered ==
+    files_searched + skipped,
+    always; truncated and
+    coverage_complete name every
+    partial answer, so a partial
+    search is never dressed as
+    whole.
+    Defects: none found by the
+    slice; nothing left unfixed.
+    Carried items, exactly as
+    named open: (1) a binding
+    label update stays named open
+    (bindings.py's own unbind-
+    then-bind law); (2) automatic
+    retention / bulk clear of
+    history awaits Volmarr's
+    ruling - none invented. Writes
+    inside bound folders stay
+    fenced behind the VX-57 guard;
+    execution is declined
+    ABSOLUTELY (VX-55/56, P-027);
+    watching stays declined
+    (P-169). team-03 reset to the
+    record head after banking.
+    Banked now P-001..P-180. PART
+    XI OPEN (P-169..P-186). Next
+    in roadmap order: P-181 (Part
+    XI in roadmap order).
