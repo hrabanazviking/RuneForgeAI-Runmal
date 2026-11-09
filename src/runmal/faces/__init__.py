@@ -71,8 +71,32 @@
   selection stays per chat (P-092).
 - ``chats_router`` - the owner-scoped board road
   (GET /api/v1/faces/chats?character_id=).
+- ``character_history`` - character face history
+  (P-162): one pure-read board per character composing,
+  for every owned chat bound to it, that chat's P-158
+  history document verbatim - the kept events with
+  provenance judged against today, the counts, the kept
+  window - the board classified under a closed law
+  (no_chats / no_history / some_history / all_history).
+  Events stay grouped per chat; a character has no
+  single face history stream.
+- ``character_history_router`` - the owner-scoped
+  history board road
+  (GET /api/v1/faces/character-history?character_id=).
 """
 
+from runmal.faces.character_history import (
+    CHARACTER_HISTORY_SCHEMA,
+    HISTORY_BOARD_STATE_ALL_HISTORY,
+    HISTORY_BOARD_STATE_NO_CHATS,
+    HISTORY_BOARD_STATE_NO_HISTORY,
+    HISTORY_BOARD_STATE_SOME_HISTORY,
+    HISTORY_BOARD_STATES,
+    resolve_character_face_history,
+)
+from runmal.faces.character_history import (
+    NOTES as CHARACTER_HISTORY_NOTES,
+)
 from runmal.faces.chats import (
     BOARD_STATE_ALL_READY,
     BOARD_STATE_NO_CHATS,
@@ -135,6 +159,13 @@ __all__ = [
     "BOARD_STATES",
     "CHATS_NOTES",
     "CHATS_SCHEMA",
+    "CHARACTER_HISTORY_NOTES",
+    "CHARACTER_HISTORY_SCHEMA",
+    "HISTORY_BOARD_STATE_ALL_HISTORY",
+    "HISTORY_BOARD_STATE_NO_CHATS",
+    "HISTORY_BOARD_STATE_NO_HISTORY",
+    "HISTORY_BOARD_STATE_SOME_HISTORY",
+    "HISTORY_BOARD_STATES",
     "FACE_STATES",
     "ENTRY_STATE_CLEARED",
     "ENTRY_STATE_DECLARED_UNBOUND",
@@ -165,6 +196,7 @@ __all__ = [
     "VOICE_STATES",
     "resolve_character_roster",
     "resolve_character_face_chats",
+    "resolve_character_face_history",
     "resolve_face_history",
     "resolve_character_speaking_roster",
     "resolve_presentation",
