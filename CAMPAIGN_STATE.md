@@ -15595,3 +15595,69 @@ P-162 BANKED - Character Face History
     pins. Nothing was left unfixed. PART X
     COMPLETE (P-155..P-168). Next in roadmap
     order: Part XI in roadmap order.
+    P-169 BANKED - Workspace Binding
+    foundation (Part XI opener, DERIVED).
+    Part XI OPEN. Scope is DERIVED, stated
+    plainly in the slice doc: the roadmap
+    gives Part XI only its part line (XI |
+    Workspaces - the Companion That Works |
+    P-169 - P-186) with no verbatim P-169
+    entry; the slice derives from the
+    in-tree census VX-54..VX-58 (all MISSING
+    in the P-004 delta table) - VX-54's first
+    clause, a chat bound to a real folder,
+    presupposes every other Part XI row, and
+    no binding record existed anywhere in
+    the tree. - team-01 commit 1730fe7
+    merged (no-ff) into
+    yrsa/two-mirrors-build as b2a814f
+    (parents 2bdaca6 + 1730fe7); the slice
+    was built directly on the forge head
+    2bdaca6, so the merge was clean with no
+    conflicts; merge pushed and ls-remote
+    verified at b2a814f before this record;
+    banking record commit follows this entry
+    and is pushed after it. Scope: new
+    package src/runmal/workspaces/ - one
+    folder binding per owned chat (chat +
+    operator folder path as data + optional
+    label) in a P-117-style JSON store
+    (workspaces.json, tolerant load), folder
+    state judged LIVE at read under the
+    closed law ready / missing /
+    not_a_directory / unreadable,
+    owner-scoped bind / read / list / unbind
+    roads on /api/v1/workspaces, and a
+    chat-deletion custody hunk in
+    delete_chat (P-121 pattern). Slice doc
+    docs/WORKSPACE_BINDING_2026-11-09.md,
+    tests/test_p169_workspace_binding.py
+    (15 tests), clean-room log +1 entry; 8
+    files, +1060/-0. Evidence (team-01
+    hidden_files/P169_EVIDENCE.md + logs):
+    battery 15 passed; neighbours 122
+    passed / 1 skipped; full suite on its
+    base 5322 passed / 5 skipped / 0 failed.
+    Combined batteries on the merged tree
+    (hidden_files/P169_COMBINED.log): gate
+    battery + neighbours 137 passed / 1
+    skipped / 0 failed (15 + 122/1, exact).
+    Forge confirmation full suite on the
+    merged tree (hidden_files/
+    P169_CONFIRMATION.log): 5322 passed / 5
+    skipped / 0 failed, exact. Migration:
+    NONE (head stays 0041, battery-pinned).
+    Carried limitations, exactly as the lead
+    named them: (1) the binding has no
+    consumer yet - no listing, file tool, or
+    backend composes it; a kept promise, not
+    a working surface, until a successor
+    lands (the folder listing/files browser
+    is the named natural next cell); (2)
+    folder_state is a point-in-time
+    judgement at read; (3) the whole-file
+    JSON store carries the single-process
+    assumption. No defect was found at
+    banking. Nothing was left unfixed. Next
+    in roadmap order: P-170 (Part XI in
+    roadmap order).
