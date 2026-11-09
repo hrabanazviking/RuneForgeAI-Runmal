@@ -112,6 +112,25 @@ the Companion That Works).
   all_readable) on GET /workspaces/content-census.
   It retains and returns no file content and no
   excerpt, writes nothing and grants nothing.
+- ``unified_search_census`` +
+  ``unified_search_census_router`` - the workspace
+  unified search census (P-184, Part XI, DERIVED
+  scope): one chat's unified search for one query
+  as a pure aggregate - P-182's unified document
+  composed verbatim and embedded whole, the
+  returned matches summed by matched_by, by kind
+  under P-170's law, by extension from file-match
+  names only and by depth, total matched file
+  bytes, the largest match, the total occurrence
+  count, and the skipped files counted by their
+  P-172 outcome or refused, with P-182's uncapped
+  source counts and partiality verdicts carried
+  verbatim beside the returned sums, the answer
+  classified under a closed law (folder_not_ready
+  / no_matches / name_only / content_only / mixed)
+  on GET /workspaces/unified-search-census. It
+  searches nothing itself, records nothing, writes
+  nothing and grants nothing.
 - ``router`` - the owner-scoped HTTP road
   (/api/v1/workspaces/*).
 - ``census`` + ``census_router`` - the workspace
