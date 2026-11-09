@@ -42,6 +42,10 @@ P-197 adds the size-census road:
 GET /hub/size-census, the byte-size census over the
 owner estate, measuring the file each verified pack
 came from (see hub.size_census).
+P-198 adds the breadth-census road:
+GET /hub/breadth-census, the container-breadth census
+over the verified payloads of the owner estate (see
+hub.breadth_census).
 """
 
 from __future__ import annotations
@@ -65,6 +69,7 @@ from runmal.hub import size_census as hub_size_census
 from runmal.hub import unified_search as hub_unified_search
 from runmal.hub import unified_search_census as hub_unified_search_census
 from runmal.hub import content_shape_census as hub_content_shape_census
+from runmal.hub import breadth_census as hub_breadth_census
 
 router = APIRouter(tags=["hub"])
 
@@ -138,6 +143,14 @@ async def hub_size_census_document(
 ):
     entries = _store().list_for_owner(owner_id)
     return hub_size_census.size_census_document(entries)
+
+
+@router.get("/hub/breadth-census")
+async def hub_breadth_census_document(
+    owner_id: str = Depends(get_owner_id),
+):
+    entries = _store().list_for_owner(owner_id)
+    return hub_breadth_census.breadth_census_document(entries)
 
 
 @router.get("/hub/search")
