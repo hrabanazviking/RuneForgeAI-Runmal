@@ -16211,3 +16211,188 @@ P-162 BANKED - Character Face History
     XI cells or named open. Next in
     roadmap order: P-174 (Part XI in
     roadmap order).
+    P-174 BANKED - Workspace Folder
+    Census (Part XI, DERIVED).
+    Part XI continues. Scope is
+    DERIVED, stated plainly in the
+    slice doc: the roadmap gives Part
+    XI only its part line (XI |
+    Workspaces - the Companion That
+    Works | P-169 - P-186) with no
+    verbatim P-174 entry; the slice
+    derives from the banked Part XI
+    grid - P-169 the binding, P-170
+    the read-only folder listing,
+    P-171 the census of the owner's
+    whole binding estate (which lists
+    no folder and reads no contents)
+    and P-172 the read of one named
+    file - the cell no surface took
+    being the aggregate of ONE chat's
+    bound folder at ONE level, taken
+    in the house census pattern.
+    - team-03 commit 469e06f merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 51bcf6f (parents 06cd7a5 +
+    469e06f); CROSS-BASE: team-03
+    built on the P-172 record head
+    8ace269 while P-173 banked ahead
+    in parallel on a disjoint slice,
+    so P-173 is NOT in this slice's
+    base and the merge onto the
+    P-173 record head 06cd7a5
+    reconciled as flagged: conflicts
+    in src/runmal/app.py (import +
+    include hunks) and in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    (append-vs-append), both resolved
+    as pure additive unions keeping
+    the P-173 history and P-174
+    folder-census entries, imports
+    and routers exactly once each;
+    workspaces/__init__.py auto-merged
+    keeping both slices' additive map
+    bullets; folder_census.py and
+    folder_census_router.py are new.
+    One banking heal was needed and
+    is recorded honestly: f21d593 -
+    the app.py union first placed
+    both routers as positional
+    arguments of ONE include_router
+    call, which FastAPI refuses
+    (TypeError at create_app, caught
+    by the combined batteries before
+    any push, never pushed broken);
+    the heal gives the folder-census
+    router its own include block,
+    exactly the shape its slice
+    authored, at equal strength - no
+    test or assertion was changed or
+    weakened anywhere. The merged
+    tree was grep- and
+    compile-verified to carry the
+    P-169 bindings, the P-170
+    listing, the P-171 census, the
+    P-172 content read, the P-173
+    history read and the P-174 folder
+    census together. Merge + heal
+    pushed and ls-remote verified at
+    f21d593 before this record;
+    banking record commit follows
+    this entry and is pushed after
+    it.
+    Scope: one new truth module
+    (workspaces/folder_census.py)
+    composing P-170's listing
+    VERBATIM - resolve_chat_listing
+    unchanged, its document embedded
+    whole - and adding only the
+    aggregate law: kind counts summed
+    from the returned entries' own
+    fields under P-170's closed
+    ENTRY_KINDS (directory / file /
+    symlink / other), total file
+    bytes from file entries' own
+    sizes only, extension counts from
+    file NAMES only (suffix after the
+    final dot, lowercased; no suffix
+    is the honest key "(none)"; no
+    file is opened), hidden and
+    escaping-symlink counts,
+    largest_file with first-wins ties
+    in the listing's own order, and
+    the level classified under the
+    closed FOLDER_CENSUS_STATES law
+    (folder_not_ready / empty /
+    no_files / has_files) with
+    non-ready folders as DATA (the
+    honest zero document, never an
+    error, never a scan), six
+    standing honesty notes, None
+    exactly when P-170's resolve is
+    None (missing / foreign / unbound
+    - existence never leaks); one new
+    disjoint router
+    (workspaces/folder_census_router.py)
+    - GET /workspaces/folder-census
+    keeping the two 404s apart,
+    refused subpath at 422, every
+    state DATA at 200; additive
+    app.py wiring and additive
+    workspaces/__init__.py doc lines.
+    Slice doc
+    docs/WORKSPACE_FOLDER_CENSUS_2026-11-09.md,
+    tests/test_p174_workspace_folder_census.py
+    (15 tests), clean-room log +1
+    entry; 7 files, +850/-0.
+    Evidence (team-03 hidden_files/
+    P174_EVIDENCE.md + logs): battery
+    15 passed; neighbours 70 passed
+    (the workspace fence on its base:
+    P-169 + P-170 + P-171 + P-172 +
+    P-174 batteries, 15 + 13 + 11 +
+    16 + 15, exact); full suite on
+    its base 5377 passed / 5 skipped
+    / 0 failed, exit 0 (5362 on its
+    P-172 base + 15, exact).
+    Combined batteries on the merged
+    tree: P-169 + P-170 + P-171 +
+    P-172 + P-173 + P-174 batteries
+    86 passed / 0 failed (15 + 13 +
+    11 + 16 + 16 + 15, exact), after
+    the banking heal above (the first
+    combined launch, 76 passed / 10
+    failed on the broken union, is
+    preserved in the keeper's run
+    note, not hidden). Forge
+    confirmation full suite on the
+    merged tree (run detached, counts
+    read back from the log): 5393
+    passed / 5 skipped / 0 failed,
+    exact, exit 0, in 325.78s (5378
+    P-173 + 15); no test_s503 or
+    p077 flake this run. Migration:
+    NONE (head stays 0041,
+    battery-pinned). One defect was
+    found and fixed in-slice by the
+    lead (an unused import re-export;
+    see evidence); the one defect
+    found at banking was the merge
+    union's own, healed above.
+    Nothing was left unfixed.
+    Honest limitations, exactly as
+    the lead named them: (1) counts
+    are point-in-time, from one
+    listing read; (2) a truncated
+    listing - P-170's 500-entry cap
+    at one level - bounds every count
+    to the returned entries only,
+    with total_count and truncated
+    carried verbatim and stated in
+    the document's notes, and no
+    second scan made; (3) extension
+    counts are name-deep only - no
+    file is opened, so a name never
+    claims what the bytes are; (4) no
+    write, execution, watching or
+    image surface landed. Declined
+    threads, named in the slice doc:
+    writes / edits under a VX-57-style
+    guard (the guard presupposes
+    workspace tool calls and none
+    exist), execution VX-55/56
+    (declined ABSOLUTELY, P-027),
+    watching (declined at P-169), any
+    image-byte surface, a recursive
+    or whole-tree census, content
+    classification by opening files,
+    an owner-wide folder census
+    (P-171's estate cell), and
+    P-173's named-open history
+    deletion / custody road - it
+    presupposed P-173's history
+    store, which was not in this
+    slice's base; it stays named open
+    behind banked P-173. Next in
+    roadmap order: P-175 (Part XI in
+    roadmap order).
