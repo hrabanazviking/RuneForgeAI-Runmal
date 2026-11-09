@@ -132,6 +132,21 @@
   kept history and names no voice.
 - ``census_router`` - the owner-scoped census road
   (GET /api/v1/faces/census).
+- ``history_census`` - face history census (P-165):
+  one pure-read census per owner composing, for every
+  owned character in the characters service's order,
+  that character's P-162 history board verbatim - the
+  board state, the rows whole, the counts - the
+  census classified under a closed law
+  (no_characters / no_chats / no_history /
+  some_history / all_history). Events stay grouped
+  per chat inside their character row; the kept
+  window stays per chat and is never summed into an
+  owner window. The census is silent: it names no
+  voice.
+- ``history_census_router`` - the owner-scoped
+  history census road
+  (GET /api/v1/faces/history-census).
 """
 
 from runmal.faces.character_history import (
@@ -169,6 +184,19 @@ from runmal.faces.census import (
     resolve_face_census,
 )
 from runmal.faces.census import NOTES as CENSUS_NOTES
+from runmal.faces.history_census import (
+    HISTORY_CENSUS_SCHEMA,
+    HISTORY_CENSUS_STATE_ALL_HISTORY,
+    HISTORY_CENSUS_STATE_NO_CHARACTERS,
+    HISTORY_CENSUS_STATE_NO_CHATS,
+    HISTORY_CENSUS_STATE_NO_HISTORY,
+    HISTORY_CENSUS_STATE_SOME_HISTORY,
+    HISTORY_CENSUS_STATES,
+    resolve_face_history_census,
+)
+from runmal.faces.history_census import (
+    NOTES as HISTORY_CENSUS_NOTES,
+)
 from runmal.faces.chats import (
     BOARD_STATE_ALL_READY,
     BOARD_STATE_NO_CHATS,
@@ -259,6 +287,14 @@ __all__ = [
     "CENSUS_STATE_NONE_READY",
     "CENSUS_STATE_SOME_READY",
     "CENSUS_STATES",
+    "HISTORY_CENSUS_NOTES",
+    "HISTORY_CENSUS_SCHEMA",
+    "HISTORY_CENSUS_STATE_ALL_HISTORY",
+    "HISTORY_CENSUS_STATE_NO_CHARACTERS",
+    "HISTORY_CENSUS_STATE_NO_CHATS",
+    "HISTORY_CENSUS_STATE_NO_HISTORY",
+    "HISTORY_CENSUS_STATE_SOME_HISTORY",
+    "HISTORY_CENSUS_STATES",
     "FACE_STATES",
     "ENTRY_STATE_CLEARED",
     "ENTRY_STATE_DECLARED_UNBOUND",
@@ -295,6 +331,7 @@ __all__ = [
     "resolve_character_face_history",
     "resolve_character_speaking_history",
     "resolve_face_census",
+    "resolve_face_history_census",
     "resolve_face_history",
     "resolve_character_speaking_roster",
     "resolve_presentation",

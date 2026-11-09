@@ -56,6 +56,7 @@ from runmal.faces.character_speaking_history_router import (
     router as faces_character_speaking_history_router,
 )
 from runmal.faces.census_router import router as faces_census_router
+from runmal.faces.history_census_router import router as faces_history_census_router
 from runmal.web.router import _HERE as _WEB_DIR
 from runmal.web.router import router as web_router
 
@@ -248,6 +249,11 @@ def create_app(
     )
     app.include_router(
         faces_census_router,
+        prefix="/api/v1",
+        dependencies=[Depends(require_local_auth)],
+    )
+    app.include_router(
+        faces_history_census_router,
         prefix="/api/v1",
         dependencies=[Depends(require_local_auth)],
     )
