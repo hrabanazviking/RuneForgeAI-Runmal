@@ -17,6 +17,13 @@ the Companion That Works).
   kinds and honest sizes judged live at read, every
   listed path contained in the bound folder, no
   contents read and nothing written.
+- ``content`` - the workspace file content read
+  (P-172, Part XI, DERIVED scope): the read-only
+  text read over the binding - one named file
+  read as strict UTF-8 under a stated cap,
+  containment re-judged at the moment of use,
+  binary / oversize / unreadable named as
+  outcomes, nothing written.
 - ``router`` - the owner-scoped HTTP road
   (/api/v1/workspaces/*).
 """
