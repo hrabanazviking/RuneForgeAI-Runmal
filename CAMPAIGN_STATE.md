@@ -20441,3 +20441,70 @@ P-162 BANKED - Character Face History
     XIII OPEN (P-203..P-218). Next in
     roadmap order: P-205 (Part XIII,
     DERIVED).
+    P-205 BANKED - Reasoning-content
+    record (Part XIII, DERIVED). -
+    team-01 commit f2413a3 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as ddc07e8 (parents 148acbe +
+    f2413a3). Merge CLEAN - no
+    conflicts in any file. Scope:
+    reasoning-content record founded -
+    ReasoningDelta wire capture in
+    all four adapters (openai_compat /
+    openrouter reasoning_content +
+    reasoning spellings, ollama
+    thinking, aesir) + SSE bridging
+    via the generation bridge_event
+    reasoning dict, and a durable
+    per-message / per-swipe record
+    schema runmal-p205-message-
+    reasoning-v1 (strict builders /
+    tolerant readers; recorded /
+    not_present / not_recorded /
+    unknown) stored under migration
+    0042 (messages.reasoning_json +
+    runmal.chats.reasoning, GET
+    reasoning road, swipe lifecycle +
+    branch copy mirrors). Migration
+    PROVISIONAL 0042 STANDS as
+    designed, not renumbered; head
+    moves 0041 -> 0042. The head-pin
+    heals rode in the team commit
+    e3bb604 (182 test files, head pins
+    0041 -> 0042 at equal strength,
+    no assertion weakened), so the
+    merged tree needed NO further pin
+    heals. Evidence (team-01
+    hidden_files/P205_EVIDENCE.md +
+    logs): battery 23 passed;
+    neighbours fence 261 passed / 2
+    skipped / 0 failed; team full
+    suite 5997 passed / 5 skipped / 0
+    failed (= 5974 banked at P-204 +
+    23 exact). Banking: battery +
+    combined fence re-run in the
+    forge 23 passed and 261 passed /
+    2 skipped / 0 failed exact; forge
+    confirmation full suite 5997
+    passed / 5 skipped / 0 failed,
+    exit 0, in 434.96s - exact, no
+    contention failure fired (the
+    P-099 sandbox test that failed
+    once under load in the team's
+    first run passed solo 3/3 and in
+    both final runs; classified
+    contention, not a defect; s503
+    did not fire). Defects: none in
+    banked or neighbour code. Carried
+    items: Assistant View rendering
+    is P-206's thread; the other
+    producing roads (continue /
+    impersonate, groupchat, swipe
+    regeneration, /generate web road)
+    record not_recorded honestly
+    until wired; K-A / K-B / K-C stay
+    untouched. Banked now P-001..P-205
+    + the commissioned binding
+    depth/role slice. PART XIII OPEN
+    (P-203..P-218). Next in roadmap
+    order: P-206 (Part XIII, DERIVED).
