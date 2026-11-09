@@ -20355,3 +20355,89 @@ P-162 BANKED - Character Face History
     slice. PART XIII OPEN
     (P-203..P-218). Next in roadmap
     order: P-204 (Part XIII, DERIVED).
+    P-204 BANKED - Inspector events
+    document (Part XIII, DERIVED). -
+    team-03 commit bb3ccff merged
+    (no-ff) into yrsa/two-mirrors-build
+    as dfbf64f (parents da2f187 +
+    bb3ccff). The team-03 base IS the
+    forge HEAD (parent da2f187, the
+    P-203 banking record), so the
+    merge was CLEAN - no conflicts in
+    any file; merged diff vs da2f187
+    exactly the 6 slice files
+    (+993/-15): src/runmal/inspector/
+    events.py (new), router.py (one
+    new road), __init__.py
+    (EVENTS_SCHEMA), docs/
+    INSPECTOR_EVENTS_2026-11-09.md,
+    clean-room log +1, tests/
+    test_p204_inspector_events.py.
+    Derived scope ACCEPTED: one
+    read-only schema-versioned
+    document (runmal-p204-inspector-
+    events-v1) per owned chat on GET
+    /inspector/chats/{chat_id}/events,
+    built by calling the banked
+    runmal.chats.service.list_events
+    read - no second query path, no
+    data payloads, no message
+    content. Sections: events
+    (available/empty/unavailable +
+    total + by_kind verbatim +
+    first_at/last_at + latest +
+    raw_road pointer), actions (five
+    action kinds counted from the
+    same census + m0038 pointer),
+    flags (not_applicable + bind-time
+    bool-seed reason + pointers),
+    not_recorded (exactly three
+    families: generation events,
+    plugin dispatches, chat.deleted -
+    each not_applicable + reason).
+    The P-203 scout correction is
+    restated plainly in the slice
+    doc: the persisted S107
+    chat_events log already existed;
+    the P-203 statement that no
+    persisted event log exists held
+    only for plugin events. NO
+    migration, head stays 0041.
+    Evidence (team-03 hidden_files/
+    P204_EVIDENCE.md + logs): battery
+    15 passed; neighbours 182 passed
+    / 0 failed; team full suite 5974
+    passed / 5 skipped / 0 failed
+    (= 5959 banked at P-203 + 15
+    exact). Banking: combined fence
+    in the forge 197 passed / 0
+    failed (= 182 neighbours + 15
+    battery exact); forge
+    confirmation 5973 passed / 5
+    skipped / 1 failed in 563.60s at
+    first run, the sole failure the
+    known s503 STT timing case (RTF
+    p50 1.513 over contract) under a
+    concurrent Mythic Coder full
+    suite on the shared machine;
+    solo re-run green (1 passed in
+    37.64s), classified contention,
+    so the confirmation stands at
+    5974 passed / 5 skipped / 0
+    failed. Defects: none in banked
+    or neighbour code; two battery-
+    side corrections were fixed in
+    the battery before banking (see
+    evidence). Ruff: clean on all
+    touched files except router B008
+    x2 (one per road) - the house
+    FastAPI Depends idiom, exactly as
+    the banked P-203 router; with
+    --ignore B008 all checks passed.
+    Carried items K-A / K-B / K-C
+    stay untouched. Banked now
+    P-001..P-204 + the commissioned
+    binding depth/role slice. PART
+    XIII OPEN (P-203..P-218). Next in
+    roadmap order: P-205 (Part XIII,
+    DERIVED).
