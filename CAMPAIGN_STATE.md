@@ -13467,3 +13467,160 @@ P-155 BANKED - Face Presentation
     PART X OPEN (P-155..P-168).
     Next in roadmap order: P-156 (Part
     X, in roadmap order).
+P-156 BANKED - Character Face Roster
+    (Part X - Faces That Speak,
+    P-155..P-168).
+    - team-02 commit ad63747 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 8c2c061 (parents cd740ee +
+    ad63747); merge pushed and
+    ls-remote verified at 8c2c061
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Derived scope ACCEPTED as banked
+    by the keeper: the roadmap gives
+    Part X only its part-table line
+    (P-155..P-168), no per-slice
+    entries; this slice is derived
+    from the P-092 / P-155 record, as
+    the slice doc states plainly
+    (P-155's design names this
+    per-character candidate open and
+    declined it as its opener).
+    Scope: a pure-read resolution
+    service (src/runmal/faces/
+    roster.py - resolve_character_
+    roster over P-092's character-
+    keyed binding_report, descriptors
+    in P-155's shape, the P-023
+    content / thumbnail roads as URL
+    data present only when bound)
+    plus one road (GET /faces/roster?
+    character_id= on the /api/v1
+    mount, after the vision router).
+    The roster is classified under
+    the closed ROSTER_STATES law
+    (ready / no_renderable /
+    empty_set / no_set); the declared
+    default and the character avatar
+    ride as fallback DATA, never
+    applied; the roster names NO
+    current face - selection is per
+    chat and always an explicit act
+    (P-092).
+    Evidence (team-02 worktree
+    hidden_files/ P156_EVIDENCE.md +
+    logs P156_BATTERY.log,
+    P156_NEIGHBOURS.log,
+    P156_FULL_SUITE.log): battery 12
+    passed / 0 failed; neighbours
+    fence (P-092 + P-095 + P-117: 66;
+    P-023: 43) 109 passed / 0 failed;
+    team full suite 5057 passed / 5
+    skipped / 0 failed, exit 0,
+    reconciling exactly (5045 on its
+    base 8824e95 + 12 battery = 5057;
+    P-155 was NOT in that base and is
+    reconciled at this merge).
+    Combined batteries on the merged
+    tree: 135 passed / 0 failed
+    (P-155 battery 14 + P-156 battery
+    12 + neighbours fence 109,
+    exact), run by the banking
+    coordinator with PYTHONPATH=src
+    on the campaign venv
+    runmal-venv312.
+    Forge confirmation suite on the
+    merged tree: 5071 passed / 5
+    skipped / 0 failed in 307.30s,
+    exit 0, exact (5059 + 12). The
+    first confirmation launch was
+    lost at 51% - its process group
+    died with no exit file under
+    shared-machine contention (no
+    result recorded from it); the
+    relaunched run above is the
+    counted one and needed no
+    contention classification.
+    Reconciliation (the overlap the
+    lead flagged): both P-155 and
+    P-156 created src/runmal/faces/
+    __init__.py and both appended a
+    router include in app.py after
+    the vision router; the merge
+    conflicted on exactly those two
+    files plus the clean-room log,
+    and all three were resolved as
+    pure additive unions. Merged
+    __init__.py carries both
+    docstring halves, the full
+    presentation exports, and the
+    roster exports (ROSTER_SCHEMA,
+    ROSTER_STATES, SELECTION_SCOPE,
+    STATE_EMPTY_SET,
+    STATE_NO_RENDERABLE,
+    resolve_character_roster); the
+    shared names STATE_READY and
+    STATE_NO_SET hold identical
+    values in both modules and are
+    carried once, and package-level
+    NOTES is the presentation tuple
+    (the roster's own NOTES remains
+    at runmal.faces.roster.NOTES).
+    Merged app.py imports both
+    faces_router and
+    faces_roster_router and includes
+    them as two separate blocks
+    after the vision router; both
+    roads grep-verified live in the
+    merged tree (GET
+    /faces/presentation and GET
+    /faces/roster). Clean-room log:
+    the P-155 and P-156 entries each
+    appear exactly once, P-155 first.
+    py_compile clean on all merged
+    surfaces.
+    Slice scope: src/runmal/faces/
+    __init__.py (new in the team's
+    tree), src/runmal/faces/
+    roster.py (new), src/runmal/
+    faces/roster_router.py (new),
+    src/runmal/app.py (+6),
+    tests/test_p156_character_face_
+    roster.py (new, 12 tests),
+    docs/CHARACTER_FACE_ROSTER_
+    2026-11-08.md (new),
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    (+1 entry, exactly once in the
+    merged tree). Team delta 7 files
+    (+699/-0); merged diff vs
+    cd740ee is exactly those 7 files
+    (+704/-0, the +5 net being the
+    __init__.py union), purely
+    additive, no hidden_files paths
+    in the slice commit.
+    Migration: NONE (head stays 0041,
+    no 0042, battery-pinned).
+    Defects: none discovered
+    in-slice and none found at
+    banking; no heal was needed
+    beyond the flagged union
+    reconciliation above.
+    Honest limitations: the roster
+    is data only - Runmal renders
+    nothing and no stage / renderer
+    is shipped (none exists in-tree
+    to extend; named open for a
+    later slice); the roster names
+    no current face, because
+    selection is per chat - a chat's
+    current face is P-155's
+    presentation document's to name.
+    No playback, runtime or
+    execution of any stored content
+    (P-027 law).
+    Derived scope ACCEPTED as banked.
+    PART X OPEN (P-155..P-168).
+    Next in roadmap order: P-157 (Part
+    X, in roadmap order).
