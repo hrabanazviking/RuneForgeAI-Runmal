@@ -15751,3 +15751,125 @@ P-162 BANKED - Character Face History
     banking. Nothing was left unfixed.
     Next in roadmap order: P-171 (Part XI
     in roadmap order).
+    P-171 BANKED - Workspace Census
+    (Part XI, DERIVED). Part XI
+    continues. Scope is DERIVED, stated
+    plainly in the slice doc: the
+    roadmap gives Part XI only its part
+    line (XI | Workspaces - the Companion
+    That Works | P-169 - P-186) with no
+    verbatim P-171 entry; the slice
+    derives as the disjoint next cell in
+    the house census pattern (P-164 /
+    P-148) over P-169's banked rows -
+    P-169 named its own limitation (no
+    consumer yet) and P-170, banked
+    ahead of this slice, took the
+    folder-listing consumer cell,
+    leaving the owner-scoped census of
+    the whole workspace estate unmade.
+    - team-03 commit cd032bb merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 6a028fa (parents 88738b8 +
+    cd032bb); both P-170 and P-171
+    branched from d949e60, so the merge
+    onto the P-170 head reconciled as
+    flagged: app.py and
+    workspaces/__init__.py took both
+    slices' additive wiring automatically
+    (no shared lines), and the one
+    conflict was the clean-room log,
+    append-vs-append, resolved keeping
+    both the P-170 and P-171 entries
+    exactly once; the merged
+    workspaces package was grep- and
+    compile-verified to carry the
+    P-169 bindings, the P-170 listing
+    and the P-171 census together, and
+    app.py to carry every router
+    including the new census router.
+    Merge pushed and ls-remote verified
+    at 6a028fa before this record;
+    banking record commit follows this
+    entry and is pushed after it.
+    Scope: an owner-scoped pure-read
+    inspection surface -
+    src/runmal/workspaces/census.py
+    (new) composing P-169's
+    list_owner_workspaces VERBATIM as
+    its rows (orphan_count carried,
+    never recomputed), the chat axis
+    via chats.service.list_chats (bound
+    vs unbound), per-folder-state
+    counts summed from the rows' own
+    folder_state values under P-169's
+    closed FOLDER_STATES law (no second
+    law), shared-folder facts named
+    (distinct / shared /
+    bindings-on-shared), and the estate
+    classified under the closed
+    CENSUS_STATES law (no_chats /
+    no_bindings / none_ready /
+    some_ready / all_ready), served by
+    src/runmal/workspaces/census_router.py
+    (new) on GET /workspaces/census;
+    app.py additive wiring (+6: import
+    + include) and one map bullet set
+    in workspaces/__init__.py (+10).
+    Slice doc
+    docs/WORKSPACE_CENSUS_2026-11-09.md,
+    tests/test_p171_workspace_census.py
+    (11 tests), clean-room log +1 entry;
+    7 files, +658/-0. Evidence (team-03
+    hidden_files/P171_EVIDENCE.md +
+    logs): battery 11 passed;
+    neighbours 100 passed / 1 skipped;
+    full suite on its base 5333 passed
+    / 5 skipped / 0 failed (5322 P-169
+    + 11, exact). Combined batteries on
+    the merged tree
+    (hidden_files/P171_COMBINED.log):
+    P-169 battery + P-170 battery +
+    P-171 battery 39 passed / 0 failed
+    (15 + 13 + 11, exact). Forge
+    confirmation full suite on the
+    merged tree (hidden_files/
+    P171_FORGE_CONFIRM.log): 5346
+    passed / 5 skipped / 0 failed,
+    exact, exit 0, in 320.33s
+    (5335 P-170 + 11); no test_s503
+    flake this run. Migration: NONE
+    (head stays 0041, battery-pinned).
+    Carried limitations, exactly as the
+    lead named them: (1) The census is
+    a point-in-time inspection: folder
+    states are P-169's live read-time
+    judgements at the census call. (2)
+    unbound_chat_count is the difference
+    between the owner's chat count and
+    the live binding count, floored at
+    0; orphans are excluded from rows
+    by P-169's own list law, so an
+    estate with orphans and no live
+    bindings reads no_bindings with
+    orphan_count carried plainly beside
+    it. (3) The census composes P-169's
+    whole-file JSON store read path,
+    carrying the house pattern's
+    single-process assumption.
+    Declined threads, named in the
+    slice doc: rebind history (a
+    foundation amendment to P-169's
+    store shape) stays named open;
+    folder listing / files browser was
+    P-170's cell; file writes / edits /
+    deletes wait for the VX-57 guard;
+    the file read tool, the VX-57 guard
+    itself, execution / launch /
+    backends (VX-55/56; P-027 absolute),
+    watching and VX-58 notifications
+    all remain later Part XI cells. No
+    defect was found at banking.
+    Nothing was left unfixed. Next in
+    roadmap order: P-172 (Part XI in
+    roadmap order).
