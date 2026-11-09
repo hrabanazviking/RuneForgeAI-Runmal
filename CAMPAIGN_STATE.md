@@ -17421,3 +17421,122 @@ P-162 BANKED - Character Face History
     OPEN (P-169..P-186). Next in
     roadmap order: P-182 (Part
     XI in roadmap order).
+    P-182 BANKED - Workspace
+    Unified Search (Part XI,
+    DERIVED). Part XI continues.
+    - team-02 commit e1c3957
+    merged (no-ff) into
+    yrsa/two-mirrors-build as
+    19651b1 (parents 0f1181e +
+    e1c3957). Merge conflicts in
+    exactly the 3 expected
+    shared files (docs/CLEAN_ROO
+    M_LOG_2026-10-30.md append-
+    vs-append;
+    src/runmal/app.py; src/runma
+    l/workspaces/__init__.py)
+    resolved as pure additive
+    unions keeping the P-181
+    tree-census and P-182
+    unified-search roads exactly
+    once each; the unified-
+    search router lands in its
+    OWN include_router block in
+    app.py, split out of the one
+    call both slices had edited
+    - the P-174 fused-call
+    defect class does not land.
+    Merged diff vs 0f1181e is
+    exactly the 7 slice files,
+    +1054/-0; new files
+    sha256-identical to
+    team-02's committed
+    versions; py_compile clean
+    on all resolved and touched
+    modules; create_app builds
+    clean and the OpenAPI road
+    list carries GET
+    /workspaces/tree-census and
+    GET /workspaces/unified-
+    search together, each
+    exactly once. Merge pushed
+    and ls-remote verified at
+    19651b1 before this record;
+    banking record commit
+    follows this entry and is
+    pushed after it.
+    Scope:
+    workspaces/unified_search.py
+    + unified_search_router.py
+    (GET /workspaces/unified-
+    search) composing P-178's
+    filename search and P-180's
+    content search over ONE
+    P-176 tree composed once
+    verbatim at MAX_DEPTH - both
+    banked searches built from
+    that same tree document and
+    embedded whole, returned
+    matches merged by folder-
+    relative path with
+    matched_by (name / content /
+    both) named, both source
+    totals and P-180's file
+    honesty carried verbatim,
+    cap partiality named by
+    truncated /
+    coverage_complete; NO tree,
+    listing, content, search,
+    content-search or bindings
+    file modified. Slice doc doc
+    s/WORKSPACE_UNIFIED_SEARCH_2
+    026-11-09.md, tests/test_p18
+    2_workspace_unified_search.p
+    y (17 tests), clean-room log
+    +1 entry; 7 files, +1054/-0.
+    Evidence (team-02 hidden_fil
+    es/P182_EVIDENCE.md + logs):
+    battery 17 passed;
+    neighbours 189 passed (the
+    workspace fence on its
+    base); full suite on its
+    base 5496 passed / 5 skipped
+    / 0 failed, exit 0 (5479 +
+    17, exact). Combined
+    batteries on the merged
+    tree: P-169..P-182 workspace
+    fence 207 passed / 0 failed
+    (190 at P-181 banking + 17,
+    exact). Forge confirmation
+    full suite on the merged
+    tree (counts read back from
+    the log file): 5514 passed /
+    5 skipped / 0 failed, exit
+    0, in 341.17s (5497 + 17,
+    exact).
+    Migration: NONE (head stays
+    0041).
+    Defects: none in the slice's
+    scope or at banking; nothing
+    left unfixed.
+    Carried items, exactly as
+    named open: (1) a binding
+    label update stays named
+    open (unbind-then-bind law);
+    (2) automatic retention /
+    bulk clear of history awaits
+    the ruling of Volmarr - none
+    invented. Writes inside
+    bound folders stay fenced
+    behind the VX-57 guard;
+    execution is declined
+    ABSOLUTELY (VX-55/56,
+    P-027); watching stays
+    declined (P-169). Part XI
+    gate is P-186; P-183..P-185
+    remain. team-02 reset to the
+    record head after banking.
+    Banked now P-001..P-182.
+    PART XI OPEN (P-169..P-186).
+    Next in roadmap order: P-183
+    (Part XI in roadmap order).
