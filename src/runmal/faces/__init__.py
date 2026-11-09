@@ -34,6 +34,19 @@
   modalities joined on the chat's bound character.
 - ``speaking_router`` - the owner-scoped HTTP road
   (GET /api/v1/faces/speaking?chat_id=).
+- ``speaking_roster`` - speaking-roster resolution
+  (P-159): one pure-read document pairing the faces a
+  character CAN show (P-156's roster document composed
+  whole, under the same closed roster state law, with
+  NO current face - selection is per chat) with the
+  voice its character speaks in (S512 resolution with
+  its fallback law named as a closed voice state, the
+  P-109 affect carried as data, consumed False). The
+  pairing synthesizes nothing, renders nothing and
+  performs no lip-sync; faces and voice stay
+  independent modalities joined on the character.
+- ``speaking_roster_router`` - the owner-scoped HTTP
+  road (GET /api/v1/faces/speaking-roster?character_id=).
 """
 
 from runmal.faces.presentation import (
@@ -65,6 +78,10 @@ from runmal.faces.speaking import (
     VOICE_STATES,
     resolve_speaking_face,
 )
+from runmal.faces.speaking_roster import (
+    SPEAKING_ROSTER_SCHEMA,
+    resolve_character_speaking_roster,
+)
 
 __all__ = [
     "FACE_STATES",
@@ -75,6 +92,7 @@ __all__ = [
     "ROSTER_SCHEMA",
     "ROSTER_STATES",
     "SELECTION_SCOPE",
+    "SPEAKING_ROSTER_SCHEMA",
     "SPEAKING_SCHEMA",
     "STATE_CURRENT_UNBOUND",
     "STATE_EMPTY_SET",
@@ -88,6 +106,7 @@ __all__ = [
     "VOICE_PROFILE_FALLBACK",
     "VOICE_STATES",
     "resolve_character_roster",
+    "resolve_character_speaking_roster",
     "resolve_presentation",
     "resolve_speaking_face",
 ]
