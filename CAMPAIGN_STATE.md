@@ -13186,3 +13186,170 @@ P-153 BANKED - Library Bind-Plan Census (Part IX)
     PART IX OPEN (P-131..P-154).
     Next in roadmap order: P-154 (Part
     IX, in roadmap order).
+P-154 BANKED - Part IX Gate - Scenarios, the
+    Visual Novel Engine (Part IX)
+    PART IX COMPLETE (P-131..P-154) /
+    GATE PASSED.
+    - team-03 commit df87e64 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 2b82629 (parents 32a4cc2 +
+    df87e64); banking heal 56b89d8
+    followed the merge (see F2 below);
+    merge + heal pushed and ls-remote
+    verified at 56b89d8 before this
+    record; banking record commit
+    follows this entry and is pushed
+    after it.
+    Gate verdict: PASS in all four
+    areas - Census PASS, Together PASS,
+    Custody PASS, Accounting PASS. All
+    23 rows P-131..P-153 PASS (P-153
+    measured by overlay per the P-116
+    precedent, both shapes named in the
+    gate doc); P-154 is the gate
+    itself. Derived scope ACCEPTED as
+    banked: the roadmap gives Part IX
+    only its part line (P-131..P-154),
+    no per-slice entries; the gate
+    judged Part IX against the census
+    its own banked slice docs declare,
+    as the gate doc states plainly.
+    Evidence (team-03 worktree
+    hidden_files/ P154_EVIDENCE.md +
+    logs P154_BATTERY.log,
+    P154_NEIGHBOURS.log,
+    P154_FULLSUITE.log): gate battery
+    26 passed / 0 failed (Area A 4,
+    Area B 8, Area C 6, Area D 6,
+    hygiene 2); gate-record module 10
+    passed standalone; neighbours fence
+    (P-026 + P-131..P-152) 445 passed /
+    0 failed, exactly the P-152 banking
+    expectation; team full suite 5016
+    passed / 5 skipped / 0 failed in
+    302.52s on the gate's base,
+    reconciling exactly (4990 + 26 =
+    5016); committed team tree 5026 by
+    arithmetic (5016 + 10 gate-record).
+    Combined batteries on the merged
+    tree: 500 passed / 0 failed (P-026 +
+    P-131..P-154 scenario batteries
+    incl. both gate modules; 464 + 36 =
+    500, exact), run by the banking
+    coordinator with PYTHONPATH=src on
+    the campaign venv runmal-venv312.
+    Log hidden_files/P154_COMBINED.log
+    in the forge. First combined launch
+    read 499 passed / 1 failed: the
+    lone failure was the gate battery's
+    base-shape absence pin (see F2),
+    preserved as hidden_files/
+    P154_COMBINED_ATTEMPT1_BASESHAPE.log.
+    Forge confirmation suite on the
+    merged tree: 5045 passed / 5
+    skipped / 0 failed in 300.09s, exit
+    0, reconciling exactly (5009 + 36 =
+    5045). No failure occurred, so no
+    contention classification was
+    needed. Log hidden_files/
+    P154_FORGE_CONFIRM.log in the forge.
+    Findings: F1 - no new engine defect
+    was found by this gate; the gate's
+    only corrections during
+    construction were its own probe
+    errors, corrected to the banked
+    contracts in the gate's own file;
+    no banked code was touched. F2 -
+    P-153 banked in parallel; its shape
+    was named, not assumed, and the
+    keeper confirmed it at banking on
+    this merged tree: the P-153 road
+    GET /scenarios/library/bind-plans
+    is LIVE in-tree (present in the
+    merged scenarios router paths, not
+    absent), and the gate battery runs
+    green WITH P-153 in-tree. The one
+    gate pin that asserted the road's
+    absence was the base shape doing
+    its named job; it was healed at
+    banking to the merged truth as
+    commit 56b89d8 ("P-154 banking
+    heal", +5/-4 in the gate battery
+    file only, no assertion weakened -
+    the pin now asserts the road's
+    presence), the P-021/P-023
+    merged-truth heal precedent; the
+    re-run combined fence then read
+    500 passed exactly.
+    Carried items, named at the gate
+    (gate doc S4, carried K1-K8):
+    K1 - the delete_chat cascade into
+    the binding store stays OPEN and
+    RESERVED EXPRESSLY FOR VOLMARR:
+    P-149 reserved the decision, P-150,
+    P-151, P-152 and P-153 declined it
+    again, and this gate records it as
+    Volmarr's open decision and does
+    NOT take it. K2 - portable-archive
+    inclusion of the scenario stores
+    stays open (a portable-subsystem
+    contract, not a Part IX slice).
+    K3 - unmappable Voxta raw values
+    never persist (the bound, not a
+    gap). K4 - the P-133 finding F1 is
+    CLOSED on the stateless road by
+    P-142, its Voxta-origin bound
+    standing: P-142 amended the overlay
+    law for native-origin parses only,
+    and a file the importer classifies
+    as Voxta keeps the full INV-009
+    overlay including any native-
+    spelled keys its raw happens to
+    carry; regression-pinned by this
+    gate. K5 - playback / runtime /
+    condition evaluation stays absent,
+    absolutely (P-027 law). K6 -
+    definition history retention stays
+    open. K7 - organisation orphan rows
+    and cross-store cascade cleanup
+    stay open (censuses name, never
+    repair). K8 - bind-plan vs actual-
+    bind reconciliation beyond the
+    binding record stays open (the
+    record stands as the account).
+    Also carried without separate rows,
+    as the gate doc names: collections
+    / folders, candidate create
+    preview, unbind-impact preview,
+    within-library duplicate-content
+    census.
+    Slice scope: docs/
+    PART_IX_GATE_2026-11-08.md (new,
+    the gate record: verdict, per-row
+    table, S1 checklist, S2 area
+    meanings, S3 gate world, S4 carried
+    items, S5 findings, S6 evidence),
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    (+1 entry), tests/
+    test_p154_part_ix_gate.py (new, 26
+    tests), tests/
+    test_p154_gate_record.py (new, 10
+    tests). Team delta 4 files
+    (+1364/-0), purely additive, no
+    hidden_files paths in the slice
+    commit, no engine code.
+    Migration: NONE (head stays 0041).
+    Merge: no-ff merge; the only
+    conflict was the clean-room log
+    (append-vs-append, P-153 entry vs
+    gate entry), resolved as a pure
+    additive union, both entries
+    exactly once; merged diff vs
+    32a4cc2 is exactly the 4 gate files
+    (+1364/-0). One banking heal
+    (56b89d8, F2 above).
+    Derived scope ACCEPTED as banked.
+    PART IX COMPLETE (P-131..P-154).
+    Next in roadmap order: P-155 (Part
+    X - Faces That Speak, P-155..P-168,
+    in roadmap order).
