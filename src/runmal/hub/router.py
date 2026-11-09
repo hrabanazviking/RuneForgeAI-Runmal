@@ -24,6 +24,7 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.db.deps import get_owner_id, get_session
+from runmal.hub import browse as hub_browse
 from runmal.hub import registry as hub_service
 
 router = APIRouter(tags=["hub"])
@@ -71,6 +72,19 @@ async def read_hub_entry(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="hub entry not found")
     return hub_service.entry_document(entry)
+
+
+@router.get("/hub/entries/{entry_id}/browse")
+async def browse_hub_entry(
+    entry_id: str,
+    owner_id: str = Depends(get_owner_id),
+):
+    entry = _store().get_entry(entry_id)
+    if entry is None or entry.owner_id != owner_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="hub entry not found")
+    return hub_browse.browse_document(entry)
 
 
 @router.get("/hub")
