@@ -61,6 +61,7 @@ from runmal.faces.speaking_chats_router import router as faces_speaking_chats_ro
 from runmal.faces.speaking_census_router import router as faces_speaking_census_router
 from runmal.workspaces.router import router as workspaces_router
 from runmal.workspaces.census_router import router as workspaces_census_router
+from runmal.workspaces.folder_census_router import router as workspaces_folder_census_router
 from runmal.web.router import _HERE as _WEB_DIR
 from runmal.web.router import router as web_router
 
@@ -278,6 +279,11 @@ def create_app(
     )
     app.include_router(
         workspaces_census_router,
+        prefix="/api/v1",
+        dependencies=[Depends(require_local_auth)],
+    )
+    app.include_router(
+        workspaces_folder_census_router,
         prefix="/api/v1",
         dependencies=[Depends(require_local_auth)],
     )
