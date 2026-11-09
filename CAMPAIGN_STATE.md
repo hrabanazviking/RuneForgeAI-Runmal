@@ -18647,3 +18647,239 @@ P-162 BANKED - Character Face History
     in roadmap order:
     P-190 (Part XII,
     DERIVED).
+    P-190 BANKED - Hub
+    search over entries
+    (Part XII, DERIVED).
+    Part XII continues.
+    - team-01 commit
+    e18d571 merged (no-
+    ff) into yrsa/two-
+    mirrors-build as
+    bd9ce09 (parents
+    e269eb3 + e18d571).
+    Same-base merge,
+    CLEAN, no conflicts,
+    no heal; merged diff
+    exactly the 5 slice
+    files (+702/-0).
+    Derived scope
+    ACCEPTED: hub search
+    over entries - the
+    exact cell P-189's
+    banking record names
+    open for a later
+    Part XII slice, in
+    the house order it
+    fixes (census before
+    search, P-171 before
+    P-178). src/runmal/h
+    ub/search.py (search
+    _document(entries,
+    query, kind=None),
+    schema
+    runmal-p190-hub-
+    search-v1) is a
+    LITERAL search only:
+    the query casefolded
+    as a substring of a
+    searched field's
+    casefolded value
+    (the P-178 match
+    law) over the closed
+    SEARCH_FIELDS title,
+    locator, note, kind,
+    format; every row
+    carries
+    matched_fields in
+    that law's order.
+    The capped matched
+    entries are handed
+    to P-187's
+    list_document and
+    that document is
+    embedded whole as
+    list, so list.count
+    always equals
+    match_count;
+    MAX_MATCHES is 100,
+    total_matches
+    carries the true
+    total and truncated
+    names a capped
+    answer, never
+    dressed as complete;
+    by_matched_field
+    zero-filled under
+    SEARCH_FIELDS;
+    search_state under
+    the closed
+    SEARCH_STATES law
+    (no_matches /
+    matches /
+    matches_truncated).
+    Pack CONTENTS are
+    never searched - the
+    search opens no pack
+    and reads no file at
+    any locator; the
+    claimed
+    content_sha256 is
+    never searched (it
+    is the caller's
+    claim, not search
+    text), and neither
+    are id, owner_id or
+    created_at. No
+    fuzzy, semantic,
+    ranked or scored
+    matching is claimed:
+    no such machinery is
+    banked, and none is
+    faked. The query is
+    required and
+    stripped; a blank or
+    missing query and an
+    unknown kind answer
+    422. Search writes
+    nothing (registry
+    file byte-unchanged,
+    pinned). One new
+    road: GET /hub/searc
+    h?q=&kind=, bearer-
+    gated and owner-
+    scoped exactly like
+    the list road;
+    foreign entries
+    never searched,
+    never counted. Slice
+    doc docs/HUB_SEARCH_
+    2026-11-09.md +
+    clean-room log +1.
+    Judged and not taken
+    in the scout: pack-
+    content search
+    (needs its own slice
+    and cost law; the
+    registry cannot
+    support it - named
+    open for later Part
+    XII);
+    semantic/ranked
+    search (no
+    machinery); entry
+    lifecycle depth
+    (P-187 remove-then-
+    register stands);
+    signing/attestation
+    and friend-instance
+    exchange stay
+    DECLINED until real
+    machinery exists.
+    VX-59's ruled-out
+    forms are NOT named
+    open - declined by
+    ruling. Evidence
+    (team-01 hidden_file
+    s/P190_EVIDENCE.md +
+    logs): battery 18
+    passed; neighbours
+    161 passed (P-187 +
+    P-188 + P-189
+    batteries + the P-
+    045/P-054/P-063/P-
+    141 pack batteries);
+    combined fence 179
+    passed / 0 failed
+    (161 + 18, exact);
+    team full suite 5678
+    passed / 5 skipped /
+    0 failed (= 5660 +
+    18, exact, in
+    352.55s). Combined
+    fence on the merged
+    tree (finisher run,
+    forge hidden_files/P
+    190_COMBINED_FENCE.l
+    og): 179 passed / 0
+    failed, exit 0.
+    Forge confirmation
+    full suite on the
+    merged tree (counts
+    read back from forge
+    hidden_files/P190_FO
+    RGE_FULL.log): 5678
+    passed / 5 skipped /
+    0 failed, exit 0, in
+    350.39s (exact).
+    Migration: NONE
+    (head stays 0041).
+    Defects: none
+    discovered; no in-
+    slice fix was
+    needed. Ruff on the
+    touched files
+    reports only the
+    pre-existing B008
+    (Depends in argument
+    defaults) in
+    hub/router.py,
+    identical on the
+    HEAD version of that
+    file - the house
+    pattern, not a new
+    defect. Carried
+    items untouched,
+    exactly as recorded
+    at P-186/P-187/P-
+    188/P-189: (1)
+    binding label update
+    stays named open
+    (unbind-then-bind
+    law); (2) automatic
+    retention / bulk
+    clear of history
+    awaits the ruling of
+    Volmarr - none
+    invented; (3)
+    unified-search
+    history stays named
+    open. Named open for
+    later Part XII:
+    pack-content search;
+    signing/attestation
+    (declined until real
+    key machinery
+    exists); friend-
+    instance exchange
+    (declined until a
+    banked transport
+    exists). Hub search
+    over entries is now
+    BANKED, no longer
+    named open. Banking
+    note (honest): the
+    first banking of
+    this slice was
+    interrupted at cron
+    timeout after the
+    merge push and the
+    forge confirmation
+    full suite had
+    completed; this
+    finisher completed
+    the remaining record
+    steps (merged-tree
+    combined fence, this
+    record, WAVE_PLAN
+    line, team resets)
+    without re-running
+    the full suite.
+    Banked now
+    P-001..P-190 + the
+    commissioned binding
+    depth/role slice.
+    PART XII OPEN
+    (P-187..P-202). Next
+    in roadmap order:
+    P-191 (Part XII,
+    DERIVED).
