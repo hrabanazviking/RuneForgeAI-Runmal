@@ -11,7 +11,9 @@ locator state (ready / missing / not_a_file /
 unreadable) is DATA at 200 on a read, never an error:
 the client decides what to show from the named states.
 The truth layer lives in runmal.hub.registry; this
-module is only the HTTP shape.
+module is only the HTTP shape. P-189 adds the census
+road: GET /hub/census, the owner's whole estate composed
+from the list and browse documents (see hub.census).
 """
 
 from __future__ import annotations
@@ -25,6 +27,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.db.deps import get_owner_id, get_session
 from runmal.hub import browse as hub_browse
+from runmal.hub import census as hub_census
 from runmal.hub import registry as hub_service
 
 router = APIRouter(tags=["hub"])
@@ -59,6 +62,14 @@ async def register_hub_entry(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=str(exc)) from None
     return hub_service.entry_document(entry)
+
+
+@router.get("/hub/census")
+async def hub_census_document(
+    owner_id: str = Depends(get_owner_id),
+):
+    entries = _store().list_for_owner(owner_id)
+    return hub_census.census_document(entries)
 
 
 @router.get("/hub/entries/{entry_id}")
