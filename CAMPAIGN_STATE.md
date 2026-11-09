@@ -17540,3 +17540,124 @@ P-162 BANKED - Character Face History
     PART XI OPEN (P-169..P-186).
     Next in roadmap order: P-183
     (Part XI in roadmap order).
+    P-183 BANKED - Workspace
+    Content Census (Part XI,
+    DERIVED). Part XI continues.
+    - team-03 commit e9aefae
+    merged (no-ff) into
+    yrsa/two-mirrors-build as
+    c5f125d (parents c74678b +
+    e9aefae). Merge conflicts
+    in exactly the 3 expected
+    shared files (docs/CLEAN_
+    ROOM_LOG_2026-10-30.md
+    append-vs-append;
+    src/runmal/app.py; src/
+    runmal/workspaces/__init__.py)
+    resolved as pure additive
+    unions keeping the P-182
+    unified-search and P-183
+    content-census roads
+    exactly once each; the
+    content-census router lands
+    in its OWN include_router
+    block in app.py, split out
+    of the one call both slices
+    had edited - the P-174
+    fused-call defect class
+    does not land. Merged diff
+    vs c74678b is exactly the
+    7 slice files, +1174/-0;
+    new files sha256-identical
+    to team-03's committed
+    versions; py_compile clean
+    on all resolved and touched
+    modules; create_app builds
+    clean and the OpenAPI road
+    list carries GET
+    /workspaces/unified-search
+    and GET /workspaces/
+    content-census together,
+    each exactly once. Merge
+    pushed and ls-remote
+    verified at c5f125d before
+    this record; banking record
+    commit follows this entry
+    and is pushed after it.
+    Scope: workspaces/
+    content_census.py +
+    content_census_router.py
+    (GET /workspaces/content-
+    census) composing P-176's
+    tree verbatim at MAX_DEPTH
+    (resolve_chat_tree at its
+    ceiling, the tree document
+    embedded whole) and judging
+    every candidate file only
+    through P-172's read under
+    its stated cap, counted
+    under its outcome (readable
+    / binary / oversize /
+    unreadable / refused),
+    every non-readable file
+    named, no content retained
+    or returned, partial named
+    partial by truncated /
+    coverage_complete; NO tree,
+    listing, content, search,
+    content-search, unified-
+    search or bindings file
+    modified. Slice doc docs/
+    WORKSPACE_CONTENT_CENSUS_
+    2026-11-09.md, tests/test_
+    p183_workspace_content_
+    census.py (21 tests),
+    clean-room log +1 entry;
+    7 files, +1174/-0.
+    Evidence (team-03
+    hidden_files/P183_EVIDENCE.md
+    + logs): battery 21 passed;
+    neighbours 211 passed (the
+    workspace fence on its
+    base); full suite on its
+    base 5518 passed / 5
+    skipped / 0 failed, exit 0
+    (5497 + 21, exact).
+    Combined batteries on the
+    merged tree: P-169..P-183
+    workspace fence 228 passed
+    / 0 failed (207 at P-182
+    banking + 21, exact). Forge
+    confirmation full suite on
+    the merged tree (counts
+    read back from the log
+    file): 5535 passed / 5
+    skipped / 0 failed, exit 0,
+    in 342.04s (5514 + 21,
+    exact).
+    Migration: NONE (head stays
+    0041).
+    Defects: none in the slice's
+    scope or at banking; nothing
+    left unfixed.
+    Carried items, exactly as
+    named open: (1) a binding
+    label update stays named
+    open (unbind-then-bind law);
+    (2) automatic retention /
+    bulk clear of history awaits
+    the ruling of Volmarr - none
+    invented. Writes inside
+    bound folders stay fenced
+    behind the VX-57 guard;
+    execution is declined
+    ABSOLUTELY (VX-55/56,
+    P-027); watching stays
+    declined (P-169). Part XI
+    gate is P-186; P-184..P-185
+    remain. team-03 reset to the
+    record head after banking.
+    Banked now P-001..P-183.
+    PART XI OPEN (P-169..P-186).
+    Next in roadmap order: P-184
+    (Part XI in roadmap order).
