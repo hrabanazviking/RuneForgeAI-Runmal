@@ -99,6 +99,19 @@
 - ``character_history_router`` - the owner-scoped
   history board road
   (GET /api/v1/faces/character-history?character_id=).
+- ``census`` - face census (P-164): one pure-read
+  census per owner composing, for every owned
+  character in the characters service's order, that
+  character's P-160 face-chats board verbatim - the
+  board state, the rows whole, the counts - the
+  census classified under a closed law
+  (no_characters / no_chats / none_ready /
+  some_ready / all_ready). There is no owner-wide
+  face: selection stays per chat (P-092). The
+  census is current only and silent: it reads no
+  kept history and names no voice.
+- ``census_router`` - the owner-scoped census road
+  (GET /api/v1/faces/census).
 """
 
 from runmal.faces.character_history import (
@@ -113,6 +126,17 @@ from runmal.faces.character_history import (
 from runmal.faces.character_history import (
     NOTES as CHARACTER_HISTORY_NOTES,
 )
+from runmal.faces.census import (
+    CENSUS_SCHEMA,
+    CENSUS_STATE_ALL_READY,
+    CENSUS_STATE_NO_CHARACTERS,
+    CENSUS_STATE_NO_CHATS,
+    CENSUS_STATE_NONE_READY,
+    CENSUS_STATE_SOME_READY,
+    CENSUS_STATES,
+    resolve_face_census,
+)
+from runmal.faces.census import NOTES as CENSUS_NOTES
 from runmal.faces.chats import (
     BOARD_STATE_ALL_READY,
     BOARD_STATE_NO_CHATS,
@@ -183,6 +207,14 @@ __all__ = [
     "CHATS_SCHEMA",
     "CHARACTER_HISTORY_NOTES",
     "CHARACTER_HISTORY_SCHEMA",
+    "CENSUS_NOTES",
+    "CENSUS_SCHEMA",
+    "CENSUS_STATE_ALL_READY",
+    "CENSUS_STATE_NO_CHARACTERS",
+    "CENSUS_STATE_NO_CHATS",
+    "CENSUS_STATE_NONE_READY",
+    "CENSUS_STATE_SOME_READY",
+    "CENSUS_STATES",
     "HISTORY_BOARD_STATE_ALL_HISTORY",
     "HISTORY_BOARD_STATE_NO_CHATS",
     "HISTORY_BOARD_STATE_NO_HISTORY",
@@ -222,6 +254,7 @@ __all__ = [
     "resolve_character_roster",
     "resolve_character_face_chats",
     "resolve_character_face_history",
+    "resolve_face_census",
     "resolve_face_history",
     "resolve_character_speaking_roster",
     "resolve_presentation",
