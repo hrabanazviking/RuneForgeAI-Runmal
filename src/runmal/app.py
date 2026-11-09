@@ -44,6 +44,7 @@ from runmal.voice.mishearing_router import router as mishearing_router
 from runmal.voice.repeat_router import router as repeat_router
 from runmal.voice.router import voice_page
 from runmal.vision.router import router as vision_router
+from runmal.faces.router import router as faces_router
 from runmal.web.router import _HERE as _WEB_DIR
 from runmal.web.router import router as web_router
 
@@ -186,6 +187,11 @@ def create_app(
     )
     app.include_router(
         vision_router,
+        prefix="/api/v1",
+        dependencies=[Depends(require_local_auth)],
+    )
+    app.include_router(
+        faces_router,
         prefix="/api/v1",
         dependencies=[Depends(require_local_auth)],
     )
