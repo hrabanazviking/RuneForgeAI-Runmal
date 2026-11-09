@@ -34,6 +34,10 @@ P-195 adds the duplicate-census road:
 GET /hub/duplicate-census, the duplicate-content census
 over the owner estate, grouping entries by the verified
 content checksum (see hub.duplicate_census).
+P-196 adds the content-shape-census road:
+GET /hub/content-shape-census, the structural census
+over the verified payloads of the owner estate (see
+hub.content_shape_census).
 """
 
 from __future__ import annotations
@@ -55,6 +59,7 @@ from runmal.hub import duplicate_census as hub_duplicate_census
 from runmal.hub import search as hub_search
 from runmal.hub import unified_search as hub_unified_search
 from runmal.hub import unified_search_census as hub_unified_search_census
+from runmal.hub import content_shape_census as hub_content_shape_census
 
 router = APIRouter(tags=["hub"])
 
@@ -112,6 +117,14 @@ async def hub_duplicate_census_document(
 ):
     entries = _store().list_for_owner(owner_id)
     return hub_duplicate_census.duplicate_census_document(entries)
+
+
+@router.get("/hub/content-shape-census")
+async def hub_content_shape_census_document(
+    owner_id: str = Depends(get_owner_id),
+):
+    entries = _store().list_for_owner(owner_id)
+    return hub_content_shape_census.content_shape_census_document(entries)
 
 
 @router.get("/hub/search")
