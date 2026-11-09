@@ -11,6 +11,12 @@ the Companion That Works).
   contents, writes nothing into any folder and grants
   nothing - file tools, agent backends and the
   tool-calling guard are later Part XI slices.
+- ``listing`` - the workspace folder listing
+  (P-170, Part XI, DERIVED scope): the read-only
+  files browser over the binding - entry names,
+  kinds and honest sizes judged live at read, every
+  listed path contained in the bound folder, no
+  contents read and nothing written.
 - ``router`` - the owner-scoped HTTP road
   (/api/v1/workspaces/*).
 """

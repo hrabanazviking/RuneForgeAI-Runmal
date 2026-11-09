@@ -31,6 +31,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from runmal.chats import service as chat_service
 from runmal.db.deps import get_owner_id, get_session
 from runmal.workspaces import bindings as bindings_service
+from runmal.workspaces import listing as listing_service
 
 router = APIRouter(tags=["workspaces"])
 
@@ -109,3 +110,30 @@ async def unbind_workspace(
             detail="workspace binding not found")
     store.remove_binding(binding_id)
     return {"deleted": True, "id": binding_id}
+
+
+@router.get("/workspaces/files")
+async def read_workspace_files(
+    chat_id: str,
+    subpath: str = "",
+    session: AsyncSession = Depends(get_session),
+    owner_id: str = Depends(get_owner_id),
+):
+    chat = await _chat_or_404(session, owner_id, chat_id)
+    binding = _store().get_for_chat(chat.id)
+    if binding is None or binding.owner_id != owner_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="workspace binding not found")
+    try:
+        document = await listing_service.resolve_chat_listing(
+            session, _store(), owner_id, chat.id, subpath)
+    except listing_service.WorkspaceListingError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(exc)) from None
+    if document is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="workspace binding not found")
+    return document
