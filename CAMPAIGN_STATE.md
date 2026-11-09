@@ -15003,3 +15003,145 @@ P-162 BANKED - Character Face History
     X OPEN (P-155..P-168). Next in roadmap
     order: P-165 (Part X, in roadmap
     order).
+
+    P-165 BANKED - Face History Census
+    (Part X - Faces That Speak,
+    P-155..P-168).
+    - team-03 commit a5f27b4 merged (no-
+    ff) into yrsa/two-mirrors-build as
+    af973c6 (parents ceab179 + a5f27b4);
+    merge pushed and ls-remote verified
+    at af973c6 before this record;
+    banking record commit follows this
+    entry and is pushed after it.
+    Derived scope ACCEPTED as banked by
+    the keeper: the roadmap gives Part X
+    only its part-table line
+    (P-155..P-168), no per-slice entries;
+    this slice is derived from the
+    in-tree record of Runmal only (the
+    banked P-164 record named the owner
+    history census open: the cell taken
+    is OWNER x HISTORY x FACE), as the
+    slice doc states plainly.
+    Scope: a pure-read resolution
+    service (src/runmal/faces/
+    history_census.py -
+    resolve_face_history_census)
+    resolving, for the owner, one row
+    per owned character in
+    list_characters order, each row
+    composing that character's P-162
+    character face-history board
+    verbatim in substance (rows whole,
+    board_state under the P-162 closed
+    law, counts summed from the board's
+    own arithmetic), the census
+    classified under the closed
+    HISTORY_CENSUS law (no_characters /
+    no_chats / no_history / some_history
+    / all_history); no voice key
+    anywhere (P-157 / P-159 / P-161 /
+    P-163 own the pairings); no merged
+    owner-wide stream - events stay
+    grouped per chat inside their
+    character row; the kept window stays
+    the P-092 per-chat law (kept_limit
+    stated per chat row and once at
+    census level, never summed into an
+    owner window); five standing honesty
+    notes; plus one road (GET
+    /faces/history-census on the
+    /api/v1 mount, wired in app.py; no
+    id parameter, always 200 the
+    envelope, schema
+    runmal-p165-face-history-census-v1).
+    No store, no migration.
+    Evidence (team-03 worktree
+    hidden_files/ P165_EVIDENCE.md +
+    logs P165_BATTERY.log,
+    P165_NEIGHBOURS.log,
+    P165_FULLSUITE.log): battery 15
+    passed / 0 failed; neighbours fence
+    170 passed / 0 failed; team full
+    suite 5230 passed / 5 skipped / 0
+    failed in 318.39s, exit 0 - exact
+    arithmetic (5215 + 15).
+    Combined batteries on the merged
+    tree: 185 passed / 0 failed (the
+    P-155..P-164 faces batteries 170 +
+    the P-165 battery 15, exact), run by
+    the banking coordinator with
+    PYTHONPATH=src on the campaign venv
+    runmal-venv312 (hidden_files/
+    P165_COMBINED_FENCE.log); a wider
+    fence including P-092 also ran green
+    at 209 passed / 0 failed
+    (hidden_files/P165_COMBINED.log).
+    Forge confirmation suite on the
+    merged tree: 5230 passed / 5 skipped
+    / 0 failed in 355.31s, exit 0
+    (hidden_files/P165_FORGE_CONFIRM.log)
+    - a clean run, no contention re-runs
+    needed, reconciling exactly (5215 +
+    15).
+    Reconciliation: this slice was built
+    directly on the forge head ceab179
+    (the P-164 banking record), so the
+    merge was clean with no conflicts;
+    the merged diff is exactly the 7
+    slice files (+769/-0), purely
+    additive, no hidden_files paths in
+    the slice commit. py_compile clean
+    on all touched Python files, the
+    history-census road is grep-verified
+    live in the router and the app
+    wiring, faces/__init__.__all__
+    verified complete
+    (resolve_face_history_census
+    exported), and the clean-room log
+    P-165 entry appears exactly once.
+    Slice scope:
+    src/runmal/faces/history_census.py
+    (new),
+    src/runmal/faces/history_census_router.py
+    (new), src/runmal/faces/__init__.py
+    (additive), src/runmal/app.py
+    (additive),
+    tests/test_p165_face_history_census.py
+    (new, 15 tests),
+    docs/FACE_HISTORY_CENSUS_2026-11-08.md
+    (new),
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    (+1 entry, exactly once in the
+    merged tree).
+    Migration: NONE (head stays 0041, no
+    0042, battery-pinned).
+    Defects: no defect was found
+    in-slice and no production defect
+    was discovered; no defect was found
+    at banking. Nothing was left
+    unfixed.
+    Honest limitations: the kept window
+    is per chat under P-092 - the census
+    never claims a complete record of
+    the faces of an owner; events older
+    than kept_limit per chat are gone by
+    that law, and a cleared-only history
+    counts as history (battery-pinned).
+    Silent and past only: no voice
+    pairing is stated. The owner
+    speaking census and the owner
+    speaking-history census remain open
+    - the P-164 blur objection (voice is
+    per character under S512) stands
+    unanswered, and two joins at once
+    remain declined under the grid
+    one-join-at-a-time pattern. No
+    owner-wide merged stream: no
+    ordering across chats or characters
+    is ever claimed.
+    Derived scope ACCEPTED as banked.
+    PART X OPEN (P-155..P-168). Next in
+    roadmap order: P-166 (Part X, in
+    roadmap order).
