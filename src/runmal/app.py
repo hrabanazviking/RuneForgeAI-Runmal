@@ -49,6 +49,7 @@ from runmal.faces.roster_router import router as faces_roster_router
 from runmal.faces.speaking_router import router as faces_speaking_router
 from runmal.faces.history_router import router as faces_history_router
 from runmal.faces.speaking_roster_router import router as faces_speaking_roster_router
+from runmal.faces.chats_router import router as faces_chats_router
 from runmal.web.router import _HERE as _WEB_DIR
 from runmal.web.router import router as web_router
 
@@ -216,6 +217,11 @@ def create_app(
     )
     app.include_router(
         faces_speaking_roster_router,
+        prefix="/api/v1",
+        dependencies=[Depends(require_local_auth)],
+    )
+    app.include_router(
+        faces_chats_router,
         prefix="/api/v1",
         dependencies=[Depends(require_local_auth)],
     )
