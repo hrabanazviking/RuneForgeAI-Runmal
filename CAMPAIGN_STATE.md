@@ -14461,3 +14461,205 @@ P-161 BANKED - Speaking History
     PART X OPEN (P-155..P-168).
     Next in roadmap order: P-162 (Part
     X, in roadmap order).
+P-162 BANKED - Character Face History
+    (Part X - Faces That Speak,
+    P-155..P-168).
+    - team-03 commit 5903592 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 13393d2 (parents 3bc712b +
+    5903592); merge pushed and
+    ls-remote verified at 13393d2
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Derived scope ACCEPTED as banked
+    by the keeper: the roadmap gives
+    Part X only its part-table line
+    (P-155..P-168), no per-slice
+    entries; this slice is derived
+    from the in-tree record of Runmal
+    only (the banked Part X grid -
+    per chat P-155 current face, P-157
+    current face + voice, P-158 kept
+    history, P-161 kept history +
+    todays voice; per character P-156
+    roster, P-159 speaking roster,
+    P-160 current-face chats board),
+    as the slice doc states plainly.
+    The one subject x time cell no
+    banked surface filled was
+    character x history.
+    Scope: a pure-read resolution
+    service (src/runmal/faces/
+    character_history.py -
+    resolve_character_face_history)
+    resolving, for one character, its
+    kept face history across all of
+    its chats: None for a missing,
+    foreign or deleted character
+    (existence never leaks); otherwise
+    the envelope (schema
+    runmal-p162-character-face-history-v1):
+    character_to_dict verbatim; one
+    row per owned chat bound to the
+    character in list_chats order
+    (chats bound to other characters
+    and unbound chats never appear),
+    each row carrying the chat facts
+    plus that chat P-158 history
+    document composed verbatim -
+    presentation_state, current, the
+    kept events whole with provenance
+    and entry states judged against
+    today, counts, kept window;
+    events never merged into one
+    cross-chat stream; the board
+    classified under the closed
+    HISTORY_BOARD_STATES law
+    (no_chats / no_history /
+    some_history / all_history) with
+    summed counts and the kept limit
+    named once; five standing honesty
+    notes; plus one road
+    (GET /faces/character-history?character_id=
+    on the /api/v1 mount, after the
+    chats router, with the local-auth
+    dependency; 404 on None, every
+    board state data at 200). No
+    store, no migration.
+    Evidence (team-03 worktree
+    hidden_files/ P162_EVIDENCE.md +
+    logs P162_BATTERY.log,
+    P162_NEIGHBOURS.log,
+    P162_FULLSUITE.log,
+    P162_P077_SOLO.log): battery 19
+    passed / 0 failed; neighbours
+    fence (P-092, P-155, P-156, P-157,
+    P-158, P-159, P-160 batteries +
+    the P-162 battery) 137 passed / 0
+    failed; team full suite 5157
+    passed / 5 skipped / 1 failed in
+    475.16s. The one failure is
+    tests/test_p077_longchat_performance.py::
+    test_longchat_tripwires, a
+    wall-clock tripwire in chat-history
+    paging code this slice never
+    touches, run on the shared laptop;
+    solo re-run 17 passed in 4.82s.
+    Verdict: contention, not a defect
+    in this slice (recorded honestly;
+    the forge confirmation below ran
+    the same test green in the full
+    merged suite).
+    Combined batteries on the merged
+    tree: 36 passed / 0 failed
+    (P-161 battery 17 + P-162 battery
+    19, exact), run by the banking
+    coordinator with PYTHONPATH=src
+    on the campaign venv
+    runmal-venv312.
+    Forge confirmation suite on the
+    merged tree: 5175 passed / 5
+    skipped / 0 failed in 318.57s,
+    exit 0 (/tmp/p162_forge_suite.log
+    with its done file, 0) - a clean
+    run, no contention re-runs
+    needed, reconciling exactly
+    (5156 + 19).
+    Reconciliation: this slice was
+    built on the P-160 record base
+    d1fb610; the merge into the forge
+    (carrying P-161) conflicted on
+    the clean-room log, app.py and
+    faces/__init__.py and all three
+    were resolved as pure additive
+    unions by the banking
+    coordinator. One heal inside that
+    union, named plainly: in app.py
+    the two branches router lines
+    first landed as two positional
+    arguments of a single
+    include_router call; the
+    coordinator restored two separate
+    include_router blocks (each
+    branch original shape, its own
+    prefix and auth dependency)
+    before committing - no assertion
+    weakened, no road lost. The
+    merged tree carries all eight
+    faces routers (presentation,
+    roster, speaking, history,
+    speaking-roster, chats,
+    speaking-history,
+    character-history); the
+    character-history road is
+    grep-verified live in app.py
+    (import + include, after the
+    speaking-history road).
+    Clean-room log: the P-162 entry
+    appears exactly once (and the
+    P-161 entry exactly once).
+    py_compile clean on all merged
+    surfaces, and create_app builds
+    on the merged tree.
+    Slice scope: src/runmal/faces/
+    character_history.py (new),
+    src/runmal/faces/
+    character_history_router.py (new),
+    src/runmal/faces/__init__.py
+    (union, +32), src/runmal/app.py
+    (+6), tests/
+    test_p162_character_face_history.py
+    (new, 19 tests), docs/
+    CHARACTER_FACE_HISTORY_2026-11-08.md
+    (new), docs/CLEAN_ROOM_LOG_
+    2026-10-30.md (+1 entry, exactly
+    once in the merged tree). Team
+    delta 7 files (+829/-0); merged
+    diff vs 3bc712b is exactly those
+    7 files (+829/-0), purely
+    additive, no hidden_files paths
+    in the slice commit.
+    Migration: NONE (head stays 0041,
+    no 0042, battery-pinned).
+    Defects: the team fixed in-slice
+    one defect in its own battery
+    (the other-character exclusion
+    test selected a face for a
+    character with no expression set;
+    ExpressionError is correct P-092
+    behaviour - the test now gives
+    that character its own set;
+    battery then 19/19). No production
+    defect was discovered. Two ruff
+    findings stand at parity with the
+    banked base (app.py I001, router
+    B008 - the codebase-wide FastAPI
+    idiom), recorded in the team
+    evidence. No defect was found at
+    banking beyond the app.py union
+    heal recorded above.
+    Honest limitations: Runmal
+    renders nothing in this slice;
+    the board is history data a client
+    reads, carrying no image bytes -
+    a still-declared entry descriptor
+    carries the P-023 content and
+    thumbnail URLs as data only.
+    Events stay grouped per chat and
+    the kept window applies per chat:
+    the board never claims a complete
+    record of a character faces. The
+    board is silent on voice by
+    design (the grid silent cell); any
+    speaking pairing stays open and
+    must carry P-161 current_only
+    honesty law. No automatic
+    expression detection from message
+    text (P-092 law), no playback,
+    runtime or execution of any stored
+    content (P-027 law).
+    Derived scope ACCEPTED as banked.
+    PART X OPEN (P-155..P-168).
+    Next in roadmap order: P-163 (Part
+    X, in roadmap order).
