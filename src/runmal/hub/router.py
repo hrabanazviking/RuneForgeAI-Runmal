@@ -21,7 +21,9 @@ a literal search over verified pack payload contents
 (see hub.content_search).
 P-192 adds the unified-search road: GET /hub/unified-search,
 one query composed over the metadata and content searches
-(see hub.unified_search).
+(see hub.unified_search). P-193 adds the content-census
+road: GET /hub/content-census, the content-coverage census
+over the owner estate (see hub.content_census).
 """
 
 from __future__ import annotations
@@ -37,6 +39,7 @@ from runmal.db.deps import get_owner_id, get_session
 from runmal.hub import browse as hub_browse
 from runmal.hub import census as hub_census
 from runmal.hub import registry as hub_service
+from runmal.hub import content_census as hub_content_census
 from runmal.hub import content_search as hub_content_search
 from runmal.hub import search as hub_search
 from runmal.hub import unified_search as hub_unified_search
@@ -81,6 +84,14 @@ async def hub_census_document(
 ):
     entries = _store().list_for_owner(owner_id)
     return hub_census.census_document(entries)
+
+
+@router.get("/hub/content-census")
+async def hub_content_census_document(
+    owner_id: str = Depends(get_owner_id),
+):
+    entries = _store().list_for_owner(owner_id)
+    return hub_content_census.content_census_document(entries)
 
 
 @router.get("/hub/search")
