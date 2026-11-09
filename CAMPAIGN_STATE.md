@@ -19277,3 +19277,93 @@ P-162 BANKED - Character Face History
     Next in roadmap order
     : P-193 (Part XII, DE
     RIVED).
+    P-193 BANKED - Hub content census (Part XII, DERIVED).
+    Part XII continues. - team-01 commit 76a3168 merged
+    (no-ff) into yrsa/two-mirrors-build as 29e3d04
+    (parents 70c8de9 + 76a3168). Merge conflicts in 2
+    files (src/runmal/hub/router.py, docstring region
+    only, and docs/CLEAN_ROOM_LOG_2026-10-30.md) resolved
+    as additive unions keeping the P-192 and P-193 work
+    exactly once each; merged diff vs 70c8de9 exactly the
+    5 slice files (+994/-1, the single deletion being the
+    router docstring line the P-193 sentence extends).
+    Router verification per the P-192 banking lesson: the
+    merged router was diffed against BOTH parents' router
+    deltas and grep-verified - the hub_content_census,
+    hub_content_search and hub_unified_search imports are
+    all present and the GET /hub/content-census, GET
+    /hub/content-search and GET /hub/unified-search roads
+    are all present, py_compile clean. NO merge defect was
+    found this time and no heal was needed; nothing
+    reached the remote unverified. Derived scope ACCEPTED:
+    hub content census over CONTENT COVERAGE - the exact
+    cell the P-191 banking record names open, in the
+    honest shape the P-192 scout's warning fixes (a query-
+    free parse-outcome census would merely recount P-189,
+    since every pack layer's inspect road stands on its
+    parse road). src/runmal/hub/content_census.py
+    (content_census_document(entries), schema
+    runmal-p193-hub-content-census-v1) composes P-191's
+    own verified parse roads verbatim - parse_pack for the
+    three pack kinds and parse_share for the preset bundle
+    - under P-188's locator law and its imported 16 MiB
+    bound, with no pack parser of its own, and measures
+    under P-191's string walk law: every string value in
+    the verified payload counts once toward
+    string_value_count and its length toward
+    string_char_count, per row, per kind (by_kind_content,
+    zero-filled, always summing to the totals) and in
+    total, with the estate's largest content holder named
+    (first in store order on a tie). Never counted: dict
+    keys, non-string values, the pack envelope, registry
+    metadata, and any value under a content_sha256 key. No
+    silent omission: every entry ends parsed or named
+    under the closed OUTCOMES law (parsed / unavailable /
+    invalid, the owning road's refusal carried verbatim),
+    coverage_complete carries the truth as data, count
+    always equals parsed plus unavailable plus invalid,
+    and the estate is classified under the closed
+    CONTENT_CENSUS_STATES law (no_entries / no_content /
+    some_content / all_content). No content is retained or
+    returned: counts, entry data and verified checksums
+    only, never an excerpt and never a payload field. One
+    new road: GET /hub/content-census, bearer-gated and
+    owner-scoped like the census road; the census writes
+    nothing. Slice doc
+    docs/HUB_CONTENT_CENSUS_2026-11-09.md + clean-room log
+    +1. Judged and not taken: a query-free parse-outcome
+    census (REJECTED as a mere recount of P-189);
+    signing/attestation and friend-instance exchange stay
+    DECLINED until real machinery exists in-tree - none
+    exists and none is faked. Evidence (team-01
+    hidden_files/P193_EVIDENCE.md + logs): battery 16
+    passed (first run 13 passed / 3 failed, all three this
+    battery's own test defects - a walker arithmetic
+    assertion, a no-content check corrected to assert no
+    excerpt/payload FIELD, and an HTTP fixture corrected
+    to register through the POST road - no production code
+    touched; battery re-ran green). Neighbours on the team
+    tree 223 passed / 0 failed. Team full suite 5722
+    passed / 5 skipped / 0 failed (= 5706 banked at P-191
+    + 16, exact). Combined fence on the merged tree
+    (P-187..P-193 hub batteries + P-045 / P-054 / P-063 /
+    P-141 pack batteries): 247 passed / 0 failed (231 at
+    P-192's fence + 16, exact). Forge confirmation full
+    suite on the merged tree (counts read back from forge
+    hidden_files/P193_FORGE_CONFIRM.log): 5746 passed / 5
+    skipped / 0 failed, exit 0, in 354.17s (= 5730 banked
+    at P-192 + 16, exact), clean run, no contention re-
+    runs. Migration: NONE (head stays 0041). Defects: none
+    discovered in banked code and none at banking; no bug
+    left unfixed. Carried items untouched, exactly as
+    recorded at P-186 through P-192: (1) binding label
+    update stays named open (unbind-then-bind law); (2)
+    automatic retention / bulk clear of history awaits the
+    ruling of Volmarr - none invented; (3) unified-search
+    history stays named open. Named open for later Part
+    XII: a unified-search census in the P-184 shape, now
+    lawful since P-192 is banked in the merged tree. Hub
+    content census is now BANKED, no longer named open.
+    Banked now P-001..P-193 + the commissioned binding
+    depth/role slice. PART XII OPEN (P-187..P-202). Next
+    in roadmap order: P-194 (Part XII, DERIVED).
