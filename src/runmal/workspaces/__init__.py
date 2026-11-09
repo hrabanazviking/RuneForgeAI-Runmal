@@ -13,4 +13,14 @@ the Companion That Works).
   tool-calling guard are later Part XI slices.
 - ``router`` - the owner-scoped HTTP road
   (/api/v1/workspaces/*).
+- ``census`` + ``census_router`` - the workspace
+  census (P-171, Part XI, DERIVED scope): one owner's
+  whole workspace estate as a pure read - P-169's
+  owner list composed verbatim, chats bound vs
+  unbound, per-folder-state counts, shared folders
+  named, the estate classified under a closed census
+  law (no_chats / no_bindings / none_ready /
+  some_ready / all_ready) on GET /workspaces/census.
+  It reads no folder contents, lists no folder,
+  writes nothing and grants nothing.
 """
