@@ -46,6 +46,10 @@ P-198 adds the breadth-census road:
 GET /hub/breadth-census, the container-breadth census
 over the verified payloads of the owner estate (see
 hub.breadth_census).
+P-200 adds the schema-census road:
+GET /hub/schema-census, the object-shape identity census
+over the verified payloads of the owner estate (see
+hub.schema_census).
 """
 
 from __future__ import annotations
@@ -70,6 +74,7 @@ from runmal.hub import unified_search as hub_unified_search
 from runmal.hub import unified_search_census as hub_unified_search_census
 from runmal.hub import content_shape_census as hub_content_shape_census
 from runmal.hub import breadth_census as hub_breadth_census
+from runmal.hub import schema_census as hub_schema_census
 
 router = APIRouter(tags=["hub"])
 
@@ -151,6 +156,14 @@ async def hub_breadth_census_document(
 ):
     entries = _store().list_for_owner(owner_id)
     return hub_breadth_census.breadth_census_document(entries)
+
+
+@router.get("/hub/schema-census")
+async def hub_schema_census_document(
+    owner_id: str = Depends(get_owner_id),
+):
+    entries = _store().list_for_owner(owner_id)
+    return hub_schema_census.schema_census_document(entries)
 
 
 @router.get("/hub/search")
