@@ -13798,3 +13798,170 @@ P-157 BANKED - Speaking Face
     PART X OPEN (P-155..P-168).
     Next in roadmap order: P-158 (Part
     X, in roadmap order).
+P-158 BANKED - Face Selection
+    History (Part X - Faces That
+    Speak, P-155..P-168).
+    - team-01 commit 8e9287a merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 072f669 (parents d94e2a0 +
+    8e9287a); merge pushed and
+    ls-remote verified at 072f669
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Derived scope ACCEPTED as banked
+    by the keeper: the roadmap gives
+    Part X only its part-table line
+    (P-155..P-168), no per-slice
+    entries; this slice is derived
+    from the in-tree record of Runmal
+    only (the P-092 kept selection
+    history, the P-155 presentation
+    document and the P-023 asset
+    roads), as the slice doc states
+    plainly.
+    Scope: a pure-read resolution
+    service (src/runmal/faces/
+    history.py - resolve_face_history)
+    resolving, for one chat, the
+    P-092 kept selection history
+    against the binding truth of
+    today, plus one road (GET
+    /faces/history?chat_id= on the
+    /api/v1 mount, after the faces
+    router, with the local-auth
+    dependency; 404 for a missing or
+    foreign chat - existence never
+    leaks; every non-ready state is
+    data, never an error). The
+    service composes P-155
+    resolve_presentation VERBATIM and
+    P-092 list_history VERBATIM.
+    Every kept event rides whole,
+    provenance included, newest
+    first, classified under the
+    closed ENTRY_STATES law
+    (still_ready / declared_unbound -
+    problem verbatim /
+    no_longer_declared - the P-155
+    not_declared / cleared); the
+    still-declared entry descriptor
+    rides as data (the truth of
+    today, never a claim about the
+    past); counts (event / selection
+    / cleared / still_ready),
+    kept_limit == P-092
+    MAX_HISTORY_KEPT and at_kept_limit
+    name the kept window honestly;
+    five standing honesty notes in
+    fixed order. No store, no
+    migration.
+    Evidence (team-01 worktree
+    hidden_files/ P158_EVIDENCE.md +
+    logs P158_BATTERY.log,
+    P158_NEIGHBOURS.log,
+    P158_FULLSUITE.log): battery 18
+    passed / 0 failed; neighbours
+    fence (P-092 + P-155 + P-023 +
+    P-117) 96 passed / 0 failed;
+    team full suite 5077 passed / 5
+    skipped / 0 failed in 303.19s,
+    exit 0, reconciling exactly
+    (5059 on its base cd740ee + 18
+    battery = 5077; P-156 and P-157
+    were NOT in that base and are
+    reconciled at this merge).
+    Combined batteries on the merged
+    tree: 161 passed / 0 failed
+    (P-155 battery 14 + P-156 battery
+    12 + P-157 battery 16 + P-158
+    battery 18 + neighbour union
+    fence 101 (P-092 + P-023 + P-109
+    + P-117 + S512), exact), run by
+    the banking coordinator with
+    PYTHONPATH=src on the campaign
+    venv runmal-venv312.
+    Forge confirmation suite on the
+    merged tree: first run 5104
+    passed / 5 skipped / 1 failed in
+    490.96s - the single failure was
+    test_s503_stt
+    test_real_faster_whisper_meets_
+    predeclared_contract on its RTF
+    p50 timing leg only (the WER leg
+    passed; RTF p50 1.795 over
+    contract) under shared-machine
+    contention (the run took 490.96s
+    against a ~300s clean-run norm);
+    solo re-run of that one test 4/4
+    green (each ~25-28s, exit 0,
+    hidden_files/P158_S503_SOLO.log)
+    - the known contention
+    classification, so the
+    confirmation stands at 5105
+    passed / 5 skipped / 0 failed,
+    exact (5087 + 18).
+    Reconciliation: this slice was
+    built on the P-155 record base
+    cd740ee; the merge into the forge
+    (carrying P-156 and P-157)
+    conflicted on the clean-room log,
+    app.py and faces/__init__.py and
+    all three were resolved as pure
+    additive unions by the banking
+    coordinator. The merged tree
+    carries all four faces routers;
+    the history road is grep-verified
+    live in app.py (import +
+    include). Clean-room log: the
+    P-158 entry appears exactly once.
+    py_compile clean on all merged
+    surfaces.
+    Slice scope: src/runmal/faces/
+    history.py (new), src/runmal/
+    faces/history_router.py (new),
+    src/runmal/faces/__init__.py
+    (union), src/runmal/app.py (+6),
+    tests/test_p158_face_history.py
+    (new, 18 tests),
+    docs/FACE_HISTORY_2026-11-08.md
+    (new), docs/CLEAN_ROOM_LOG_
+    2026-10-30.md (+1 entry, exactly
+    once in the merged tree). Team
+    delta 7 files (+813/-0); merged
+    diff vs d94e2a0 is exactly those
+    7 files (+813/-0), purely
+    additive, no hidden_files paths
+    in the slice commit.
+    Migration: NONE (head stays 0041,
+    no 0042, battery-pinned).
+    Defects: the finisher fixed
+    in-slice a ruff I001 on
+    faces/__init__.py and a ruff B905
+    in the salvaged battery (zip
+    strict=True), and one salvaged-
+    battery defect (a test calling
+    P-092 update_set without
+    character_id in the body; the
+    production code was correct and
+    the battery went 17/18 to 18/18
+    after the test fix). No defect
+    was found at banking; no heal
+    was needed beyond the flagged
+    union reconciliation above.
+    Honest limitations: Runmal
+    renders nothing in this slice;
+    the history document is data a
+    client reads, carrying no image
+    bytes. entry_state judges the
+    truth of today; history itself
+    is never rewritten. The kept
+    window holds at most 100 events;
+    the document never claims a
+    complete record. No playback,
+    runtime or execution of any
+    stored content (P-027 law).
+    Derived scope ACCEPTED as banked.
+    PART X OPEN (P-155..P-168).
+    Next in roadmap order: P-159 (Part
+    X, in roadmap order).
