@@ -19456,3 +19456,88 @@ P-162 BANKED - Character Face History
     P-001..P-194 + the commissioned binding depth/role
     slice. PART XII OPEN (P-187..P-202). Next in roadmap
     order: P-195 (Part XII, DERIVED).
+    P-195 BANKED - Hub duplicate-content census (Part
+    XII, DERIVED). Part XII continues. - team-03 commit
+    f27501d merged (no-ff) into yrsa/two-mirrors-build
+    as 5db919d (parents 401b8b5 + f27501d). The team-03
+    base predated P-194 (parent 90089a8, the P-193
+    record), so the merge reconciled P-194's hub delta
+    (unified_search_census) with P-195's
+    (duplicate_census). Merge conflicts in 2 files
+    (src/runmal/hub/router.py, docstring region only,
+    and docs/CLEAN_ROOM_LOG_2026-10-30.md) resolved as
+    additive unions keeping the P-194 and P-195 work
+    exactly once each; merged diff vs 401b8b5 exactly
+    the 5 slice files (+1032/-0). Router verification
+    per the P-192 banking lesson: the merged router was
+    diffed against BOTH parents' router deltas and grep-
+    verified - the hub_content_census,
+    hub_content_search, hub_unified_search,
+    hub_unified_search_census and hub_duplicate_census
+    imports are all present and every GET road survives
+    (census, content-census, duplicate-census, search,
+    content-search, unified-search, unified-search-
+    census, entry read, browse, list, delete),
+    py_compile clean. NO merge defect was found and no
+    heal was needed.
+    Derived scope ACCEPTED: hub duplicate-content census
+    - the estate cell no banked hub document takes, in
+    the house census shape.
+    src/runmal/hub/duplicate_census.py
+    (build_duplicate_census(content_census_document) and
+    duplicate_census_document(entries), schema
+    runmal-p195-hub-duplicate-census-v1) composes
+    P-193's content_census_document verbatim over the
+    same entry list and embeds the document whole as
+    content_census; the aggregator sums only that
+    document's own rows. No silent drops: every row is
+    partitioned exactly once - duplicate / unique /
+    unidentified (non-parsed outcome or empty verified
+    checksum) - and the three counts sum to count in
+    every estate. Identity is the verified CONTENT
+    checksum only, exactly as the pack layers define it;
+    a bare preset bundle verifies no checksum on any
+    banked road, so bare bundles are always unidentified
+    here, stated on every document. One new road: GET
+    /hub/duplicate-census, bearer-gated and owner-scoped
+    like the content-census road; the census writes
+    nothing and records no history. Slice doc
+    docs/HUB_DUPLICATE_CENSUS_2026-11-09.md + clean-room
+    log +1.
+    Evidence (team-03 hidden_files/P195_EVIDENCE.md +
+    logs): battery 19 passed (finisher re-run also 19
+    passed). Neighbours on the team tree 266 passed / 0
+    failed. Team full suite 5764 passed / 5 skipped / 1
+    failed - the single failure tests/test_p099_failure_
+    manners.py::test_sandbox_bridge_partial_then_more
+    (banked P-099 sandbox code, untouched by this hub-
+    only slice), re-run solo by the finisher at whole-
+    file 24 passed / 0 failed and the single node alone
+    1 passed, classified CONTENTION, so the adjusted
+    team expectation 5765 passed / 5 skipped / 0 failed
+    (= 5746 banked at P-193 + 19, exact) stands by the
+    solo re-runs. Combined fence on the merged tree
+    (P-187..P-195 hub batteries + P-045 / P-054 / P-063
+    / P-141 pack batteries, forge
+    hidden_files/P195_FENCE.log): 285 passed / 0 failed
+    (266 at P-194's fence + 19, exact). Forge
+    confirmation full suite on the merged tree (counts
+    read back from forge
+    hidden_files/P195_FORGE_CONFIRM.log): 5784 passed /
+    5 skipped / 0 failed in 359.26s, exit 0 - clean at
+    first run, no contention failure and no solo re-run
+    needed; merged expectation 5784 (= 5765 adjusted at
+    P-194 + 19, exact). Migration: NONE (head stays
+    0041). Defects: none discovered in banked code and
+    none at banking; no bug left unfixed.
+    Carried items untouched, exactly as recorded at
+    P-186 through P-194: (1) binding label update stays
+    named open (unbind-then-bind law); (2) automatic
+    retention / bulk clear of history awaits the ruling
+    of Volmarr - none invented; (3) unified-search
+    history stays named open (this census records
+    nothing). Hub duplicate-content census is now
+    BANKED. Banked now P-001..P-195 + the commissioned
+    binding depth/role slice. PART XII OPEN
+    (P-187..P-202). Next in roadmap order: P-196 (Part
+    XII, DERIVED).
