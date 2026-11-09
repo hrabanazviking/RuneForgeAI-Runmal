@@ -42,6 +42,16 @@ anywhere in the tree. This module is that record:
   missed purge) is an ORPHAN: the owner list counts
   orphans plainly and never presents one as live.
 
+P-173 amendment (binding history): when a binding ends
+- by explicit unbind or by the chat-deletion custody
+purge - the superseded binding no longer vanishes: the
+store archives it as a history entry (the binding's own
+fields verbatim, the ending moment, and the ending
+cause under the closed HISTORY_EVENTS law) in the SAME
+index, under a top-level ``history`` key beside
+``bindings``. Live-binding semantics are unchanged;
+runmal.workspaces.history serves the owner-scoped read.
+
 Honest boundaries: a binding is DATA ONLY. This slice
 reads no file contents, lists no folder, writes
 nothing into any folder, runs nothing and launches
@@ -67,6 +77,11 @@ BINDINGS_FILENAME = "workspaces.json"
 
 BINDING_SCHEMA = "runmal-p169-workspace-binding-v1"
 LIST_SCHEMA = "runmal-p169-workspace-list-v1"
+HISTORY_SCHEMA = "runmal-p173-workspace-history-v1"
+
+EVENT_UNBOUND = "unbound"
+EVENT_CHAT_DELETED = "chat_deleted"
+HISTORY_EVENTS = frozenset({EVENT_UNBOUND, EVENT_CHAT_DELETED})
 
 FOLDER_READY = "ready"
 FOLDER_MISSING = "missing"
@@ -154,6 +169,70 @@ class WorkspaceBinding:
         )
 
 
+@dataclass(frozen=True)
+class WorkspaceHistoryEntry:
+    """One ended binding, kept as history data (P-173).
+
+    Every field except ``id``, ``ended_at`` and ``event``
+    is the superseded binding's own field, verbatim;
+    ``bound_at`` is the binding's ``created_at``. The
+    store records no actor beyond ``owner_id``, so no
+    actor is invented here.
+    """
+
+    id: str
+    binding_id: str
+    owner_id: str
+    chat_id: str
+    folder_path: str
+    label: str
+    bound_at: str
+    ended_at: str
+    event: str
+
+    def to_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "binding_id": self.binding_id,
+            "owner_id": self.owner_id,
+            "chat_id": self.chat_id,
+            "folder_path": self.folder_path,
+            "label": self.label,
+            "bound_at": self.bound_at,
+            "ended_at": self.ended_at,
+            "event": self.event,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> WorkspaceHistoryEntry:
+        return cls(
+            id=str(data.get("id", "")),
+            binding_id=str(data.get("binding_id", "")),
+            owner_id=str(data.get("owner_id", "")),
+            chat_id=str(data.get("chat_id", "")),
+            folder_path=str(data.get("folder_path", "")),
+            label=str(data.get("label", "")),
+            bound_at=str(data.get("bound_at", "")),
+            ended_at=str(data.get("ended_at", "")),
+            event=str(data.get("event", "")),
+        )
+
+    @classmethod
+    def from_binding(cls, binding: WorkspaceBinding, *,
+                     event: str, ended_at: str) -> WorkspaceHistoryEntry:
+        return cls(
+            id=str(uuid.uuid4()),
+            binding_id=binding.id,
+            owner_id=binding.owner_id,
+            chat_id=binding.chat_id,
+            folder_path=binding.folder_path,
+            label=binding.label,
+            bound_at=binding.created_at,
+            ended_at=ended_at,
+            event=event,
+        )
+
+
 # ------------------------------------------------------------- store
 
 
@@ -162,35 +241,60 @@ class WorkspaceStore:
 
     Holds the workspace bindings. A corrupt index reads
     as empty and never bricks the surface (the P-117
-    tolerant-load stance).
+    tolerant-load stance). Since P-173 the same index
+    also holds the binding history (a top-level
+    ``history`` list beside ``bindings``): every save
+    preserves it, and a file without the key - every
+    pre-P-173 store - reads as empty history.
     """
 
     def __init__(self, data_dir: Path):
         self.data_dir = Path(data_dir)
         self.index_path = self.data_dir / BINDINGS_FILENAME
 
-    def _load(self) -> list[WorkspaceBinding]:
+    def _load_doc(self) -> tuple[list[WorkspaceBinding],
+                                 list[WorkspaceHistoryEntry]]:
         try:
             doc = json.loads(self.index_path.read_text())
         except (OSError, ValueError):
-            return []
+            return [], []
         if not isinstance(doc, dict):
-            return []
+            return [], []
         rows: list[WorkspaceBinding] = []
         raw = doc.get("bindings")
         if isinstance(raw, list):
             for row in raw:
                 if isinstance(row, dict):
                     rows.append(WorkspaceBinding.from_dict(row))
-        return rows
+        history: list[WorkspaceHistoryEntry] = []
+        raw_history = doc.get("history")
+        if isinstance(raw_history, list):
+            for row in raw_history:
+                if isinstance(row, dict):
+                    history.append(WorkspaceHistoryEntry.from_dict(row))
+        return rows, history
 
-    def _save(self, bindings: list[WorkspaceBinding]) -> None:
+    def _load(self) -> list[WorkspaceBinding]:
+        return self._load_doc()[0]
+
+    def _load_history(self) -> list[WorkspaceHistoryEntry]:
+        return self._load_doc()[1]
+
+    def _save_all(self, bindings: list[WorkspaceBinding],
+                  history: list[WorkspaceHistoryEntry]) -> None:
         doc = {
             "version": BINDINGS_VERSION,
             "bindings": [row.to_dict() for row in bindings],
+            "history": [row.to_dict() for row in history],
         }
         self.index_path.parent.mkdir(parents=True, exist_ok=True)
         self.index_path.write_text(json.dumps(doc, indent=2, sort_keys=True))
+
+    def _save(self, bindings: list[WorkspaceBinding]) -> None:
+        # A bindings-only save must never erase history
+        # archived by the ending verbs (P-173): re-read
+        # the on-disk history and write it back whole.
+        self._save_all(bindings, self._load_history())
 
     def add_binding(self, binding: WorkspaceBinding) -> WorkspaceBinding:
         rows = self._load()
@@ -212,22 +316,60 @@ class WorkspaceStore:
     def list_for_owner(self, owner_id: str) -> list[WorkspaceBinding]:
         return [row for row in self._load() if row.owner_id == owner_id]
 
-    def remove_binding(self, binding_id: str) -> WorkspaceBinding | None:
-        rows = self._load()
+    def remove_binding(self, binding_id: str,
+                       *, now: str | None = None,
+                       ) -> WorkspaceBinding | None:
+        """Remove a live binding, archiving it (P-173).
+
+        On a hit the superseded binding is appended to
+        the history (event ``unbound``) in the same save
+        that removes it; a miss removes nothing and
+        writes no history. The return contract is
+        P-169's: the removed binding, or None.
+        """
+        rows, history = self._load_doc()
         removed = [row for row in rows if row.id == binding_id]
         if not removed:
             return None
-        self._save([row for row in rows if row.id != binding_id])
+        entry = WorkspaceHistoryEntry.from_binding(
+            removed[0], event=EVENT_UNBOUND,
+            ended_at=now or _now_iso())
+        self._save_all(
+            [row for row in rows if row.id != binding_id],
+            history + [entry])
         return removed[0]
 
-    def purge_chat(self, chat_id: str) -> int:
-        """Custody: drop a chat's binding. Returns rows removed."""
-        rows = self._load()
+    def purge_chat(self, chat_id: str,
+                   *, now: str | None = None) -> int:
+        """Custody: drop a chat's binding. Returns rows removed.
+
+        Each dropped binding is archived as history
+        (event ``chat_deleted``, P-173) in the same save.
+        History entries themselves are RETAINED at chat
+        deletion: custody governs live bindings, and
+        history is the owner's audit record - purging it
+        here would destroy the chat_deleted entry in the
+        moment it is created. The return contract is
+        P-169's: the count of live bindings removed.
+        """
+        rows, history = self._load_doc()
         kept = [row for row in rows if row.chat_id != chat_id]
-        removed = len(rows) - len(kept)
-        if removed:
-            self._save(kept)
-        return removed
+        dropped = [row for row in rows if row.chat_id == chat_id]
+        if not dropped:
+            return 0
+        ended = now or _now_iso()
+        entries = [
+            WorkspaceHistoryEntry.from_binding(
+                row, event=EVENT_CHAT_DELETED, ended_at=ended)
+            for row in dropped]
+        self._save_all(kept, history + entries)
+        return len(dropped)
+
+    def list_history_for_owner(
+            self, owner_id: str) -> list[WorkspaceHistoryEntry]:
+        """The owner's history entries, in store order."""
+        return [row for row in self._load_history()
+                if row.owner_id == owner_id]
 
 
 # ----------------------------------------------------------- service
@@ -373,7 +515,9 @@ __all__ = [
     "BINDINGS_FILENAME", "BINDINGS_VERSION", "BINDING_SCHEMA",
     "FOLDER_MISSING", "FOLDER_NOT_A_DIRECTORY", "FOLDER_READY",
     "FOLDER_STATES", "FOLDER_UNREADABLE", "LIST_SCHEMA", "NOTES",
-    "WorkspaceBinding", "WorkspaceError", "WorkspaceStore",
+    "EVENT_CHAT_DELETED", "EVENT_UNBOUND", "HISTORY_EVENTS",
+    "HISTORY_SCHEMA", "WorkspaceBinding", "WorkspaceError",
+    "WorkspaceHistoryEntry", "WorkspaceStore",
     "binding_document", "bindings_path", "folder_state",
     "list_owner_workspaces", "register_binding",
     "resolve_chat_workspace",
