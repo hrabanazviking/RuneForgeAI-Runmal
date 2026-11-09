@@ -71,6 +71,22 @@
   selection stays per chat (P-092).
 - ``chats_router`` - the owner-scoped board road
   (GET /api/v1/faces/chats?character_id=).
+- ``speaking_history`` - speaking-history resolution
+  (P-161): one pure-read document pairing one chat's
+  kept face history (P-158's history document composed
+  whole - every kept event verbatim with provenance,
+  entry states judged against today, the kept window
+  named honestly) with its character's CURRENT voice
+  resolution (S512 with its fallback law named as a
+  closed voice state, the P-109 affect carried as data,
+  consumed False). Voice honesty law: S512 stores NO
+  voice history, so the voice half is today's
+  resolution only (voice_scope: current_only) and no
+  kept event is ever claimed to have been spoken in
+  today's voice. The pairing synthesizes nothing,
+  renders nothing and performs no lip-sync.
+- ``speaking_history_router`` - the owner-scoped HTTP
+  road (GET /api/v1/faces/speaking-history?chat_id=).
 """
 
 from runmal.faces.chats import (
@@ -122,6 +138,12 @@ from runmal.faces.speaking import (
     VOICE_STATES,
     resolve_speaking_face,
 )
+from runmal.faces.speaking_history import NOTES as SPEAKING_HISTORY_NOTES
+from runmal.faces.speaking_history import (
+    SPEAKING_HISTORY_SCHEMA,
+    VOICE_SCOPE,
+    resolve_speaking_history,
+)
 from runmal.faces.speaking_roster import (
     SPEAKING_ROSTER_SCHEMA,
     resolve_character_speaking_roster,
@@ -151,6 +173,8 @@ __all__ = [
     "ROSTER_STATES",
     "SELECTION_SCOPE",
     "SPEAKING_ROSTER_SCHEMA",
+    "SPEAKING_HISTORY_NOTES",
+    "SPEAKING_HISTORY_SCHEMA",
     "SPEAKING_SCHEMA",
     "STATE_CURRENT_UNBOUND",
     "STATE_EMPTY_SET",
@@ -163,10 +187,12 @@ __all__ = [
     "VOICE_PROFILE",
     "VOICE_PROFILE_FALLBACK",
     "VOICE_STATES",
+    "VOICE_SCOPE",
     "resolve_character_roster",
     "resolve_character_face_chats",
     "resolve_face_history",
     "resolve_character_speaking_roster",
     "resolve_presentation",
+    "resolve_speaking_history",
     "resolve_speaking_face",
 ]
