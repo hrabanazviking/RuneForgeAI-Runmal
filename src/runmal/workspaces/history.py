@@ -40,8 +40,13 @@ folder, runs and launches nothing, and grants nothing
 (P-169's law; P-027: content is data, never code).
 History entries are retained when their chat is
 deleted (see bindings.WorkspaceStore.purge_chat for
-the judged custody call); no history-retention or
-history-deletion road exists yet - named open.
+the judged custody call). Since P-175 the owner can
+delete a single entry permanently - see
+delete_workspace_history_entry below and DELETE
+/workspaces/history/{entry_id} in the router; that
+owner-hand road is the retention road P-173 named
+open. No automatic retention policy (age or count)
+exists in-tree, and none is invented here.
 """
 
 from __future__ import annotations
@@ -75,10 +80,13 @@ HISTORY_NOTES = (
     "from the filesystem at THIS read under P-169's "
     "law; it is not claimed as the state the folder "
     "had when the binding ended.",
-    "This surface is a pure read: it stores, archives, "
+    "This read surface is pure: it stores, archives, "
     "deletes, writes and runs nothing, reads no file "
     "contents and lists no folder, and a binding - "
-    "live or historical - grants nothing.",
+    "live or historical - grants nothing. Deleting one "
+    "history entry is a separate owner-scoped road "
+    "(DELETE /workspaces/history/{entry_id}), never "
+    "part of this read.",
 )
 
 
@@ -137,7 +145,27 @@ async def resolve_workspace_history(session, store, user_id: str,
     }
 
 
+def delete_workspace_history_entry(store, user_id: str,
+                                   entry_id: str):
+    """Delete ONE of the caller's own history entries.
+
+    The owner-scoped deletion service (P-175): the
+    removed entry on success, or None when the entry
+    is unknown OR foreign - the two read exactly alike
+    at the HTTP road (one 404), so existence never
+    leaks and a foreign entry is never deleted. A
+    miss writes nothing (the store's own law). This
+    is a deletion of kept data only: it ends no live
+    binding, touches no folder and grants nothing.
+    """
+    entry = store.get_history_entry(entry_id)
+    if entry is None or entry.owner_id != user_id:
+        return None
+    return store.remove_history_entry(entry_id)
+
+
 __all__ = [
-    "HISTORY_NOTES", "HISTORY_SCHEMA", "history_entry_document",
+    "HISTORY_NOTES", "HISTORY_SCHEMA",
+    "delete_workspace_history_entry", "history_entry_document",
     "resolve_workspace_history",
 ]

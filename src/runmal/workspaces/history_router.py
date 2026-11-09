@@ -17,9 +17,19 @@ road deliberately has no chat-existence 404, unlike
 the live-binding roads. The truth layer lives in
 runmal.workspaces.history (over the store amendment
 in runmal.workspaces.bindings); this module is only
-the HTTP shape. This road is disjoint from the live
-binding, listing, content and census roads: it ends
-no binding and deletes no history.
+the HTTP shape. These roads are disjoint from the
+live binding, listing, content and census roads:
+they end no binding. Since P-175 this router also
+carries the owner-scoped history-deletion road:
+DELETE /workspaces/history/{entry_id} deletes ONE
+of the caller's own entries permanently - an
+unknown or foreign entry answers 404 ("workspace
+history entry not found"), existence never leaks,
+and the success shape is the P-169 unbind shape,
+{"deleted": True, "id"}. That road is the P-173
+named-open retention cell in its smallest
+owner-hand form; no automatic retention policy
+is claimed.
 """
 
 from __future__ import annotations
@@ -27,7 +37,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.db.deps import get_owner_id, get_session
@@ -50,3 +60,17 @@ async def workspace_history(
 ):
     return await history_service.resolve_workspace_history(
         session, _store(), owner_id, chat_id)
+
+
+@router.delete("/workspaces/history/{entry_id}")
+async def delete_workspace_history(
+    entry_id: str,
+    owner_id: str = Depends(get_owner_id),
+):
+    removed = history_service.delete_workspace_history_entry(
+        _store(), owner_id, entry_id)
+    if removed is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="workspace history entry not found")
+    return {"deleted": True, "id": entry_id}
