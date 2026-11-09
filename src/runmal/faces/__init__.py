@@ -46,8 +46,30 @@
   (GET /api/v1/faces/speaking?chat_id=).
 - ``history_router`` - the owner-scoped history road
   (GET /api/v1/faces/history).
+- ``chats`` - character face chats (P-160): one pure-read
+  board per character naming every owned chat bound to
+  it, in the chats service's order, with P-155's
+  presentation truth composed verbatim per chat - the
+  presentation state, the current row, its problem, and
+  the current descriptor named as ``face`` only when
+  that chat is ready - the board classified under a
+  closed law (no_chats / none_ready / some_ready /
+  all_ready). A character has no single current face:
+  selection stays per chat (P-092).
+- ``chats_router`` - the owner-scoped board road
+  (GET /api/v1/faces/chats?character_id=).
 """
 
+from runmal.faces.chats import (
+    BOARD_STATE_ALL_READY,
+    BOARD_STATE_NO_CHATS,
+    BOARD_STATE_NONE_READY,
+    BOARD_STATE_SOME_READY,
+    BOARD_STATES,
+    CHATS_SCHEMA,
+    resolve_character_face_chats,
+)
+from runmal.faces.chats import NOTES as CHATS_NOTES
 from runmal.faces.history import (
     ENTRY_STATE_CLEARED,
     ENTRY_STATE_DECLARED_UNBOUND,
@@ -89,6 +111,13 @@ from runmal.faces.speaking import (
 )
 
 __all__ = [
+    "BOARD_STATE_ALL_READY",
+    "BOARD_STATE_NO_CHATS",
+    "BOARD_STATE_NONE_READY",
+    "BOARD_STATE_SOME_READY",
+    "BOARD_STATES",
+    "CHATS_NOTES",
+    "CHATS_SCHEMA",
     "FACE_STATES",
     "ENTRY_STATE_CLEARED",
     "ENTRY_STATE_DECLARED_UNBOUND",
@@ -117,6 +146,7 @@ __all__ = [
     "VOICE_PROFILE_FALLBACK",
     "VOICE_STATES",
     "resolve_character_roster",
+    "resolve_character_face_chats",
     "resolve_face_history",
     "resolve_presentation",
     "resolve_speaking_face",
