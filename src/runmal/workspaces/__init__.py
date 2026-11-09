@@ -68,4 +68,17 @@ the Companion That Works).
   Part XI, DERIVED scope): the P-173 named-open
   retention road in owner-hand form - no automatic
   retention policy is invented.
+- ``history_census`` + ``history_census_router`` -
+  the workspace binding-history census (P-177,
+  Part XI, DERIVED scope): one owner whole history
+  estate as a pure read - P-173 history document
+  composed verbatim and embedded whole, ended
+  bindings counted by cause, by the folders live
+  states today, by whether their chats still
+  exist, by folder sharing across endings and by
+  label presence, the estate classified under a
+  closed law (no_history / no_live_chats /
+  all_live_chats / some_live_chats) on
+  GET /workspaces/history-census. It deletes no
+  history, writes nothing and grants nothing.
 """
