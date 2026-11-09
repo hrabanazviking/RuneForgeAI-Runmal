@@ -14292,3 +14292,172 @@ P-160 BANKED - Character Face Chats
     PART X OPEN (P-155..P-168).
     Next in roadmap order: P-161 (Part
     X, in roadmap order).
+P-161 BANKED - Speaking History
+    (Part X - Faces That Speak,
+    P-155..P-168).
+    - team-01 commit 179f86b merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 40586e4 (parents d1fb610 +
+    179f86b); merge pushed and
+    ls-remote verified at 40586e4
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Derived scope ACCEPTED as banked
+    by the keeper: the roadmap gives
+    Part X only its part-table line
+    (P-155..P-168), no per-slice
+    entries; this slice is derived
+    from the in-tree record of Runmal
+    only (the banked Part X grid -
+    P-155 per-chat current face,
+    P-156 per-character roster,
+    P-157 per-chat speaking face,
+    P-158 per-chat face history,
+    P-159 per-character speaking
+    roster, P-160 the character to
+    its chats board), as the slice
+    doc states plainly.
+    Scope: a pure-read resolution
+    service (src/runmal/faces/
+    speaking_history.py -
+    resolve_speaking_history)
+    resolving, for one chat, its
+    speaking history: None for a
+    missing or foreign chat
+    (existence never leaks);
+    otherwise the history half
+    composed from P-158
+    resolve_face_history WHOLE -
+    every kept event verbatim with
+    provenance, entry states judged
+    against today, counts, the kept
+    window named honestly - paired
+    with the chat character CURRENT
+    voice resolution composed from
+    S512 verbatim in substance (the
+    closed VOICE_STATES law, the
+    stored backend visible on
+    fallback, the P-109 affect whole
+    with consumed False, voice None
+    exactly when the chat has no
+    bound character), voice_scope
+    current_only on every document
+    (S512 stores NO voice history,
+    so no kept event is ever claimed
+    to have been spoken in todays
+    voice and no event carries a
+    voice field), paired True exactly
+    when a voice resolved and the
+    kept history holds at least one
+    selection event, and five honesty
+    notes, plus one road
+    (GET /faces/speaking-history?chat_id=
+    on the /api/v1 mount, after the
+    speaking-roster router, with the
+    local-auth dependency; 404 on
+    None, every presentation state
+    data at 200). No store, no
+    migration.
+    Evidence (team-01 worktree
+    hidden_files/ P161_EVIDENCE.md +
+    logs P161_BATTERY.log,
+    P161_NEIGHBOURS.log,
+    P161_FULLSUITE.log): battery 17
+    passed / 0 failed; neighbours
+    fence (P-158 + P-159 + P-157 +
+    P-155 + P-092 + S512 + P-109) 108
+    passed / 0 failed; team full
+    suite 5139 passed / 5 skipped /
+    0 failed in 310.74s, exit 0.
+    Combined batteries on the merged
+    tree: 34 passed / 0 failed
+    (P-160 battery 17 + P-161 battery
+    17, exact), run by the banking
+    coordinator with PYTHONPATH=src
+    on the campaign venv
+    runmal-venv312.
+    Forge confirmation suite on the
+    merged tree: 5156 passed / 5
+    skipped / 0 failed in 430.91s,
+    exit 0 (/tmp/p161_forge_suite.log
+    with its done file, 0) - a clean
+    run, no contention re-runs
+    needed, reconciling exactly
+    (5139 + 17).
+    Reconciliation: this slice was
+    built on the P-159 record base
+    2976b79; the merge into the forge
+    (carrying P-160) conflicted on
+    the clean-room log, app.py and
+    faces/__init__.py and all three
+    were resolved as pure additive
+    unions by the banking
+    coordinator. The merged tree
+    carries all seven faces routers
+    (presentation, roster, speaking,
+    history, speaking-roster, chats,
+    speaking-history); the
+    speaking-history road is
+    grep-verified live in app.py
+    (import + include, after the
+    chats road). Clean-room log: the
+    P-161 entry appears exactly once
+    (and the P-160 entry exactly
+    once). py_compile clean on all
+    merged surfaces.
+    Slice scope: src/runmal/faces/
+    speaking_history.py (new),
+    src/runmal/faces/
+    speaking_history_router.py (new),
+    src/runmal/faces/__init__.py
+    (union, +26), src/runmal/app.py
+    (+6), tests/
+    test_p161_speaking_history.py
+    (new, 17 tests), docs/
+    SPEAKING_HISTORY_2026-11-08.md
+    (new), docs/CLEAN_ROOM_LOG_
+    2026-10-30.md (+1 entry, exactly
+    once in the merged tree). Team
+    delta 7 files (+816/-0); merged
+    diff vs d1fb610 is exactly those
+    7 files (+816/-0), purely
+    additive, no hidden_files paths
+    in the slice commit.
+    Migration: NONE (head stays 0041,
+    no 0042, battery-pinned).
+    Defects: the team fixed in-slice
+    a ruff I001 on faces/__init__.py
+    introduced by its own first
+    wiring pass (the NOTES-as import
+    line placement; battery re-run
+    green). Two findings stand at
+    exact parity with the banked
+    base and were NOT introduced by
+    this slice (app.py I001, router
+    B008 - the FastAPI idiom, at
+    parity with P-159 banked router),
+    recorded in the team evidence.
+    No defect was found at banking;
+    no heal was needed beyond the
+    flagged union reconciliation
+    above.
+    Honest limitations: Runmal
+    renders nothing in this slice;
+    the speaking-history document is
+    data a client reads, carrying no
+    image bytes and no audio. The
+    voice half is todays resolution
+    only - a resolved reference,
+    never synthesized audio; nothing
+    is performed, animated or
+    lip-synced. No automatic
+    expression detection from
+    message text (P-092 law), no
+    playback, runtime or execution
+    of any stored content (P-027
+    law).
+    Derived scope ACCEPTED as banked.
+    PART X OPEN (P-155..P-168).
+    Next in roadmap order: P-162 (Part
+    X, in roadmap order).
