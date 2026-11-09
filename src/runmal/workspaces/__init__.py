@@ -95,6 +95,23 @@ the Companion That Works).
   coverage_complete - on GET
   /workspaces/unified-search. It writes nothing
   and grants nothing.
+- ``content_census`` + ``content_census_router`` -
+  the workspace content census (P-183, Part XI,
+  DERIVED scope): one chat's bound folder over
+  P-176's whole depth-limited tree as a pure
+  aggregate of P-172 readability - the tree composed
+  verbatim at its maximum depth and embedded whole,
+  every candidate file read only through P-172's own
+  read under its stated cap and counted under its
+  outcome (readable / binary / oversize / unreadable /
+  refused), every non-readable file named, total
+  readable bytes, the readable extension shape and
+  the largest readable file, the folder classified
+  under a closed law (folder_not_ready / empty /
+  no_files / none_readable / some_readable /
+  all_readable) on GET /workspaces/content-census.
+  It retains and returns no file content and no
+  excerpt, writes nothing and grants nothing.
 - ``router`` - the owner-scoped HTTP road
   (/api/v1/workspaces/*).
 - ``census`` + ``census_router`` - the workspace
