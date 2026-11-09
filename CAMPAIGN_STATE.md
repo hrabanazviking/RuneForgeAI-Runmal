@@ -19367,3 +19367,92 @@ P-162 BANKED - Character Face History
     Banked now P-001..P-193 + the commissioned binding
     depth/role slice. PART XII OPEN (P-187..P-202). Next
     in roadmap order: P-194 (Part XII, DERIVED).
+    P-194 BANKED - Hub unified-search census (Part XII, DERIVED).
+    Part XII continues. - team-02 commit 38cd5bd merged
+    (no-ff) into yrsa/two-mirrors-build as fee9d87
+    (parents 90089a8 + 38cd5bd). Merge conflicts in 2
+    files (src/runmal/hub/router.py, docstring region
+    only, and docs/CLEAN_ROOM_LOG_2026-10-30.md) resolved
+    as additive unions keeping the P-193 and P-194 work
+    exactly once each; merged diff vs 90089a8 exactly the
+    5 slice files (+1016/-0). Router verification per the
+    P-192 banking lesson: the merged router was diffed
+    against BOTH parents' router deltas and grep-verified
+    - the hub_content_census and
+    hub_unified_search_census imports are both present
+    and the GET /hub/content-census and GET
+    /hub/unified-search-census roads are both present
+    (with the earlier content-search and unified-search
+    roads), py_compile clean. The pre-existing ruff I001
+    on hub/router.py at HEAD is not a defect and was not
+    touched. NO merge defect was found and no heal was
+    needed. Derived scope ACCEPTED: hub unified-search
+    census - the exact cell P-193's scout names lawful
+    once P-192 is banked in the merged tree, in the P-184
+    shape. src/runmal/hub/unified_search_census.py
+    (build_unified_search_census(unified_document) and
+    unified_search_census_document(entries, query,
+    kind=None), schema
+    runmal-p194-hub-unified-search-census-v1) composes
+    P-192's unified_search_document verbatim - the same
+    entries, query and kind handed over, P-192 validating
+    first under its own law (blank / non-string query and
+    unknown kind raise HubUnifiedSearchError unchanged) -
+    the P-192 document embedded whole, and the aggregator
+    sums only that document's own returned-match and
+    skipped-entry fields: returned axis by_matched_by
+    zero-filled under MATCHED_BY summing exactly to
+    match_count, by_kind under HUB_KINDS, by_matched_field
+    under SEARCH_FIELDS, total_occurrences and
+    most_occurrences (first in returned order on a tie,
+    null when no returned row carries occurrences - no
+    content fact invented); source axis carrying P-192's
+    full-union counts verbatim beside the returned sums
+    so a capped census is never dressed as complete;
+    coverage axis with entries considered / searched,
+    skipped counted by_skip_outcome under P-191's
+    outcomes, truncated / coverage_complete verbatim;
+    census_state under the closed CENSUS_STATES law
+    (no_matches / metadata_only / content_only / mixed)
+    judged on the RETURNED matches. Distinctness pinned:
+    no string-value / string-char / excerpt field - that
+    is P-193's census, never recounted here. One new
+    road: GET /hub/unified-search-census, bearer-gated
+    and owner-scoped like the unified-search road; the
+    census writes nothing and records no history. Slice
+    doc docs/HUB_UNIFIED_SEARCH_CENSUS_2026-11-09.md +
+    clean-room log +1.
+    Evidence (team-02 hidden_files/P194_EVIDENCE.md +
+    logs): battery 19 passed (first run 18 passed / 1
+    failed, the battery's own test arithmetic slip - the
+    scenario payload carries 3 occurrences, not 2 -
+    corrected and re-ran green; no production code
+    touched). Neighbours on the team tree 250 passed / 0
+    failed. Team full suite 5749 passed / 5 skipped / 0
+    failed (= 5730 banked at P-192 + 19, exact). Combined
+    fence on the merged tree (P-187..P-194 hub batteries
+    + P-045 / P-054 / P-063 / P-141 pack batteries): 266
+    passed / 0 failed (247 at P-193's fence + 19, exact).
+    Forge confirmation full suite on the merged tree
+    (counts read back from forge
+    hidden_files/P194_FORGE_CONFIRM.log): 5764 passed / 5
+    skipped / 1 failed in 432.78s - the single failure
+    the P-077 longchat tripwire alone, re-run solo at 17
+    passed / 0 failed (hidden_files/P194_P077_SOLO.log),
+    classified CONTENTION (wall well above the 354s
+    uncontended baseline), so the merged expectation
+    5765 passed / 5 skipped / 0 failed (= 5746 banked at
+    P-193 + 19, exact) stands by the solo re-run.
+    Migration: NONE (head stays 0041). Defects: none
+    discovered in banked code and none at banking; no bug
+    left unfixed. Carried items untouched, exactly as
+    recorded at P-186 through P-193: (1) binding label
+    update stays named open (unbind-then-bind law); (2)
+    automatic retention / bulk clear of history awaits
+    the ruling of Volmarr - none invented; (3)
+    unified-search history stays named open (this census
+    records nothing). Hub unified-search census is now
+    BANKED, no longer named open. Banked now
+    P-001..P-194 + the commissioned binding depth/role
+    slice. PART XII OPEN (P-187..P-202). Next in roadmap
+    order: P-195 (Part XII, DERIVED).
