@@ -15479,3 +15479,119 @@ P-162 BANKED - Character Face History
     as banked. PART X OPEN (P-155..P-168).
     Next in roadmap order: P-168 (Part X
     gate, in roadmap order).
+
+    P-168 BANKED - Part X Gate: Faces That
+    Speak (Part X - P-155..P-168). PART X
+    COMPLETE. Gate verdict, exactly as
+    recorded in docs/PART_X_GATE_2026-11-08.md:
+    Part X is COMPLETE and the gate PASSES
+    with named carried items and two
+    findings. - team-03 commit 581c87f
+    merged (no-ff) into
+    yrsa/two-mirrors-build as 2b66ecf
+    (parents 229a09c + 581c87f); the only
+    merge conflict was the clean-room log
+    append-vs-append, resolved keeping BOTH
+    the P-167 and P-168 entries exactly once
+    each; merge pushed and ls-remote
+    verified at 2b66ecf before this record;
+    banking record commit follows this entry
+    and is pushed after it. Scope: the gate
+    builds no new behaviour; it judges the
+    banked Part X slices P-155..P-167 end to
+    end through their own public contracts
+    (docs/PART_X_GATE_2026-11-08.md,
+    tests/test_p168_part_x_gate.py 24 tests,
+    tests/test_p168_gate_record.py 10 tests,
+    clean-room log +1 entry). Evidence
+    (team-03 hidden_files/P168_EVIDENCE.md +
+    logs): gate battery + record 34 passed;
+    neighbours 233 passed; full suite on its
+    base 5288 passed / 5 skipped / 0 failed.
+    MERGED-TRUTH HEAL at banking (P-116 /
+    P-154 precedent, noted plainly): the gate
+    battery was written on a base WITHOUT
+    P-167 and honestly pinned that base shape
+    (the P-167 speaking-census road absent).
+    On the merged tree P-167 IS banked, so
+    the road is present; the keeper healed
+    exactly those base-shape pins in
+    tests/test_p168_part_x_gate.py to the
+    merged truth at EQUAL strength - the
+    speaking-census module, router and slice
+    doc asserted present, its schema
+    accounted exactly once in the faces
+    source, the HTTP roads asserted as the
+    13-road set including
+    /faces/speaking-census, the faces
+    __init__ map asserted to carry
+    resolve_face_speaking_census, the OpenAPI
+    document asserted to name the 13th road,
+    and the no-renderer file census asserted
+    as the exact 13-service / 13-router file
+    list. No assertion was deleted or
+    weakened. The gate-record module pins
+    only the gate doc's own base-shape text,
+    which stands as written, and was not
+    healed. The K1 owner speaking-HISTORY
+    census pins (a different cell) stay
+    absent and OPEN, untouched. Combined
+    batteries on the merged tree
+    (hidden_files/P168_COMBINED.log): gate
+    battery + gate record + P-167 battery 53
+    passed / 0 failed (34 + 19, exact).
+    Forge confirmation full suite on the
+    merged tree (hidden_files/
+    P168_CONFIRMATION.log): 5307 passed / 5
+    skipped / 0 failed, exact (5273 P-167
+    confirmation + 24 + 10). Migration:
+    NONE (head stays 0041, no 0042,
+    battery-pinned). Carried items, exactly
+    as the gate names them: K1 - The owner
+    speaking-history census stays OPEN - the
+    one unmade cell. Part X closes with that
+    one owner speaking cell unmade, and this
+    gate does NOT take it. K2 - No renderer,
+    stage or lip-sync exists anywhere in
+    Part X - data only, by design. K3 - The
+    P-109 affect is consumed:False everywhere
+    (eight voices measured at this gate).
+    K4 - The kept window is per chat and the
+    record is never complete (P-092
+    kept_limit 100 per chat, never summed
+    into an owner window). K5 - There is no
+    owner-wide face and no single current
+    face per character (selection stays per
+    chat, always an explicit act). K6 - No
+    voice history exists anywhere (S512
+    stores none, so voice_scope current_only
+    binds wherever history is involved).
+    K7 - Scenario VN stage integration stays
+    open (no in-tree record joins scenario
+    cast role names to characters or faces).
+    K8 - Generated expression sprites via
+    P-087 stay open (a landing-contract
+    change, not a faces read). Findings,
+    exactly as the gate names them: F1 - No
+    new engine defect was found by this gate.
+    The gate only correction during
+    construction was its own probe error (the
+    OpenAPI document is served at
+    /openapi.json, not under the /api/v1
+    mount); no engine code was touched and
+    nothing was left unfixed in this slice
+    own files. F2 - P-167 banks in parallel;
+    its shape is named, not assumed. On this
+    gate base its module is measured by
+    overlay only and its road is asserted
+    absent; the merged tree after it banks is
+    the additive union named in the gate
+    record, for the keeper banking
+    reconciliation. (Banking note: P-167 was
+    verified already banked at 229a09c, and
+    the merged-truth heal above is that
+    reconciliation.) No defect was found at
+    banking beyond the healed base-shape
+    pins. Nothing was left unfixed. PART X
+    COMPLETE (P-155..P-168). Next in roadmap
+    order: Part XI in roadmap order.
