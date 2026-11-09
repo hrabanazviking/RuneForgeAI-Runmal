@@ -12,10 +12,21 @@ Inspector & Bots).
   composes no prompt and runs no activation inspection
   inside its GET (a read must not consume probability
   rolls or compose prompts as a side effect).
-- ``router`` - the single HTTP road: GET
-  /inspector/chats/{chat_id}, owner-scoped like every
-  chat road; unknown or foreign chats answer the house
-  404 idiom.
+- ``events`` - the Inspector events document (P-204):
+  ONE read-only, schema-versioned document per owned
+  chat joining the banked S107 durable chat event log
+  into the Inspector as a by-kind census plus honest
+  coverage sections for the roadmap's events / actions /
+  flags triad. The service CALLS the banked chats-service
+  read (list_events), never re-implements it, and carries
+  NO event data payloads and NO message content;
+  payloads stay on the banked raw road the document
+  points at.
+- ``router`` - the HTTP roads: GET
+  /inspector/chats/{chat_id} and GET
+  /inspector/chats/{chat_id}/events, owner-scoped like
+  every chat road; unknown or foreign chats answer the
+  house 404 idiom.
 """
 
 from __future__ import annotations
@@ -23,4 +34,7 @@ from __future__ import annotations
 #: Schema id of the composed overview document.
 OVERVIEW_SCHEMA = "runmal-p203-inspector-overview-v1"
 
-__all__ = ["OVERVIEW_SCHEMA"]
+#: Schema id of the Inspector events document.
+EVENTS_SCHEMA = "runmal-p204-inspector-events-v1"
+
+__all__ = ["EVENTS_SCHEMA", "OVERVIEW_SCHEMA"]
