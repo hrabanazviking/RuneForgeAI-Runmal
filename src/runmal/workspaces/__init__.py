@@ -24,6 +24,17 @@ the Companion That Works).
   containment re-judged at the moment of use,
   binary / oversize / unreadable named as
   outcomes, nothing written.
+- ``folder_census`` + ``folder_census_router`` -
+  the workspace folder census (P-174, Part XI,
+  DERIVED scope): one chat's bound folder at one
+  level as a pure read - P-170's listing composed
+  verbatim and embedded whole, kind counts, total
+  file bytes, extension counts from names only,
+  hidden and escaping-symlink counts, the largest
+  file, the level classified under a closed law
+  (folder_not_ready / empty / no_files / has_files)
+  on GET /workspaces/folder-census. It reads no
+  file contents, writes nothing and grants nothing.
 - ``router`` - the owner-scoped HTTP road
   (/api/v1/workspaces/*).
 - ``census`` + ``census_router`` - the workspace
