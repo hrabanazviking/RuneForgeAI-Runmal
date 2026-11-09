@@ -19541,3 +19541,94 @@ P-162 BANKED - Character Face History
     binding depth/role slice. PART XII OPEN
     (P-187..P-202). Next in roadmap order: P-196 (Part
     XII, DERIVED).
+    P-196 BANKED - Hub content-shape census (Part
+    XII, DERIVED). Part XII continues. - team-01 commit
+    eda2f9f merged (no-ff) into yrsa/two-mirrors-build
+    as 55d9ec9 (parents ff191c1 + eda2f9f). The team-01
+    base predated P-195 (parent 401b8b5, the P-194
+    record), so the merge reconciled P-195's hub delta
+    (duplicate_census) with P-196's
+    (content_shape_census). Merge conflicts in 2 files
+    (src/runmal/hub/router.py - docstring and road
+    regions only - and docs/CLEAN_ROOM_LOG_2026-10-30.md)
+    resolved as additive unions keeping the P-195 and
+    P-196 work exactly once each; merged diff vs
+    ff191c1 exactly the 5 slice files (+1209/-0).
+    Router verification per the P-192 banking lesson:
+    the merged router was diffed against BOTH parents'
+    router deltas and grep-verified - the
+    hub_content_census, hub_content_search,
+    hub_unified_search, hub_unified_search_census,
+    hub_duplicate_census and hub_content_shape_census
+    imports are all present and every GET road survives
+    (census, content-census, duplicate-census,
+    content-shape-census, search, content-search,
+    unified-search, unified-search-census, entry read,
+    browse, list, delete), py_compile clean. NO import
+    or road was dropped and no heal was needed; the
+    union resolution's two blank separator lines before
+    the new road were restored so the merged router
+    delta is the slice's +13 exactly.
+    Derived scope ACCEPTED: hub content-shape census -
+    the estate cell no banked hub document takes, in
+    the house census shape.
+    src/runmal/hub/content_shape_census.py
+    (content_shape_census_document(entries), schema
+    runmal-p196-hub-content-shape-census-v1) measures
+    the STRUCTURE of the verified payloads - node
+    types, keys, containers and depth - where every
+    banked hub surface that opens a pack measured its
+    payload as TEXT only (P-191 searches string values,
+    P-193 counts string values and characters, both
+    under a walk law excluding dict keys and non-string
+    values by name). The document embeds P-187's list
+    document whole and verbatim; each entry is judged
+    under P-188's locator law and its imported 16 MiB
+    bound, then parsed through the owning layer's OWN
+    verified parse road, dispatched exactly as P-193
+    dispatches; the module contains no pack parser of
+    its own. Rows carry the shape counts (objects,
+    arrays, strings, numbers, booleans, nulls, nodes,
+    keys, max_depth) under P-193's imported OUTCOMES
+    law; no key name, no value and no payload appear
+    anywhere in the document. One new road: GET
+    /hub/content-shape-census, bearer-gated and
+    owner-scoped like the content-census road; the
+    census writes nothing and records no history.
+    Slice doc docs/HUB_CONTENT_SHAPE_CENSUS_2026-11-09.md
+    + clean-room log +1.
+    Evidence (team-01 hidden_files/P196_EVIDENCE.md +
+    logs): battery 16 passed. Neighbours on the team
+    tree 282 passed / 0 failed (= 250 P-194 fence + 16
+    P-193 + 16 P-196, exact). Team full suite 5781
+    passed / 5 skipped / 0 failed (= 5765 adjusted at
+    P-194 + 16, exact), clean, no contention
+    classification needed. Two in-slice findings were
+    fixed in-slice: a battery arithmetic slip in the
+    test itself (estate max_depth accumulated by SUM
+    where the census law takes the estate MAX) and
+    ruff F841 x3; no banked-code defect. Combined
+    fence on the merged tree (P-187..P-196 hub
+    batteries + P-045 / P-054 / P-063 / P-141 pack
+    batteries, forge hidden_files/P196_FENCE.log):
+    301 passed / 0 failed (285 at P-195's fence + 16,
+    exact). Forge confirmation full suite on the
+    merged tree (counts read back from forge
+    hidden_files/P196_FORGE_CONFIRM.log): 5800 passed /
+    5 skipped / 0 failed in 352.73s, exit 0 - clean at
+    first run, no contention failure and no solo re-run
+    needed; merged expectation 5800 (= 5784 banked at
+    P-195 + 16, exact). Migration: NONE (head stays
+    0041). Defects: none discovered in banked code and
+    none at banking; no bug left unfixed.
+    Carried items untouched, exactly as recorded at
+    P-186 through P-195: (1) binding label update stays
+    named open (unbind-then-bind law); (2) automatic
+    retention / bulk clear of history awaits the ruling
+    of Volmarr - none invented; (3) unified-search
+    history stays named open (this census records
+    nothing). Hub content-shape census is now
+    BANKED. Banked now P-001..P-196 + the commissioned
+    binding depth/role slice. PART XII OPEN
+    (P-187..P-202). Next in roadmap order: P-197 (Part
+    XII, DERIVED).
