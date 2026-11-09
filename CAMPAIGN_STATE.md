@@ -15873,3 +15873,159 @@ P-162 BANKED - Character Face History
     Nothing was left unfixed. Next in
     roadmap order: P-172 (Part XI in
     roadmap order).
+    P-172 BANKED - Workspace File
+    Content Read (Part XI, DERIVED).
+    Part XI continues. Scope is
+    DERIVED, stated plainly in the
+    slice doc: the roadmap gives Part
+    XI only its part line (XI |
+    Workspaces - the Companion That
+    Works | P-169 - P-186) with no
+    verbatim P-172 entry; the slice
+    derives from P-170's banked
+    limitation (4) - still no
+    file-content surface; reads /
+    viewing, writes and execution
+    remain named-open later Part XI
+    cells, in that order of
+    presupposition - taking the READ
+    cell first, and from its
+    limitation (2), ordering any
+    future consumer that acts on
+    paths to RE-JUDGE containment at
+    use, over the census VX-54
+    files-browser read clause.
+    - team-01 commit 47ed28c merged
+    (no-ff) into yrsa/two-mirrors-build
+    as eb591f5 (parents 204a0d0 +
+    47ed28c); P-172 branched from the
+    P-170 head while P-171 banked
+    ahead of it, so the merge onto
+    the P-171 head reconciled as
+    flagged: workspaces/__init__.py
+    took both slices' additive map
+    bullets automatically (P-171
+    census + P-172 content, kept
+    both), workspaces/router.py was
+    P-172-only and merged clean, and
+    the one conflict was the
+    clean-room log, append-vs-append,
+    resolved keeping both the P-171
+    and P-172 entries exactly once;
+    the merged workspaces package was
+    grep- and compile-verified to
+    carry the P-169 bindings, the
+    P-170 listing, the P-171 census
+    and the P-172 content read
+    together, and app.py to carry
+    every router including the census
+    router. Merge pushed and
+    ls-remote verified at eb591f5
+    before this record; banking
+    record commit follows this entry
+    and is pushed after it.
+    Scope: the read-only content
+    consumer of the P-169 binding -
+    src/runmal/workspaces/content.py
+    (new) composing the banked
+    bindings module VERBATIM (same
+    store, same folder_state() law,
+    the P-169 binding document
+    embedded unchanged) and adding
+    only the read law: containment
+    re-judged at the moment of use
+    (folder state, realpath
+    containment, lstat kind and size
+    all judged at the read; the file
+    opened O_NOFOLLOW and
+    fstat-verified before any byte is
+    read; the read bounded at cap+1);
+    a symlink never followed for
+    content, refused by name; paths
+    refused plainly on empty,
+    absolutes, NULs, any '..'
+    component, missing, directory or
+    non-regular targets; text strict
+    UTF-8 with no NUL under
+    MAX_CONTENT_BYTES = 262144
+    carried in the document, binary /
+    oversize / unreadable named
+    outcomes at 200 (bytes never
+    dumped as text, an oversize body
+    never read, content never
+    truncated or decoded with
+    replacements); one additive road
+    (GET /workspaces/content, +28) on
+    the existing router and one map
+    bullet in workspaces/__init__.py
+    (+7). Slice doc
+    docs/WORKSPACE_CONTENT_READ_2026-11-09.md,
+    tests/test_p172_workspace_content.py
+    (16 tests), clean-room log +1
+    entry; 6 files, +854/-0. Evidence
+    (team-01 hidden_files/
+    P172_EVIDENCE.md + logs): battery
+    16 passed; neighbours 44 passed
+    (P-169 + P-170 + P-172 batteries,
+    15 + 13 + 16, exact); full suite
+    on its base 5351 passed / 5
+    skipped / 0 failed (5335 P-170 +
+    16, exact). Combined batteries on
+    the merged tree: P-169 battery +
+    P-170 battery + P-171 battery +
+    P-172 battery 55 passed / 0
+    failed (15 + 13 + 11 + 16, exact).
+    Forge confirmation full suite on
+    the merged tree (run detached,
+    counts read back from the log):
+    5362 passed / 5 skipped / 0
+    failed, exact, exit 0, in 343.87s
+    (5346 P-171 + 16); no test_s503
+    flake this run. Migration: NONE
+    (head stays 0041, battery-pinned).
+    Two defects were found and fixed
+    in-slice by the lead before
+    banking: (1) the first build of
+    _read_bytes judged a
+    changed-but-under-cap file (fstat
+    size differing from the lstat
+    size) as oversize - a misnamed
+    outcome; corrected so the
+    descriptor is judged on the cap
+    alone and, on outcome ok,
+    size_bytes reports the bytes
+    actually read. (2) The battery's
+    binary test asserted size 4 for a
+    5-byte NUL file (test arithmetic,
+    not code); corrected per-file and
+    re-run green. No defect was found
+    at banking. Nothing was left
+    unfixed. Carried limitations,
+    exactly as the lead named them:
+    (1) A read is a point-in-time
+    judgement; the fstat +
+    bounded-read guard closes this
+    read's own window, not a later
+    consumer's. (2) A hostile process
+    racing the folder with write
+    access to it remains the VX-57
+    guard's future threat model -
+    this slice claims the read-only
+    guarantee, not a sandbox. (3)
+    Text is strict UTF-8 only by
+    design: any other encoding is
+    honestly binary to this surface,
+    never misdecoded. (4) Still no
+    write, execution or image-viewing
+    surface: those remain named-open
+    later Part XI cells. Declined
+    threads, named in the slice doc:
+    all writes / edits / deletes
+    (fenced until the VX-57 guard),
+    execution and agent backends
+    (VX-55/56; P-027 absolute),
+    watching, any image-byte surface
+    and recursive reads all remain
+    later Part XI cells. Next in
+    roadmap order: P-173 (Part XI in
+    roadmap order).
