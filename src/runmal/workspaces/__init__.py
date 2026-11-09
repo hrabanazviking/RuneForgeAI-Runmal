@@ -65,6 +65,22 @@ the Companion That Works).
   truncated / coverage_complete - on GET
   /workspaces/content-search. It writes nothing
   and grants nothing.
+- ``tree_census`` + ``tree_census_router`` -
+  the workspace tree census (P-181, Part XI,
+  DERIVED scope): one chat's bound folder over
+  P-176's whole depth-limited tree as a pure
+  read - P-176's tree composed verbatim at its
+  maximum depth and embedded whole, kind counts,
+  total file bytes, extension counts from names
+  only, hidden and escaping-symlink counts, the
+  largest file with its folder-relative path,
+  expanded / unexpanded / refused directory
+  counts and counts by depth, the folder
+  classified under a closed law
+  (folder_not_ready / empty / no_files /
+  has_files) on GET /workspaces/tree-census.
+  It opens no file, reads no file contents,
+  writes nothing and grants nothing.
 - ``router`` - the owner-scoped HTTP road
   (/api/v1/workspaces/*).
 - ``census`` + ``census_router`` - the workspace
