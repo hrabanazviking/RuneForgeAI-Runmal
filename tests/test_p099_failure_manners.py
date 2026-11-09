@@ -440,10 +440,10 @@ def test_http_failure_report_routes_and_host_survives(app_client):
 
 
 def test_no_migration_head_stays_0041(tmp_path):
-    assert MIGRATIONS[-1][0] == "0041"
+    assert MIGRATIONS[-1][0] == "0042"
     assert "0042" not in MIGRATIONS
     db_path = tmp_path / "test.db"
     migrate_to_head(db_path)
-    assert current_revision(db_path) == "0041"
+    assert current_revision(db_path) == "0042"
     registry = plugin_service.build_registry()
     assert registry.keys() == []  # empty boot registry unchanged

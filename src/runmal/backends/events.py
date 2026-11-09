@@ -19,6 +19,21 @@ class TextDelta:
 
 
 @dataclass(frozen=True)
+class ReasoningDelta:
+    """The model's emitted thinking beside the answer (P-205).
+
+    Captured tolerantly by the wire adapters from the reasoning
+    fields their provider streams already carry; NEVER merged
+    into TextDelta -- concatenating a stream's TextDelta texts
+    yields exactly the answer text, reasoning never included."""
+
+    text: str
+
+    def to_dict(self) -> dict:
+        return {"type": "reasoning_delta", "text": self.text}
+
+
+@dataclass(frozen=True)
 class UsageUpdate:
     prompt_tokens: int | None = None
     completion_tokens: int | None = None
@@ -63,4 +78,4 @@ class ErrorEvent:
         }
 
 
-Event = TextDelta | UsageUpdate | Done | ErrorEvent
+Event = TextDelta | ReasoningDelta | UsageUpdate | Done | ErrorEvent

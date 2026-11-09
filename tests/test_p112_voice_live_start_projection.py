@@ -284,5 +284,5 @@ def test_in_process_controller_start_does_not_back_project(
 def test_migration_head_stays_0041(tmp_path, monkeypatch):
     _client, _f, _s, _sess, _u, _chat, _c = _rig(tmp_path, monkeypatch)
     db_path = tmp_path / "test.db"
-    assert MIGRATIONS[-1][0] == "0041"
-    assert current_revision(db_path) == "0041"
+    assert MIGRATIONS[-1][0] == "0042"
+    assert current_revision(db_path) == "0042"

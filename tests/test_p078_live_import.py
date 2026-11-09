@@ -576,7 +576,7 @@ def test_migration_head_healed_at_banking(tmp_path):
     # 0040 (provenance). Banked after P-077, the merged head is
     # 0041; 0040 remains present exactly once, still the
     # provenance migration, and no P-078 migration appears.
-    assert MIGRATIONS[-1][0] == "0041"
+    assert MIGRATIONS[-1][0] == "0042"
     revisions = [r[0] for r in MIGRATIONS]
     assert revisions.count("0041") == 1
     assert revisions.count("0040") == 1
@@ -584,7 +584,7 @@ def test_migration_head_healed_at_banking(tmp_path):
     assert prov[2].__name__.endswith("m0040_message_provenance")
     db_path = tmp_path / "head.db"
     migrate_to_head(db_path)
-    assert current_revision(db_path) == "0041"
+    assert current_revision(db_path) == "0042"
 
 
 # ---------------- F. review fixes (post-review adjudication) ----------------

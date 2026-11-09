@@ -335,10 +335,10 @@ def test_http_census_empty_estate_and_bearer(tmp_path):
 
 
 def test_neighbours_heads_and_closed_laws(tmp_path):
-    assert MIGRATIONS[-1][0] == "0041"
+    assert MIGRATIONS[-1][0] == "0042"
     assert "0042" not in MIGRATIONS
     make_factory(tmp_path)
-    assert current_revision(tmp_path / "test.db") == "0041"
+    assert current_revision(tmp_path / "test.db") == "0042"
     assert hub_census.CENSUS_STATES == {
         "no_entries", "none_inspected", "some_inspected", "all_inspected"}
     assert hub_census.CHECKSUM_KEYS == {

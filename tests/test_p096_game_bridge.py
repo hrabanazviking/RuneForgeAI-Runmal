@@ -496,11 +496,11 @@ def test_http_refusals_and_unknowns(tmp_path, monkeypatch):
 
 
 def test_migration_head_stays_0041():
-    assert MIGRATIONS[-1][0] == "0041"
-    assert "0042" not in [row[0] for row in MIGRATIONS]
+    assert MIGRATIONS[-1][0] == "0042"
+    assert [row[0] for row in MIGRATIONS].count("0042") == 1  # P-205 banking heal: 0042 taken once, by P-205 m0042
 
 
 def test_current_revision_is_0041(tmp_path):
     db_path = tmp_path / "head.db"
     migrate_to_head(db_path)
-    assert current_revision(db_path) == "0041"
+    assert current_revision(db_path) == "0042"

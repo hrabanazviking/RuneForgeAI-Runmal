@@ -139,4 +139,4 @@ def test_enable_param():
 def test_no_migration():
     assert "0042" not in MIGRATIONS
 async def test_migration_head(tmp_path):
-    db_path = tmp_path / "mig.db"; migrate_to_head(db_path); assert current_revision(db_path) == "0041"
+    db_path = tmp_path / "mig.db"; migrate_to_head(db_path); assert current_revision(db_path) == "0042"

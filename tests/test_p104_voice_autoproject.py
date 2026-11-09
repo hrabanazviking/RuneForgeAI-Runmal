@@ -402,8 +402,8 @@ def _fake_stt():
 
 def test_migration_head_stays_0041(tmp_path, monkeypatch):
     _client, _f, db_path = make_client(tmp_path, monkeypatch)
-    assert MIGRATIONS[-1][0] == "0041"
-    assert current_revision(db_path) == "0041"
+    assert MIGRATIONS[-1][0] == "0042"
+    assert current_revision(db_path) == "0042"
 
 
 def test_http_stop_catches_up_feed_frames_after_live_toggle(tmp_path, monkeypatch):

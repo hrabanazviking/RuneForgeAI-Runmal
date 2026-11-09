@@ -181,7 +181,7 @@ def test_chat_write_is_not_declared():
 def test_no_migration_head_stays_0041(tmp_path):
     db_path = tmp_path / "mig.db"
     migrate_to_head(db_path)
-    assert current_revision(db_path) == "0041"
+    assert current_revision(db_path) == "0042"
     assert "0042" not in MIGRATIONS
 
 

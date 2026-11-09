@@ -594,10 +594,10 @@ def test_http_unified_search_requires_bearer(tmp_path):
 
 
 def test_migration_head_stays_0041_and_laws_are_the_banked_ones(tmp_path):
-    assert MIGRATIONS[-1][0] == "0041"
+    assert MIGRATIONS[-1][0] == "0042"
     assert "0042" not in MIGRATIONS
     make_factory(tmp_path)
-    assert current_revision(tmp_path / "test.db") == "0041"
+    assert current_revision(tmp_path / "test.db") == "0042"
     assert hub_unified.MATCHED_BY == {"metadata", "content", "both"}
     assert hub_unified.SEARCH_STATES == {
         "no_matches", "matches", "matches_truncated"}

@@ -24,7 +24,7 @@ from runmal.backends.errors import (
     ProviderError,
     RateLimited,
 )
-from runmal.backends.events import Done, TextDelta, UsageUpdate
+from runmal.backends.events import Done, ReasoningDelta, TextDelta, UsageUpdate
 from runmal.backends.models import Capabilities, HealthStatus, ModelInfo
 from runmal.backends.params import SamplingParams
 from runmal.backends.structured import wire_payload
@@ -129,7 +129,11 @@ class OllamaChatBackend(ChatBackend):
                     obj = json.loads(line)
                     if obj.get("error"):
                         raise map_text_error(str(obj["error"]))
-                    content = (obj.get("message") or {}).get("content")
+                    message = obj.get("message") or {}
+                    thinking = message.get("thinking")
+                    if thinking:
+                        yield ReasoningDelta(thinking)
+                    content = message.get("content")
                     if content:
                         yield TextDelta(content)
                     if obj.get("done"):

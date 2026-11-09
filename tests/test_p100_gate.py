@@ -562,10 +562,10 @@ def test_c_boot_registry_is_empty_by_design(tmp_path):
 
 
 def test_c_hygiene_migration_head_and_roadmap_span(tmp_path):
-    assert MIGRATIONS[-1][0] == "0041"
+    assert MIGRATIONS[-1][0] == "0042"
     db_path = tmp_path / "test.db"
     migrate_to_head(db_path)
-    assert current_revision(db_path) == "0041"
+    assert current_revision(db_path) == "0042"
     roadmap = (REPO / "docs"
                / "RUNMAL_TWO_MIRRORS_PARITY_ROADMAP_2026-10-30.md"
                ).read_text(encoding="utf-8")

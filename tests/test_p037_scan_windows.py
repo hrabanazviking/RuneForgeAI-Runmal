@@ -614,11 +614,11 @@ def test_api_preview_external_context(tmp_path, monkeypatch):
 
 
 def test_migration_head_is_0029_p037():
-    assert MIGRATIONS[-1][0] == "0041"  # head moved by P-065 (PROVISIONAL 0036)
-    assert MIGRATIONS[-12][0] == "0030"  # position moved by P-065 (PROVISIONAL 0036)
-    assert MIGRATIONS[-13][0] == "0029"  # position moved by P-065 (PROVISIONAL 0036)
-    assert MIGRATIONS[-14][0] == "0028"  # position moved by P-065 (PROVISIONAL 0036)
-    assert MIGRATIONS[-15][0] == "0027"  # position moved by P-065 (PROVISIONAL 0036)
+    assert MIGRATIONS[-1][0] == "0042"  # head moved by P-065 (PROVISIONAL 0036)
+    assert MIGRATIONS[-13][0] == "0030"  # position moved by P-065 (PROVISIONAL 0036)
+    assert MIGRATIONS[-14][0] == "0029"  # position moved by P-065 (PROVISIONAL 0036)
+    assert MIGRATIONS[-15][0] == "0028"  # position moved by P-065 (PROVISIONAL 0036)
+    assert MIGRATIONS[-16][0] == "0027"  # position moved by P-065 (PROVISIONAL 0036)
 
 
 def test_migration_0029_columns_exist_and_default(tmp_path):
@@ -666,8 +666,8 @@ def test_old_database_upgrades_in_place_preserving_books(tmp_path):
     finally:
         conn.close()
     applied = migrate_to_head(db_path)
-    assert applied == ["0029", "0030", "0031", "0032", "0033", "0034", "0035", "0036", "0037", "0038", "0039", "0040", "0041"]  # PROVISIONAL 0036 appended by P-065
-    assert current_revision(db_path) == "0041"
+    assert applied == ["0029", "0030", "0031", "0032", "0033", "0034", "0035", "0036", "0037", "0038", "0039", "0040", "0041", "0042"]  # PROVISIONAL 0036 appended by P-065
+    assert current_revision(db_path) == "0042"
     conn = sqlite3.connect(db_path)
     try:
         row = conn.execute(

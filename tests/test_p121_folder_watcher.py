@@ -413,7 +413,7 @@ def test_http_scan_with_injected_attacher(
 def test_migration_head_stays_0041(tmp_path):
     db_path = tmp_path / "m.db"
     migrate_to_head(db_path)
-    assert current_revision(db_path) == MIGRATIONS[-1][0] == "0041"
+    assert current_revision(db_path) == MIGRATIONS[-1][0] == "0042"
 
 
 # --------------------------------------- custody wiring (banking)

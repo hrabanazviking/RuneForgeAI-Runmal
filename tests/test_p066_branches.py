@@ -83,15 +83,15 @@ def test_migration_head_is_0037_provisional(tmp_path):
     # new head 0039 (P-073 chat metadata); the
     # 0037 pins are kept at their merged positions and the head is
     # pinned too, so nothing is left unasserted.
-    assert MIGRATIONS[-5][0] == "0037"
-    assert "PROVISIONAL" in MIGRATIONS[-5][1]
-    assert MIGRATIONS[-1][0] == "0041"
+    assert MIGRATIONS[-6][0] == "0037"
+    assert "PROVISIONAL" in MIGRATIONS[-6][1]
+    assert MIGRATIONS[-1][0] == "0042"
     db_path = tmp_path / "m.db"
     applied = migrate_to_head(db_path)
-    assert applied[-5] == "0037"
-    assert applied[-6] == "0036"
+    assert applied[-6] == "0037"  # P-205 banking heal: positions shifted by 0042
+    assert applied[-7] == "0036"  # P-205 banking heal: positions shifted by 0042
     assert "0036" in applied  # P-065 banked first; 0036 stands beneath 0037
-    assert current_revision(db_path) == "0041"
+    assert current_revision(db_path) == "0042"
     assert migrate_to_head(db_path) == []  # idempotent
 
 
@@ -143,7 +143,7 @@ def test_migration_0037_upgrades_from_0035_with_root_defaults(tmp_path):
         conn.commit()
     finally:
         conn.close()
-    assert migrate_to_head(db_path) == ["0036", "0037", "0038", "0039", "0040", "0041"]
+    assert migrate_to_head(db_path) == ["0036", "0037", "0038", "0039", "0040", "0041", "0042"]
     conn = sqlite3.connect(db_path)
     try:
         row = conn.execute(

@@ -48,7 +48,7 @@ def make_client(tmp_path, monkeypatch):
     monkeypatch.setenv("RUNMAL_DATA_DIR", str(tmp_path))
     db_path = tmp_path / "test.db"
     applied = migrate_to_head(db_path)
-    assert applied[-1] == "0041"
+    assert applied[-1] == "0042"
     engine = create_db_engine(db_path)
     factory = create_session_factory(engine)
     client = TestClient(create_app(factory))
@@ -100,8 +100,8 @@ def walk_keys(node):
 def test_schema_pinned_and_no_migration(tmp_path, monkeypatch):
     make_client(tmp_path, monkeypatch)
     assert OVERVIEW_SCHEMA == "runmal-p203-inspector-overview-v1"
-    assert MIGRATIONS[-1][0] == "0041"
-    assert all(rev != "0042" for rev, _name, _mod in MIGRATIONS)
+    assert MIGRATIONS[-1][0] == "0042"
+    assert [rev for rev, _name, _mod in MIGRATIONS].count("0042") == 1  # P-205 banking heal: 0042 taken once, by P-205 m0042
 
 
 def test_document_shape_and_section_statuses(tmp_path, monkeypatch):
