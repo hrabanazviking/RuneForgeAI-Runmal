@@ -16845,3 +16845,178 @@ P-162 BANKED - Character Face History
     (P-169). Next in roadmap order:
     P-178 (Part XI in roadmap
     order).
+    P-178 BANKED - Workspace
+    Filename Search (Part XI,
+    DERIVED). Part XI continues.
+    Scope is DERIVED, stated plainly
+    in the slice doc: the roadmap
+    gives Part XI only its part line
+    (XI | Workspaces - the Companion
+    That Works | P-169 - P-186) with
+    no verbatim P-178 entry; the
+    slice derives from the banked
+    Part XI grid - P-169 banked the
+    binding, P-170 the one-level
+    listing, P-172 the read of one
+    named file whose path the caller
+    must already know, and P-176 the
+    depth-limited tree, whose own
+    record names filename search
+    over the tree as open twice -
+    the cell taken is finding a file
+    by name in a deep bound folder,
+    the filename half only: content
+    search, which would have to open
+    files under a new partial-read
+    honesty law, stays named open.
+    - team-01 commit e147e86 merged
+    (no-ff) into yrsa/two-mirrors-
+    build as 22e3c70 (parents
+    0e8b9c3 + e147e86); CROSS-BASE:
+    team-01 built on the P-176
+    record head f490afd while P-177
+    banked ahead in parallel, so
+    P-177 is NOT in this slice's
+    base and the merge onto the
+    P-177 record head 0e8b9c3
+    reconciled as flagged: conflicts
+    in src/runmal/app.py and docs/CL
+    EAN_ROOM_LOG_2026-10-30.md
+    (append-vs-append), both
+    resolved as pure additive unions
+    keeping the P-177 and P-178
+    entries and roads exactly once
+    each; workspaces/__init__.py
+    auto-merged keeping both slices'
+    additive text (the P-178 search
+    bullet after the P-176 tree
+    bullet, the P-177 history-census
+    bullet in the history region).
+    The app.py union was built as
+    two separate include_router
+    blocks, one for the history-
+    census router and one for the
+    search router (the P-174 fused-
+    call defect class checked
+    explicitly and never landed).
+    No banking heal was needed
+    beyond the union itself: the
+    merged tree was grep- and
+    compile-verified BEFORE any
+    suite ran - py_compile clean on
+    every touched module, and each
+    workspace router sits in its own
+    include_router block. Merged
+    diff vs 0e8b9c3 is exactly the
+    7 slice files, +717/-0, purely
+    additive. Merge pushed and
+    ls-remote verified at 22e3c70
+    before this record; banking
+    record commit follows this entry
+    and is pushed after it.
+    Scope: two new modules
+    (workspaces/search.py: the
+    filename search - P-176's tree
+    composed VERBATIM at its own
+    MAX_DEPTH ceiling, the tree
+    document embedded whole, no
+    second walk, listing law,
+    folder-state law or scan; the
+    query required and stripped,
+    empty or blank refused plainly
+    and never match-everything,
+    validated before the tree is
+    composed; a match is the
+    casefolded query as a substring
+    of the entry NAME only, never a
+    path component, never content;
+    coverage is expanded nodes only
+    in the tree's own depth-first
+    order, each match carrying the
+    node's fields verbatim plus its
+    folder-relative path, exactly
+    the input P-172's read consumes;
+    MAX_MATCHES 100 returned with
+    total_matches honest, truncated
+    set by the tree's own
+    truncation, by any unexpanded
+    directory node in the composed
+    document, or by the match cap;
+    None exactly when P-176's
+    resolve is None - and
+    workspaces/search_router.py:
+    GET /workspaces/search, the two
+    404s kept apart, refused subpath
+    and refused query at 422, every
+    state DATA at 200); additive
+    app.py wiring (+6) and
+    workspaces/__init__.py doc lines
+    (+10). Slice doc docs/WORKSPACE_
+    FILENAME_SEARCH_2026-11-09.md,
+    tests/test_p178_workspace_
+    search.py (13 tests), clean-room
+    log +1 entry; 7 files, +717/-0.
+    The search stores, binds,
+    unbinds, writes, edits, deletes,
+    runs, launches and watches
+    nothing, opens no file, and
+    grants nothing.
+    Evidence (team-01
+    hidden_files/P178_EVIDENCE.md +
+    logs): battery 13 passed;
+    neighbours 118 passed (P-169 +
+    P-170 + P-171 + P-172 + P-173 +
+    P-174 + P-175 + P-176 batteries
+    on its base); full suite on its
+    base 5438 passed / 5 skipped / 0
+    failed, exit 0 (5425 on its
+    P-176 base + 13, exact).
+    Combined batteries on the merged
+    tree: P-169 + P-170 + P-171 +
+    P-172 + P-173 + P-174 + P-175 +
+    P-176 + P-177 + P-178 batteries
+    147 passed / 0 failed (134 at
+    P-177 banking + 13, exact). Forge
+    confirmation full suite on the
+    merged tree (counts read back
+    from the log file): 5454 passed
+    / 5 skipped / 0 failed, exact,
+    in 332.68s (5441 + 13).
+    Migration: NONE (head stays
+    0041).
+    DISCOVERY recorded at banking,
+    NOT fixed in this slice: P-176's
+    tree document does not set
+    truncated for a directory left
+    unexpanded at the depth cap,
+    though P-176's notes claim
+    truncated names every partial
+    tree; P-178 compensated
+    composition-side for search
+    only (its build_search also sets
+    truncated when any directory
+    node in the composed document is
+    unexpanded). The fix to P-176's
+    tree itself is commissioned as
+    P-179 (team-02, in flight
+    separately); nothing in P-176
+    was touched here.
+    Honest limitations and carried
+    items, exactly as the lead named
+    them: (1) content search is
+    named open (it would open files
+    under a new partial-read honesty
+    law); (2) a binding label update
+    stays named open (bindings.py's
+    own law is unbind-then-bind,
+    never a silent in-place update);
+    (3) automatic retention / bulk
+    clear of history awaits
+    Volmarr's ruling. Writes inside
+    bound folders stay fenced behind
+    the VX-57 guard; execution is
+    declined ABSOLUTELY (VX-55/56,
+    P-027); watching stays declined
+    (P-169). Next in roadmap order:
+    P-179 (Part XI in roadmap
+    order).
