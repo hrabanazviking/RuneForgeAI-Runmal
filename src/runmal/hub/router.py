@@ -18,7 +18,9 @@ P-190 adds the search road: GET /hub/search, a literal
 search over the owner's own entry data (see hub.search).
 P-191 adds the content-search road: GET /hub/content-search,
 a literal search over verified pack payload contents
-(see hub.content_search).
+(see hub.content_search). P-193 adds the content-census
+road: GET /hub/content-census, the content-coverage census
+over the owner estate (see hub.content_census).
 """
 
 from __future__ import annotations
@@ -34,6 +36,7 @@ from runmal.db.deps import get_owner_id, get_session
 from runmal.hub import browse as hub_browse
 from runmal.hub import census as hub_census
 from runmal.hub import registry as hub_service
+from runmal.hub import content_census as hub_content_census
 from runmal.hub import content_search as hub_content_search
 from runmal.hub import search as hub_search
 
@@ -77,6 +80,14 @@ async def hub_census_document(
 ):
     entries = _store().list_for_owner(owner_id)
     return hub_census.census_document(entries)
+
+
+@router.get("/hub/content-census")
+async def hub_content_census_document(
+    owner_id: str = Depends(get_owner_id),
+):
+    entries = _store().list_for_owner(owner_id)
+    return hub_content_census.content_census_document(entries)
 
 
 @router.get("/hub/search")
