@@ -18060,3 +18060,207 @@ P-162 BANKED - Character Face History
     opener - The Hub,
     Sovereign Shape,
     P-187..P-202).
+    P-187 BANKED - Hub
+    registry foundation
+    (Part XII OPENER,
+    DERIVED). Part XII
+    OPEN (P-187..P-202).
+    - team-01 commit
+    e1e3266 merged
+    (no-ff) into yrsa/tw
+    o-mirrors-build as
+    ae5b51e (parents
+    30c2e0c + e1e3266).
+    Same-base merge,
+    CLEAN, no conflicts,
+    no heal; merged diff
+    exactly the 7 slice
+    files (+917/-0).
+    Derived scope
+    ACCEPTED: the Part
+    XII opener. The
+    team-01 scout
+    censused the banked
+    sharing surfaces
+    (P-045 lorebook
+    packs runmal-loreboo
+    k-pack, P-063 prompt
+    packs
+    runmal-prompt-pack,
+    P-054 preset bundle
+    shares runmal-preset
+    -bundle, P-141
+    scenario packs runma
+    l-scenario-pack, the
+    S801 .runmal
+    archive) and the
+    VX-59
+    sovereign-shape
+    ruling, and built
+    the keeper-expected
+    foundation cell the
+    census supported: a
+    hub registry/index
+    in the P-117/P-169
+    JSON-store pattern -
+    src/runmal/hub/regis
+    try.py (HubStore
+    over versioned
+    hub.json, tolerant
+    load; HubEntry with
+    kind under closed
+    HUB_KINDS mapped by
+    KIND_FORMATS to the
+    four sealed pack
+    formats, title,
+    locator stored
+    verbatim as data,
+    optional
+    caller-claimed
+    checksum
+    shape-checked as
+    64-hex and never
+    presented as
+    verified, note;
+    register refusals
+    plain and total;
+    exact removal, a
+    miss writes nothing;
+    locator state judged
+    LIVE at read under
+    closed
+    LOCATOR_STATES ready
+    /missing/not_a_file/
+    unreadable, never
+    stored; list counts
+    computed from the
+    entries) +
+    hub/router.py (POST
+    /hub/entries 201,
+    GET
+    /hub/entries/{id},
+    GET /hub with
+    optional kind
+    filter, DELETE
+    /hub/entries/{id};
+    owner-scoped,
+    foreign == unknown
+    -> 404; data-only, o
+    pens/imports/fetches
+    /executes nothing) +
+    app.py wiring +
+    slice doc docs/HUB_R
+    EGISTRY_2026-11-09.m
+    d + clean-room log
+    +1. Declined with
+    reasons in the
+    scout: central
+    catalogue/creator
+    profiles (ruled out
+    by VX-59), signing
+    (no key machinery;
+    would fake trust),
+    network exchange (no
+    transport; index
+    precedes exchange),
+    hub-side import
+    (each pack layer
+    already owns
+    verified
+    inspect+import),
+    .runmal archive as a
+    hub kind
+    (whole-estate
+    backup, not
+    sharing), DB
+    table/migration
+    (JSON store is the
+    house pattern).
+    Evidence (team-01 hi
+    dden_files/P187_EVID
+    ENCE.md + logs):
+    battery 16 passed;
+    neighbours 130
+    passed (P-045 +
+    P-063 + P-054 +
+    P-141 + P-169); team
+    full suite 5630
+    passed / 5 skipped /
+    0 failed (= 5614 +
+    16, exact, in
+    437.02s; the launch
+    invoke hit the node
+    timeout, the pytest
+    process survived
+    on-device and its
+    completed log was
+    read back - no
+    re-run, no zombie;
+    s503 did not fire).
+    Combined batteries
+    on the merged tree:
+    146 passed / 0
+    failed (16 + 130,
+    exact). Forge
+    confirmation full
+    suite on the merged
+    tree (counts read
+    back from forge hidd
+    en_files/P187_FORGE_
+    FULL.log): 5630
+    passed / 5 skipped /
+    0 failed, exit 0, in
+    346.08s (exact).
+    Migration: NONE
+    (head stays 0041,
+    pinned by the
+    battery).
+    Findings: F1 - no
+    banked-code defect
+    discovered;
+    KIND_FORMATS proven
+    equal to the four
+    pack layers' own
+    format constants by
+    a battery test
+    reading the
+    constants from the
+    pack modules - no
+    drift.
+    Carried items
+    untouched, exactly
+    as recorded at
+    P-186: (1) binding
+    label update stays
+    named open
+    (unbind-then-bind
+    law); (2) automatic
+    retention / bulk
+    clear of history
+    awaits the ruling of
+    Volmarr - none
+    invented; (3)
+    unified-search
+    history stays named
+    open. Named open for
+    later Part XII:
+    signing/attestation,
+    friend-instance
+    exchange transport,
+    hub-side browse over
+    entry contents.
+    VX-59's ruled-out
+    forms (central
+    store, catalogue,
+    creator profiles)
+    are NOT named open -
+    declined by ruling.
+    Banked now
+    P-001..P-187 + the
+    commissioned binding
+    depth/role slice.
+    PART XII OPEN
+    (P-187..P-202). Next
+    in roadmap order:
+    P-188 (Part XII,
+    DERIVED).
