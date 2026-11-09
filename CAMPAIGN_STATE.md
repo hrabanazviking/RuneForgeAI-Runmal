@@ -15661,3 +15661,93 @@ P-162 BANKED - Character Face History
     banking. Nothing was left unfixed. Next
     in roadmap order: P-170 (Part XI in
     roadmap order).
+    P-170 BANKED - Workspace Folder Listing
+    / Files Browser (Part XI, DERIVED).
+    Part XI continues. Scope is DERIVED,
+    stated plainly in the slice doc: the
+    roadmap gives Part XI only its part
+    line (XI | Workspaces - the Companion
+    That Works | P-169 - P-186) with no
+    verbatim P-170 entry; the slice derives
+    from P-169's banked limitation (1) -
+    the binding had no consumer yet - and
+    P-169's design/scout naming the folder
+    listing / files browser the named
+    natural next cell, over the census
+    VX-54 files-browser clause
+    (docs/VOXTA_CENSUS_2026-10-30.md
+    section H; delta table judges VX-54
+    MISSING, Part XI). - team-02 commit
+    df91fb0 merged (no-ff) into
+    yrsa/two-mirrors-build as 736e5eb
+    (parents d949e60 + df91fb0); the slice
+    was built directly on the forge head
+    d949e60, so the merge was clean with
+    no conflicts; merge pushed and
+    ls-remote verified at 736e5eb before
+    this record; banking record commit
+    follows this entry and is pushed
+    after it. Scope: the READ-ONLY
+    consumer of the P-169 binding -
+    src/runmal/workspaces/listing.py
+    (new), owner-scoped listing of the
+    bound folder's entries (names, kinds,
+    honest sizes), judged live at read
+    through P-169's own binding +
+    folder_state law, composed verbatim
+    (no second binding store, no second
+    folder-state law); ONE additive road
+    GET /workspaces/files in
+    src/runmal/workspaces/router.py (+28)
+    beside the P-169 roads, and one map
+    bullet in __init__.py (+6). Slice doc
+    docs/WORKSPACE_LISTING_2026-11-09.md,
+    tests/test_p170_workspace_listing.py
+    (13 tests), clean-room log +1 entry;
+    6 files, +729/-0. No app.py change
+    (router already wired under /api/v1
+    by P-169). Evidence (team-02
+    hidden_files/P170_EVIDENCE.md + logs):
+    battery 13 passed; neighbours 113
+    passed / 1 skipped; full suite on its
+    base 5335 passed / 5 skipped / 0
+    failed (5322 P-169 + 13, exact).
+    Combined batteries on the merged tree:
+    P-170 battery + P-169 battery 28
+    passed / 0 failed (13 + 15, exact).
+    Forge confirmation full suite on the
+    merged tree (hidden_files/
+    P170_FORGE_CONFIRM.log): 5335 passed
+    / 5 skipped / 0 failed, exact, exit
+    0; no test_s503 flake this run.
+    Migration: NONE (head stays 0041,
+    battery-pinned). Carried limitations,
+    exactly as the lead named them: (1)
+    A listing is a point-in-time
+    judgement; an entry vanishing
+    mid-scan is listed as kind other with
+    no size (battery-pinned), never a
+    crash. (2) Containment judgement and
+    scan are two filesystem moments - a
+    symlink swapped between them is a
+    race a read-only listing cannot
+    close; any future consumer that acts
+    on paths must re-judge at use (the
+    VX-57 guard's future work, named in
+    the slice doc). (3) escapes for a
+    broken symlink is judged on its
+    lexical realpath - where the link
+    would point. (4) Still no
+    file-content surface: reads/viewing,
+    writes and execution remain
+    named-open later Part XI cells, in
+    that order of presupposition. One
+    defect was found and fixed in-slice
+    before banking (the first __init__.py
+    map bullet was a single 268-char line,
+    ruff E501; wrapped to the house
+    column, ruff re-run clean, battery
+    re-run green). No defect was found at
+    banking. Nothing was left unfixed.
+    Next in roadmap order: P-171 (Part XI
+    in roadmap order).
