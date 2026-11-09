@@ -30,6 +30,10 @@ query's unified search - its returned matched-by, kind
 and matched-field shape, occurrence totals, and the
 skip-outcome shape of its coverage (see
 hub.unified_search_census).
+P-195 adds the duplicate-census road:
+GET /hub/duplicate-census, the duplicate-content census
+over the owner estate, grouping entries by the verified
+content checksum (see hub.duplicate_census).
 """
 
 from __future__ import annotations
@@ -47,6 +51,7 @@ from runmal.hub import census as hub_census
 from runmal.hub import registry as hub_service
 from runmal.hub import content_census as hub_content_census
 from runmal.hub import content_search as hub_content_search
+from runmal.hub import duplicate_census as hub_duplicate_census
 from runmal.hub import search as hub_search
 from runmal.hub import unified_search as hub_unified_search
 from runmal.hub import unified_search_census as hub_unified_search_census
@@ -99,6 +104,14 @@ async def hub_content_census_document(
 ):
     entries = _store().list_for_owner(owner_id)
     return hub_content_census.content_census_document(entries)
+
+
+@router.get("/hub/duplicate-census")
+async def hub_duplicate_census_document(
+    owner_id: str = Depends(get_owner_id),
+):
+    entries = _store().list_for_owner(owner_id)
+    return hub_duplicate_census.duplicate_census_document(entries)
 
 
 @router.get("/hub/search")
