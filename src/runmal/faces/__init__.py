@@ -113,6 +113,15 @@ from runmal.faces.character_history import (
 from runmal.faces.character_history import (
     NOTES as CHARACTER_HISTORY_NOTES,
 )
+from runmal.faces.character_speaking_history import (
+    CHARACTER_SPEAKING_HISTORY_SCHEMA,
+    SPEAKING_BOARD_STATE_ALL_HISTORY,
+    SPEAKING_BOARD_STATE_NO_CHATS,
+    SPEAKING_BOARD_STATE_NO_HISTORY,
+    SPEAKING_BOARD_STATE_SOME_HISTORY,
+    SPEAKING_BOARD_STATES,
+    resolve_character_speaking_history,
+)
 from runmal.faces.chats import (
     BOARD_STATE_ALL_READY,
     BOARD_STATE_NO_CHATS,
@@ -188,6 +197,13 @@ __all__ = [
     "HISTORY_BOARD_STATE_NO_HISTORY",
     "HISTORY_BOARD_STATE_SOME_HISTORY",
     "HISTORY_BOARD_STATES",
+    "CHARACTER_SPEAKING_HISTORY_NOTES",
+    "CHARACTER_SPEAKING_HISTORY_SCHEMA",
+    "SPEAKING_BOARD_STATE_ALL_HISTORY",
+    "SPEAKING_BOARD_STATE_NO_CHATS",
+    "SPEAKING_BOARD_STATE_NO_HISTORY",
+    "SPEAKING_BOARD_STATE_SOME_HISTORY",
+    "SPEAKING_BOARD_STATES",
     "FACE_STATES",
     "ENTRY_STATE_CLEARED",
     "ENTRY_STATE_DECLARED_UNBOUND",
@@ -222,6 +238,7 @@ __all__ = [
     "resolve_character_roster",
     "resolve_character_face_chats",
     "resolve_character_face_history",
+    "resolve_character_speaking_history",
     "resolve_face_history",
     "resolve_character_speaking_roster",
     "resolve_presentation",
