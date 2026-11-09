@@ -44,4 +44,9 @@ the Companion That Works).
   GET /workspaces/history with the ending's moment
   and cause named; a deleted chat's entries are
   returned on purpose, judged live, never hidden.
+  The owner can delete one history entry permanently
+  on DELETE /workspaces/history/{entry_id} (P-175,
+  Part XI, DERIVED scope): the P-173 named-open
+  retention road in owner-hand form - no automatic
+  retention policy is invented.
 """

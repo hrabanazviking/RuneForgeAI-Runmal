@@ -52,6 +52,17 @@ index, under a top-level ``history`` key beside
 ``bindings``. Live-binding semantics are unchanged;
 runmal.workspaces.history serves the owner-scoped read.
 
+P-175 amendment (binding-history deletion): the
+owner can now delete ONE history entry permanently
+- ``remove_history_entry`` drops exactly that entry
+and nothing else (live bindings are carried verbatim
+in the same save; a miss writes nothing), and
+``get_history_entry`` reads one entry back by id.
+Owner scoping for the road lives in
+runmal.workspaces.history. No automatic retention
+policy exists in-tree and none is invented here:
+owner-hand deletion is the retention road.
+
 Honest boundaries: a binding is DATA ONLY. This slice
 reads no file contents, lists no folder, writes
 nothing into any folder, runs nothing and launches
@@ -370,6 +381,38 @@ class WorkspaceStore:
         """The owner's history entries, in store order."""
         return [row for row in self._load_history()
                 if row.owner_id == owner_id]
+
+    def get_history_entry(
+            self, entry_id: str) -> WorkspaceHistoryEntry | None:
+        """One history entry by its own id, or None."""
+        for row in self._load_history():
+            if row.id == entry_id:
+                return row
+        return None
+
+    def remove_history_entry(
+            self, entry_id: str) -> WorkspaceHistoryEntry | None:
+        """Delete ONE history entry permanently (P-175).
+
+        On a hit exactly that entry is dropped, in the
+        same save that carries the live bindings verbatim
+        - no binding is touched, and no other owner's
+        entry is touched. A miss removes nothing and
+        writes nothing (no save at all). The return is
+        the removed entry, or None. This is the ONLY
+        road that deletes history: ``purge_chat``
+        retains it by P-173's judged custody call, and
+        deletion is permanent - the bindings-only save
+        re-reads the on-disk history (P-173), so a
+        deleted entry never resurrects on a later save.
+        """
+        rows, history = self._load_doc()
+        removed = [row for row in history if row.id == entry_id]
+        if not removed:
+            return None
+        self._save_all(
+            rows, [row for row in history if row.id != entry_id])
+        return removed[0]
 
 
 # ----------------------------------------------------------- service
