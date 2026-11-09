@@ -17775,3 +17775,124 @@ P-162 BANKED - Character Face History
     roadmap order: P-185
     (Part XI in roadmap
     order).
+    P-185 BANKED - Workspace
+    Reconciliation Battery
+    (Part XI, DERIVED). Part
+    XI continues.
+    - team-02 commit 7ccee1c
+    merged (no-ff) into
+    yrsa/two-mirrors-build
+    as 4c395e2 (parents
+    7c7717a + 7ccee1c).
+    Same-base merge, CLEAN,
+    no conflicts, no heal;
+    merged diff exactly the
+    4 slice files (+929/-0).
+    Derivation: the team-02
+    scout proved no lawful
+    pure-read composition
+    remains in Part XI -
+    every composable surface
+    is already composed and
+    every aggregate axis
+    taken - so the slice
+    built the assignment's
+    named fallback: a pre-
+    gate reconciliation
+    battery over
+    P-169..P-185 as one
+    system. Slice files: tes
+    ts/test_p185_workspace_r
+    econciliation.py (24
+    tests), docs/WORKSPACE_R
+    ECONCILIATION_2026-11-
+    09.md, clean-room log +1
+    entry, src/runmal/worksp
+    aces/__init__.py (one
+    additive doc bullet); NO
+    new surface, service
+    module or router, by
+    design; 4 files,
+    +929/-0.
+    Evidence (team-02 hidden
+    _files/P185_EVIDENCE.md
+    + logs): battery 24
+    passed (Areas A census-
+    of-estate 7, B together
+    10, C custody/honesty 5,
+    D accounting 2);
+    neighbours 272 passed /
+    0 failed (the workspace
+    fence on its base, 248
+    at P-184 banking + 24,
+    exact); full suite on
+    its base 5579 passed / 5
+    skipped / 0 failed, exit
+    0 (5555 + 24, exact;
+    s503 did not fire).
+    Combined batteries on
+    the merged tree:
+    P-169..P-185 workspace
+    fence 272 passed / 0
+    failed. Forge
+    confirmation full suite
+    on the merged tree
+    (counts read back from
+    the log file): 5579
+    passed / 5 skipped / 0
+    failed, exit 0, in
+    343.50s (5555 + 24,
+    exact).
+    Migration: NONE (head
+    stays 0041).
+    Defects: none in the
+    banked estate
+    (P-169..P-184 code
+    unchanged). Two defects
+    in the battery's own
+    first-run expectations,
+    fixed in-slice and
+    pinned by the corrected
+    tests: (1) a subpath
+    filename search expected
+    a content match - the
+    filename road matches
+    names only, and the
+    corrected test pins that
+    law; (2) a chatless
+    owner's estate census
+    state is no_chats under
+    P-171's closed law, not
+    no_bindings. Nothing
+    left unfixed.
+    Carried items, exactly
+    as named open: (1) a
+    binding label update
+    stays named open
+    (unbind-then-bind law);
+    (2) automatic retention
+    / bulk clear of history
+    awaits the ruling of
+    Volmarr - none invented;
+    (3) unified-search
+    history - named open,
+    presupposes a recording
+    write + store, not a
+    pure-read composition.
+    Writes inside bound
+    folders stay fenced
+    behind the VX-57 guard;
+    execution is declined
+    ABSOLUTELY (VX-55/56,
+    P-027); watching stays
+    declined (P-169). Part
+    XI gate is P-186 - the
+    only slice left in Part
+    XI. team-02 reset to the
+    record head after
+    banking.
+    Banked now P-001..P-185.
+    PART XI OPEN
+    (P-169..P-186). Next in
+    roadmap order: P-186
+    (Part XI gate).
