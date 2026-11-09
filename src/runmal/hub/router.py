@@ -16,6 +16,9 @@ road: GET /hub/census, the owner's whole estate composed
 from the list and browse documents (see hub.census).
 P-190 adds the search road: GET /hub/search, a literal
 search over the owner's own entry data (see hub.search).
+P-191 adds the content-search road: GET /hub/content-search,
+a literal search over verified pack payload contents
+(see hub.content_search).
 """
 
 from __future__ import annotations
@@ -31,6 +34,7 @@ from runmal.db.deps import get_owner_id, get_session
 from runmal.hub import browse as hub_browse
 from runmal.hub import census as hub_census
 from runmal.hub import registry as hub_service
+from runmal.hub import content_search as hub_content_search
 from runmal.hub import search as hub_search
 
 router = APIRouter(tags=["hub"])
@@ -85,6 +89,22 @@ async def hub_search_document(
     try:
         return hub_search.search_document(entries, q, kind=kind)
     except hub_search.HubSearchError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(exc)) from None
+
+
+@router.get("/hub/content-search")
+async def hub_content_search_document(
+    q: str = "",
+    kind: str | None = None,
+    owner_id: str = Depends(get_owner_id),
+):
+    entries = _store().list_for_owner(owner_id)
+    try:
+        return hub_content_search.content_search_document(
+            entries, q, kind=kind)
+    except hub_content_search.HubContentSearchError as exc:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=str(exc)) from None
