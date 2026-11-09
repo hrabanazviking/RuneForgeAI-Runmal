@@ -15299,3 +15299,183 @@ P-162 BANKED - Character Face History
     scope ACCEPTED as banked. PART X OPEN
     (P-155..P-168). Next in roadmap order:
     P-167 (Part X, in roadmap order).
+
+    P-167 BANKED - Face Speaking Census
+    (Part X - Faces That Speak,
+    P-155..P-168). - team-02 commit c18d1e3
+    merged (no-ff) into
+    yrsa/two-mirrors-build as 447564b
+    (parents 895b4c9 + c18d1e3); merge
+    pushed and ls-remote verified at 447564b
+    before this record; banking record
+    commit follows this entry and is pushed
+    after it. Derived scope ACCEPTED as
+    banked by the keeper: the roadmap gives
+    Part X only its part-table line
+    (P-155..P-168), no per-slice entries;
+    this slice is derived from the in-tree
+    record of Runmal only (P-164 weighed the
+    owner speaking census and left it
+    contested by the blur objection, and
+    P-165 restated that objection
+    unanswered; the cell taken is OWNER x
+    CURRENT x SPEAKING, the last pre-gate
+    slice before the P-168 gate), as the
+    slice doc states plainly. The blur
+    objection is answered BY CONSTRUCTION:
+    voice appears ONLY inside each
+    character row - that character's OWN
+    current S512 voice resolution, composed
+    verbatim in substance, plus that row's
+    OWN paired flag (true exactly when that
+    row's voice resolved and that row's
+    ready_count > 0) - and the census
+    envelope carries NO voice, NO paired,
+    NO voice_scope and NO face keys, so
+    there is no owner-level voice for any
+    row's voice to blur into;
+    paired_character_count is the ONLY
+    voice-derived number at owner level and
+    it carries no voice value. Scope: a
+    pure-read resolution service
+    (src/runmal/faces/speaking_census.py -
+    resolve_face_speaking_census) resolving,
+    for the calling owner, one row per owned
+    character in the characters service's
+    order, each row composing P-164's census
+    row verbatim in substance (the P-160
+    board whole: board state, chat rows
+    whole, counts carried from the board's
+    own arithmetic) PLUS that row's voice
+    and paired flag as above; it never
+    returns None - the subject is the caller
+    themselves, so no foreign existence can
+    leak, and an owner with nothing gets the
+    honest empty census; the census is
+    classified under the closed
+    SPEAKING_CENSUS law (no_characters /
+    no_chats / none_ready / some_ready /
+    all_ready), which is the FACE axis only,
+    judged exactly as P-164 judges; counts
+    (character_count,
+    characters_with_chats_count, chat_count,
+    ready_count, selection_count,
+    unbound_count) summed from the P-160
+    boards' own arithmetic, PLUS
+    paired_character_count; NO voice_scope
+    field rides on the document - both
+    halves are current and the census reads
+    no kept history, following the P-157 /
+    P-159 / P-166 precedent, while the
+    current_only law itself is untouched
+    and binds wherever history is involved;
+    five standing honesty notes; plus one
+    road (GET /faces/speaking-census on the
+    /api/v1 mount, speaking_census_router.py,
+    wired in app.py in its own
+    include_router block; every census state
+    is data at 200, never an error; schema
+    runmal-p167-face-speaking-census-v1).
+    No store, no migration. Evidence
+    (team-02 worktree hidden_files/
+    P167_EVIDENCE.md + logs): battery 19
+    passed / 0 failed; neighbours fence 228
+    passed / 0 failed; team full suite 5249
+    passed / 5 skipped / 0 failed, exit 0 -
+    exact arithmetic on its base (5230 +
+    19). Combined batteries on the merged
+    tree: faces fence P-155..P-167 228
+    passed / 0 failed (the P-155..P-166
+    faces batteries 209 + the P-167 battery
+    19, exact; hidden_files/
+    P167_COMBINED.log). Forge confirmation
+    suite on the merged tree: 5273 passed /
+    5 skipped / 0 failed in 326.33s, exit 0
+    (hidden_files/P167_FORGE_CONFIRM.log) -
+    a clean run, no contention re-runs
+    needed, reconciling exactly (5254 + 19).
+    Reconciliation: this slice was built on
+    6cea187 (the P-165 banking record), so
+    P-166 was NOT in its base; the merge
+    took conflicts only in the three
+    expected shared files
+    (src/runmal/faces/__init__.py,
+    src/runmal/app.py,
+    docs/CLEAN_ROOM_LOG_2026-10-30.md), each
+    resolved as a pure additive union
+    keeping BOTH the P-166 speaking-chats
+    and the P-167 speaking-census exports,
+    roads and log entries exactly once each,
+    with each router in its own
+    include_router block in app.py (the
+    fused-include_router defect class
+    avoided); the merged diff against the
+    forge head is exactly the 7 slice files
+    (+1020/-0), purely additive, no
+    hidden_files paths in the slice commit.
+    py_compile clean on all touched Python
+    files, faces/__init__.__all__ verified
+    complete (96 names, every name in
+    __all__ imported, no public speaking
+    name left unexported,
+    resolve_face_speaking_census exported),
+    create_app() builds, and BOTH roads are
+    verified live in the built app exactly
+    once each: GET /faces/speaking-chats and
+    GET /faces/speaking-census (13 faces
+    roads in the built app in all); the
+    clean-room log P-166 and P-167 entries
+    each appear exactly once. Slice scope:
+    src/runmal/faces/speaking_census.py
+    (new),
+    src/runmal/faces/speaking_census_router.py
+    (new), src/runmal/faces/__init__.py
+    (additive), src/runmal/app.py
+    (additive),
+    tests/test_p167_face_speaking_census.py
+    (new, 19 tests),
+    docs/FACE_SPEAKING_CENSUS_2026-11-08.md
+    (new), docs/CLEAN_ROOM_LOG_2026-10-30.md
+    (+1 entry, exactly once in the merged
+    tree). Migration: NONE (head stays 0041,
+    no 0042, battery-pinned). Defects: no
+    defect was found in-slice and no
+    production defect was discovered; no
+    defect was found at banking. Nothing was
+    left unfixed. Honest limitations: the
+    census is current only - it reads no
+    kept history and claims no earlier voice
+    for any character; there is no
+    owner-wide face and no owner-wide voice
+    (each chat's face is named only under
+    P-155's own law for that chat, inside
+    its character's row, and each voice only
+    inside its own character's row); no
+    per-chat voice fields (S512 keys voice
+    by character); no owner-wide merged
+    stream: no ordering across chats or
+    characters is ever claimed. CARRIED
+    ITEM, NAMED: the owner
+    speaking-HISTORY census (OWNER x
+    HISTORY x SPEAKING) remains OPEN -
+    declined for this slice (current
+    speaking lands before history speaking
+    in every grid row, and the history
+    pairing carries the current_only hazard
+    at owner scale) - and is carried
+    honestly for the P-168 gate record:
+    Part X closes with one owner speaking
+    cell unmade, and the gate must say so.
+    Also declined: an owner roster census,
+    an index-only slice, census-level
+    voice/paired keys, per-chat voice
+    fields, merged streams. No stage or
+    renderer, no lip-sync, no TTS synthesis
+    on this road, no automatic expression
+    detection from message text (P-092 law,
+    ABSOLUTE), no playback, runtime or
+    execution of any stored content (P-027
+    law, ABSOLUTE). Derived scope ACCEPTED
+    as banked. PART X OPEN (P-155..P-168).
+    Next in roadmap order: P-168 (Part X
+    gate, in roadmap order).
