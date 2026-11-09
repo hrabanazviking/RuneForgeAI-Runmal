@@ -29,4 +29,12 @@ the Companion That Works).
   some_ready / all_ready) on GET /workspaces/census.
   It reads no folder contents, lists no folder,
   writes nothing and grants nothing.
+- ``history`` + ``history_router`` - the workspace
+  binding history (P-173, Part XI, DERIVED scope):
+  every ended binding - unbound, or purged when its
+  chat was deleted - kept as data in the same store
+  by the bindings amendment, served owner-scoped on
+  GET /workspaces/history with the ending's moment
+  and cause named; a deleted chat's entries are
+  returned on purpose, judged live, never hidden.
 """
