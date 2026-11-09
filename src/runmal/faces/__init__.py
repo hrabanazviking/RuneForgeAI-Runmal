@@ -147,6 +147,24 @@
 - ``history_census_router`` - the owner-scoped
   history census road
   (GET /api/v1/faces/history-census).
+- ``speaking_census`` - face speaking census (P-167):
+  one pure-read census per owner composing, for every
+  owned character in the characters service's order,
+  P-164's census row verbatim - the board state, the
+  rows whole, the counts - PLUS, inside that row
+  only, that character's own CURRENT voice resolution
+  (S512, composed verbatim in substance) and that
+  row's own paired flag. Voice is stated per
+  character row, never as one owner-level pairing:
+  the census envelope names no voice, and its state
+  stays the face axis under a closed law
+  (no_characters / no_chats / none_ready / some_ready
+  / all_ready). Both halves are current, so no
+  voice_scope is carried; the owner speaking-history
+  census remains open.
+- ``speaking_census_router`` - the owner-scoped
+  speaking census road
+  (GET /api/v1/faces/speaking-census).
 """
 
 from runmal.faces.character_history import (
@@ -196,6 +214,19 @@ from runmal.faces.history_census import (
 )
 from runmal.faces.history_census import (
     NOTES as HISTORY_CENSUS_NOTES,
+)
+from runmal.faces.speaking_census import (
+    SPEAKING_CENSUS_SCHEMA,
+    SPEAKING_CENSUS_STATE_ALL_READY,
+    SPEAKING_CENSUS_STATE_NO_CHARACTERS,
+    SPEAKING_CENSUS_STATE_NO_CHATS,
+    SPEAKING_CENSUS_STATE_NONE_READY,
+    SPEAKING_CENSUS_STATE_SOME_READY,
+    SPEAKING_CENSUS_STATES,
+    resolve_face_speaking_census,
+)
+from runmal.faces.speaking_census import (
+    NOTES as SPEAKING_CENSUS_NOTES,
 )
 from runmal.faces.chats import (
     BOARD_STATE_ALL_READY,
@@ -295,6 +326,14 @@ __all__ = [
     "HISTORY_CENSUS_STATE_NO_HISTORY",
     "HISTORY_CENSUS_STATE_SOME_HISTORY",
     "HISTORY_CENSUS_STATES",
+    "SPEAKING_CENSUS_NOTES",
+    "SPEAKING_CENSUS_SCHEMA",
+    "SPEAKING_CENSUS_STATE_ALL_READY",
+    "SPEAKING_CENSUS_STATE_NO_CHARACTERS",
+    "SPEAKING_CENSUS_STATE_NO_CHATS",
+    "SPEAKING_CENSUS_STATE_NONE_READY",
+    "SPEAKING_CENSUS_STATE_SOME_READY",
+    "SPEAKING_CENSUS_STATES",
     "FACE_STATES",
     "ENTRY_STATE_CLEARED",
     "ENTRY_STATE_DECLARED_UNBOUND",
@@ -332,6 +371,7 @@ __all__ = [
     "resolve_character_speaking_history",
     "resolve_face_census",
     "resolve_face_history_census",
+    "resolve_face_speaking_census",
     "resolve_face_history",
     "resolve_character_speaking_roster",
     "resolve_presentation",
