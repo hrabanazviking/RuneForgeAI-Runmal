@@ -18440,3 +18440,210 @@ P-162 BANKED - Character Face History
     in roadmap order:
     P-189 (Part XII,
     DERIVED).
+    P-189 BANKED - Hub
+    census over the
+    registry estate
+    (Part XII, DERIVED).
+    Part XII continues.
+    - team-03 commit
+    3df8131 merged (no-
+    ff) into yrsa/two-
+    mirrors-build as
+    a3ffc51 (parents
+    d0f6622 + 3df8131).
+    Same-base merge,
+    CLEAN, no conflicts,
+    no heal; merged diff
+    exactly the 5 slice
+    files (+636/-1).
+    Derived scope
+    ACCEPTED: hub census
+    over the registry
+    estate - the house-
+    order next cell
+    after P-187's per-
+    list primitive and
+    P-188's per-entry
+    browse (foundation
+    -> per-item surface
+    -> estate census:
+    P-169/P-170/P-171,
+    the scenario census
+    family). src/runmal/
+    hub/census.py (censu
+    s_document(entries),
+    schema
+    runmal-p189-hub-
+    census-v1) composes
+    P-187's
+    list_document
+    VERBATIM and
+    embedded whole; one
+    row per entry in
+    store order carrying
+    that entry's P-188
+    browse verdict
+    verbatim
+    (locator_state,
+    browse_state, verifi
+    ed_content_sha256,
+    checksum_match,
+    error; the
+    inspection document
+    itself is NOT
+    embedded - it stays
+    on P-188's per-entry
+    browse road);
+    by_browse_state
+    zero-filled under
+    P-188's closed
+    BROWSE_STATES;
+    by_checksum_match
+    under the closed
+    keys match/mismatch/
+    undetermined (null
+    is undetermined,
+    never separated by
+    guessing why);
+    census_state under
+    the closed
+    CENSUS_STATES law (n
+    o_entries/none_inspe
+    cted/some_inspected/
+    all_inspected)
+    judged on the browse
+    axis. The entry's
+    claimed checksum
+    stays a claim
+    throughout. Census
+    writes nothing
+    (hub.json and pack
+    bytes unchanged,
+    pinned); a corrupt,
+    oversize or wrong-
+    kind pack is an
+    invalid row, never a
+    census failure;
+    every ready entry is
+    browsed through
+    P-188's own law
+    under its 16 MiB
+    bound. One new road:
+    GET /hub/census,
+    bearer-gated and
+    owner-scoped exactly
+    like the list road;
+    foreign entries
+    never censused (unit
+    + HTTP pinned).
+    Slice doc docs/HUB_C
+    ENSUS_2026-11-09.md
+    + clean-room log +1.
+    Judged and not taken
+    in the scout: hub
+    search over entries
+    (real but smaller;
+    census precedes
+    search in the house
+    order, P-171 before
+    P-178 - named open
+    for a later Part XII
+    slice); entry
+    lifecycle depth (no
+    banked record names
+    an edit road open;
+    P-187 remove-then-
+    register stands);
+    signing/attestation
+    and friend-instance
+    exchange stay
+    DECLINED until real
+    machinery exists.
+    VX-59's ruled-out
+    forms (central
+    store, catalogue,
+    creator profiles)
+    are NOT named open -
+    declined by ruling.
+    Evidence (team-03 hi
+    dden_files/P189_EVID
+    ENCE.md + logs):
+    battery 12 passed;
+    neighbours 149
+    passed (P-187 +
+    P-188 batteries +
+    the P-045/P-054/P-
+    063/P-141 pack
+    batteries); team
+    full suite 5660
+    passed / 5 skipped /
+    0 failed (= 5648 +
+    12, exact, in
+    347.69s). Combined
+    fence on the merged
+    tree: 161 passed / 0
+    failed (149 + 12,
+    exact). Forge
+    confirmation full
+    suite on the merged
+    tree (counts read
+    back from /tmp/p189_
+    forge_full.log):
+    5660 passed / 5
+    skipped / 0 failed,
+    exit 0, in 353.42s
+    (exact).
+    Migration: NONE
+    (head stays 0041).
+    Defects: none
+    discovered; no in-
+    slice fix was
+    needed. Ruff on the
+    touched files
+    reports only the
+    pre-existing B008
+    (Depends in argument
+    defaults) in
+    hub/router.py,
+    identical on the
+    HEAD version of that
+    file - the house
+    pattern, not a new
+    defect.
+    Carried items
+    untouched, exactly
+    as recorded at
+    P-186/P-187/P-188:
+    (1) binding label
+    update stays named
+    open (unbind-then-
+    bind law); (2)
+    automatic retention
+    / bulk clear of
+    history awaits the
+    ruling of Volmarr -
+    none invented; (3)
+    unified-search
+    history stays named
+    open. Named open for
+    later Part XII: hub
+    search over entries.
+    Signing/attestation
+    (declined until real
+    key machinery
+    exists); friend-
+    instance exchange
+    (declined until a
+    banked transport
+    exists). Hub census
+    is now BANKED, no
+    longer named open.
+    Banked now
+    P-001..P-189 + the
+    commissioned binding
+    depth/role slice.
+    PART XII OPEN
+    (P-187..P-202). Next
+    in roadmap order:
+    P-190 (Part XII,
+    DERIVED).
