@@ -131,6 +131,17 @@ the Companion That Works).
   on GET /workspaces/unified-search-census. It
   searches nothing itself, records nothing, writes
   nothing and grants nothing.
+- P-185 (Part XI, DERIVED scope) lands no new surface:
+  the scout of P-169..P-184 proved no lawful pure-read
+  composition remains, so the slice is the pre-gate
+  reconciliation battery
+  (tests/test_p185_workspace_reconciliation.py) judging
+  the whole workspace estate as one system ahead of
+  the P-186 gate - surfaces present exactly once, one
+  composed world reconciled across every surface, all
+  resolves pure reads, the carried items (label
+  update, history retention, search history, writes,
+  execution, watching) pinned absent by measurement.
 - ``router`` - the owner-scoped HTTP road
   (/api/v1/workspaces/*).
 - ``census`` + ``census_router`` - the workspace
