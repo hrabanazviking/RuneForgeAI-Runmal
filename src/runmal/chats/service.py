@@ -814,6 +814,19 @@ async def delete_chat(session: AsyncSession, user_id: str, chat_id: str) -> bool
         ).purge_chat(chat_id)
     except Exception:
         pass
+    try:
+        # P-169 custody: the chat's workspace binding dies
+        # with the chat, like its watch registrations above.
+        import os as _os_ws
+        from pathlib import Path as _Path_ws
+
+        from runmal.workspaces.bindings import WorkspaceStore
+
+        WorkspaceStore(
+            _Path_ws(_os_ws.environ.get("RUNMAL_DATA_DIR", ".runmal-data"))
+        ).purge_chat(chat_id)
+    except Exception:
+        pass
     await _dispatch_plugin("chat.deleted", chat_id=chat_id, data={"chat_id": chat_id})
     return True
 
