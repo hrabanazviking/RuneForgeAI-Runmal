@@ -16552,3 +16552,130 @@ P-162 BANKED - Character Face History
     the same ruling. Next in roadmap
     order: P-176 (Part XI in roadmap
     order).
+    P-176 BANKED - Workspace Folder
+    Tree (Part XI, DERIVED). Part XI
+    continues.
+    Scope is DERIVED, stated plainly
+    in the slice doc: the roadmap
+    gives Part XI only its part line
+    (XI | Workspaces - the Companion
+    That Works | P-169 - P-186) with
+    no verbatim P-176 entry; the slice
+    derives from the banked Part XI
+    grid - every banked workspace
+    surface stops at one level or one
+    file (P-170 listing one level,
+    P-174 folder census one level
+    aggregate, P-172 content one named
+    file, P-171 census lists no
+    folder) - the cell taken being
+    navigation below the first level:
+    the depth-limited folder tree
+    composing P-170 verbatim per
+    level, expressly NOT the recursive
+    census P-174 declined (it
+    aggregates nothing and returns the
+    entries themselves).
+    - team-02 commit 895ee90 merged
+    (no-ff) into yrsa/two-mirrors-
+    build as 4865e60 (parents 1522811
+    + 895ee90); CROSS-BASE: team-02
+    built on the P-174 record head
+    d3c5b35 while P-175 banked ahead
+    in parallel, so P-175 is NOT in
+    this slice's base and the merge
+    onto the P-175 record head 1522811
+    reconciled as flagged: one
+    conflict in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    (append-vs-append), resolved as a
+    pure additive union keeping the
+    P-175 and P-176 entries exactly
+    once each; workspaces/__init__.py
+    auto-merged keeping both slices'
+    additive text (the P-176 tree
+    bullet, and the P-175 deletion
+    sentences closing the P-173
+    history bullet); app.py is
+    P-176-side additive only and
+    untouched by P-175. No banking
+    heal was needed: the merged tree
+    was grep- and import-verified
+    BEFORE any suite ran - create_app
+    builds clean, each workspace
+    router (bindings, census, history
+    incl. the DELETE road, folder-
+    census, content, listing, tree)
+    sits in its own include_router
+    block, and the OpenAPI road list
+    carries the P-169 bindings, the
+    P-170 listing, the P-171 census,
+    the P-172 content read, the P-173
+    history read, the P-174 folder
+    census, the P-175 DELETE
+    /workspaces/history/{entry_id} and
+    the new GET /workspaces/tree
+    together. Merge pushed and ls-
+    remote verified at 4865e60 before
+    this record; banking record commit
+    follows this entry and is pushed
+    after it.
+    Scope: one new truth module
+    (workspaces/tree.py: the depth-
+    limited tree - every level
+    composed verbatim from P-170's
+    listing, directories expanded to a
+    stated depth under a stated node
+    cap, symlinks never descended,
+    caps and mid-walk refusals carried
+    as data) and one new disjoint
+    router (workspaces/tree_router.py:
+    GET /workspaces/tree); additive
+    app.py wiring and
+    workspaces/__init__.py doc lines.
+    Slice doc
+    docs/WORKSPACE_FOLDER_TREE_2026-11-09.md,
+    tests/test_p176_workspace_tree.py
+    (17 tests), clean-room log +1
+    entry; 7 files, +934/-0.
+    Evidence (team-02
+    hidden_files/P176_EVIDENCE.md +
+    logs): battery 17 passed;
+    neighbours 103 passed (P-169 +
+    P-170 + P-171 + P-172 + P-173 +
+    P-174 + P-176 batteries on its
+    base); full suite on its base 5410
+    passed / 5 skipped / 0 failed,
+    exit 0 (5393 on its P-174 base +
+    17, exact). Combined batteries on
+    the merged tree: P-169 + P-170 +
+    P-171 + P-172 + P-173 + P-174 +
+    P-175 + P-176 batteries 118 passed
+    / 0 failed (101 at P-175 banking +
+    17, exact). Forge confirmation
+    full suite on the merged tree
+    (counts read back from the log
+    file): 5425 passed / 5 skipped / 0
+    failed, exact, in 329.63s (5408 +
+    17). Migration: NONE (head stays
+    0041). No defect was found in the
+    slice or at banking. Nothing was
+    left unfixed.
+    Honest limitations and carried
+    items, exactly as the lead named
+    them: (1) a history census over
+    P-173 is named as the first
+    post-P-175 candidate - it composes
+    the exact surface P-175 changed,
+    so it waited for P-175 to bank;
+    (2) content search / filename
+    search over the tree is named open
+    (a new walk law); (3) a binding
+    label update is named open
+    (post-P-175 store weighing).
+    Writes inside bound folders stay
+    fenced behind the VX-57 guard;
+    execution is declined ABSOLUTELY
+    (VX-55/56, P-027). Next in roadmap
+    order: P-177 (Part XI in roadmap
+    order).
