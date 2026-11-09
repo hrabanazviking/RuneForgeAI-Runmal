@@ -22,6 +22,12 @@ a literal search over verified pack payload contents
 P-192 adds the unified-search road: GET /hub/unified-search,
 one query composed over the metadata and content searches
 (see hub.unified_search).
+P-194 adds the unified-search-census road:
+GET /hub/unified-search-census, the aggregate of one
+query's unified search - its returned matched-by, kind
+and matched-field shape, occurrence totals, and the
+skip-outcome shape of its coverage (see
+hub.unified_search_census).
 """
 
 from __future__ import annotations
@@ -40,6 +46,7 @@ from runmal.hub import registry as hub_service
 from runmal.hub import content_search as hub_content_search
 from runmal.hub import search as hub_search
 from runmal.hub import unified_search as hub_unified_search
+from runmal.hub import unified_search_census as hub_unified_search_census
 
 router = APIRouter(tags=["hub"])
 
@@ -123,6 +130,22 @@ async def hub_unified_search_document(
     entries = _store().list_for_owner(owner_id)
     try:
         return hub_unified_search.unified_search_document(
+            entries, q, kind=kind)
+    except hub_unified_search.HubUnifiedSearchError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(exc)) from None
+
+
+@router.get("/hub/unified-search-census")
+async def hub_unified_search_census_document(
+    q: str = "",
+    kind: str | None = None,
+    owner_id: str = Depends(get_owner_id),
+):
+    entries = _store().list_for_owner(owner_id)
+    try:
+        return hub_unified_search_census.unified_search_census_document(
             entries, q, kind=kind)
     except hub_unified_search.HubUnifiedSearchError as exc:
         raise HTTPException(
