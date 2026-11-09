@@ -18264,3 +18264,179 @@ P-162 BANKED - Character Face History
     in roadmap order:
     P-188 (Part XII,
     DERIVED).
+    P-188 BANKED -
+    Hub-side browse over
+    entry contents (Part
+    XII, DERIVED). Part
+    XII continues.
+    - team-02 commit
+    eb83d93 merged
+    (no-ff) into yrsa/tw
+    o-mirrors-build as
+    df15933 (parents
+    8557b44 + eb83d93).
+    Same-base merge,
+    CLEAN, no conflicts,
+    no heal; merged diff
+    exactly the 5 slice
+    files (+671/-0).
+    Derived scope
+    ACCEPTED: hub-side
+    browse - the P-187
+    record's named-open
+    cell. The team-02
+    scout censused the
+    banked P-187 hub
+    registry plus all
+    four pack layers it
+    indexes and built
+    browse as pure
+    composition: src/run
+    mal/hub/browse.py (b
+    rowse_document(entry
+    ), schema runmal-p18
+    8-hub-browse-v1,
+    closed BROWSE_STATES
+    inspected/unavailabl
+    e/invalid - all data
+    at 200, 16 MiB
+    bound, locator
+    judged live)
+    dispatching per kind
+    to the owning
+    layer's OWN verified
+    inspect road
+    verbatim (lorebook
+    -> lorebooks.packs.i
+    nspect_pack, prompt
+    -> presets.packs.ins
+    pect_pack, scenario
+    -> scenarios.packs.i
+    nspect_pack,
+    preset_bundle -> pre
+    sets.bundles.parse_s
+    hare - that layer
+    owns no
+    inspect_pack;
+    parse_share is its
+    verified road, the
+    function its import
+    uses first).
+    Checksum law kept
+    honest: the entry's
+    claimed checksum
+    stays a claim; the
+    road's verified
+    checksum rides
+    beside it with
+    checksum_match
+    true/false/null
+    (null for a bare
+    bundle, whose road
+    verifies none).
+    Browse writes
+    nothing. One new
+    road: GET /hub/entri
+    es/{entry_id}/browse
+    , owner-scoped
+    exactly like the
+    P-187 read road
+    (unknown/foreign ->
+    404). Slice doc docs
+    /HUB_BROWSE_2026-11-
+    09.md + clean-room
+    log +1. Declined
+    with reasons in the
+    scout:
+    signing/attestation
+    (no key machinery
+    banked in-tree -
+    never fake trust),
+    friend-instance
+    exchange transport
+    (no banked pack
+    transport;
+    runmal.connections
+    probes model
+    backends, not
+    peers), hub-side
+    import (would fork
+    four import laws),
+    VX-59 ruled-out
+    forms.
+    Evidence (team-02 hi
+    dden_files/P188_EVID
+    ENCE.md + logs in
+    /tmp on the laptop):
+    battery 18 passed;
+    neighbours 131
+    passed (P-187
+    battery + the P-045/
+    P-054/P-063/P-141
+    pack batteries);
+    team full suite 5648
+    passed / 5 skipped /
+    0 failed (= 5630 +
+    18, exact, in
+    349.49s, shared with
+    a Mythic Coder
+    suite, no failure
+    resulted; s503 did
+    not fire). Combined
+    batteries on the
+    merged tree: 149
+    passed / 0 failed
+    (18 + 131, exact).
+    Forge confirmation
+    full suite on the
+    merged tree (counts
+    read back from forge
+    hidden_files/P188_FO
+    RGE_FULL.log): 5648
+    passed / 5 skipped /
+    0 failed, exit 0, in
+    352.34s (exact).
+    Migration: NONE
+    (head stays 0041).
+    Defects: none
+    discovered; no
+    in-slice fix was
+    needed.
+    Carried items
+    untouched, exactly
+    as recorded at
+    P-186/P-187: (1)
+    binding label update
+    stays named open
+    (unbind-then-bind
+    law); (2) automatic
+    retention / bulk
+    clear of history
+    awaits the ruling of
+    Volmarr - none
+    invented; (3)
+    unified-search
+    history stays named
+    open. Named open for
+    later Part XII:
+    signing/attestation
+    (declined until real
+    key machinery
+    exists),
+    friend-instance
+    exchange transport
+    (declined until a
+    banked transport
+    exists). Hub-side
+    browse is now
+    BANKED, no longer
+    named open.
+    Banked now
+    P-001..P-188 + the
+    commissioned binding
+    depth/role slice.
+    PART XII OPEN
+    (P-187..P-202). Next
+    in roadmap order:
+    P-189 (Part XII,
+    DERIVED).
