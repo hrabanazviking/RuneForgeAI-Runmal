@@ -16029,3 +16029,185 @@ P-162 BANKED - Character Face History
     later Part XI cells. Next in
     roadmap order: P-173 (Part XI in
     roadmap order).
+    P-173 BANKED - Workspace Binding
+    History (Part XI, DERIVED).
+    Part XI continues. Scope is
+    DERIVED, stated plainly in the
+    slice doc: the roadmap gives Part
+    XI only its part line (XI |
+    Workspaces - the Companion That
+    Works | P-169 - P-186) with no
+    verbatim P-173 entry; the slice
+    derives from P-171 banked record
+    declining rebind history
+    expressly as a foundation
+    amendment to P-169 store shape
+    and leaving it NAMED OPEN, and
+    from P-169 unbind-then-bind law
+    destroying the superseded record
+    on both ending roads, leaving
+    nothing that remembered a chat
+    was ever bound. P-173 takes
+    exactly that cell: when a binding
+    ends, the superseded binding is
+    kept as history data inside the
+    SAME workspaces.json store,
+    served by an owner-scoped pure
+    read, GET /workspaces/history.
+    - team-02 commit 1f31ac1 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 50a44a8 (parents 8ace269 +
+    1f31ac1); CROSS-BASE: team-02
+    built on the P-171 record head
+    204a0d0 while P-172 banked ahead
+    in parallel on a disjoint slice,
+    so P-172 is NOT in this slice
+    base and the merge onto the
+    P-172 record head 8ace269
+    reconciled as flagged:
+    workspaces/__init__.py took both
+    slices additive map bullets
+    automatically (P-172 content +
+    P-173 history, kept both),
+    app.py and workspaces/bindings.py
+    were P-173-only and merged clean,
+    history.py and history_router.py
+    are new, and the one conflict was
+    the clean-room log,
+    append-vs-append, resolved
+    keeping both the P-172 and P-173
+    entries exactly once; the merged
+    tree was grep- and
+    compile-verified to carry the
+    P-169 bindings, the P-170
+    listing, the P-171 census, the
+    P-172 content read and the P-173
+    history read together. Merge
+    pushed and ls-remote verified at
+    50a44a8 before this record;
+    banking record commit follows
+    this entry and is pushed after
+    it.
+    Scope: the binding-history
+    amendment inside the workspaces
+    package own law -
+    workspaces/bindings.py gains a
+    WorkspaceHistoryEntry (the
+    superseded binding own fields
+    verbatim, plus the ending moment
+    and the cause under the closed
+    HISTORY_EVENTS law unbound /
+    chat_deleted; no actor invented,
+    no bound events, no successor
+    link), the SAME workspaces.json
+    index gains one top-level history
+    key beside bindings with the
+    version staying 1 under the house
+    tolerant load (a pre-P-173 file
+    and a corrupt file both read as
+    empty history; NO second store
+    file), every bindings-only save
+    preserves the on-disk history
+    (battery-pinned), remove_binding
+    archives on a hit and writes
+    nothing on a miss with its return
+    contract unchanged, and
+    purge_chat archives one
+    chat_deleted entry per dropped
+    binding with its count contract
+    unchanged, so the existing
+    delete_chat custody chain carries
+    history with no chats/service.py
+    change, proven end-to-end through
+    the real delete road; the read
+    surface is workspaces/history.py
+    plus workspaces/history_router.py
+    (new, disjoint) - GET
+    /workspaces/history, owner-scoped,
+    every outcome DATA at 200, no
+    chat-existence 404 by design (a
+    deleted chat entries are the
+    surface reason to exist), each
+    entry folder_state judged LIVE at
+    the history read and labelled
+    never the state at the ending;
+    additive app.py wiring (+6) and
+    additive workspaces/__init__.py
+    doc lines (+8). Slice doc
+    docs/WORKSPACE_BINDING_HISTORY_2026-11-09.md,
+    tests/test_p173_workspace_history.py
+    (16 tests), clean-room log +1
+    entry; 8 files, +923/-17.
+    Evidence (team-02 hidden_files/
+    P173_EVIDENCE.md + logs): the
+    finisher critical review was
+    CLEAN, line by line against the
+    design, and the finisher changed
+    no code, so the completed full
+    suite stands as this slice count
+    with no re-count owed on that
+    account; battery 16 passed
+    (fresh re-run by the finisher);
+    neighbours 55 passed (the P-169 +
+    P-170 + P-171 workspace
+    batteries); full suite on its
+    base 5362 passed / 5 skipped / 0
+    failed, exit 0 (5346 on its base
+    + 16, exact).
+    Combined batteries on the merged
+    tree: P-169 battery + P-170
+    battery + P-171 battery + P-172
+    battery + P-173 battery 71 passed
+    / 0 failed (15 + 13 + 11 + 16 +
+    16, exact); no merged-truth pin
+    heal was needed. Forge
+    confirmation full suite on the
+    merged tree (run detached, counts
+    read back from the log): 5378
+    passed / 5 skipped / 0 failed,
+    exact, exit 0, in 328.30s (5362
+    P-172 + 16); no test_s503 or
+    p077 flake this run. Migration:
+    NONE (head stays 0041,
+    battery-pinned). No defect was
+    found at banking. Nothing was
+    left unfixed. Carried items,
+    exactly as the lead named them:
+    (1) History is retained WITHOUT
+    bound and there is no
+    history-deletion or retention
+    road; history grows one entry per
+    ended binding - NAMED OPEN for a
+    future history-retention slice if
+    Volmarr rules otherwise. (2)
+    History entries are RETAINED at
+    chat deletion by a judged design
+    call, not oversight: purging them
+    there would destroy the
+    chat_deleted record in the moment
+    it is created. (3) Folder states
+    on entries are point-in-time
+    judgements at the history read,
+    never at the ending. (4) A store
+    file written by pre-P-173 code
+    after history exists would drop
+    the history key on its next save;
+    within any tree carrying this
+    slice the amended store is the
+    only writer. Declined threads,
+    named in the slice doc: a second
+    store file, a sibling unamended
+    store, bound events, a stored
+    successor link, purging history
+    at chat deletion, a
+    history-deletion / retention road
+    (no retention policy exists
+    in-tree), file writes / edits /
+    deletes (fenced until the VX-57
+    guard), execution / launch /
+    backends (VX-55/56; P-027
+    absolute), watching and any
+    migration all remain later Part
+    XI cells or named open. Next in
+    roadmap order: P-174 (Part XI in
+    roadmap order).
