@@ -17661,3 +17661,117 @@ P-162 BANKED - Character Face History
     PART XI OPEN (P-169..P-186).
     Next in roadmap order: P-184
     (Part XI in roadmap order).
+    P-184 BANKED - Workspace
+    Unified Search Census
+    (Part XI, DERIVED). Part
+    XI continues.
+    - team-01 commit aa25fce
+    merged (no-ff) into
+    yrsa/two-mirrors-build
+    as 8bddc92 (parents
+    b749c73 + aa25fce).
+    Cross-base banking: the
+    team built on c74678b
+    (P-182 banking record);
+    P-183 was NOT in its
+    base. Merge conflicts in
+    exactly the 3 expected
+    shared files (docs/CLEAN
+    _ROOM_LOG_2026-10-30.md
+    append-vs-append;
+    src/runmal/app.py; src/r
+    unmal/workspaces/__init_
+    _.py) resolved as pure
+    additive unions keeping
+    the P-183 content-census
+    and P-184 unified-
+    search-census roads
+    exactly once each; the
+    unified-search-census
+    router lands in its OWN
+    include_router block in
+    app.py. Merged diff vs
+    b749c73 exactly the 7
+    slice files (+1196/-0),
+    purely additive; new
+    files sha256-identical
+    to team-01's committed
+    versions.
+    Slice doc docs/WORKSPACE
+    _UNIFIED_SEARCH_CENSUS_2
+    026-11-09.md, tests/test
+    _p184_workspace_unified_
+    search_census.py (20
+    tests), clean-room log
+    +1 entry; 7 files,
+    +1196/-0.
+    Evidence (team-01 hidden
+    _files/P184_EVIDENCE.md
+    + logs): battery 20
+    passed; neighbours 227
+    passed / 0 failed (the
+    workspace fence on its
+    base, 207 at P-182
+    banking + 20, exact);
+    full suite on its base
+    5534 passed / 5 skipped
+    / 0 failed, exit 0 (5514
+    + 20, exact).
+    Combined batteries on
+    the merged tree:
+    P-169..P-184 workspace
+    fence 248 passed / 0
+    failed (228 at P-183
+    banking + 20, exact).
+    Forge confirmation full
+    suite on the merged tree
+    (counts read back from
+    the log file): 5555
+    passed / 5 skipped / 0
+    failed, exit 0, in
+    344.34s (5535 + 20,
+    exact).
+    Migration: NONE (head
+    stays 0041).
+    Defects: none in the
+    slice's scope or at
+    banking; nothing left
+    unfixed. Banking note:
+    the merge was committed
+    and pushed by the
+    previous tick's banking
+    coordinator, whose run
+    was cut by cron timeout
+    during the resolve
+    phase; this keeper tick
+    counted the detached
+    confirmation suite from
+    its log and completed
+    the banking (record,
+    resets, next muster).
+    Carried items, exactly
+    as named open: (1) a
+    binding label update
+    stays named open
+    (unbind-then-bind law);
+    (2) automatic retention
+    / bulk clear of history
+    awaits the ruling of
+    Volmarr - none invented.
+    Writes inside bound
+    folders stay fenced
+    behind the VX-57 guard;
+    execution is declined
+    ABSOLUTELY (VX-55/56,
+    P-027); watching stays
+    declined (P-169). Part
+    XI gate is P-186; P-185
+    remains. team-01 reset
+    to the record head after
+    banking.
+    Banked now P-001..P-184.
+    PART XI OPEN
+    (P-169..P-186). Next in
+    roadmap order: P-185
+    (Part XI in roadmap
+    order).
