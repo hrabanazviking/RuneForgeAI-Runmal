@@ -46,6 +46,11 @@ P-198 adds the breadth-census road:
 GET /hub/breadth-census, the container-breadth census
 over the verified payloads of the owner estate (see
 hub.breadth_census).
+P-199 adds the distinct-census road:
+GET /hub/distinct-census, the distinct-content census
+over the owner estate, counting distinct, repeated
+and shared string values in the verified payloads
+(see hub.distinct_census).
 """
 
 from __future__ import annotations
@@ -63,6 +68,7 @@ from runmal.hub import census as hub_census
 from runmal.hub import registry as hub_service
 from runmal.hub import content_census as hub_content_census
 from runmal.hub import content_search as hub_content_search
+from runmal.hub import distinct_census as hub_distinct_census
 from runmal.hub import duplicate_census as hub_duplicate_census
 from runmal.hub import search as hub_search
 from runmal.hub import size_census as hub_size_census
@@ -151,6 +157,14 @@ async def hub_breadth_census_document(
 ):
     entries = _store().list_for_owner(owner_id)
     return hub_breadth_census.breadth_census_document(entries)
+
+
+@router.get("/hub/distinct-census")
+async def hub_distinct_census_document(
+    owner_id: str = Depends(get_owner_id),
+):
+    entries = _store().list_for_owner(owner_id)
+    return hub_distinct_census.distinct_census_document(entries)
 
 
 @router.get("/hub/search")
