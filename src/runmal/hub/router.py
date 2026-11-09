@@ -38,6 +38,10 @@ P-196 adds the content-shape-census road:
 GET /hub/content-shape-census, the structural census
 over the verified payloads of the owner estate (see
 hub.content_shape_census).
+P-197 adds the size-census road:
+GET /hub/size-census, the byte-size census over the
+owner estate, measuring the file each verified pack
+came from (see hub.size_census).
 """
 
 from __future__ import annotations
@@ -57,6 +61,7 @@ from runmal.hub import content_census as hub_content_census
 from runmal.hub import content_search as hub_content_search
 from runmal.hub import duplicate_census as hub_duplicate_census
 from runmal.hub import search as hub_search
+from runmal.hub import size_census as hub_size_census
 from runmal.hub import unified_search as hub_unified_search
 from runmal.hub import unified_search_census as hub_unified_search_census
 from runmal.hub import content_shape_census as hub_content_shape_census
@@ -125,6 +130,14 @@ async def hub_content_shape_census_document(
 ):
     entries = _store().list_for_owner(owner_id)
     return hub_content_shape_census.content_shape_census_document(entries)
+
+
+@router.get("/hub/size-census")
+async def hub_size_census_document(
+    owner_id: str = Depends(get_owner_id),
+):
+    entries = _store().list_for_owner(owner_id)
+    return hub_size_census.size_census_document(entries)
 
 
 @router.get("/hub/search")
