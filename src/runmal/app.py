@@ -285,6 +285,10 @@ def create_app(
     )
     app.include_router(
         workspaces_history_router,
+        prefix="/api/v1",
+        dependencies=[Depends(require_local_auth)],
+    )
+    app.include_router(
         workspaces_folder_census_router,
         prefix="/api/v1",
         dependencies=[Depends(require_local_auth)],
