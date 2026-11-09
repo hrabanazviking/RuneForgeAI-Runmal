@@ -18883,3 +18883,165 @@ P-162 BANKED - Character Face History
     in roadmap order:
     P-191 (Part XII,
     DERIVED).
+    P-191 BANKED - Hub
+    pack-content search
+    (Part XII, DERIVED).
+    Part XII continues. -
+    team-02 commit
+    3e44786 merged (no-
+    ff) into yrsa/two-
+    mirrors-build as
+    52b7c3a (parents
+    2e18058 + 3e44786).
+    Clean merge, no
+    conflicts, no heal;
+    merged diff exactly
+    the 5 slice files
+    (+1088/-0). Derived
+    scope ACCEPTED: hub
+    pack-content search -
+    the exact cell
+    P-190's banking
+    record names open for
+    a later Part XII
+    slice. src/runmal/hub
+    /content_search.py (c
+    ontent_search_documen
+    t(entries, query,
+    kind=None), schema
+    runmal-p191-hub-
+    content-search-v1)
+    composes each pack
+    layer's own verified
+    parse road
+    (parse_pack for
+    lorebook, prompt and
+    scenario packs +
+    parse_share for
+    preset bundles) under
+    P-188's locator law
+    and its 16 MiB bound;
+    the search is a
+    LITERAL casefolded
+    substring over the
+    string values of the
+    verified payload
+    only. The pack
+    envelope,
+    content_sha256
+    values, dict keys and
+    registry metadata are
+    never searched.
+    Skipped entries are
+    named in
+    skipped_entries with
+    the owning road's
+    refusal verbatim,
+    coverage_complete is
+    carried as data, and
+    entries_considered =
+    entries_searched +
+    skipped holds.
+    MAX_MATCHES is 100,
+    the cap law carried
+    from P-190; total
+    carries the true
+    total and truncated
+    names a capped
+    answer. Cost law
+    stated in the slice
+    doc: the search reads
+    and verifies every
+    ready pack. One new
+    road: GET
+    /hub/content-
+    search?q=&kind=,
+    bearer-gated and
+    owner-scoped like the
+    other hub roads;
+    search writes
+    nothing. Slice doc do
+    cs/HUB_CONTENT_SEARCH
+    _2026-11-09.md +
+    clean-room log +1.
+    Judged and not taken:
+    entry lifecycle depth
+    (P-187's remove
+    stands banked; an
+    update road
+    contradicts the
+    remove-then-register
+    law);
+    signing/attestation
+    and friend-instance
+    exchange stay
+    DECLINED until real
+    machinery exists in-
+    tree - none exists
+    and none is faked.
+    Evidence (team-02 hid
+    den_files/P191_EVIDEN
+    CE.md + logs):
+    battery 28 passed;
+    neighbours 179 passed
+    (P-187 + P-188 +
+    P-189 + P-190
+    batteries + the P-
+    045/P-054/P-063/P-141
+    pack batteries); team
+    full suite 5706
+    passed / 5 skipped /
+    0 failed, exit 0 (=
+    5678 banked at P-190
+    + 28, exact).
+    Combined fence on the
+    merged tree (forge hi
+    dden_files/p191_fence
+    .log): 207 passed / 0
+    failed, exit 0 (179 +
+    28, exact). Forge
+    confirmation full
+    suite on the merged
+    tree (counts read
+    back from forge hidde
+    n_files/p191_full.log
+    ): 5706 passed / 5
+    skipped / 0 failed,
+    exit 0, in 351.43s
+    (exact). Migration:
+    NONE (head stays
+    0041). Defects: none
+    discovered in banked
+    code; no in-slice fix
+    was needed. Carried
+    items untouched,
+    exactly as recorded
+    at P-186/P-187/P-
+    188/P-189/P-190: (1)
+    binding label update
+    stays named open
+    (unbind-then-bind
+    law); (2) automatic
+    retention / bulk
+    clear of history
+    awaits the ruling of
+    Volmarr - none
+    invented; (3)
+    unified-search
+    history stays named
+    open. Named open for
+    later Part XII:
+    unified hub search;
+    hub content census.
+    Hub pack-content
+    search is now BANKED,
+    no longer named open.
+    Banked now
+    P-001..P-191 + the
+    commissioned binding
+    depth/role slice.
+    PART XII OPEN
+    (P-187..P-202). Next
+    in roadmap order:
+    P-192 (Part XII,
+    DERIVED).
