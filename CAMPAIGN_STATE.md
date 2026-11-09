@@ -19823,3 +19823,122 @@ P-162 BANKED - Character Face History
     binding depth/role slice. PART XII OPEN
     (P-187..P-202). Next in roadmap order: P-199 (Part
     XII, DERIVED).
+    P-199 BANKED - Hub distinct-content census (Part
+    XII, DERIVED). Part XII continues. - team-01
+    commit e2073ea merged (no-ff) into
+    yrsa/two-mirrors-build as 17524d1 (parents
+    fd86f65 + e2073ea). The team-01 base PREDATES
+    P-198 (parent 1c18009, the P-197 banking
+    record), so the merge met the expected conflicts
+    in src/runmal/hub/router.py and
+    docs/CLEAN_ROOM_LOG_2026-10-30.md ONLY - the two
+    files both slices touch, each delta additive
+    there - resolved as additive unions keeping BOTH
+    slices' work exactly once; merged diff vs
+    fd86f65 exactly the 5 slice files (+1320/-0).
+    Router verification per the P-192 banking
+    lesson: the merged router was diffed against
+    BOTH parents' router deltas and grep-verified -
+    the hub_content_census, hub_content_search,
+    hub_unified_search, hub_unified_search_census,
+    hub_duplicate_census, hub_content_shape_census,
+    hub_size_census, hub_breadth_census and
+    hub_distinct_census imports are all present
+    (nine hub census/search modules) and every GET
+    road survives (census, content-census,
+    duplicate-census, content-shape-census,
+    size-census, breadth-census, distinct-census,
+    search, content-search, unified-search,
+    unified-search-census, entry read, browse, list,
+    delete), py_compile clean. ONE heal, recorded
+    honestly: the first union pass dropped the two
+    blank separator lines between the breadth-census
+    and distinct-census roads (shared context in
+    both parents' deltas); they were restored before
+    any suite ran, after which the merged router
+    carries each slice's delta exactly as authored
+    and the merged diff stands at the slice's own
+    +1320. NO import or road was dropped. Derived
+    scope ACCEPTED: hub distinct-content census -
+    the value-identity grain no banked hub document
+    states, in the house census shape.
+    src/runmal/hub/distinct_census.py
+    (distinct_census_document(entries), schema
+    runmal-p199-hub-distinct-content-census-v1)
+    counts DISTINCT string values in the verified
+    payloads - P-195 groups entries by whole-pack
+    verified checksum, so two versions of one pack
+    differing in a single entry read as simply
+    unique and their overlap is nowhere stated, and
+    P-193 counts string-value occurrences and their
+    characters, so repetition is invisible by
+    construction; the grain between them is
+    derivable from no banked document, because no
+    banked document carries values. Values are
+    compared for exact identity by sha256 digest of
+    the value's UTF-8 encoding, computed in memory
+    only: neither a value nor a digest ever enters
+    the document, because a digest of a short string
+    is a dictionary target. Per parsed row:
+    string_value_count (necessarily equal to P-193's
+    count on the same payload - the stated expected
+    agreement), distinct_value_count,
+    repeated_value_count, extra_copy_count and
+    shared_value_count (the row's distinct values
+    also occurring in at least one other parsed
+    entry, filled in a second pass over parsed
+    entries only); estate axes pool distinct counts
+    per kind, with total distinct / repeated /
+    shared / extra copies and the largest distinct
+    entry (first in store order on a tie). Rows
+    carry outcomes under P-193's imported OUTCOMES
+    law; census_state under the closed
+    DISTINCT_CENSUS_STATES law (no_entries /
+    no_distinct / some_distinct / all_distinct);
+    counts only - no value, digest, key name,
+    excerpt or payload field anywhere in the
+    document (the P-183 law, extended to digests).
+    One new road: GET /hub/distinct-census,
+    bearer-gated and owner-scoped like the
+    content-census road; the census writes nothing
+    and records no history. Slice doc
+    docs/HUB_DISTINCT_CONTENT_CENSUS_2026-11-09.md +
+    clean-room log +1. Evidence (team-01
+    hidden_files/P199_EVIDENCE.md + logs): battery
+    19 passed. Neighbours on the team tree 340
+    passed / 0 failed (P-187..P-197 hub batteries +
+    the P-199 battery + P-045 / P-054 / P-063 /
+    P-141 pack batteries; 305 at P-197 + P-196's 16
+    + 19, exact). Team full suite 5839 passed / 5
+    skipped / 0 failed on its P-197 base (= 5820
+    banked at P-197 + 19, exact), clean at first
+    run. Combined fence on the merged tree
+    (P-187..P-199 hub batteries + P-045 / P-054 /
+    P-063 / P-141 pack batteries, forge
+    hidden_files/P199_FENCE.log): 360 passed / 0
+    failed (341 at P-198's fence + 19, exact). Forge
+    confirmation full suite on the merged tree
+    (counts read back from forge
+    hidden_files/P199_FORGE_CONFIRM.log): 5859
+    passed / 5 skipped / 0 failed in 355.52s, exit 0
+    - clean at first run, no contention failure and
+    no solo re-run needed; merged expectation 5859
+    (= 5840 banked at P-198 + 19, exact). Migration:
+    NONE (head stays 0041). Defects: none discovered
+    in banked code and none at banking; one in-slice
+    finding in the slice's own new battery (ruff 2 x
+    F841, an unused entries binding in two tests)
+    was fixed in-slice by team-01 before banking and
+    the battery re-ran 19 passed after the fix; no
+    bug left unfixed. Carried items untouched,
+    exactly as recorded at P-186 through P-198: (1)
+    binding label update stays named open
+    (unbind-then-bind law); (2) automatic retention
+    / bulk clear of history awaits the ruling of
+    Volmarr - none invented; (3) unified-search
+    history stays named open (this census records
+    nothing). Hub distinct-content census is now
+    BANKED. Banked now P-001..P-199 + the
+    commissioned binding depth/role slice. PART XII
+    OPEN (P-187..P-202). Next in roadmap order:
+    P-200 (Part XII, DERIVED).
