@@ -15145,3 +15145,157 @@ P-162 BANKED - Character Face History
     PART X OPEN (P-155..P-168). Next in
     roadmap order: P-166 (Part X, in
     roadmap order).
+
+    P-166 BANKED - Character Speaking Chats
+    (Part X - Faces That Speak,
+    P-155..P-168). - team-01 commit 931e750
+    merged (no-ff) into
+    yrsa/two-mirrors-build as e4a824c
+    (parents 6cea187 + 931e750); merge
+    pushed and ls-remote verified at e4a824c
+    before this record; banking record
+    commit follows this entry and is pushed
+    after it. Derived scope ACCEPTED as
+    banked by the keeper: the roadmap gives
+    Part X only its part-table line
+    (P-155..P-168), no per-slice entries;
+    this slice is derived from the in-tree
+    record of Runmal only (P-160 weighed the
+    speaking board and declined it, and
+    P-162, P-163 and P-164 each named it
+    open; the cell taken is CHARACTER x
+    CURRENT x SPEAKING), as the slice doc
+    states plainly. Scope: a pure-read
+    resolution service
+    (src/runmal/faces/speaking_chats.py -
+    resolve_character_speaking_chats)
+    resolving, for one character, the P-160
+    character face-chats board composed
+    whole (rows whole, board state, counts
+    carried from the P-160 board's own
+    arithmetic) paired with the character's
+    CURRENT S512 voice resolution stated
+    once at board level; None exactly when
+    the P-160 board is None, so existence
+    never leaks; the board classified under
+    the closed SPEAKING_CHATS law (no_chats
+    / none_ready / some_ready / all_ready,
+    the same strings as the P-160
+    BOARD_STATES under distinct export
+    names); the voice half composed from
+    S512 verbatim in substance as P-157 /
+    P-159 / P-161 / P-163 compose it,
+    classified under the same closed
+    voice-state law, the P-109 affect view
+    carried whole with consumed False;
+    paired true exactly when a voice
+    resolved and at least one chat shows a
+    ready face; NO voice_scope field rides
+    on the document - both halves are
+    current and the board reads no kept
+    history, following the P-157 / P-159
+    precedent, while the current_only law
+    itself is untouched and binds wherever
+    history is involved; five standing
+    honesty notes; plus one road (GET
+    /faces/speaking-chats?character_id= on
+    the /api/v1 mount,
+    speaking_chats_router.py, wired in
+    app.py in its own include_router block;
+    every board state is data at 200, never
+    an error; schema
+    runmal-p166-character-speaking-chats-v1).
+    No store, no migration. Evidence
+    (team-01 worktree hidden_files/
+    P166_EVIDENCE.md + logs): battery 24
+    passed / 0 failed; neighbours fence 213
+    passed / 0 failed; team full suite 5239
+    passed / 5 skipped / 0 failed, exit 0 -
+    exact arithmetic on its base (5215 +
+    24). Combined batteries on the merged
+    tree: faces fence P-155..P-166 209
+    passed / 0 failed (the P-155..P-165
+    faces batteries 185 + the P-166 battery
+    24, exact; hidden_files/P166_FENCE.log);
+    a wider fence including P-092 also ran
+    green at 233 passed / 0 failed
+    (hidden_files/P166_COMBINED.log). Forge
+    confirmation suite on the merged tree:
+    5254 passed / 5 skipped / 0 failed in
+    318.73s, exit 0
+    (hidden_files/P166_FORGE_CONFIRM.log) -
+    a clean run, no contention re-runs
+    needed, reconciling exactly (5230 + 24).
+    Reconciliation: this slice was built on
+    ceab179 (the P-164 banking record), so
+    P-165 was NOT in its base; the merge
+    took conflicts only in the three
+    expected shared files
+    (src/runmal/faces/__init__.py,
+    src/runmal/app.py,
+    docs/CLEAN_ROOM_LOG_2026-10-30.md), each
+    resolved as a pure additive union
+    keeping BOTH the P-165 history-census
+    and the P-166 speaking-chats exports,
+    roads and log entries exactly once each,
+    with each router in its own
+    include_router block in app.py (the
+    fused-include_router defect class
+    avoided); the merged diff against the
+    forge head is exactly the 7 slice files
+    (+1027/-0), purely additive, no
+    hidden_files paths in the slice commit.
+    py_compile clean on all touched Python
+    files, faces/__init__.__all__ verified
+    complete (every name in __all__ is
+    imported,
+    resolve_character_speaking_chats
+    exported), create_app() builds, and BOTH
+    roads are verified live in the built app
+    exactly once each: GET
+    /faces/history-census and GET
+    /faces/speaking-chats; the clean-room
+    log P-165 and P-166 entries each appear
+    exactly once. Slice scope:
+    src/runmal/faces/speaking_chats.py
+    (new),
+    src/runmal/faces/speaking_chats_router.py
+    (new), src/runmal/faces/__init__.py
+    (additive), src/runmal/app.py
+    (additive),
+    tests/test_p166_character_speaking_chats.py
+    (new, 24 tests),
+    docs/CHARACTER_SPEAKING_CHATS_2026-11-08.md
+    (new), docs/CLEAN_ROOM_LOG_2026-10-30.md
+    (+1 entry, exactly once in the merged
+    tree). Migration: NONE (head stays 0041,
+    no 0042, battery-pinned). Defects: no
+    defect was found in-slice and no
+    production defect was discovered; no
+    defect was found at banking. Nothing was
+    left unfixed. Honest limitations: the
+    board is current only - it reads no kept
+    history and claims nothing about past
+    faces; the voice stated is today's
+    resolution only, and because both halves
+    are current no voice_scope rides here,
+    while no kept event anywhere is claimed
+    to have been spoken in today's voice
+    under the P-161 / P-163 law where
+    history is involved. A character has no
+    single current face: selection stays per
+    chat (P-092). The owner speaking census
+    and the owner speaking-history census
+    remain open (voice is per character
+    under S512, so no single owner-level
+    pairing exists; two joins at once remain
+    declined under the grid
+    one-join-at-a-time pattern). No stage or
+    renderer, no lip-sync, no TTS synthesis
+    on this road, no automatic expression
+    detection from message text (P-092 law),
+    no playback, runtime or execution of any
+    stored content (P-027 law). Derived
+    scope ACCEPTED as banked. PART X OPEN
+    (P-155..P-168). Next in roadmap order:
+    P-167 (Part X, in roadmap order).
