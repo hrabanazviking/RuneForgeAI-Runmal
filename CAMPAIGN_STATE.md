@@ -16396,3 +16396,159 @@ P-162 BANKED - Character Face History
     behind banked P-173. Next in
     roadmap order: P-175 (Part XI in
     roadmap order).
+    P-175 BANKED - Workspace Binding-
+    History Deletion (Part XI,
+    DERIVED). Part XI continues.
+    Scope is DERIVED, stated plainly
+    in the slice doc: the roadmap
+    gives Part XI only its part line
+    (XI | Workspaces - the Companion
+    That Works | P-169 - P-186) with
+    no verbatim P-175 entry; the
+    slice derives from the banked
+    Part XI grid - P-173 the binding
+    history, kept as data in the same
+    bindings store by the bindings
+    amendment, its own document
+    naming a history-deletion /
+    retention road as named open -
+    the cell taken being that road in
+    its smallest owner-hand form: the
+    owner deletes ONE ended binding's
+    history entry, permanently, by
+    hand.
+    - team-01 commit 2031dd5 merged
+    (no-ff) into yrsa/two-mirrors-
+    build as 94cf1e9 (parents d3c5b35
+    + 2031dd5); CROSS-BASE: team-01
+    built on the P-173 record head
+    06cd7a5 while P-174 banked ahead
+    in parallel, so P-174 is NOT in
+    this slice's base and the merge
+    onto the P-174 record head
+    d3c5b35 reconciled as flagged:
+    one conflict in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    (append-vs-append), resolved as a
+    pure additive union keeping the
+    P-174 and P-175 entries exactly
+    once each; workspaces/__init__.py
+    auto-merged keeping both slices'
+    additive text (the P-174 folder-
+    census bullet, and the P-175
+    deletion sentences closing the
+    P-173 history bullet);
+    bindings.py, history.py and
+    history_router.py are P-175-side
+    and merged clean; app.py is
+    P-174-only and untouched by this
+    merge. No banking heal was
+    needed: the merged tree was grep-
+    and import-verified BEFORE any
+    suite ran - create_app builds
+    clean, each workspace router
+    (bindings, census, history,
+    folder-census) sits in its own
+    include_router block, and the
+    OpenAPI road list carries the
+    P-169 bindings, the P-170
+    listing, the P-171 census, the
+    P-172 content read, the P-173
+    history read, the P-174 folder
+    census and the new DELETE
+    /workspaces/history/{entry_id}
+    together. Merge pushed and ls-
+    remote verified at 94cf1e9 before
+    this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Scope: the bindings store gains
+    two primitives
+    (workspaces/bindings.py:
+    get_history_entry and
+    remove_history_entry - a hit
+    drops exactly one entry in one
+    _save_all carrying the live
+    bindings verbatim; a miss returns
+    None and writes nothing); the
+    history service gains the owner-
+    scoped delete
+    (workspaces/history.py:
+    delete_workspace_history_entry -
+    unknown OR foreign reads as None,
+    so existence never leaks; the
+    fifth HISTORY_NOTES honesty note
+    reworded; the history read stays
+    pure; purge_chat and
+    remove_binding contracts
+    untouched); the history router
+    gains one road
+    (workspaces/history_router.py:
+    DELETE
+    /workspaces/history/{entry_id} -
+    404 "workspace history entry not
+    found" on None, {"deleted": True,
+    "id"} at 200, the P-169 unbind
+    shape verbatim); additive
+    workspaces/__init__.py doc lines.
+    Slice doc docs/WORKSPACE_HISTORY_
+    DELETION_2026-11-09.md, tests/tes
+    t_p175_workspace_history_deletion
+    .py (15 tests), clean-room log +1
+    entry; 7 files, +550/-9.
+    Evidence (team-01
+    hidden_files/P175_EVIDENCE.md +
+    logs): battery 15 passed;
+    neighbours 86 passed (test_p169 +
+    test_p170 + test_p171 + test_p172
+    + test_p173 + test_p175 on its
+    base); full suite on its base
+    5393 passed / 5 skipped / 0
+    failed, exit 0 (5378 on its P-173
+    base + 15, exact). Its first
+    full-suite run's 23 failures were
+    an OSError [Errno 28] No space
+    left on device transient in
+    unrelated archive/restore/release
+    machinery - no workspace or P-175
+    test failed - superseded by the
+    clean re-run and recorded
+    honestly in the evidence, not
+    slice defects. Combined batteries
+    on the merged tree: P-169 + P-170
+    + P-171 + P-172 + P-173 + P-174 +
+    P-175 batteries 101 passed / 0
+    failed (86 at P-174 banking + 15,
+    exact). Forge confirmation full
+    suite on the merged tree (counts
+    read back from the log file):
+    5408 passed / 5 skipped / 0
+    failed, exact, in 330.91s (5393 +
+    15). Migration: NONE (head stays
+    0041). One defect was found and
+    fixed in-slice by the finisher (a
+    stray "+" in place of the second
+    "*" breaking the clean-room
+    entry's bold markup; docs-only,
+    diff stat unchanged, see
+    evidence); no defect was found at
+    banking. Nothing was left
+    unfixed.
+    Honest limitations and carried
+    items, exactly as the lead named
+    them: (1) deletion is permanent
+    and unaudited by design of the
+    smallest cell - no history-of-
+    deletions record is kept; (2) an
+    automatic retention policy (keep-
+    last-N, age cut-off, scheduled
+    prune) does NOT exist in-tree and
+    awaits Volmarr's ruling - no
+    policy exists to derive
+    thresholds from, and inventing
+    them would fabricate his ruling;
+    (3) a bulk clear-all / per-chat
+    clear road is named open behind
+    the same ruling. Next in roadmap
+    order: P-176 (Part XI in roadmap
+    order).
