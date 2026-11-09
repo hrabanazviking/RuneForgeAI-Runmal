@@ -17020,3 +17020,177 @@ P-162 BANKED - Character Face History
     (P-169). Next in roadmap order:
     P-179 (Part XI in roadmap
     order).
+    P-179 BANKED - Workspace Tree
+    Truncated at the Depth Cap (Part
+    XI, COMMISSIONED FIX). Part XI
+    continues. This slice is not
+    derived scope: it is the fix
+    commissioned at P-178's banking
+    for the defect P-178 discovered
+    in banked P-176.
+    - team-02 commit 1616fb6 merged
+    (no-ff) into yrsa/two-mirrors-
+    build as 9df650d (parents
+    b6982a0 + 1616fb6); CROSS-BASE:
+    team-02 built on the P-177
+    record head 0e8b9c3 while P-178
+    banked ahead in parallel, so
+    P-178 is NOT in this slice's
+    base and the merge onto the
+    P-178 record head b6982a0
+    reconciled as flagged: the only
+    conflict was docs/CLEAN_ROOM_LOG
+    _2026-10-30.md (append-vs-
+    append), resolved as a pure
+    additive union keeping the P-178
+    and P-179 entries exactly once
+    each, in roadmap order, byte-
+    identical to their source
+    versions. No other file
+    conflicted: tree.py, the slice
+    doc and the battery landed
+    clean. Merged diff vs b6982a0 is
+    exactly the 4 slice files,
+    +403/-0. The merged tree was
+    verified BEFORE any suite ran:
+    py_compile clean on tree.py, and
+    tree.py, the battery and the
+    slice doc sha256-identical to
+    team-02's committed versions.
+    Merge pushed and ls-remote
+    verified at 9df650d before this
+    record; banking record commit
+    follows this entry and is pushed
+    after it.
+    Scope: ONE hunk in
+    workspaces/tree.py (build_tree's
+    fill, at the existing depth-cap
+    return, +11): if any of the
+    capped level's just-composed
+    children is a directory (P-170's
+    KIND_DIRECTORY law verbatim),
+    truncated is set before
+    returning - P-178's document-
+    side rule applied at the source
+    instead of in one consumer.
+    Files and symlinks at the cap
+    are leaves and never make a tree
+    partial; an empty or file-only
+    cap level stays truncated False;
+    a non-ready root never reaches
+    fill and stays False. No depth
+    law, entry law, path law,
+    router, store or note changed -
+    the module's notes already
+    stated the true law and the code
+    now keeps their promise. Slice
+    doc docs/WORKSPACE_TREE_TRUNCATE
+    D_FIX_2026-11-09.md, tests/test_
+    p179_workspace_tree_truncated.py
+    (9 tests), clean-room log +1
+    entry; 4 files, +403/-0. The
+    tree still stores, binds,
+    unbinds, writes, edits, deletes,
+    runs, launches and watches
+    nothing, opens no file, and
+    grants nothing.
+    Evidence (team-02
+    hidden_files/P179_EVIDENCE.md +
+    logs): battery 9 passed; the
+    P-176 battery alongside it 17
+    passed (combined invocation 26
+    passed); neighbours 134 passed
+    (P-169..P-177 workspace
+    batteries on its base; P-178 not
+    in this base); full suite on its
+    base 5450 passed / 5 skipped / 0
+    failed, exit 0 (5441 on its
+    P-177 base + 9, exact). Combined
+    batteries on the merged tree:
+    P-169 + P-170 + P-171 + P-172 +
+    P-173 + P-174 + P-175 + P-176 +
+    P-177 + P-178 + P-179 batteries
+    156 passed / 0 failed (147 at
+    P-178 banking + 9, exact) - the
+    P-176 battery (17) and the P-178
+    battery (13) both pass on the
+    merged tree, so P-178's search
+    against the fixed tree is
+    verified, not just reasoned.
+    Forge confirmation full suite on
+    the merged tree (counts read
+    back from the log file): 5463
+    passed / 5 skipped / 0 failed,
+    exact, in 333.93s (5454 + 9).
+    Migration: NONE (head stays
+    0041).
+    DISCOVERY CLOSED: the defect
+    recorded at P-178's banking -
+    P-176's tree document did not
+    set truncated for a directory
+    left unexpanded at the depth
+    cap, though P-176's notes claim
+    truncated names every partial
+    tree, so the tree road dressed a
+    capped partial tree as whole -
+    is FIXED at its source by this
+    slice. P-178's composition-side
+    compensation (build_search also
+    setting truncated when any
+    directory node in the composed
+    document is unexpanded) becomes
+    a correct no-op for depth caps
+    against the fixed tree and stays
+    load-bearing for refused
+    expansions, which the tree names
+    by expand_refused alone
+    (unchanged, out of this slice's
+    scope). Nothing was left
+    unfixed.
+    P-176 expectation audit (the
+    accomplice question), as the
+    slice doc names it: P-176's
+    battery asserts truncated False
+    only for the empty folder and
+    the missing folder - neither is
+    a depth cap, and both stay False
+    under this fix (both batteries
+    green together). No P-176
+    expectation encoded the defect,
+    so none was corrected: the
+    accomplice was an absence -
+    P-176's depth tests asserted
+    expanded / children / node_count
+    on capped trees but never
+    asserted truncated there. This
+    slice's battery is that missing
+    assertion, at full strength.
+    Honest limitations and carried
+    items, exactly as the lead named
+    them: (1) truncated at the depth
+    cap names partiality, not size:
+    a directory at the cap might in
+    fact be empty - the tree did not
+    look, so it does not claim
+    wholeness; (2) refused
+    expansions keep their own truth
+    (expand_refused on the node) and
+    do not by themselves set the
+    tree's truncated; (3) content
+    search over the tree stays named
+    open (it would open files under
+    a new partial-read honesty law);
+    (4) a binding label update stays
+    named open (bindings.py's own
+    law is unbind-then-bind, never a
+    silent in-place update); (5)
+    automatic retention / bulk clear
+    of history awaits Volmarr's
+    ruling. Writes inside bound
+    folders stay fenced behind the
+    VX-57 guard; execution is
+    declined ABSOLUTELY (VX-55/56,
+    P-027); watching stays declined
+    (P-169). Next in roadmap order:
+    P-180 (Part XI in roadmap
+    order).
