@@ -303,10 +303,11 @@ def test_a_http_roads_present():
             "/api/v1/scenarios/{definition_id}/replace-preview/{chat_id}",
             "/api/v1/scenarios/chats/census"):
         assert road in paths, road
-    # P-153 banks in parallel and is NOT in this base: its
-    # road is honestly absent here; the gate doc names the
-    # merged-tree shape (P-116 precedent).
-    assert "/api/v1/scenarios/library/bind-plans" not in paths
+    # P-153 banked in parallel (4d35cff, banked before this
+    # gate): on the merged tree its road is LIVE - the gate
+    # doc's F2 merged-truth shape, healed at banking to the
+    # merged truth (the gate base asserted it absent).
+    assert "/api/v1/scenarios/library/bind-plans" in paths
 
 
 def test_a_module_map_slice_docs_and_roadmap_present():
