@@ -14,6 +14,8 @@ The truth layer lives in runmal.hub.registry; this
 module is only the HTTP shape. P-189 adds the census
 road: GET /hub/census, the owner's whole estate composed
 from the list and browse documents (see hub.census).
+P-190 adds the search road: GET /hub/search, a literal
+search over the owner's own entry data (see hub.search).
 """
 
 from __future__ import annotations
@@ -29,6 +31,7 @@ from runmal.db.deps import get_owner_id, get_session
 from runmal.hub import browse as hub_browse
 from runmal.hub import census as hub_census
 from runmal.hub import registry as hub_service
+from runmal.hub import search as hub_search
 
 router = APIRouter(tags=["hub"])
 
@@ -70,6 +73,21 @@ async def hub_census_document(
 ):
     entries = _store().list_for_owner(owner_id)
     return hub_census.census_document(entries)
+
+
+@router.get("/hub/search")
+async def hub_search_document(
+    q: str = "",
+    kind: str | None = None,
+    owner_id: str = Depends(get_owner_id),
+):
+    entries = _store().list_for_owner(owner_id)
+    try:
+        return hub_search.search_document(entries, q, kind=kind)
+    except hub_search.HubSearchError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(exc)) from None
 
 
 @router.get("/hub/entries/{entry_id}")
