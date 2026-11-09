@@ -81,6 +81,20 @@ the Companion That Works).
   has_files) on GET /workspaces/tree-census.
   It opens no file, reads no file contents,
   writes nothing and grants nothing.
+- ``unified_search`` + ``unified_search_router`` -
+  the workspace unified search (P-182, Part XI,
+  DERIVED scope): one chat's bound folder searched by
+  entry name AND file content over ONE tree - P-176's
+  tree composed once verbatim at its maximum depth,
+  P-178's filename search and P-180's content search
+  both built from that same tree and embedded whole,
+  their returned matches merged by folder-relative
+  path with matched_by named (name / content / both),
+  both source totals and P-180's file honesty carried
+  verbatim, partial coverage named by truncated /
+  coverage_complete - on GET
+  /workspaces/unified-search. It writes nothing
+  and grants nothing.
 - ``router`` - the owner-scoped HTTP road
   (/api/v1/workspaces/*).
 - ``census`` + ``census_router`` - the workspace
