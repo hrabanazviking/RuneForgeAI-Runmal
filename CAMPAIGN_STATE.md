@@ -14845,3 +14845,161 @@ P-162 BANKED - Character Face History
     X OPEN (P-155..P-168). Next in roadmap
     order: P-164 (Part X, in roadmap
     order).
+
+    P-164 BANKED - Face Census (Part X -
+    Faces That Speak, P-155..P-168).
+    - team-02 commit 5b43f99 merged (no-
+    ff) into yrsa/two-mirrors-build as
+    8335736 (parents af1989b + 5b43f99);
+    merge pushed and ls-remote verified at
+    8335736 before this record; banking
+    record commit follows this entry and
+    is pushed after it.
+    Note on the first parent: af1989b is
+    the P-163 banking heal, committed and
+    pushed between the P-163 banking
+    record (e5fe920) and this merge, and
+    recorded in WAVE_PLAN.md on the P-163
+    line: the first P-163 additive-union
+    pass dropped the
+    character_speaking_history doc entry
+    and its NOTES import from
+    faces/__init__.py, leaving __all__
+    naming
+    CHARACTER_SPEAKING_HISTORY_NOTES
+    without importing it (no test caught
+    it - nothing imports that name from
+    the package root). The heal restored
+    both (+23 lines, purely additive),
+    __all__ completeness verified (no
+    missing names), P-162 + P-163
+    batteries re-run 44 passed / 0 failed.
+    No P-164 file was touched by the heal.
+    Derived scope ACCEPTED as banked by
+    the keeper: the roadmap gives Part X
+    only its part-table line
+    (P-155..P-168), no per-slice entries;
+    this slice is derived from the in-tree
+    record of Runmal only (the banked Part
+    X grid left the owner-wide aggregate
+    unmade - P-160 weighed an owner-wide
+    face census and named it open as a
+    gate companion), as the slice doc
+    states plainly.
+    Scope: a pure-read resolution service
+    (src/runmal/faces/census.py -
+    resolve_face_census) resolving, for
+    the owner, one row per owned character
+    in list_characters order, each row
+    composing that character's P-160 face-
+    chats board verbatim in substance
+    (character, board_state, the chats
+    rows whole, the chat / ready /
+    selection / unbound counts), the
+    census classified under the closed
+    CENSUS_STATES law (no_characters /
+    no_chats / none_ready / some_ready /
+    all_ready) with counts summed from the
+    boards' own arithmetic; no voice key,
+    no history key, no census-level face -
+    there is no owner-wide face, selection
+    stays per chat (P-092); five standing
+    honesty notes; plus one road (GET
+    /faces/census on the /api/v1 mount,
+    wired in app.py with the local-auth
+    dependency; no id parameter, the owner
+    comes from get_owner_id; every census
+    state data at 200). No store, no
+    migration.
+    Evidence (team-02 worktree
+    hidden_files/ P164_EVIDENCE.md + logs
+    P164_BATTERY.log, P164_NEIGHBOURS.log,
+    P164_FULL.log): battery 15 passed / 0
+    failed; neighbours fence (P-092 +
+    P-155 + P-156 + P-160 + P-162
+    batteries) 92 passed / 0 failed; team
+    full suite 5190 passed / 5 skipped / 0
+    failed in 390.18s - a clean run, the
+    known contention class did not appear,
+    no solo re-runs needed.
+    Combined batteries on the merged tree:
+    170 passed / 0 failed (the P-155 +
+    P-156 + P-157 + P-158 + P-159 + P-160
+    + P-161 + P-162 + P-163 faces
+    batteries 155 + the P-164 battery 15,
+    exact), run by the banking coordinator
+    with PYTHONPATH=src on the campaign
+    venv runmal-venv312 (hidden_files/P164
+    _BANK_BATTERIES.log).
+    Forge confirmation suite on the merged
+    tree: 5215 passed / 5 skipped / 0
+    failed in 315.63s
+    (hidden_files/P164_FORGE_CONFIRM.log)
+    - a clean run, no contention re-runs
+    needed, reconciling exactly (5200 +
+    15).
+    Reconciliation: this slice was built
+    on the P-162 record base 362f442; the
+    merge into the forge (carrying P-163
+    and its heal) conflicted on the clean-
+    room log, app.py and faces/__init__.py
+    and all three were resolved as pure
+    additive unions by the banking
+    coordinator. The app.py union was
+    built as two separate include_router
+    blocks from the start (the known
+    fused-call defect class was checked
+    for explicitly and never landed); the
+    merged tree carries all ten faces
+    routers and the census road is grep-
+    verified live in app.py (import +
+    include). Clean-room log: the P-164
+    entry appears exactly once (and the
+    P-162 and P-163 entries exactly once
+    each). py_compile clean on all merged
+    surfaces, create_app builds on the
+    merged tree, and
+    faces/__init__.__all__ is verified
+    complete (no missing names).
+    Slice scope:
+    src/runmal/faces/census.py (new),
+    src/runmal/faces/census_router.py
+    (new), src/runmal/faces/__init__.py
+    (union), src/runmal/app.py (union),
+    tests/test_p164_face_census.py (new,
+    15 tests),
+    docs/FACE_CENSUS_2026-11-08.md (new),
+    docs/CLEAN_ROOM_LOG_2026-10-30.md (+1
+    entry, exactly once in the merged
+    tree). Merged diff vs af1989b is
+    exactly those 7 files (+730/-0),
+    purely additive, no hidden_files paths
+    in the slice commit.
+    Migration: NONE (head stays 0041, no
+    0042, battery-pinned).
+    Defects: no defect was found in-slice
+    and no production defect was
+    discovered; no defect was found at
+    banking. (The one defect found during
+    this banking session was the P-163
+    union omission recorded above and in
+    the first-parent note; it was healed
+    before this merge began, never left
+    unfixed.)
+    Honest limitations: Runmal renders
+    nothing in this slice; the census is
+    current-faces data a client reads,
+    carrying no image bytes - descriptors
+    carry the P-023 content and thumbnail
+    URLs as data only. The census is
+    current only and silent by design: it
+    reads no kept history and names no
+    voice. No automatic expression
+    detection from message text (P-092
+    law), no playback, runtime or
+    execution of any stored content (P-027
+    law).
+    Derived scope ACCEPTED as banked. PART
+    X OPEN (P-155..P-168). Next in roadmap
+    order: P-165 (Part X, in roadmap
+    order).
