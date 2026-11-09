@@ -67,6 +67,7 @@ from runmal.workspaces.tree_router import router as workspaces_tree_router
 from runmal.workspaces.history_census_router import router as workspaces_history_census_router
 from runmal.workspaces.search_router import router as workspaces_search_router
 from runmal.workspaces.content_search_router import router as workspaces_content_search_router
+from runmal.workspaces.unified_search_router import router as workspaces_unified_search_router
 from runmal.web.router import _HERE as _WEB_DIR
 from runmal.web.router import router as web_router
 
@@ -314,6 +315,11 @@ def create_app(
     )
     app.include_router(
         workspaces_content_search_router,
+        prefix="/api/v1",
+        dependencies=[Depends(require_local_auth)],
+    )
+    app.include_router(
+        workspaces_unified_search_router,
         prefix="/api/v1",
         dependencies=[Depends(require_local_auth)],
     )
