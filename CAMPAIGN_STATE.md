@@ -14143,3 +14143,152 @@ P-159 BANKED - Speaking Roster
     PART X OPEN (P-155..P-168).
     Next in roadmap order: P-160 (Part
     X, in roadmap order).
+P-160 BANKED - Character Face Chats
+    (Part X - Faces That Speak,
+    P-155..P-168).
+    - team-03 commit 6895bf9 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as eae6409 (parents 2976b79 +
+    6895bf9); merge pushed and
+    ls-remote verified at eae6409
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Derived scope ACCEPTED as banked
+    by the keeper: the roadmap gives
+    Part X only its part-table line
+    (P-155..P-168), no per-slice
+    entries; this slice is derived
+    from the in-tree record of Runmal
+    only (the banked Part X grid -
+    P-155 one chat presentation,
+    P-156 one character roster,
+    P-157 one chat face and voice,
+    P-158 one chat history, P-159 the
+    per-character speaking roster -
+    left exactly one join unmade:
+    the character to its chats), as
+    the slice doc states plainly.
+    Scope: a pure-read resolution
+    service (src/runmal/faces/
+    chats.py -
+    resolve_character_face_chats)
+    resolving, for one character, the
+    face-chats board: None for a
+    missing, foreign or deleted
+    character (existence never
+    leaks); otherwise the v1 envelope
+    with the character verbatim and
+    one row per owned chat bound to
+    the character, in the order of
+    the chats service, carrying the
+    chat title and message count plus
+    the P-155 presentation truth
+    composed verbatim per chat (the
+    presentation state, the current
+    row, its problem, and the current
+    descriptor named as face only
+    when that chat is ready), the
+    board classified under the closed
+    BOARD_STATES law (no_chats /
+    none_ready / some_ready /
+    all_ready) with chat, ready,
+    selection and unbound counts and
+    five honesty notes, plus one road
+    (GET /faces/chats?character_id=
+    on the /api/v1 mount, after the
+    history router, with the
+    local-auth dependency; 404 on
+    None, every board state data at
+    200). No store, no migration.
+    Evidence (team-03 worktree
+    hidden_files/ P160_EVIDENCE.md +
+    logs P160_BATTERY.log,
+    P160_NEIGHBOURS.log,
+    P160_FULLSUITE.log): battery 17
+    passed / 0 failed; neighbours
+    fence (P-155 + P-156 + P-157 +
+    P-158 + P-092) 84 passed / 0
+    failed; team full suite 5122
+    passed / 5 skipped / 0 failed in
+    398.68s, exit 0 (P-159 was NOT in
+    that base 1975169 and is
+    reconciled at this merge).
+    Combined batteries on the merged
+    tree: 34 passed / 0 failed
+    (P-159 battery 17 + P-160 battery
+    17, exact), run by the banking
+    coordinator with PYTHONPATH=src
+    on the campaign venv
+    runmal-venv312.
+    Forge confirmation suite on the
+    merged tree: 5139 passed / 5
+    skipped / 0 failed in 307.09s,
+    exit 0 (hidden_files/
+    P160_FORGE_CONFIRM.log with its
+    exit file, 0) - a clean run, no
+    contention re-runs needed,
+    reconciling exactly (5122 + 17).
+    Reconciliation: this slice was
+    built on the P-158 record base
+    1975169; the merge into the forge
+    (carrying P-159) conflicted on
+    the clean-room log, app.py and
+    faces/__init__.py and all three
+    were resolved as pure additive
+    unions by the banking
+    coordinator. The merged tree
+    carries all six faces routers
+    (presentation, roster, speaking,
+    history, speaking-roster, chats);
+    the chats road is grep-verified
+    live in app.py (import + include,
+    after the speaking-roster road).
+    Clean-room log: the P-160 entry
+    appears exactly once (and the
+    P-159 entry exactly once).
+    py_compile clean on all merged
+    surfaces.
+    Slice scope: src/runmal/faces/
+    chats.py (new), src/runmal/
+    faces/chats_router.py (new),
+    src/runmal/faces/__init__.py
+    (union, +30), src/runmal/app.py
+    (+6), tests/
+    test_p160_character_face_chats.py
+    (new, 17 tests), docs/
+    CHARACTER_FACE_CHATS_2026-11-08.md
+    (new), docs/CLEAN_ROOM_LOG_
+    2026-10-30.md (+1 entry, exactly
+    once in the merged tree). Team
+    delta 7 files (+729/-0); merged
+    diff vs 2976b79 is exactly those
+    7 files (+729/-0), purely
+    additive, no hidden_files paths
+    in the slice commit.
+    Migration: NONE (head stays 0041,
+    no 0042, battery-pinned).
+    Defects: the finisher critical
+    review found no defect in the
+    slice and changed no code. No
+    defect was found at banking; no
+    heal was needed beyond the
+    flagged union reconciliation
+    above.
+    Honest limitations: Runmal
+    renders nothing in this slice;
+    the board is data a client
+    reads, carrying no image bytes.
+    A character has no single
+    current face: selection stays
+    per chat and always an explicit
+    act (P-092). No automatic
+    expression detection from
+    message text (P-092 law), no
+    playback, runtime or execution
+    of any stored content (P-027
+    law).
+    Derived scope ACCEPTED as banked.
+    PART X OPEN (P-155..P-168).
+    Next in roadmap order: P-161 (Part
+    X, in roadmap order).
