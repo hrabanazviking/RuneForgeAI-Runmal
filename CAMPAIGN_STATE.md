@@ -16679,3 +16679,169 @@ P-162 BANKED - Character Face History
     (VX-55/56, P-027). Next in roadmap
     order: P-177 (Part XI in roadmap
     order).
+    P-177 BANKED - Workspace
+    Binding-History Census (Part XI,
+    DERIVED). Part XI continues.
+    Scope is DERIVED, stated plainly
+    in the slice doc: the roadmap
+    gives Part XI only its part line
+    (XI | Workspaces - the Companion
+    That Works | P-169 - P-186) with
+    no verbatim P-177 entry; the
+    slice derives from the banked
+    Part XI grid - P-173 banked the
+    binding history as a list read
+    with four counts and P-175
+    banked single-entry deletion,
+    but no surface aggregated the
+    history estate, and P-176's
+    banked record named a history
+    census over P-173 as the first
+    post-P-175 candidate - P-175
+    being banked in this slice's
+    base, the cell taken is exactly
+    that census: the owner-wide
+    aggregate over P-173's history,
+    composing the P-173 document
+    verbatim.
+    - team-03 commit 2e8a8e1 merged
+    (no-ff) into yrsa/two-mirrors-
+    build as 550dc49 (parents
+    f490afd + 2e8a8e1); CROSS-BASE:
+    team-03 built on the P-175
+    record head 1522811 while P-176
+    banked ahead in parallel, so
+    P-176 is NOT in this slice's
+    base and the merge onto the
+    P-176 record head f490afd
+    reconciled as flagged: conflicts
+    in src/runmal/app.py and docs/CL
+    EAN_ROOM_LOG_2026-10-30.md
+    (append-vs-append), both
+    resolved as pure additive unions
+    keeping the P-176 and P-177
+    entries and roads exactly once
+    each; workspaces/__init__.py
+    auto-merged keeping both slices'
+    additive text (the P-177
+    history-census bullet in the
+    history region, the P-176 tree
+    bullet in its own region). The
+    app.py union was built as two
+    separate include_router blocks,
+    one for the tree router and one
+    for the history-census router
+    (the P-174 fused-call defect
+    class checked explicitly and
+    never landed). No banking heal
+    was needed beyond the union
+    itself: the merged tree was
+    grep- and import-verified BEFORE
+    any suite ran - create_app
+    builds clean, each workspace
+    router (bindings, census,
+    history incl. the DELETE road,
+    history-census, folder-census,
+    content, listing, tree) sits in
+    its own include_router block,
+    and the OpenAPI road list
+    carries the new GET
+    /workspaces/history-census, GET
+    /workspaces/tree and DELETE
+    /workspaces/history/{entry_id}
+    together. Merged diff vs f490afd
+    is exactly the 7 slice files,
+    +792/-0, purely additive. Merge
+    pushed and ls-remote verified at
+    550dc49 before this record;
+    banking record commit follows
+    this entry and is pushed after
+    it.
+    Scope: two new modules
+    (workspaces/history_census.py:
+    the owner-wide history census -
+    build_history_census sums only
+    the P-173 history document's own
+    fields, the document composed
+    verbatim with no chat filter and
+    embedded whole, counts under the
+    event / folder-state / chat-
+    existence / folder-sharing /
+    label axes, the estate
+    classified under the closed
+    HISTORY_CENSUS_STATES law
+    no_history / no_live_chats /
+    all_live_chats /
+    some_live_chats; folder states
+    and chat existence are live
+    read-time judgements, never
+    claimed as at-ending - and works
+    paces/history_census_router.py:
+    GET /workspaces/history-census,
+    subject-is-caller, every state
+    DATA at 200); additive app.py
+    wiring (+6) and
+    workspaces/__init__.py doc lines
+    (+13). Slice doc docs/WORKSPACE_
+    HISTORY_CENSUS_2026-11-09.md, te
+    sts/test_p177_workspace_history_
+    census.py (16 tests), clean-room
+    log +1 entry; 7 files, +792/-0.
+    The census deletes nothing,
+    writes nothing, reads no
+    contents, lists no folder and
+    grants nothing.
+    Evidence (team-03
+    hidden_files/P177_EVIDENCE.md +
+    logs): battery 16 passed;
+    neighbours 117 passed (P-169 +
+    P-170 + P-171 + P-172 + P-173 +
+    P-174 + P-175 + P-177 batteries
+    on its base); full suite on its
+    base 5424 passed / 5 skipped / 0
+    failed, exit 0 (5408 on its
+    P-175 base + 16, exact).
+    Combined batteries on the merged
+    tree: P-169 + P-170 + P-171 +
+    P-172 + P-173 + P-174 + P-175 +
+    P-176 + P-177 batteries 134
+    passed / 0 failed (118 at P-176
+    banking + 16, exact). Forge
+    confirmation full suite on the
+    merged tree (counts read back
+    from the log file): 5441 passed
+    / 5 skipped / 0 failed, exact,
+    in 335.15s (5425 + 16).
+    Migration: NONE (head stays
+    0041). Two defects were found
+    and fixed in-slice by the team,
+    both in the slice's own test
+    expectations (a rebind-after-
+    unbind count; an HTTP owner
+    created by a pre-seed GET) - the
+    implementation was unchanged; no
+    defect was found at banking.
+    Nothing was left unfixed.
+    Honest limitations and carried
+    items, exactly as the lead named
+    them: (1) a binding label update
+    is named open (a write in the
+    P-175 bindings footprint; no in-
+    tree update law exists); (2)
+    content search / filename search
+    over the tree is named open (it
+    presupposes P-176's tree, now
+    banked, under a new walk law);
+    (3) an automatic retention
+    policy / bulk clear of history
+    awaits Volmarr's ruling -
+    thresholds are his to give (per
+    the P-175 record) and none were
+    invented. Writes inside bound
+    folders stay fenced behind the
+    VX-57 guard; execution is
+    declined ABSOLUTELY (VX-55/56,
+    P-027); watching stays declined
+    (P-169). Next in roadmap order:
+    P-178 (Part XI in roadmap
+    order).
