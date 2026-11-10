@@ -27,6 +27,10 @@ here is roadmap verbatim.
 - Base truth at founding: HEAD c8a054d (the P-218 banking
 record), migration head 0042, route census 356/439, suite
 6223 passed / 5 skipped / 0 failed.
+- Tranche note (P-220): base truth at P-220 opening: HEAD
+5f3b01d (the P-219 banking record), migration head 0042,
+route census 356/439, suite 6239 passed / 5 skipped /
+0 failed at P-220 opening.
 - Evidence rule (P-001's handover rule, kept by P-004): every
 closing verdict cites a proving test file or banked slice
 doc in THIS repo; citations must resolve to real paths. No
@@ -61,7 +65,8 @@ cell, in the P-004 discipline.
 
 A sketch, labelled a sketch and re-derived per slice:
 P-219 founding (this slice; tranche 1 = Part II rows);
-P-220 Part III; P-221 Part IV; P-222 Part V; P-223 Part VI;
+P-220 judged (tranche 2 = Part III rows,
+10 rows); P-221 Part IV; P-222 Part V; P-223 Part VI;
 P-224 Part VII; P-225 Part VIII; P-226 Part IX; P-227
 Part X; P-228 Part XI; P-229 Part XII; P-230 Part XIII;
 P-231 reconciliation (whole-matrix mechanical recount, the
@@ -83,7 +88,24 @@ Tranche 1 closing counts: HAVE 2, HAVE-THIN 10,
 MISSING 0, SHIPPED-SOVEREIGN 0, NOT-YET-REJUDGED 0,
 of 12 rows.
 
-Unjudged remainder: 129 rows NOT-YET-REJUDGED.
+Tranche 2 closing counts: HAVE 2, HAVE-THIN 7,
+MISSING 1, SHIPPED-SOVEREIGN 0, NOT-YET-REJUDGED 0,
+of 10 rows.
+
+Cumulative judged counts (tranches 1 and 2): HAVE 4,
+HAVE-THIN 17, MISSING 1, SHIPPED-SOVEREIGN 0,
+NOT-YET-REJUDGED 0, of 22 rows.
+
+Unjudged remainder: 119 rows NOT-YET-REJUDGED.
+
+Tranche 2 note (P-220): the rows judged in tranche 2 are
+ST-15, ST-16, ST-17, ST-18, ST-20, ST-22, ST-23, ST-25,
+ST-26, VX-22. Borderline dispositions: ST-26 is judged in
+tranche 2 under the keeper's Q1 ruling (the banked P-014
+gate homed ST-26 to Part III and P-035's own doc records
+two of its three sub-items were never built); ST-74 is
+deferred to the Part IV tranche (P-221); ST-19, ST-21 and
+ST-24 are left to reconciliation (P-231).
 
 ## Table A - SillyTavern rows (P-002) at the close
 
@@ -103,18 +125,18 @@ Unjudged remainder: 129 rows NOT-YET-REJUDGED.
 | ST-12 | Group reply-order strategies (Manual/Natural/List/Pooled) | HAVE | — | NOT-YET-REJUDGED | - |
 | ST-13 | Group generation handling (swap vs join cards, join templates) | HAVE-THIN | P-070 | NOT-YET-REJUDGED | - |
 | ST-14 | Group extras (auto-mode, self-response, group scenario override, peek/edit member) | HAVE-THIN | P-070 | NOT-YET-REJUDGED | - |
-| ST-15 | Keyword-triggered lore entries (regex keys, scan buffer) | HAVE-THIN | Part III (P-031 kin) | NOT-YET-REJUDGED | - |
-| ST-16 | Selective logic AND ANY/ALL, NOT ANY/ALL | HAVE-THIN | P-032 | NOT-YET-REJUDGED | - |
-| ST-17 | Entry strategies: constant / keyword / vectorised | HAVE-THIN | P-035, P-041 | NOT-YET-REJUDGED | - |
-| ST-18 | Insertion positions incl. Outlet macro | HAVE-THIN | P-038 | NOT-YET-REJUDGED | - |
+| ST-15 | Keyword-triggered lore entries (regex keys, scan buffer) | HAVE-THIN | Part III (P-031 kin) | HAVE-THIN - regex keys as patterns still missing (keys are escaped and match literally by design, no regex-key flag exists in the lorebook tree), macros resolvable inside a key still missing, and the name-prefixed per-message scan buffer still missing (messages reach the scanner as raw texts); keyword scanning with whole-word and case toggles and the resolved scan window (depth, whole-chat, caller-supplied external segment) are proven | `src/runmal/lorebooks/scan.py`, `src/runmal/lorebooks/windows.py`, `tests/test_p037_scan_windows.py` |
+| ST-16 | Selective logic AND ANY/ALL, NOT ANY/ALL | HAVE-THIN | P-032 | HAVE | `src/runmal/lorebooks/logic.py`, `tests/test_p032_selective_logic.py`, `docs/PART_III_GATE_2026-11-06.md` |
+| ST-17 | Entry strategies: constant / keyword / vectorised | HAVE-THIN | P-035, P-041 | HAVE | `src/runmal/lorebooks/states.py`, `src/runmal/lorebooks/vector_match.py`, `tests/test_p035_entry_states.py`, `tests/test_p041_vectorised_lore.py` |
+| ST-18 | Insertion positions incl. Outlet macro | HAVE-THIN | P-038 | HAVE-THIN - before/after example-message positions, top/bottom of Author's Note positions, and the Outlet pull-model still missing (no outlet semantics exist in the lorebook or prompt code; outlet fields ride interop files preserved-as-data only); before_char, after_char and at_depth with declared depth and role are proven in the composed prompt | `src/runmal/lorebooks/placement.py`, `tests/test_p038_position_depth.py` |
 | ST-19 | Probability (Trigger %) | HAVE | — (honesty deepened at P-036) | NOT-YET-REJUDGED | - |
-| ST-20 | Inclusion groups (weight, priority, group scoring) | HAVE-THIN | P-034 | NOT-YET-REJUDGED | - |
+| ST-20 | Inclusion groups (weight, priority, group scoring) | HAVE-THIN | P-034 | HAVE-THIN - group scoring still missing (the key-match-count narrowing is not built; deterministic resolution by group_weight, then priority, then entry_id shipped instead as the sovereign semantics, and the world-info scoring fields ride interop files preserved-as-data only); mutually exclusive groups resolving to exactly one winner, with losers reported, are proven | `src/runmal/lorebooks/groups.py`, `tests/test_p034_inclusion_groups.py` |
 | ST-21 | Timed effects: sticky / cooldown / delay | HAVE | — | NOT-YET-REJUDGED | - |
-| ST-22 | Recursive scanning with per-entry controls | HAVE-THIN | P-031 | NOT-YET-REJUDGED | - |
-| ST-23 | Scan configuration (depth, Min Activations, names in buffer) | HAVE-THIN | P-037 | NOT-YET-REJUDGED | - |
+| ST-22 | Recursive scanning with per-entry controls | HAVE-THIN | P-031 | HAVE-THIN - per-entry recursion controls still missing (non-recursable, prevent-further-recursion, delay-until-recursion and per-entry recursion levels have no field or engine semantics; the world-info recursion flags ride interop files preserved-as-data only); recursive scanning breadth-first with the depth clamp, cycle safety and token-budget gating is proven | `src/runmal/lorebooks/scan.py`, `tests/test_p031_recursive_scanning.py`, `docs/RECURSIVE_LOREBOOK_SCAN_2026-11-06.md` |
+| ST-23 | Scan configuration (depth, Min Activations, names in buffer) | HAVE-THIN | P-037 | HAVE-THIN - Min Activations still missing (the scan-deeper-until-N-triggered behaviour was never built), participant names in the scan buffer still missing, and per-entry scan depth still missing (the world-info per-entry field stays preserved-as-data with no engine semantics); per-book scan settings as data (scan depth, whole-chat mode, external-context segment) are proven | `src/runmal/lorebooks/windows.py`, `tests/test_p037_scan_windows.py` |
 | ST-24 | Lore token budget (context-% or absolute, insertion order) | HAVE | — | NOT-YET-REJUDGED | - |
-| ST-25 | Four lore scopes layered (global/character/persona/chat) | HAVE-THIN | P-039, P-040 | NOT-YET-REJUDGED | - |
-| ST-26 | Per-entry gating extras (character filter, generation-type triggers, extra scan sources) | MISSING | NO HOME — flagged for P-014 | NOT-YET-REJUDGED | - |
+| ST-25 | Four lore scopes layered (global/character/persona/chat) | HAVE-THIN | P-039, P-040 | HAVE-THIN - a chosen combined insertion strategy for the four-layer stack still missing (the layered preview gathers in one fixed declared order; no strategy vocabulary exists for the combined scopes, and the binding precedence choice governs only the two-book merge); all four scopes as citizens with per-scope budgets, dedupe to the most specific layer and the bound character book as the character layer are proven | `src/runmal/lorebooks/scopes.py`, `src/runmal/lorebooks/binding.py`, `tests/test_p040_lore_scopes.py`, `tests/test_p039_character_book_binding.py` |
+| ST-26 | Per-entry gating extras (character filter, generation-type triggers, extra scan sources) | MISSING | NO HOME — flagged for P-014 | MISSING - the per-entry gating core is absent as engine behaviour: the character filter and generation-type triggers were expressly not built at P-035 and the fields are preserved-as-data only in interop files; extra scan sources alone were built at P-037 (the external-context segment) | `docs/ENTRY_STATES_2026-11-06.md`, `tests/test_p019_lorebook_interop.py`, `tests/test_p037_scan_windows.py` |
 | ST-27 | Automation ID (entry firing runs a command) | MISSING | Part VI kin (P-081, P-093); no dedicated slice — flagged for P-014 | NOT-YET-REJUDGED | - |
 | ST-28 | Prompt Manager (ordered editable blocks, roles, depth, gen triggers) | HAVE-THIN | P-049 | NOT-YET-REJUDGED | - |
 | ST-29 | Prompt Manager utility surface (nudges, markers, squash, system merge…) | HAVE-THIN | P-049 | NOT-YET-REJUDGED | - |
@@ -189,7 +211,7 @@ Unjudged remainder: 129 rows NOT-YET-REJUDGED.
 | VX-19 | VRAM awareness (estimator, launch prevention, load breakdown) | MISSING | P-009 kin — flagged for P-014 | NOT-YET-REJUDGED | - |
 | VX-20 | Module system (installable feature modules with config pages) | MISSING | P-081, P-082, P-083 | NOT-YET-REJUDGED | - |
 | VX-21 | Long-term memory across conversations | HAVE | — | NOT-YET-REJUDGED | - |
-| VX-22 | Memory books (authored lore; last-10-messages query; pinned/weighted; stable order) | HAVE-THIN | Part III (P-031–P-048) | NOT-YET-REJUDGED | - |
+| VX-22 | Memory books (authored lore; last-10-messages query; pinned/weighted; stable order) | HAVE-THIN | Part III (P-031–P-048) | HAVE-THIN - a pinned entry as a lorebook-native citizen still missing (always-recalled behaviour rides the constant activation kind, a different switch; pin exists only in the memory system, a different citizen) and the exact last-ten-messages query window still missing (the window is per-book scan-depth data with whole-chat and external modes, not a named ten-message shape); authored entries inert until the recent conversation matches, priority ranking under the token budget, and deterministic stable rendering order are proven | `tests/test_p044_token_accounting.py`, `tests/test_p040_lore_scopes.py`, `docs/PART_III_GATE_2026-11-06.md` |
 | VX-23 | Private book & subject memory (Memories + always-on Understanding) | HAVE-THIN | — (memory depth; no dedicated slice — noted for P-014) | NOT-YET-REJUDGED | - |
 | VX-24 | Memory lifecycle honesty (superseded stays readable; absorbed stops restating) | HAVE | — | NOT-YET-REJUDGED | - |
 | VX-25 | Summarization feeds memory; auto chat titles | HAVE-THIN | Part VI kin (P-084) | NOT-YET-REJUDGED | - |
