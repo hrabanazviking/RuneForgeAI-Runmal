@@ -639,10 +639,12 @@ async def test_e3_unwired_roads_read_not_recorded(tmp_path):
         reasoning_chunks=("unseen thought",))
     async with factory() as session:
         result = await ci.continue_chat(session, user, chat_id, backend=backend)
-    # the continue road ran a reasoning-capable backend but does not
-    # capture: its message honestly reads not_recorded.
+    # P-207 supersedes the continue half of this pin: the continue
+    # road now captures through its shared seam, so its message
+    # reads recorded with the fake's scripted thought verbatim.
     assert result["message"]["content"] == "Well met, traveller."
-    assert result["message"]["reasoning"]["status"] == "not_recorded"
+    assert result["message"]["reasoning"]["status"] == "recorded"
+    assert result["message"]["reasoning"]["text"] == "unseen thought"
     # the groupchat road writes its Message rows directly, with no
     # reasoning capture at all: not_recorded, never an invented record.
     async with factory() as session:
