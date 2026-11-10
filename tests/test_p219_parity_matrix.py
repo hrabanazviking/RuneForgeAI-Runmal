@@ -32,7 +32,13 @@ TRANCHE4 = {
     "ST-07", "ST-13", "ST-14", "ST-46", "ST-47", "ST-48",
     "ST-49", "ST-50", "ST-51", "ST-53", "ST-60", "VX-06",
 }
-JUDGED = TRANCHE1 | TRANCHE2 | TRANCHE3 | TRANCHE4
+TRANCHE5 = {
+    "ST-27", "ST-56", "ST-57", "ST-58", "ST-61", "ST-62",
+    "ST-63", "ST-64", "ST-65", "ST-66", "ST-67", "ST-68",
+    "VX-20", "VX-25", "VX-26", "VX-34", "VX-42", "VX-51",
+    "VX-66",
+}
+JUDGED = TRANCHE1 | TRANCHE2 | TRANCHE3 | TRANCHE4 | TRANCHE5
 DD_ROWS = ("VX-01", "VX-42", "VX-59")
 CLOSING_TOKENS = {
     "HAVE", "HAVE-THIN", "MISSING", "SHIPPED-SOVEREIGN",
@@ -131,7 +137,7 @@ def test_08_section3_counts_equal_recount():
     text = MATRIX.read_text(encoding="utf-8")
     flat = " ".join(_section(text, "## \u00a73").split())
     m = re.search(
-        r"Cumulative judged counts \(tranches 1, 2, 3 and 4\): HAVE (\d+), "
+        r"Cumulative judged counts \(tranches 1, 2, 3, 4 and 5\): HAVE (\d+), "
         r"HAVE-THIN (\d+), MISSING (\d+), SHIPPED-SOVEREIGN (\d+), "
         r"NOT-YET-REJUDGED (\d+), of (\d+) rows\.", flat)
     assert m, flat
@@ -147,10 +153,20 @@ def test_09_deliberately_different_rows_carry_disposition():
     text = MATRIX.read_text(encoding="utf-8")
     rows = _rows(MATRIX)
     s4 = _section(text, "## \u00a74")
-    for rid in DD_ROWS:
+    for rid in ("VX-01", "VX-59"):
         assert rows[rid][2] == "DELIBERATELY-DIFFERENT", rid
         assert rows[rid][4] == "NOT-YET-REJUDGED", rid
         assert rid in s4, rid
+    # Heal class 5 (keeper ruling, 2026-11-10): VX-42 closed
+    # SHIPPED-SOVEREIGN at P-223 under ruling Q3, superseding
+    # the pre-ruling blanket pin. Pin its exact closing
+    # verdict - strictly stronger than the pin it replaces -
+    # with P-231's end-to-end audit of the DD rows preserved.
+    assert rows["VX-42"][2] == "DELIBERATELY-DIFFERENT"
+    assert _closing_token(rows["VX-42"]) == "SHIPPED-SOVEREIGN"
+    assert "VX-42" in s4
+    flat_dd = " ".join(_section(text, "## " + chr(167) + "3").split())
+    assert "P-231's end-to-end audit" in flat_dd
     assert "sovereign shape" in s4
 
 
