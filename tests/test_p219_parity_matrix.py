@@ -38,7 +38,10 @@ TRANCHE5 = {
     "VX-20", "VX-25", "VX-26", "VX-34", "VX-42", "VX-51",
     "VX-66",
 }
-JUDGED = TRANCHE1 | TRANCHE2 | TRANCHE3 | TRANCHE4 | TRANCHE5
+TRANCHE6 = {
+    "VX-04", "VX-10", "VX-11", "VX-12", "VX-14",
+}
+JUDGED = TRANCHE1 | TRANCHE2 | TRANCHE3 | TRANCHE4 | TRANCHE5 | TRANCHE6
 DD_ROWS = ("VX-01", "VX-42", "VX-59")
 CLOSING_TOKENS = {
     "HAVE", "HAVE-THIN", "MISSING", "SHIPPED-SOVEREIGN",
@@ -136,15 +139,32 @@ def test_08_section3_counts_equal_recount():
         if rid not in JUDGED and cells[4] == "NOT-YET-REJUDGED")
     text = MATRIX.read_text(encoding="utf-8")
     flat = " ".join(_section(text, "## \u00a73").split())
+    # P-224 heal: the tranches 1-5 line is pinned against the
+    # tranche 1-5 subset recount; the cumulative tranches 1-6
+    # line is pinned against the full JUDGED recount below,
+    # at equal strength.
+    judged5 = TRANCHE1 | TRANCHE2 | TRANCHE3 | TRANCHE4 | TRANCHE5
+    counts5 = {t: 0 for t in CLOSING_TOKENS}
+    for rid in judged5:
+        counts5[_closing_token(rows[rid])] += 1
     m = re.search(
         r"Cumulative judged counts \(tranches 1, 2, 3, 4 and 5\): HAVE (\d+), "
         r"HAVE-THIN (\d+), MISSING (\d+), SHIPPED-SOVEREIGN (\d+), "
         r"NOT-YET-REJUDGED (\d+), of (\d+) rows\.", flat)
     assert m, flat
     got = tuple(int(g) for g in m.groups())
-    assert got == (counts["HAVE"], counts["HAVE-THIN"],
-                   counts["MISSING"], counts["SHIPPED-SOVEREIGN"],
-                   counts["NOT-YET-REJUDGED"], len(JUDGED))
+    assert got == (counts5["HAVE"], counts5["HAVE-THIN"],
+                   counts5["MISSING"], counts5["SHIPPED-SOVEREIGN"],
+                   counts5["NOT-YET-REJUDGED"], len(judged5))
+    m6 = re.search(
+        r"Cumulative judged counts \(tranches 1, 2, 3, 4, 5 and 6\): HAVE (\d+), "
+        r"HAVE-THIN (\d+), MISSING (\d+), SHIPPED-SOVEREIGN (\d+), "
+        r"NOT-YET-REJUDGED (\d+), of (\d+) rows\.", flat)
+    assert m6, flat
+    got6 = tuple(int(g) for g in m6.groups())
+    assert got6 == (counts["HAVE"], counts["HAVE-THIN"],
+                    counts["MISSING"], counts["SHIPPED-SOVEREIGN"],
+                    counts["NOT-YET-REJUDGED"], len(JUDGED))
     m2 = re.search(r"Unjudged remainder: (\d+) rows NOT-YET-REJUDGED\.", flat)
     assert m2 and int(m2.group(1)) == remainder
 
