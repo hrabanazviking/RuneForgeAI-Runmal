@@ -506,12 +506,17 @@ async def test_d4_full_document_road_all_swipes_and_404(tmp_path, monkeypatch):
     # P-210 (the Inspector census road); the P-205
     # per-message road is still exactly one, now pinned
     # by its full path, and the /reasoning total is exact.
+    # P-211 heal: a third /reasoning road exists since
+    # P-211 (the Inspector group census road); the P-205
+    # per-message road is still exactly one, pinned by
+    # its full path above, and the /reasoning total is
+    # still exact.
     client = make_client(tmp_path / "http", monkeypatch)
     paths = list(client.get("/openapi.json").json()["paths"])
     assert [
         p for p in paths if p.endswith("/messages/{message_id}/reasoning")
     ] == ["/api/v1/chats/{chat_id}/messages/{message_id}/reasoning"]
-    assert len([p for p in paths if p.endswith("/reasoning")]) == 2
+    assert len([p for p in paths if p.endswith("/reasoning")]) == 3
     created = client.post("/api/v1/chats", json={"title": "Saga"})
     assert created.status_code == 201, created.text
     http_chat = created.json()["id"]
