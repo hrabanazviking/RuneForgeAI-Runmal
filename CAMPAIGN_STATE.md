@@ -20941,3 +20941,68 @@ P-162 BANKED - Character Face History
     scout to derive from the
     roadmap part text and what
     Part XIII still owes.
+    P-212 BANKED - Group
+    Assistant-View rendering
+    (Part XIII, DERIVED). -
+    team-02 commit d0d8c27
+    merged (no-ff) into
+    yrsa/two-mirrors-build as
+    aa8fc37 (parents 5ac6993 +
+    d0d8c27). Merge CLEAN - no
+    conflicts in any file.
+    Scope: Group Assistant-View
+    rendering - the stateless
+    group reasoning stream
+    rendered via the banked
+    reasoningView model, called
+    unchanged, through a group-
+    local panel, transient by
+    design (reasoning never
+    written into history, never
+    sent back, never persisted
+    client-side). The S311 group
+    golden was regenerated
+    deliberately by its own
+    prescribed road for exactly
+    the one added script line
+    (renderer.js on the group
+    page), no other golden
+    moving - a by-design pin
+    movement of the slice's own
+    change, not a defect. NO
+    migration; head stays 0042.
+    Route census stays 356 paths
+    / 439 operations with ZERO
+    census heals in this slice.
+    D1, the stateless groupchat
+    road error-swallowing, stays
+    FENCED unchanged - NOT fixed
+    by this slice. Evidence
+    (team-02 hidden_files/
+    P212_EVIDENCE.md + logs):
+    battery 14 passed;
+    neighbours fence 109 passed
+    / 0 failed; team full suite
+    6108 passed / 5 skipped / 0
+    failed in 404.18s, exit 0 (=
+    6094 banked at P-211 + 14
+    exact). Banking: combined
+    fence re-run in the forge
+    (test_p212 + the seven
+    neighbour files) 123 passed;
+    forge confirmation full
+    suite 6108 passed / 5
+    skipped / 0 failed, in
+    407.75s, exit 0 - exact.
+    Defects in banked code: none
+    found at banking. Banked now
+    P-001..P-212 + the
+    commissioned binding
+    depth/role slice. PART XIII
+    OPEN (P-203..P-218, gate
+    P-218). Next in roadmap
+    order: P-213 (Part XIII,
+    DERIVED) - scout to derive
+    from the roadmap part text
+    and what Part XIII still
+    owes.
