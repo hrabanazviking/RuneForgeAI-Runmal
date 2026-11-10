@@ -47,6 +47,36 @@ function addBubble(author, content) {
   return body;
 }
 
+function reasoningPanel(view) {
+  // P-212 Group Assistant View: the thinking panel under a
+  // group reply, built ONLY from the reasoning events this
+  // turn's stateless stream forwarded for that author, read
+  // through the shared P-206 view-model (renderer.js
+  // reasoningView). Recorded thinking is text in a native
+  // <details> disclosure, collapsed by default (the reply
+  // stays primary); every other status is one honest status
+  // line. Text via textContent ONLY - never as HTML, never
+  // through the markdown renderer (the markingBadge rule:
+  // thinking is data shown as text, not message content).
+  if (!view) return null;
+  if (view.kind === "recorded") {
+    const details = document.createElement("details");
+    details.className = "reasoning";
+    const summary = document.createElement("summary");
+    summary.textContent = view.label;
+    details.appendChild(summary);
+    const body = document.createElement("div");
+    body.className = "reasoning-text";
+    body.textContent = view.text;
+    details.appendChild(body);
+    return details;
+  }
+  const line = document.createElement("div");
+  line.className = "reasoning-status";
+  line.textContent = view.text;
+  return line;
+}
+
 async function loadRoster() {
   const chars = await (await api("/api/v1/characters")).json();
   const ul = $("roster");
@@ -93,6 +123,7 @@ $("group-form").addEventListener("submit", async (ev) => {
     let buf = "";
     let bubbles = {};   // author -> body element (stream state per author)
     let typing = {};    // author -> typing indicator element
+    let reasoningByAuthor = {};  // author -> [reasoning text parts] (P-212, this turn only)
     for (;;) {
       const { done, value } = await reader.read();
       if (done) break;
@@ -110,6 +141,11 @@ $("group-form").addEventListener("submit", async (ev) => {
             t.textContent = event.author + " is typing…";
             $("group-thread").appendChild(t);
             typing[event.author] = t;
+          } else if (event.type === "reasoning") {
+            if (!reasoningByAuthor[event.author]) {
+              reasoningByAuthor[event.author] = [];
+            }
+            reasoningByAuthor[event.author].push(event.text);
           } else if (event.type === "token") {
             if (!bubbles[event.author]) {
               bubbles[event.author] = addBubble(event.author, "");
@@ -118,6 +154,17 @@ $("group-form").addEventListener("submit", async (ev) => {
           } else if (event.type === "message") {
             if (typing[event.author]) typing[event.author].remove();
             history.push({ author: event.author, content: event.content });
+            const view = (reasoningByAuthor[event.author] || []).length
+              ? {
+                  status: "recorded",
+                  text: reasoningByAuthor[event.author].join(""),
+                }
+              : { status: "not_present" };
+            const panel = reasoningPanel(
+              window.RunmalRenderer.reasoningView(view));
+            if (panel && bubbles[event.author]) {
+              bubbles[event.author].parentElement.appendChild(panel);
+            }
           } else if (event.type === "turn_end") {
             rrCursor = event.rr_cursor;
           }
