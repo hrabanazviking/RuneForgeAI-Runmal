@@ -22893,3 +22893,177 @@ P-162 BANKED - Character Face History
     judged (VX-59/VX-61;
     scout in rotation
     team-02).
+    P-229 BANKED - Parity
+    matrix tranche 11 (Part
+    XIV, The Proof Spine;
+    scope DERIVED - the
+    roadmap gives Part XIV
+    only its part-table
+    line, P-219..P-232, plus
+    founding principle 4).
+    - team-02 commit 9e4d9ca
+    69955af66d3924a24a725cc2
+    e4fdddbd1 merged (no-ff)
+    into yrsa/two-mirrors-
+    build as d79ff3ac70450cb
+    3ee16f8d9340798654318927
+    d (parents 148ac92 +
+    9e4d9ca). Merge CLEAN -
+    13 files: docs/PARITY_MA
+    TRIX_2026-11-10.md
+    tranche 11 judged, docs/
+    CLEAN_ROOM_LOG_2026-10-
+    30.md +1 headed P-229
+    entry, tests/test_p229_p
+    arity_matrix.py NEW (18
+    tests), tests/test_p219_
+    parity_matrix.py through
+    tests/test_p228_parity_m
+    atrix.py healed (classes
+    1 + 5).
+    Scope: tranche 11 FINAL
+    closing judgement for
+    the 2 rows whose road
+    home was Part XII, under
+    the keeper rulings Q1/Q2
+    (Q1: VX-61 = HAVE-THIN;
+    Q2: VX-59 = SHIPPED-
+    SOVEREIGN - both the
+    scout proposed branch,
+    so no class-2 branch
+    restatement arose): HAVE
+    0 / HAVE-THIN 1 (VX-61)
+    / MISSING 0 / SHIPPED-
+    SOVEREIGN 1 (VX-59).
+    VX-60 excluded: already
+    judged in tranche 1 on
+    its P-028 first home;
+    recorded in the
+    tranche-11 note per the
+    VX-66/VX-17 form, not
+    re-judged.
+    Cumulative judged 107
+    rows: HAVE 14 / HAVE-
+    THIN 63 / MISSING 28 /
+    SHIPPED-SOVEREIGN 2; the
+    remaining 34 rows
+    printed NOT-YET-
+    REJUDGED.
+    Heals (classes 1 + 5,
+    each marked in-file):
+    Class 1 - the standing
+    cumulative restatement,
+    marked "P-229 heal": all
+    ten prior batteries
+    (test_p219..test_p228) -
+    TRANCHE11 constants
+    added; JUDGED extended
+    with TRANCHE11 (JUDGED10
+    intermediate where the
+    file chain required it);
+    counts pins restated to
+    the cumulative tranches
+    1-11 truth (tranche-11
+    closing line +
+    cumulative 1-11 line
+    pinned; the cumulative
+    1-10 line re-pinned
+    against the JUDGED10
+    subset at equal
+    strength); remainder
+    assertions 36 -> 34
+    where the file carried
+    an explicit figure.
+    Class 5 - granted under
+    the keeper class-5 grant
+    (P-223 precedent),
+    marked "P-229 heal class
+    5": the DELIBERATELY-
+    DIFFERENT disposition
+    pin (pin 9 in test_p219,
+    pin 10 in
+    test_p220..test_p228)
+    restated in all ten
+    prior batteries, per-row
+    at greater strength for
+    the VX-59 half only -
+    VX-59 pinned to its
+    exact Q2 SHIPPED-
+    SOVEREIGN closing token;
+    VX-01 still pinned NOT-
+    YET-REJUDGED exactly as
+    before; VX-42 SHIPPED-
+    SOVEREIGN pin untouched.
+    Pre-heal run of the ten
+    prior batteries: 29
+    failed / 149 passed, all
+    failures inside classes
+    1+5 only; post-heal
+    battery + healed priors
+    = 196 passed (18 + 178).
+    Class 2: none (as
+    forecast). Class 3: none
+    - the new battery passed
+    18/18 on its first run.
+    Class 4: clean-room log
+    +1 headed P-229 entry
+    exactly once, additive
+    only.
+    NO src change, NO
+    migration; head stays
+    0042. Route census stays
+    356 paths / 439
+    operations.
+    Evidence (team-02 hidden
+    _files/P229_EVIDENCE.md
+    + logs): battery 18
+    passed; neighbours fence
+    577 passed; combined 595
+    passed; team full suite
+    6419 passed / 5 skipped
+    / 0 failed (= 6401 base
+    passed + 18 new, exact;
+    no timing-class failure
+    occurred, no solo re-run
+    needed; 471.83s, exit
+    0).
+    Banking: combined fence
+    on the merged tree 595
+    passed / 0 failed (= 18
+    new + 577 neighbours
+    exact; run at banking,
+    log forge hidden_files/P
+    229_COMBINED.log,
+    62.56s); forge
+    confirmation full suite
+    6419 passed / 5 skipped
+    / 0 failed in 425.05s,
+    exit 0 - exact, no solo
+    re-run needed (log forge
+    hidden_files/P229_FORGE_
+    FULL.log).
+    Carried items unchanged:
+    D1 stateless SSE error-
+    swallowing FENCED,
+    ruling outstanding; per-
+    swipe thinking browsing
+    DECLINED-PENDING-WORD;
+    K-A binding label
+    update, K-B retention /
+    bulk clear and K-C
+    unified-search history
+    NAMED OPEN. Defects in
+    banked code: none found
+    at banking. Banked now
+    P-001..P-229 + the
+    commissioned binding
+    depth/role slice. PART
+    XIV OPEN (P-219..P-232,
+    gate P-232). Next in
+    roadmap order: P-230 -
+    parity matrix tranche
+    12, the rows whose road
+    home was Part XIII, re-
+    judged (ST-55/VX-07/VX-
+    65/VX-67; scout in
+    rotation team-03).
