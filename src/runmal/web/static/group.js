@@ -94,6 +94,57 @@ async function loadRoster() {
   }
 }
 
+async function loadSavedGroups() {
+  // P-213: populate the Saved groups picker from the banked
+  // persistent group list road. The picker holds group ids
+  // and names only - never message content.
+  const groups = await (await api("/api/v1/groups")).json();
+  const select = $("saved-group");
+  select.textContent = "";
+  for (const g of groups) {
+    const option = document.createElement("option");
+    option.value = g.id;
+    option.textContent = g.name + " (" + g.message_count + ")";
+    select.appendChild(option);
+  }
+}
+
+async function openSavedGroup() {
+  // P-213: open the picked group's STORED transcript from
+  // the banked transcript road and render it read-only: one
+  // bubble per stored message via addBubble (author = the
+  // stored speaker_name - user rows carry none and render
+  // under the page's own "user" label, as the live path
+  // authors them - body = the stored content), with the
+  // stored reasoning view rendered under the bubble through
+  // the same reasoningView + reasoningPanel pair the P-212
+  // stream path uses. DISPLAY-ONLY fence: fetched messages
+  // are never copied into the stateless turn state, never
+  // sent back, and nothing is written to web storage;
+  // opening a saved group never changes what the composer
+  // sends. The thread is cleared only after a successful
+  // fetch - a failure surfaces via showError and leaves the
+  // visible thread untouched.
+  const groupId = $("saved-group").value;
+  if (!groupId) return;
+  try {
+    const messages = await (
+      await api("/api/v1/groups/" + groupId + "/messages")).json();
+    const thread = $("group-thread");
+    thread.textContent = "";
+    for (const m of messages) {
+      const body = addBubble(m.speaker_name || "user", m.content);
+      if (m.reasoning) {
+        const panel = reasoningPanel(
+          window.RunmalRenderer.reasoningView(m.reasoning));
+        if (panel) body.parentElement.appendChild(panel);
+      }
+    }
+  } catch (err) {
+    showError(String(err));
+  }
+}
+
 function selectedIds() {
   return Array.from(document.querySelectorAll(".roster-check:checked"))
     .map((b) => b.value);
@@ -177,3 +228,10 @@ $("group-form").addEventListener("submit", async (ev) => {
 });
 
 loadRoster().catch((err) => showError(String(err)));
+
+document.addEventListener("DOMContentLoaded", () => {
+  loadSavedGroups().catch((err) => showError(String(err)));
+  $("open-group").addEventListener("click", () => {
+    openSavedGroup();
+  });
+});
