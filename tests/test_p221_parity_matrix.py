@@ -42,7 +42,13 @@ TRANCHE4 = {
     "ST-07", "ST-13", "ST-14", "ST-46", "ST-47", "ST-48",
     "ST-49", "ST-50", "ST-51", "ST-53", "ST-60", "VX-06",
 }
-JUDGED = TRANCHE1 | TRANCHE2 | TRANCHE3 | TRANCHE4
+TRANCHE5 = {
+    "ST-27", "ST-56", "ST-57", "ST-58", "ST-61", "ST-62",
+    "ST-63", "ST-64", "ST-65", "ST-66", "ST-67", "ST-68",
+    "VX-20", "VX-25", "VX-26", "VX-34", "VX-42", "VX-51",
+    "VX-66",
+}
+JUDGED = TRANCHE1 | TRANCHE2 | TRANCHE3 | TRANCHE4 | TRANCHE5
 DD_ROWS = ("VX-01", "VX-42", "VX-59")
 CLOSING_TOKENS = {
     "HAVE", "HAVE-THIN", "MISSING", "SHIPPED-SOVEREIGN",
@@ -181,9 +187,15 @@ def test_09_section3_counts_equal_recount():
     assert got3 == _as_tuple(_counts(rows, TRANCHE3), len(TRANCHE3))
     got4 = _count_line(flat, "Tranche 4 closing counts")
     assert got4 == _as_tuple(_counts(rows, TRANCHE4), len(TRANCHE4))
+    got5 = _count_line(flat, "Tranche 5 closing counts")
+    assert got5 == _as_tuple(_counts(rows, TRANCHE5), len(TRANCHE5))
     label = "Cumulative judged counts [(]tranches 1, 2, 3 and 4[)]"
     gotc = _count_line(flat, label)
-    assert gotc == _as_tuple(_counts(rows, JUDGED), len(JUDGED))
+    judged4 = TRANCHE1 | TRANCHE2 | TRANCHE3 | TRANCHE4
+    assert gotc == _as_tuple(_counts(rows, judged4), len(judged4))
+    label5 = "Cumulative judged counts [(]tranches 1, 2, 3, 4 and 5[)]"
+    gotc5 = _count_line(flat, label5)
+    assert gotc5 == _as_tuple(_counts(rows, JUDGED), len(JUDGED))
     remainder = sum(1 for rid, cells in rows.items()
                     if rid not in JUDGED
                     and cells[4] == "NOT-YET-REJUDGED")
@@ -196,10 +208,20 @@ def test_10_deliberately_different_rows_carry_disposition():
     text = MATRIX.read_text(encoding="utf-8")
     rows = _rows(MATRIX)
     s4 = _section(text, "## " + S + "4")
-    for rid in DD_ROWS:
+    for rid in ("VX-01", "VX-59"):
         assert rows[rid][2] == "DELIBERATELY-DIFFERENT", rid
         assert rows[rid][4] == "NOT-YET-REJUDGED", rid
         assert rid in s4, rid
+    # Heal class 5 (keeper ruling, 2026-11-10): VX-42 closed
+    # SHIPPED-SOVEREIGN at P-223 under ruling Q3, superseding
+    # the pre-ruling blanket pin. Pin its exact closing
+    # verdict - strictly stronger than the pin it replaces -
+    # with P-231's end-to-end audit of the DD rows preserved.
+    assert rows["VX-42"][2] == "DELIBERATELY-DIFFERENT"
+    assert _closing_token(rows["VX-42"]) == "SHIPPED-SOVEREIGN"
+    assert "VX-42" in s4
+    flat_dd = " ".join(_section(text, "## " + S + "3").split())
+    assert "P-231's end-to-end audit" in flat_dd
     assert "sovereign shape" in s4
 
 

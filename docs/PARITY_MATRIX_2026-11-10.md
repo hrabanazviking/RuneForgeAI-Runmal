@@ -39,6 +39,10 @@ route census 356/439, suite 6257 passed / 5 skipped /
 8e792a1 (the P-221 banking record), migration head 0042,
 route census 356/439, suite 6275 passed / 5 skipped /
 0 failed at P-222 opening.
+- Tranche note (P-223): base truth at P-223 opening: HEAD
+2566117 (the P-222 banking record), migration head 0042,
+route census 356/439, suite 6293 passed / 5 skipped /
+0 failed at P-223 opening.
 - Evidence rule (P-001's handover rule, kept by P-004): every
 closing verdict cites a proving test file or banked slice
 doc in THIS repo; citations must resolve to real paths. No
@@ -76,7 +80,8 @@ P-219 founding (this slice; tranche 1 = Part II rows);
 P-220 judged (tranche 2 = Part III rows,
 10 rows); P-221 judged (tranche 3 = Part IV rows,
 14 rows); P-222 judged (tranche 4 = Part V rows,
-12 rows); P-223 Part VI;
+12 rows); P-223 judged (tranche 5 = Part VI rows,
+19 rows);
 P-224 Part VII; P-225 Part VIII; P-226 Part IX; P-227
 Part X; P-228 Part XI; P-229 Part XII; P-230 Part XIII;
 P-231 reconciliation (whole-matrix mechanical recount, the
@@ -110,6 +115,10 @@ Tranche 4 closing counts: HAVE 5, HAVE-THIN 6,
 MISSING 1, SHIPPED-SOVEREIGN 0, NOT-YET-REJUDGED 0,
 of 12 rows.
 
+Tranche 5 closing counts: HAVE 2, HAVE-THIN 15,
+MISSING 1, SHIPPED-SOVEREIGN 1, NOT-YET-REJUDGED 0,
+of 19 rows.
+
 Cumulative judged counts (tranches 1 and 2): HAVE 4,
 HAVE-THIN 17, MISSING 1, SHIPPED-SOVEREIGN 0,
 NOT-YET-REJUDGED 0, of 22 rows.
@@ -122,7 +131,11 @@ Cumulative judged counts (tranches 1, 2, 3 and 4): HAVE 11,
 HAVE-THIN 33, MISSING 4, SHIPPED-SOVEREIGN 0,
 NOT-YET-REJUDGED 0, of 48 rows.
 
-Unjudged remainder: 93 rows NOT-YET-REJUDGED.
+Cumulative judged counts (tranches 1, 2, 3, 4 and 5): HAVE 13,
+HAVE-THIN 48, MISSING 5, SHIPPED-SOVEREIGN 1,
+NOT-YET-REJUDGED 0, of 67 rows.
+
+Unjudged remainder: 74 rows NOT-YET-REJUDGED.
 
 Tranche 2 note (P-220): the rows judged in tranche 2 are
 ST-15, ST-16, ST-17, ST-18, ST-20, ST-22, ST-23, ST-25,
@@ -164,6 +177,25 @@ to reconciliation (P-231); ST-52 is left to reconciliation
 (P-231); ST-54 was already judged in tranche 1;
 ST-56 is left to tranche 5.
 
+Tranche 5 note (P-223): the rows judged in tranche 5 are
+ST-27, ST-56, ST-57, ST-58, ST-61, ST-62, ST-63, ST-64,
+ST-65, ST-66, ST-67, ST-68, VX-20, VX-25, VX-26, VX-34,
+VX-42, VX-51, VX-66. Borderline dispositions: ST-27 is
+judged in tranche 5 under the keeper's Q1 ruling (the
+banked P-014 gate homed ST-27 as kin scope under P-081/P-093
+and the entry-firing automation act was never built);
+VX-26 is judged in tranche 5 under the keeper's Q2 ruling
+(the banked P-014 gate homed VX-26 as explicit scope of
+P-085); VX-42 is judged in tranche 5 under the keeper's Q3
+ruling as SHIPPED-SOVEREIGN, the matrix's first closing use
+of that verdict, and P-231's end-to-end audit of the
+DELIBERATELY-DIFFERENT rows is expressly preserved;
+ST-59 is not judged in tranche 5 (dash road home) and is
+left to P-231 reconciliation; ST-65, VX-34, VX-51 and VX-66
+are judged here once on their Part VI slice homes (P-092,
+P-093, P-087, P-081) under the first-home rule, and their
+later title tranches record them as already judged.
+
 ## Table A - SillyTavern rows (P-002) at the close
 
 | # | Feature (short) | Opening verdict | Road home | Closing verdict | Evidence |
@@ -194,7 +226,7 @@ ST-56 is left to tranche 5.
 | ST-24 | Lore token budget (context-% or absolute, insertion order) | HAVE | — | NOT-YET-REJUDGED | - |
 | ST-25 | Four lore scopes layered (global/character/persona/chat) | HAVE-THIN | P-039, P-040 | HAVE-THIN - a chosen combined insertion strategy for the four-layer stack still missing (the layered preview gathers in one fixed declared order; no strategy vocabulary exists for the combined scopes, and the binding precedence choice governs only the two-book merge); all four scopes as citizens with per-scope budgets, dedupe to the most specific layer and the bound character book as the character layer are proven | `src/runmal/lorebooks/scopes.py`, `src/runmal/lorebooks/binding.py`, `tests/test_p040_lore_scopes.py`, `tests/test_p039_character_book_binding.py` |
 | ST-26 | Per-entry gating extras (character filter, generation-type triggers, extra scan sources) | MISSING | NO HOME — flagged for P-014 | MISSING - the per-entry gating core is absent as engine behaviour: the character filter and generation-type triggers were expressly not built at P-035 and the fields are preserved-as-data only in interop files; extra scan sources alone were built at P-037 (the external-context segment) | `docs/ENTRY_STATES_2026-11-06.md`, `tests/test_p019_lorebook_interop.py`, `tests/test_p037_scan_windows.py` |
-| ST-27 | Automation ID (entry firing runs a command) | MISSING | Part VI kin (P-081, P-093); no dedicated slice — flagged for P-014 | NOT-YET-REJUDGED | - |
+| ST-27 | Automation ID (entry firing runs a command) | MISSING | Part VI kin (P-081, P-093); no dedicated slice — flagged for P-014 | MISSING - the entry-firing automation act is absent as engine behaviour: no automation vocabulary exists anywhere in src/ and no plugin/variables act is bound to an entry firing (grep-verified at P-223); the banked P-014 gate homed the act as kin scope under P-081/P-093, the gate's forbidden shape (lore-entry code execution) was honoured by building nothing, and the permitted shape was not built either | `docs/PART_I_GATE_2026-10-30.md`, `src/runmal/plugins/api.py`, `src/runmal/plugins/variables.py` |
 | ST-28 | Prompt Manager (ordered editable blocks, roles, depth, gen triggers) | HAVE-THIN | P-049 | HAVE-THIN - per-block role editing, per-block generation-type triggers, in-chat depth positioning for arbitrary blocks, and a persisted layout still missing (a PromptBlock is exactly {block, enabled}; layout is request/service data only); ordered toggleable prompt blocks and preset-carried prompt sets are proven | `src/runmal/prompt/manager.py`, `tests/test_p049_prompt_manager.py` |
 | ST-29 | Prompt Manager utility surface (nudges, markers, squash, system merge…) | HAVE-THIN | P-049 | HAVE-THIN - the named prompt-manager utilities still missing (group nudge and continue nudge as manager citizens, new-chat / new-group / new-example markers, character-names behaviour strategies, squash consecutive system messages, wrap user message in quotes, continue prefill, system-prompt merge mode; no squash / nudge / prefill / quote-wrap vocabulary exists in src/runmal/prompt/); post-history quick-edit, format-template wrapping and the layout toggle/reorder surface are proven | `src/runmal/prompt/manager.py`, `src/runmal/prompt/context.py`, `tests/test_p057_post_history.py` |
 | ST-30 | Reasoning controls (visibility toggle, reasoning effort) | MISSING | NO HOME — flagged for P-014 (nearest kin P-052) | MISSING - the reasoning effort control is absent as the P-052/P-053-homed sampler-side scope (the P-052 catalogue of 29 sampler specs carries no reasoning control of any kind and the P-053 truth table carries no reasoning row); reasoning visibility exists only via Part XIII's capture/panel shape (P-205/P-206), not as the homed control | `docs/PART_I_GATE_2026-10-30.md`, `src/runmal/backends/samplers.py`, `src/runmal/chats/reasoning.py` |
@@ -223,19 +255,19 @@ ST-56 is left to tranche 5.
 | ST-53 | Regenerate (discard + re-roll as its own generation type) | HAVE-THIN | Part V kin (P-065/P-069) | HAVE-THIN - a chat-level regenerate operation on a persisted message still missing (no message regenerate route exists in the chats router; regeneration lives at the session/tools layer and its re-roll appends a new alternate, nothing is discarded) and lore/triggers keying on the generation type still missing (no generation-type vocabulary exists in the lorebooks tree); regenerate as a distinct generation type (Mode.REGENERATE with the stable-prompt fingerprint discipline), exposed as a tools-service action, with re-rolled candidates landing as swipe decks is proven | `src/runmal/generation/modes.py`, `src/runmal/tools/service.py`, `src/runmal/chats/swipes.py`, `tests/test_p065_swipes.py` |
 | ST-54 | Chat file management (import/export/rename, chat→group conversion) | HAVE-THIN | P-020, P-078 | HAVE-THIN - in-place chat-to-group conversion still absent (grep-verified at founding); JSONL import/export and rename are proven | `tests/test_p020_chat_import.py` |
 | ST-55 | Welcome screen + Assistant (recent chats, quick uncarded chat, default Assistant) | HAVE-THIN | Part XIII (title only) — flagged for P-014 | NOT-YET-REJUDGED | - |
-| ST-56 | Per-message utility actions (translate/image/narrate/prompt view) | HAVE-THIN | Part VI (P-086, P-087 kin) | NOT-YET-REJUDGED | - |
-| ST-57 | Extension system (UI extensions + server plugins, distribution channel) | MISSING | P-081, P-082, P-083 | NOT-YET-REJUDGED | - |
-| ST-58 | Summarize extension (editable rolling summary, {{summary}} injection) | HAVE-THIN | P-084 | NOT-YET-REJUDGED | - |
+| ST-56 | Per-message utility actions (translate/image/narrate/prompt view) | HAVE-THIN | Part VI (P-086, P-087 kin) | HAVE-THIN - a per-message utility action surface still missing: no road binds a stored message to translate / image / narrate as actions on that message (the citizens act on chats and caller-supplied text, the plugins router carries no translate / image / voice route, and no utility-action vocabulary exists in src/); prompt view via the founding inspector, narration via the founding voice stack and the TTS citizen, the translate citizen and the image citizen are proven | `src/runmal/plugins/translate.py`, `src/runmal/plugins/image_generation.py`, `src/runmal/plugins/tts.py`, `tests/test_p086_translate_plugin.py`, `tests/test_p087_image_generation.py` |
+| ST-57 | Extension system (UI extensions + server plugins, distribution channel) | MISSING | P-081, P-082, P-083 | HAVE-THIN - a distribution channel beyond local packs still missing (packs are local files installed by hand, no plugin surface exists in src/runmal/hub/, and the pack road is data-only in v1, so a distributed plugin's executable handlers can never arrive through the channel that exists); the extension substrate whole - Plugin API v1, the sandbox law, the manager with permission cards and durable ledger, sixteen citizens passing the conformance kit composed in one registry, settings UI and data custody - is proven | `src/runmal/plugins/api.py`, `src/runmal/plugins/manager.py`, `src/runmal/plugins/settings_ui.py`, `docs/PART_VI_GATE_2026-11-07.md` |
+| ST-58 | Summarize extension (editable rolling summary, {{summary}} injection) | HAVE-THIN | P-084 | HAVE-THIN - the summary as a user-editable chat citizen still missing (no edit road exists for the summary itself, and editing an already-summarized message does not rewrite that frozen summary version) and {{summary}} template injection still missing (no summary macro exists in the macro registry; injection is by plugin slot, never by the template macro the row names); the rolling summary citizen re-rolling versioned summaries plus a kind='summary' memory on message mutation, injected by the summary-slot prompt hook, is proven | `src/runmal/plugins/summarise.py`, `src/runmal/prompt/macros.py`, `tests/test_p084_memory_summarise.py` |
 | ST-59 | Vector Storage / RAG extension (history, Data Bank, lore) | HAVE | — (plugin shape at P-085) | NOT-YET-REJUDGED | - |
 | ST-60 | Data Bank (per-chat/global attached documents + scrapers) | MISSING | P-074 | HAVE-THIN - scrapers still missing (the P-074 record declines them in plain words: no scraper registry exists in Runmal yet, and none is claimed; grep at P-222 confirms none exists in src/); the Data Bank itself is proven whole - per-chat and global attached text documents, sealed files, a declared per-chat token budget with whole-document greedy selection and honest discards, and prompt integration counted by the governor | `src/runmal/chats/databank.py`, `tests/test_p074_databank.py` |
-| ST-61 | Image generation extension | MISSING | P-087 | NOT-YET-REJUDGED | - |
-| ST-62 | TTS extension (pluggable narration, per-message) | HAVE-THIN | P-091 | NOT-YET-REJUDGED | - |
-| ST-63 | Speech recognition (voice input to chat) | HAVE-THIN | P-091 | NOT-YET-REJUDGED | - |
-| ST-64 | Chat translation extension | MISSING | P-086 | NOT-YET-REJUDGED | - |
-| ST-65 | Expressions / sprites + Visual Novel mode | MISSING | P-092 (surface); Part X (title only) | NOT-YET-REJUDGED | - |
-| ST-66 | Web search (extension + backend tool, opt-in) | MISSING | P-088 | NOT-YET-REJUDGED | - |
-| ST-67 | Regex scripts (named, staged, per-character/global, test mode) | MISSING | P-090 | NOT-YET-REJUDGED | - |
-| ST-68 | Quick Replies + STscript + slash commands | HAVE-THIN | P-089, P-090 | NOT-YET-REJUDGED | - |
+| ST-61 | Image generation extension | MISSING | P-087 | HAVE | `src/runmal/plugins/image_generation.py`, `tests/test_p087_image_generation.py` |
+| ST-62 | TTS extension (pluggable narration, per-message) | HAVE-THIN | P-091 | HAVE-THIN - per-message narration as a chat surface action still missing (the citizen's actions are in-process service calls; no HTTP route binds a stored message to narration and the plugins router carries no voice route); TTS as a plugin citizen wrapping the founding seam behind Plugin API v1 unchanged, with explicit synthesize / audition actions, voice listing and model info, is proven | `src/runmal/plugins/tts.py`, `docs/VOICE_PLUGINS_2026-11-07.md`, `tests/test_p091_voice_plugins.py` |
+| ST-63 | Speech recognition (voice input to chat) | HAVE-THIN | P-091 | HAVE-THIN - chat-bar voice input as a surface still missing (no route or chat-surface binding takes voice input into the chat bar; voice input lives in the voice loop, not as a chat-bar citizen); STT as a plugin citizen behind the same API, with an explicit transcribe action over PCM through the wired backend, health / model info and per-chat transcription state, is proven | `src/runmal/plugins/stt.py`, `docs/VOICE_PLUGINS_2026-11-07.md`, `tests/test_p091_voice_plugins.py` |
+| ST-64 | Chat translation extension | MISSING | P-086 | HAVE-THIN - a shipped real default translator still missing (the default road is a deterministic authored lexicon labelled deterministic-1, honest but not translation; real translation needs a host-configured backend) and durability still missing (per-chat config and the derived store live on the plugin instance and are lost on restart, the module's own honesty contract); translation as a plugin citizen in both directions, with true provenance and plugin events suppressed so translation never recurses, is proven | `src/runmal/plugins/translate.py`, `tests/test_p086_translate_plugin.py` |
+| ST-65 | Expressions / sprites + Visual Novel mode | MISSING | P-092 (surface); Part X (title only) | HAVE-THIN - Visual Novel mode still missing (no VN mode exists anywhere in src/; it is the row's Part X half, unbuilt there too, and is printed absent here rather than carried silently); the expression/sprite plugin surface whole - owner-declared per-character expression sets, sprite binding by reference to P-023 assets with an honest binding report, per-chat selection with provenance receipts and kept history, and HTTP roads - is proven | `src/runmal/plugins/expressions.py`, `tests/test_p092_expressions.py` |
+| ST-66 | Web search (extension + backend tool, opt-in) | MISSING | P-088 | HAVE-THIN - web search as a backend tool still missing (no web-search surface exists in src/runmal/tools/, so a model cannot invoke search mid-generation; search is a citizen action and a prompt offering, never a tool the backend calls); the extension whole - off by default for every chat, the explicit search action refusing before any provider call unless that chat opted in, results entering context only rendered with title + URL citations - is proven | `src/runmal/plugins/web_search.py`, `tests/test_p088_web_search.py` |
+| ST-67 | Regex scripts (named, staged, per-character/global, test mode) | MISSING | P-090 | HAVE-THIN - per-character scope still missing (the shipped scopes are user and chat only), test mode still missing (no test / dry-run / preview vocabulary exists in the module), and the non-prompt_assembly declared stages apply only through explicit apply_scripts calls with no shipped caller (the slice shipped no HTTP routes / UI); named staged find/replace rules as a citizen - importable format, a safe regex dialect with forked-child timeout discipline, durable per-user storage, and the prompt_assembly stage live through a messages-stage prompt hook - are proven | `src/runmal/plugins/regex_scripts.py`, `tests/test_p090_regex_scripts.py`, `docs/REGEX_SCRIPTS_2026-11-07.md` |
+| ST-68 | Quick Replies + STscript + slash commands | HAVE-THIN | P-089, P-090 | HAVE-THIN - a slash-command surface as such still missing (no slash-command vocabulary exists in src/ outside the regex module's findRegex flag parsing; what ships is the quick-reply road plus the founding command palette, not commands invoked by typing /name in chat); user-defined Quick Replies whole - durable per-user definitions, chained steps through the one macro engine landing through the app's own chat road with undo / provenance / event dispatch - and the sovereign plugin / variables automation shape in place of the STscript language are proven | `src/runmal/plugins/quick_replies.py`, `tests/test_p089_quick_replies.py` |
 | ST-69 | Theme/UI customisation (colours, backgrounds, custom CSS, MovingUI, VN mode) | HAVE-THIN | NO HOME in defined parts — flagged for P-014 | NOT-YET-REJUDGED | - |
 | ST-70 | Localised interface (UI in multiple languages) | MISSING | NO HOME — flagged for P-014 | NOT-YET-REJUDGED | - |
 | ST-71 | User accounts (multi-user isolation, roles) | HAVE-THIN | NO HOME in defined parts — flagged for P-014 | NOT-YET-REJUDGED | - |
@@ -266,13 +298,13 @@ ST-56 is left to tranche 5.
 | VX-17 | Decisions (dedicated multiple-choice service for speaker/action/tool gating) | MISSING | Part IX/XIII (titles only) — flagged for P-014 | NOT-YET-REJUDGED | - |
 | VX-18 | Reasoning budgeted separately (reply budget stated, summarizer can think) | MISSING | NO HOME — flagged for P-014 | MISSING - no reasoning budget separate from the reply budget exists (no stated reply budget and no summarizer-thinking control exists anywhere in src/ at base); the pair was homed to Part IV by the banked P-014 gate as explicit scope of P-052/P-053 and the scope was never built there | `docs/PART_I_GATE_2026-10-30.md`, `src/runmal/backends/samplers.py`, `src/runmal/chats/reasoning.py` |
 | VX-19 | VRAM awareness (estimator, launch prevention, load breakdown) | MISSING | P-009 kin — flagged for P-014 | NOT-YET-REJUDGED | - |
-| VX-20 | Module system (installable feature modules with config pages) | MISSING | P-081, P-082, P-083 | NOT-YET-REJUDGED | - |
+| VX-20 | Module system (installable feature modules with config pages) | MISSING | P-081, P-082, P-083 | HAVE-THIN - config that drives a live module still missing (the Part VI gate's carried item K2, still true at this base: citizens derive runtime config from their manifest at registration and the settings store is read by the form and router roads, not by any running citizen, so a module's config page cannot yet change its running behaviour); installable modules via local packs with permission cards, the API + sandbox substrate, and config pages generated from declared schemas whose valid patches store and read back merged, are proven | `src/runmal/plugins/settings_ui.py`, `src/runmal/plugins/manager.py`, `docs/PART_VI_GATE_2026-11-07.md` |
 | VX-21 | Long-term memory across conversations | HAVE | — | NOT-YET-REJUDGED | - |
 | VX-22 | Memory books (authored lore; last-10-messages query; pinned/weighted; stable order) | HAVE-THIN | Part III (P-031–P-048) | HAVE-THIN - a pinned entry as a lorebook-native citizen still missing (always-recalled behaviour rides the constant activation kind, a different switch; pin exists only in the memory system, a different citizen) and the exact last-ten-messages query window still missing (the window is per-book scan-depth data with whole-chat and external modes, not a named ten-message shape); authored entries inert until the recent conversation matches, priority ranking under the token budget, and deterministic stable rendering order are proven | `tests/test_p044_token_accounting.py`, `tests/test_p040_lore_scopes.py`, `docs/PART_III_GATE_2026-11-06.md` |
 | VX-23 | Private book & subject memory (Memories + always-on Understanding) | HAVE-THIN | — (memory depth; no dedicated slice — noted for P-014) | NOT-YET-REJUDGED | - |
 | VX-24 | Memory lifecycle honesty (superseded stays readable; absorbed stops restating) | HAVE | — | NOT-YET-REJUDGED | - |
-| VX-25 | Summarization feeds memory; auto chat titles | HAVE-THIN | Part VI kin (P-084) | NOT-YET-REJUDGED | - |
-| VX-26 | Memory providers pluggable (lexical vs lexical+embedding scoring) | HAVE-THIN | — (noted for P-014) | NOT-YET-REJUDGED | - |
+| VX-25 | Summarization feeds memory; auto chat titles | HAVE-THIN | Part VI kin (P-084) | HAVE-THIN - auto-generated chat titles still missing (no auto-title vocabulary exists in src/runmal/chats/; titles are user / import data only) and extraction-after-summary as one pipeline and summary auto-correction still missing (the citizen runs the founding roll only); summarization feeding memory as one citizen - every re-roll writing a versioned ChatSummary row plus a kind='summary' memory whose sources are exactly the summarized messages, visible through the founding memories surface - is proven | `src/runmal/plugins/summarise.py`, `tests/test_p084_memory_summarise.py` |
+| VX-26 | Memory providers pluggable (lexical vs lexical+embedding scoring) | HAVE-THIN | — (noted for P-014) | HAVE-THIN - a selectable memory-provider slot still missing (no provider-choice, lexical-only or retrieval-mode vocabulary exists in src/runmal/memory/ or in the plugin; the road follows the host-configured backend, not a per-memory or per-user provider choice); pluggable backends behind one seam with honest road labelling - lexical_vector on the founding local provider, vector on a configured profile backend, keyword_fallback on failure, every hit naming its road and provenance - are proven; judged here under the keeper's Q2 ruling (the banked P-014 gate homed the row as explicit scope of P-085) | `src/runmal/plugins/vector_storage.py`, `docs/VECTOR_STORAGE_PLUGIN_2026-11-07.md`, `docs/PART_I_GATE_2026-10-30.md` |
 | VX-27 | Book tooling & interop (attach to char/scenario, export/import shapes, extract from chat, merge) | HAVE-THIN | P-019, P-026 kin | HAVE-THIN - extract-from-chat is absent and book merge is not built (packs never merge into an existing book); attach and ST-shaped import/export are proven | `tests/test_p019_lorebook_interop.py`, `docs/LOREBOOK_PACKS_2026-11-06.md` |
 | VX-28 | The scenario as a unit (editor, tabs, casual chats need none) | MISSING | Part IX (title only) | NOT-YET-REJUDGED | - |
 | VX-29 | Scenario core settings (flow/style/template/bootstrap/narrator/flags) | MISSING | Part IX (title only) | NOT-YET-REJUDGED | - |
@@ -280,7 +312,7 @@ ST-56 is left to tranche 5.
 | VX-31 | Roles as named slots (templates/scripts reference roles, enable/silence by script) | MISSING | Part IX (title only) | NOT-YET-REJUDGED | - |
 | VX-32 | Bootstrap messages (authored typed opening lines) | MISSING | Part IX (title only) | NOT-YET-REJUDGED | - |
 | VX-33 | Parent scenarios (inheritance, shared script library) | MISSING | Part IX (title only) | NOT-YET-REJUDGED | - |
-| VX-34 | Flags & variables as the scenario state store (persist with chat) | HAVE-THIN | P-093; Part IX (title only) | NOT-YET-REJUDGED | - |
+| VX-34 | Flags & variables as the scenario state store (persist with chat) | HAVE-THIN | P-093; Part IX (title only) | HAVE | `src/runmal/plugins/variables.py`, `tests/test_p093_variables.py`, `docs/VARIABLES_STATE_API_2026-11-07.md` |
 | VX-35 | Events (timed/probability windows, max-fires, chaining) | MISSING | Part IX (title only) | NOT-YET-REJUDGED | - |
 | VX-36 | Actions vs tools (inference-pass actions vs mid-reply tools) | MISSING | Part IX (title only) | NOT-YET-REJUDGED | - |
 | VX-37 | Action layers, typed arguments, conditions | MISSING | Part IX (title only) | NOT-YET-REJUDGED | - |
@@ -288,7 +320,7 @@ ST-56 is left to tranche 5.
 | VX-39 | Buttons & controls as player input (two-way variable binding, HUD widgets) | MISSING | Part IX (title only) | NOT-YET-REJUDGED | - |
 | VX-40 | Contexts (conditional prompt sentences, runtime-set) | MISSING | Part IX (title only) | NOT-YET-REJUDGED | - |
 | VX-41 | Typed message taxonomy (char/user/role/event/story/note/secret/instructions; expiry) | HAVE-THIN | Part IX (title only) | NOT-YET-REJUDGED | - |
-| VX-42 | JavaScript scripting, sandboxed (ES-module scenario scripts) | DELIBERATELY-DIFFERENT | P-082 (the sandbox law); Part IX (title only) | NOT-YET-REJUDGED | - |
+| VX-42 | JavaScript scripting, sandboxed (ES-module scenario scripts) | DELIBERATELY-DIFFERENT | P-082 (the sandbox law); Part IX (title only) | SHIPPED-SOVEREIGN - the sovereign shape shipped in place of sandboxed JavaScript scenario scripting is data plus declared capabilities under the P-082 sandbox law (packs data-only, arbitrary-code scripting refused by design), with scenario logic rebuilt from declared events/actions/variables in Part IX banked on the same store; judged here under the keeper's Q3 ruling on its dedicated P-082 home, and P-231's end-to-end audit of the DELIBERATELY-DIFFERENT rows is expressly preserved | `docs/adr/0008-plugin-sandbox.md`, `tests/test_p082_plugin_sandbox.py`, `src/runmal/plugins/variables.py` |
 | VX-43 | Scriban templates everywhere (fields over user/char/flags/variables/now) | MISSING | Part IX (title only) | NOT-YET-REJUDGED | - |
 | VX-44 | Apps configured per scenario (host-app triggers) | MISSING | Part IX (title only) | NOT-YET-REJUDGED | - |
 | VX-45 | Visual-novel play (authored scenario as VN with voices/images) | MISSING | Part IX/X (titles only) | NOT-YET-REJUDGED | - |
@@ -297,7 +329,7 @@ ST-56 is left to tranche 5.
 | VX-48 | Portrait animation (still picture speaks with the voice) | MISSING | Part X (title only) | NOT-YET-REJUDGED | - |
 | VX-49 | Video & 3D avatars (MP4/AVIF, VRM popout) | MISSING | Part X (title only) | NOT-YET-REJUDGED | - |
 | VX-50 | Vision on request (screen/photo/webcam/folder watcher) | MISSING | Part VIII (title only) | NOT-YET-REJUDGED | - |
-| VX-51 | Image generation in the companion (`/imagine`, avatar defaults) | MISSING | P-087; Part X (title only) | NOT-YET-REJUDGED | - |
+| VX-51 | Image generation in the companion (`/imagine`, avatar defaults) | MISSING | P-087; Part X (title only) | HAVE-THIN - the /imagine command still missing (no imagine vocabulary exists anywhere in src/; generation is invoked through the citizen's service road, never by a chat command) and avatar defaults still missing (generation feeding avatar defaults is the row's Part X face and no avatar-default wiring exists in the P-087 citizen); image generation in the companion via its P-087 home - prompt-from-scene plus manual prompts as equals, local-first providers with honest road naming, per-chat opt-in, results landing as character assets - is proven; judged here once on its first home under the first-home rule | `src/runmal/plugins/image_generation.py`, `tests/test_p087_image_generation.py` |
 | VX-52 | Video generation (WAN-class, img→video, resumable jobs) | MISSING | Part X (title only) — flagged for P-014 | NOT-YET-REJUDGED | - |
 | VX-53 | Generation plumbing depth (ComfyUI/Diffusers backends, upscaler, LoRA panels) | MISSING | Part X (title only) — flagged for P-014 | NOT-YET-REJUDGED | - |
 | VX-54 | Workspaces (chat bound to a real folder; read/write/edit, run, launch) | MISSING | Part XI (title only) | NOT-YET-REJUDGED | - |
@@ -312,7 +344,7 @@ ST-56 is left to tranche 5.
 | VX-63 | Web UI phone-shaped (master-detail, cards, bottom sheets, step flows) | HAVE-THIN | P-011 kin | NOT-YET-REJUDGED | - |
 | VX-64 | Shared accounts (several sign-ins on one account, users management) | HAVE-THIN | NO HOME in defined parts — flagged for P-014 | NOT-YET-REJUDGED | - |
 | VX-65 | Chat Inspector (script log, flags/contexts views, hidden calls recorded) | MISSING | Part XIII (title only) | NOT-YET-REJUDGED | - |
-| VX-66 | Open extension surface (SDK, Python modules, MCP, API, scopes) | HAVE-THIN | P-081; Part XIII (title only) | NOT-YET-REJUDGED | - |
+| VX-66 | Open extension surface (SDK, Python modules, MCP, API, scopes) | HAVE-THIN | P-081; Part XIII (title only) | HAVE-THIN - an SDK as a packaged author surface still missing (no SDK package or external-author distribution exists; authorship is in-tree by design in v1) and MCP as an extension surface still missing (no MCP vocabulary exists in src/runmal/plugins/); Plugin API v1 as a documented, versioned author contract, Python modules as the citizen shape (sixteen citizens composed in one registry at the gate), and scopes as enforced data (declared capabilities plus permissions judged at registration, grant derivation that cannot widen) are proven | `docs/PLUGIN_API_V1_2026-11-07.md`, `src/runmal/plugins/api.py`, `tests/test_p081_plugin_api.py` |
 | VX-67 | Games, apps & bots (incl. Discord bot per channel) | HAVE-THIN | Part XIII (title only) | NOT-YET-REJUDGED | - |
 
 ## §4 Carried items
