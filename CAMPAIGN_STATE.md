@@ -20868,3 +20868,76 @@ P-162 BANKED - Character Face History
     scout to derive from the
     roadmap part text and what
     Part XIII still owes.
+    P-211 BANKED - Inspector
+    group reasoning census
+    (Part XIII, DERIVED). -
+    team-01 commit 8b654fa
+    merged (no-ff) into
+    yrsa/two-mirrors-build as
+    9e66e27 (parents 9d2fce7 +
+    8b654fa). Merge CLEAN - no
+    conflicts in any file. Scope:
+    the Inspector reasoning
+    coverage is completed with
+    the group-transcript join
+    named by P-210 as its own
+    document
+    (runmal-p211-inspector-
+    group-reasoning-v1 on GET
+    /inspector/groups/{group_id}/
+    reasoning), built from the
+    new list_group_reasoning
+    groupchat-store read whose
+    owned fence is banked
+    list_messages itself,
+    aggregating through banked
+    summarise_reasoning
+    unchanged, with a per-speaker
+    roll-up and per-message
+    entries carrying speaker
+    identity, one document-level
+    raw_road at the banked
+    transcript road, and no
+    thinking text and no message
+    content anywhere. Banked
+    census pins were restated in
+    the team commit at the merged
+    356 paths / 439 operations
+    truth, each with a P-211 heal
+    comment, including the two
+    structural road-set carriers
+    in p204/p205. NO migration;
+    head stays 0042. D1, the
+    stateless groupchat road
+    error-swallowing, stays FENCED
+    unchanged - NOT fixed by this
+    slice. Evidence (team-01
+    hidden_files/ P211_EVIDENCE.md
+    + logs): battery 15 passed;
+    neighbours fence 184 passed /
+    0 failed; team full suite
+    effective 6094 passed / 5
+    skipped / 0 failed (= 6079
+    banked at P-210 + 15 exact;
+    raw run 1 failed = the
+    test_s503_stt timing failure
+    under load, solo re-run of
+    the whole file 4 passed).
+    Banking: combined fence
+    re-run in the forge
+    (test_p211 + the thirteen
+    neighbour files) 199 passed;
+    forge confirmation full suite
+    6094 passed / 5 skipped /
+    0 failed, in 398.15s, exit 0 -
+    exact. Defects in banked
+    code: none found at banking.
+    Banked now P-001..P-211 + the
+    commissioned binding
+    depth/role slice. PART XIII
+    OPEN (P-203..P-218, gate
+    P-218). Next in roadmap order:
+    P-212 (Part XIII, DERIVED) -
+    scout to derive from the
+    roadmap part text and what
+    Part XIII still owes.
