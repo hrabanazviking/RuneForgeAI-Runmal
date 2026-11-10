@@ -69,9 +69,15 @@ TRANCHE10 = {
 }
 TRANCHE10_HAVE_THIN = {"VX-54"}
 TRANCHE10_MISSING = TRANCHE10 - TRANCHE10_HAVE_THIN
+TRANCHE11 = {
+    "VX-59", "VX-61",
+}
+TRANCHE11_HAVE_THIN = {"VX-61"}
+TRANCHE11_SHIPPED_SOVEREIGN = {"VX-59"}
 JUDGED8 = TRANCHE1 | TRANCHE2 | TRANCHE3 | TRANCHE4 | TRANCHE5 | TRANCHE6 | TRANCHE7 | TRANCHE8
 JUDGED9 = JUDGED8 | TRANCHE9
-JUDGED = JUDGED9 | TRANCHE10
+JUDGED10 = JUDGED9 | TRANCHE10
+JUDGED = JUDGED10 | TRANCHE11
 DD_ROWS = ("VX-01", "VX-42", "VX-59")
 CLOSING_TOKENS = {
     "HAVE", "HAVE-THIN", "MISSING", "SHIPPED-SOVEREIGN",
@@ -243,7 +249,13 @@ def test_09_section3_counts_equal_recount():
     assert got10 == _as_tuple(_counts(rows, TRANCHE10), len(TRANCHE10))
     label10 = "Cumulative judged counts [(]tranches 1, 2, 3, 4, 5, 6, 7, 8, 9 and 10[)]"
     gotc10 = _count_line(flat, label10)
-    assert gotc10 == _as_tuple(_counts(rows, JUDGED), len(JUDGED))
+    assert gotc10 == _as_tuple(_counts(rows, JUDGED10), len(JUDGED10))
+    # P-229 heal: restated to the cumulative tranches 1-11 truth.
+    got11 = _count_line(flat, "Tranche 11 closing counts")
+    assert got11 == _as_tuple(_counts(rows, TRANCHE11), len(TRANCHE11))
+    label11 = "Cumulative judged counts [(]tranches 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 and 11[)]"
+    gotc11 = _count_line(flat, label11)
+    assert gotc11 == _as_tuple(_counts(rows, JUDGED), len(JUDGED))
     remainder = sum(1 for rid, cells in rows.items()
                     if rid not in JUDGED
                     and cells[4] == "NOT-YET-REJUDGED")
@@ -257,10 +269,16 @@ def test_10_deliberately_different_rows_carry_disposition():
     rows = _rows(MATRIX)
     s4 = _section(text, "## " + S + "4")
     flat = " ".join(_section(text, "## " + S + "3").split())
-    for rid in ("VX-01", "VX-59"):
-        assert rows[rid][2] == "DELIBERATELY-DIFFERENT", rid
-        assert rows[rid][4] == "NOT-YET-REJUDGED", rid
-        assert rid in s4, rid
+    # P-229 heal class 5 (keeper class-5 grant, the P-223
+    # precedent): VX-59 restated per-row at greater strength
+    # to its exact Q2 SHIPPED-SOVEREIGN closing; VX-01 still
+    # NOT-YET-REJUDGED; VX-42 pin untouched below.
+    assert rows["VX-01"][2] == "DELIBERATELY-DIFFERENT"
+    assert rows["VX-01"][4] == "NOT-YET-REJUDGED"
+    assert "VX-01" in s4
+    assert rows["VX-59"][2] == "DELIBERATELY-DIFFERENT"
+    assert _closing_token(rows["VX-59"]) == "SHIPPED-SOVEREIGN"
+    assert "VX-59" in s4
     assert rows["VX-42"][2] == "DELIBERATELY-DIFFERENT"
     assert _closing_token(rows["VX-42"]) == "SHIPPED-SOVEREIGN"
     assert "VX-42" in s4
