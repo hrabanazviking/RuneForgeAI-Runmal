@@ -20508,3 +20508,69 @@ P-162 BANKED - Character Face History
     depth/role slice. PART XIII OPEN
     (P-203..P-218). Next in roadmap
     order: P-206 (Part XIII, DERIVED).
+    P-206 BANKED - Assistant View
+    (Part XIII, DERIVED). -
+    team-02 commit 9b38e4e merged
+    (no-ff) into yrsa/two-mirrors-build
+    as a790bde (parents 1fcc1da +
+    9b38e4e). Merge CLEAN - no
+    conflicts in any file. Scope:
+    the P-205 reasoning record is
+    now rendered in the chat web
+    surface, UI-only: pure
+    reasoningView view-model in
+    renderer.js (recorded +
+    non-empty text -> recorded model;
+    not_present / not_recorded /
+    unknown -> three distinct honest
+    status lines, no text; anything
+    unrecognised -> the unknown
+    model; never throws) and
+    reasoningPanel in app.js
+    (recorded: native details
+    element, collapsed by default,
+    summary Thinking, text via
+    textContent ONLY; status lines
+    via textContent), appendMessage
+    gains one trailing reasoning
+    parameter, renderThread passes
+    m.reasoning || null.
+    streamGeneration byte-untouched.
+    Keeper ruling baked into the
+    slice: STORED-ONLY rendering -
+    the view renders the stored
+    record at thread read time only,
+    does NOT render or claim live
+    thinking, and does NOT buffer
+    SSE reasoning. NO migration;
+    head stays 0042. Evidence
+    (team-02 hidden_files/
+    P206_EVIDENCE.md + logs): battery
+    18 passed; neighbours fence 63
+    passed / 0 failed; team full
+    suite 6015 passed / 5 skipped /
+    0 failed (= 5997 banked at P-205
+    + 18 exact). Banking: forge
+    confirmation full suite 6015
+    passed / 5 skipped / 0 failed,
+    exit 0, in 399.44s - exact, no
+    contention failure fired, no
+    test_s503 solo re-run needed.
+    One in-slice battery defect (pin
+    15 tripping on words in the
+    reasoningPanel comment) was fixed
+    in-slice by rewording the comment;
+    the pin was NOT weakened.
+    Defects in banked code: none.
+    Honest limitation: replies from
+    the web /generate road show
+    Thinking was not recorded on
+    re-read, as that road does not
+    store reasoning; live wiring is
+    a later slice of its own if
+    Volmarr wants it. Banked now
+    P-001..P-206 + the commissioned
+    binding depth/role slice. PART
+    XIII OPEN (P-203..P-218). Next in
+    roadmap order: P-207 (Part XIII,
+    DERIVED).
