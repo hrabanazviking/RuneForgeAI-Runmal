@@ -20719,3 +20719,91 @@ P-162 BANKED - Character Face History
     DERIVED) - scout to derive its
     exact scope from the roadmap
     and the reasoning-debt trail.
+    P-209 BANKED - Swipe and web
+    /generate reasoning wiring
+    (Part XIII, DERIVED). - team-02
+    commit bd45a35 merged (no-ff)
+    into yrsa/two-mirrors-build as
+    572129e (parents e90f4f2 +
+    bd45a35). Merge CLEAN - no
+    conflicts in any file. Scope:
+    the last two reasoning debts
+    from the P-205 trail are now
+    wired. Swipes: add_swipe gains
+    a reasoning= param, strict-
+    validated by build_document
+    before any store write, so a
+    generated alternate lands its
+    record instead of the
+    unconditional not_recorded
+    stamp (the stamp stays
+    byte-identical when no record
+    is supplied); ReasoningIn
+    rides on both REST bodies
+    (MessageCreate and
+    SwipeCreate), strict-built
+    server-side by build_record.
+    Web /generate: streamGeneration
+    collects the reasoning events
+    in arrival order and attaches
+    the record to its existing
+    single append POST - collection
+    for storage only, under the
+    keeper ruling that the P-206
+    stored-only rule governs
+    rendering: nothing renders
+    live, and the Assistant View
+    panel reads only the stored
+    record. One heal rode in the
+    team commit: P-206 test_16
+    restated at equal-or-greater
+    strength (collector present
+    AND no live rendering in the
+    stream path). NO migration;
+    head stays 0042. Route census
+    unchanged 354 paths / 437
+    operations. D1, the stateless
+    groupchat road error-
+    swallowing, stays FENCED
+    unchanged - NOT fixed by this
+    slice. Evidence (team-02
+    hidden_files/ P209_EVIDENCE.md
+    + logs): battery 16 passed;
+    neighbours fence 163 passed /
+    0 failed; team full suite
+    6065 passed / 5 skipped /
+    0 failed, exit 0 (= 6049
+    banked at P-208 + 16 exact,
+    no contention failure fired).
+    Banking: combined batteries
+    re-run in the forge (test_p209
+    + test_p206) 34 passed; forge
+    confirmation full suite 6065
+    passed / 5 skipped / 0 failed,
+    in 409.55s - exact. Defects in
+    banked code: none (the one
+    defect found during the build
+    was a spelling flaw in the
+    slice's own new test pin,
+    fixed in-slice before
+    banking). Carried limitations:
+    the P-207 carried items stand
+    unchanged (extend onto a
+    legacy / manual / imported
+    swipe drops the extension
+    generation thinking BY DESIGN;
+    impersonate reasoning stays
+    draft-only); D1 fenced as
+    above; the reasoning trail
+    named at P-205 is now fully
+    wired. Banked now
+    P-001..P-209 + the commissioned
+    binding depth/role slice. PART
+    XIII OPEN (P-203..P-218, gate
+    P-218). Next in roadmap order:
+    P-210 (Part XIII, DERIVED) -
+    scout to derive from the
+    roadmap part text and what
+    Part XIII still owes (Inspector
+    & Bots territory beyond the
+    reasoning trail).
