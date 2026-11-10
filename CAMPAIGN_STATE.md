@@ -21613,3 +21613,96 @@ P-162 BANKED - Character Face History
     roadmap order (P-219..P-232,
     The Proof Spine - the parity
     matrix, published).
+    P-219 BANKED - The parity
+    matrix, founded (Part XIV,
+    The Proof Spine, opening
+    slice; scope DERIVED - the
+    roadmap gives Part XIV only
+    its part-table line,
+    P-219..P-232, plus founding
+    principle 4). - team-01
+    commit 214a402 merged (no-
+    ff) into yrsa/two-mirrors-
+    build as c588c9ba5015966e23c
+    00c92317d624ae940b169
+    (parents c8a054d + 214a402).
+    Merge CLEAN - 3 files,
+    +471/-0: docs/PARITY_MATRIX_
+    2026-11-10.md founded, tests
+    /test_p219_parity_matrix.py
+    (16 tests), docs/CLEAN_ROOM_
+    LOG_2026-10-30.md +1 headed
+    P-219 entry exactly once.
+    Scope: the published parity
+    matrix founded - the full
+    141-row universe from the
+    P-004 Delta Table
+    (ST-01..ST-74, VX-01..VX-67)
+    with opening verdicts and
+    road homes verbatim; closing
+    judgements for tranche 1
+    only (the twelve rows whose
+    road home was Part II): HAVE
+    2 / HAVE-THIN 10 / MISSING 0
+    / SHIPPED-SOVEREIGN 0; the
+    remaining 129 rows printed
+    NOT-YET-REJUDGED, the
+    absence of judgement stated,
+    never hidden. NO src change,
+    NO new road, NO migration;
+    head stays 0042. Route
+    census stays 356 paths / 439
+    operations. Evidence
+    (team-01 hidden_files/P219_E
+    VIDENCE.md + logs): battery
+    16 passed; neighbours fence
+    101 passed; team full suite
+    6239 passed / 5 skipped / 0
+    failed (= 6223 banked at
+    P-218 + 16 exact). Banking:
+    combined fence on the merged
+    tree 117 passed / 0 failed
+    (= 16 + 101 exact); forge
+    confirmation full suite raw
+    1 failed / 6238 passed / 5
+    skipped in 445.09s - the
+    sole failure tests/test_p099
+    _failure_manners.py::test_sa
+    ndbox_bridge_partial_then_mo
+    re, the established sandbox
+    contention class under
+    shared load (a Mythic Coder
+    suite ran concurrently),
+    solo re-run 1 passed in
+    1.13s, exit 0 - effective
+    forge confirmation 6239
+    passed / 5 skipped / 0
+    failed (logs forge hidden_fi
+    les/P219_FORGE_FULL.log +
+    P219_P099_SOLO.log). The
+    tranche-1 HAVE-THIN still-
+    missing depths are recorded
+    as keeper findings in
+    team-01 hidden_files/P219_EV
+    IDENCE.md; none folded into
+    this slice. Carried items
+    unchanged: D1 stateless SSE
+    error-swallowing FENCED,
+    ruling outstanding; per-
+    swipe thinking browsing
+    DECLINED-PENDING-WORD; K-A
+    binding label update, K-B
+    retention / bulk clear and
+    K-C unified-search history
+    NAMED OPEN. Defects in
+    banked code: none found at
+    banking. Banked now
+    P-001..P-219 + the
+    commissioned binding
+    depth/role slice. PART XIV
+    OPEN (P-219..P-232, gate
+    P-232). Next in roadmap
+    order: P-220 - parity matrix
+    tranche 2, the rows whose
+    road home was Part III, re-
+    judged.
