@@ -23067,3 +23067,167 @@ P-162 BANKED - Character Face History
     judged (ST-55/VX-07/VX-
     65/VX-67; scout in
     rotation team-03).
+    P-230 BANKED - Parity
+    matrix tranche 12 (Part
+    XIV, The Proof Spine;
+    scope DERIVED - the
+    roadmap gives Part XIV
+    only its part-table
+    line, P-219..P-232, plus
+    founding principle 4).
+    - team-03 commit
+    881cb8e49f1a441f32fca58a0699011b3d55eb88
+    merged (no-ff) into
+    yrsa/two-mirrors-build as
+    6e459b53f636c9a7a8c1a8b02b35b7a46e860785
+    (parents dbc6a31 +
+    881cb8e). Merge CLEAN -
+    14 files:
+    docs/PARITY_MATRIX_2026-11-10.md
+    tranche 12 judged, docs/
+    CLEAN_ROOM_LOG_2026-10-
+    30.md +1 headed P-230
+    entry,
+    tests/test_p230_parity_matrix.py
+    NEW (18 tests),
+    tests/test_p219_parity_matrix.py
+    through
+    tests/test_p229_parity_matrix.py
+    healed (class 1 only).
+    Scope: tranche 12 FINAL
+    closing judgement for
+    the 4 rows whose road
+    home was Part XIII, under
+    the keeper rulings Q1/Q2
+    (Q1: ST-55 = MISSING;
+    Q2: VX-65 = HAVE-THIN;
+    unbranched: VX-07 =
+    MISSING, VX-67 =
+    HAVE-THIN): HAVE 0 /
+    HAVE-THIN 2 (VX-65,
+    VX-67) / MISSING 2
+    (ST-55, VX-07) /
+    SHIPPED-SOVEREIGN 0.
+    Tranche 12 is the last
+    home tranche; the 30-row
+    remainder (dash / NO-HOME
+    / ledger) stands for
+    P-231 reconciliation,
+    untouched here.
+    Cumulative judged 111
+    rows: HAVE 14 / HAVE-
+    THIN 65 / MISSING 30 /
+    SHIPPED-SOVEREIGN 2; the
+    remaining 30 rows
+    printed NOT-YET-
+    REJUDGED.
+    Heals (class 1 only,
+    each marked in-file):
+    Class 1 - the standing
+    cumulative restatement,
+    marked "P-230 heal": all
+    eleven prior batteries
+    (test_p219..test_p229) -
+    TRANCHE12 constants
+    added; JUDGED extended
+    with TRANCHE12 (JUDGED11
+    intermediate where the
+    file chain required it);
+    counts pins restated to
+    the cumulative tranches
+    1-12 truth (tranche-12
+    closing line +
+    cumulative 1-12 line
+    pinned; the cumulative
+    1-11 line re-pinned
+    against the JUDGED11
+    subset at equal
+    strength); remainder
+    assertions 34 -> 30
+    where the file carried
+    an explicit figure.
+    Class 5: none - no
+    tranche-12 row is
+    opening DELIBERATELY-
+    DIFFERENT, no class-5
+    grant given; no pin 10
+    (DD disposition) failure
+    fired in any prior
+    battery. Pre-heal run of
+    the eleven prior
+    batteries: 21 failed,
+    all failures inside
+    class 1 only (pin 6 in
+    test_p219..test_p229,
+    pin 9 in
+    test_p220..test_p229);
+    post-heal battery +
+    healed priors = 214
+    passed (18 + 196).
+    Class 2: none (no
+    branch-only prior text
+    names a tranche-12 row).
+    Class 3: none.
+    Class 4: clean-room log
+    +1 headed P-230 entry
+    exactly once, additive
+    only.
+    NO src change, NO
+    migration; head stays
+    0042. Route census stays
+    356 paths / 439
+    operations.
+    Evidence (team-03 hidden
+    _files/P230_EVIDENCE.md
+    + logs): battery 18
+    passed; neighbours fence
+    595 passed; combined 613
+    passed; team full suite
+    6437 passed / 5 skipped
+    / 0 failed (= 6419 base
+    passed + 18 new, exact;
+    no timing-class failure
+    occurred, no solo re-run
+    needed; 438.87s, exit
+    0).
+    Banking: combined fence
+    on the merged tree 613
+    passed / 0 failed (= 18
+    new + 595 neighbours
+    exact; run at banking,
+    log forge hidden_files/P
+    230_COMBINED.log,
+    93.11s); forge
+    confirmation full suite
+    6437 passed / 5 skipped
+    / 0 failed in 439.54s,
+    exit 0 - exact, no solo
+    re-run needed (log forge
+    hidden_files/P230_FORGE_
+    FULL.log).
+    Carried items unchanged:
+    D1 stateless SSE error-
+    swallowing FENCED,
+    ruling outstanding; per-
+    swipe thinking browsing
+    DECLINED-PENDING-WORD;
+    K-A binding label
+    update, K-B retention /
+    bulk clear and K-C
+    unified-search history
+    NAMED OPEN. Defects in
+    banked code: none found
+    at banking. Banked now
+    P-001..P-230 + the
+    commissioned binding
+    depth/role slice. PART
+    XIV OPEN (P-219..P-232,
+    gate P-232). Next in
+    roadmap order: P-231 -
+    parity matrix
+    reconciliation tranche,
+    the 30-row remainder
+    (dash / NO-HOME /
+    ledger) re-judged;
+    scout in rotation
+    team-01.
