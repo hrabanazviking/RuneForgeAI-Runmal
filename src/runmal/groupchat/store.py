@@ -19,6 +19,7 @@ from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.chats import provenance as prov_mod
+from runmal.chats import reasoning as reasoning_mod
 from runmal.characters.service import get_character
 from runmal.db.models import Character, Chat, ChatEvent, Group, GroupMember, Message
 from runmal.groupchat.policies import get_policy
@@ -64,6 +65,8 @@ def message_to_dict(message: Message) -> dict:
         "speaker_id": message.speaker_id,
         "speaker_name": message.speaker_name,
         "provenance": prov_mod.active_view(
+            message, getattr(message, "swipe_id", 0) or 0),
+        "reasoning": reasoning_mod.active_view(
             message, getattr(message, "swipe_id", 0) or 0),
         "created_at": message.created_at.isoformat(),
         "updated_at": message.updated_at.isoformat() if message.updated_at else None,
@@ -269,6 +272,7 @@ async def append_message(
     content: str,
     *,
     provenance: dict | None = None,
+    reasoning: dict | None = None,
 ) -> Message | None:
     """Append a transcript message with explicit speaker identity.
 
@@ -308,6 +312,10 @@ async def append_message(
         speaker_name=speaker_name,
         provenance_json=prov_mod.dump_document(
             prov_mod.build_document(provenance)),
+        reasoning_json=reasoning_mod.dump_document(
+            reasoning_mod.build_document(
+                reasoning if reasoning is not None
+                else reasoning_mod.not_recorded_record())),
     )
     session.add(message)
     await session.flush()
