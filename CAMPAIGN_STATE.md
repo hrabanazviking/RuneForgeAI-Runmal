@@ -22439,3 +22439,141 @@ P-162 BANKED - Character Face History
     IX, re-judged (VX-43's home
     tranche; scout in rotation
     team-02).
+    P-226 BANKED - Parity
+    matrix tranche 8 (Part XIV,
+    The Proof Spine; scope
+    DERIVED - the roadmap gives
+    Part XIV only its part-
+    table line, P-219..P-232,
+    plus founding principle 4).
+    - team-02 commit 2b2972c
+    merged (no-ff) into
+    yrsa/two-mirrors-build as
+    5ca649953bb25f4d57013add56
+    94edc129cdd1b4 (parents
+    a39920c + 2b2972c). Merge
+    CLEAN - 10 files:
+    docs/PARITY_MATRIX_2026-11-
+    10.md tranche 8 judged,
+    docs/CLEAN_ROOM_LOG_2026-
+    10-30.md +1 headed P-226
+    entry, tests/test_p226_
+    parity_matrix.py NEW (18
+    tests), tests/test_p219_
+    parity_matrix.py through
+    tests/test_p225_parity_
+    matrix.py healed (classes
+    1 + 2 only).
+    Scope: tranche 8 closing
+    judgement for the 23 rows
+    whose road home was Part
+    IX, under the keeper
+    rulings Q1-Q4 (VX-02 and
+    VX-05 judged HAVE-THIN in
+    tranche 8; VX-17 and VX-45
+    judged MISSING in tranche
+    8 under the first-home
+    rule; VX-08 HAVE-THIN per
+    the adopted design
+    proposal): HAVE 1 (VX-32)
+    / HAVE-THIN 7 (VX-02,
+    VX-05, VX-08, VX-28, VX-29,
+    VX-31, VX-41) / MISSING 15
+    (VX-13, VX-17, VX-30,
+    VX-33, VX-35, VX-36, VX-37,
+    VX-38, VX-39, VX-40, VX-43,
+    VX-44, VX-45, VX-46, VX-47)
+    / SHIPPED-SOVEREIGN 0. The
+    still-missing depth is
+    named in every HAVE-THIN
+    closing cell, and every
+    MISSING cell states the
+    absent engine behaviour
+    (Part IX built the scenario
+    data world; its gate item
+    K5 records runtime /
+    condition evaluation as
+    absent absolutely).
+    Cumulative judged 96 rows:
+    HAVE 14 / HAVE-THIN 61 /
+    MISSING 20 / SHIPPED-
+    SOVEREIGN 1; the remaining
+    45 rows printed NOT-YET-
+    REJUDGED.
+    Heals (classes 1 + 2 only,
+    the standing cumulative
+    restatement, each marked
+    "P-226 heal" in-file):
+    pre-heal failures exactly
+    13 (p219 pin 6; p220-p225
+    pins 6/9) - JUDGED sets
+    extended with TRANCHE8,
+    the tranches 1-7 lines
+    re-pinned against the
+    judged7 subset recounts,
+    tranche-8 + cumulative 1-8
+    stages added against the
+    full JUDGED recount; class
+    2: the four ruled-in rows
+    (VX-02, VX-05, VX-17,
+    VX-45) leave the not-yet-
+    rejudged set inside the
+    same marked restatement,
+    never silently. No heal
+    class 5 event (no
+    DELIBERATELY-DIFFERENT row
+    in tranche 8; VX-42's
+    SHIPPED-SOVEREIGN
+    disposition pin carried
+    unchanged in substance).
+    NO src change, NO
+    migration; head stays 0042.
+    Route census stays 356
+    paths / 439 operations.
+    Evidence (team-02 hidden_
+    files/P226_EVIDENCE.md +
+    logs): battery 18 passed;
+    neighbours fence 454
+    passed; combined 472
+    passed; team full suite
+    6365 passed / 5 skipped /
+    0 failed in 693.70s, exit
+    0 (= 6347 base passed + 18
+    new, exact; the timing-
+    class s503 STT contract
+    test PASSED in this run).
+    Banking: combined fence on
+    the merged tree 472 passed
+    / 0 failed (= 18 new + 454
+    neighbours exact; run at
+    banking, log forge hidden_
+    files/P226_COMBINED.log);
+    forge confirmation full
+    suite 6365 passed / 5
+    skipped / 0 failed in
+    424.51s, exit 0 - exact, no
+    solo re-run needed (log
+    forge hidden_files/
+    P226_FORGE_FULL.log).
+    Carried items unchanged:
+    D1 stateless SSE error-
+    swallowing FENCED, ruling
+    outstanding; per-swipe
+    thinking browsing DECLINED-
+    PENDING-WORD; K-A binding
+    label update, K-B retention
+    / bulk clear and K-C
+    unified-search history
+    NAMED OPEN. Defects in
+    banked code: none found at
+    banking. Banked now
+    P-001..P-226 + the
+    commissioned binding
+    depth/role slice. PART XIV
+    OPEN (P-219..P-232, gate
+    P-232). Next in roadmap
+    order: P-227 - parity
+    matrix tranche 9, the rows
+    whose road home was Part
+    X, re-judged (scout in
+    rotation team-03).
