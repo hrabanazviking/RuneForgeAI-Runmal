@@ -21006,3 +21006,87 @@ P-162 BANKED - Character Face History
     from the roadmap part text
     and what Part XIII still
     owes.
+    P-213 BANKED - Persistent-
+    group transcript loader
+    (Part XIII, DERIVED). -
+    team-03 commit f4e3527
+    merged (no-ff) into
+    yrsa/two-mirrors-build as
+    b133d31 (parents ef2a396 +
+    f4e3527). Merge CLEAN - no
+    conflicts in any file.
+    Scope: Persistent-group
+    transcript loader - the
+    group page gains a Saved
+    groups picker (select#
+    saved-group plus button#
+    open-group) fed by the
+    banked GET /groups list
+    road, and openSavedGroup
+    loads the banked GET
+    /groups/{id}/messages
+    transcript road and renders
+    each stored message via the
+    existing addBubble, with
+    the group-local
+    reasoningPanel built from
+    the banked reasoningView
+    model, called unchanged,
+    over the stored active
+    reasoning view - textContent
+    only, collapsed details.
+    DISPLAY-ONLY by design:
+    fetched messages never
+    enter the stateless history
+    state, never join
+    sentHistory, are never sent
+    back, and nothing is
+    persisted client-side. The
+    S311 group golden was
+    regenerated deliberately
+    by its own prescribed road
+    for exactly the picker's
+    two added signature lines,
+    no other golden moving - a
+    by-design pin movement of
+    the slice's own change, not
+    a defect. NO migration;
+    head stays 0042. Route
+    census stays 356 paths /
+    439 operations with ZERO
+    census heals in this slice.
+    D1, the stateless groupchat
+    road error-swallowing,
+    stays FENCED unchanged -
+    NOT fixed by this slice.
+    Evidence (team-03
+    hidden_files/P213_EVIDENCE
+    .md + logs): battery 14
+    passed; neighbours fence
+    123 passed / 0 failed;
+    S311 golden watch 3 passed;
+    team full suite 6122
+    passed / 5 skipped / 0
+    failed in 429.88s, exit 0
+    (= 6108 banked at P-212 +
+    14 exact). Banking:
+    combined fence re-run in
+    the forge (test_p213 + the
+    eight neighbour files +
+    the S311 file) 140 passed;
+    forge confirmation full
+    suite 6122 passed / 5
+    skipped / 0 failed, in
+    406.68s, exit 0 - exact.
+    Defects in banked code:
+    none found at banking.
+    Banked now P-001..P-213 +
+    the commissioned binding
+    depth/role slice. PART
+    XIII OPEN (P-203..P-218,
+    gate P-218). Next in
+    roadmap order: P-214 (Part
+    XIII, DERIVED) - scout to
+    derive from the roadmap
+    part text and what Part
+    XIII still owes.
