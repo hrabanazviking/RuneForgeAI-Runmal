@@ -171,6 +171,39 @@ function selectedIds() {
     .map((b) => b.value);
 }
 
+async function createGroup() {
+  // P-216: the web's one creation act for saved groups,
+  // founding the missing piece of the P-213..P-215 arc on
+  // the banked creation road: the picker could list saved
+  // groups, the composer could speak into one, and the
+  // mode toggle could leave one - but no web surface could
+  // bring one into existence. The members are the roster
+  // boxes ticked at click time, read through the existing
+  // selectedIds helper - the same selection the stateless
+  // room speaks with; no second member picker is founded.
+  // A trimmed-empty name creates nothing and surfaces the
+  // error banner: the picker labels groups by name, so the
+  // name is the one input only the user can supply. On
+  // success the picker is rebuilt from the list road and
+  // the new group is SELECTED, never opened - creation
+  // enters no mode; Open remains the one mode-entry act
+  // and Close/reload the exit (the P-215 discipline). On
+  // failure the error surfaces via showError and the name
+  // input, the picker, the thread and every mode/composer
+  // state are left exactly as they were.
+  const name = $("new-group-name").value.trim();
+  if (!name) { showError("Give the new group a name first."); return; }
+  try {
+    const group = await (await api("/api/v1/groups", {
+      method: "POST",
+      body: JSON.stringify({ name: name, member_character_ids: selectedIds() }),
+    })).json();
+    $("new-group-name").value = "";
+    await loadSavedGroups();
+    $("saved-group").value = group.id;
+  } catch (err) { showError(String(err)); }
+}
+
 async function sendPersistent(text) {
   // P-214: one persistent turn on the opened group through
   // the banked next-turn road. The group itself chooses
@@ -291,5 +324,8 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   $("close-group").addEventListener("click", () => {
     closeSavedGroup();
+  });
+  $("create-group").addEventListener("click", () => {
+    createGroup();
   });
 });

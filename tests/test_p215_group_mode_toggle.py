@@ -320,12 +320,19 @@ def test_14_head_and_exact_control_census(tmp_path, monkeypatch):
     import runmal.db.migrations as migrations_pkg
     names = os.listdir(os.path.dirname(migrations_pkg.__file__))
     assert not any(name.startswith("m0043") for name in names)
+    # P-216 heal (named in advance in the P-216 design,
+    # section 5): the exact census is restated in its true
+    # P-216 form - every prior id PLUS the two ids P-216
+    # adds by design (new-group-name, create-group), no
+    # others - at equal strength; the P-216 battery pin 14
+    # asserts this same census.
     html = GROUP_HTML.read_text()
     ids = set(re.findall(r'id="([^"]+)"', html))
     assert ids == {
         "group-main", "error-banner", "error-text",
         "error-dismiss", "group-layout", "saved-group",
-        "open-group", "close-group", "group-mode", "roster",
+        "open-group", "close-group", "group-mode",
+        "new-group-name", "create-group", "roster",
         "strategy", "group-thread", "group-form", "group-input",
         "palette", "palette-card", "palette-input", "palette-list",
     }
