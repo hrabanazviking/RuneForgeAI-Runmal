@@ -34,6 +34,10 @@ TRANCHE3 = {
     "ST-33", "ST-35", "ST-36", "ST-38", "ST-39", "ST-74",
     "VX-16", "VX-18",
 }
+TRANCHE4 = {
+    "ST-07", "ST-13", "ST-14", "ST-46", "ST-47", "ST-48",
+    "ST-49", "ST-50", "ST-51", "ST-53", "ST-60", "VX-06",
+}
 DD_ROWS = ("VX-01", "VX-42", "VX-59")
 CLOSING_TOKENS = {
     "HAVE", "HAVE-THIN", "MISSING", "SHIPPED-SOVEREIGN",
@@ -130,7 +134,7 @@ def test_05_tranche2_rows_carry_closing_verdicts():
 
 def test_06_rows_outside_tranches_exactly_not_yet_rejudged():
     rows = _rows(MATRIX)
-    judged = TRANCHE1 | TRANCHE2 | TRANCHE3
+    judged = TRANCHE1 | TRANCHE2 | TRANCHE3 | TRANCHE4
     for rid, cells in rows.items():
         if rid in judged:
             continue
@@ -158,7 +162,7 @@ def test_07_tranche1_rows_identical_to_founding_text():
 
 def test_08_closing_evidence_citations_resolve():
     rows = _rows(MATRIX)
-    for rid in TRANCHE1 | TRANCHE2 | TRANCHE3:
+    for rid in TRANCHE1 | TRANCHE2 | TRANCHE3 | TRANCHE4:
         cites = re.findall("`([^`]+)`", rows[rid][5])
         assert cites, rid
         for cite in cites:
@@ -181,6 +185,12 @@ def test_09_section3_counts_equal_recount():
     assert gotc3 == _as_tuple(_counts(rows, judged), len(judged))
     got3 = _count_line(flat, "Tranche 3 closing counts")
     assert got3 == _as_tuple(_counts(rows, TRANCHE3), len(TRANCHE3))
+    got4 = _count_line(flat, "Tranche 4 closing counts")
+    assert got4 == _as_tuple(_counts(rows, TRANCHE4), len(TRANCHE4))
+    label4 = "Cumulative judged counts [(]tranches 1, 2, 3 and 4[)]"
+    judged = TRANCHE1 | TRANCHE2 | TRANCHE3 | TRANCHE4
+    gotc4 = _count_line(flat, label4)
+    assert gotc4 == _as_tuple(_counts(rows, judged), len(judged))
     remainder = sum(1 for rid, cells in rows.items()
                     if rid not in judged
                     and cells[4] == "NOT-YET-REJUDGED")

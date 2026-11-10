@@ -28,7 +28,11 @@ TRANCHE3 = {
     "ST-33", "ST-35", "ST-36", "ST-38", "ST-39", "ST-74",
     "VX-16", "VX-18",
 }
-JUDGED = TRANCHE1 | TRANCHE2 | TRANCHE3
+TRANCHE4 = {
+    "ST-07", "ST-13", "ST-14", "ST-46", "ST-47", "ST-48",
+    "ST-49", "ST-50", "ST-51", "ST-53", "ST-60", "VX-06",
+}
+JUDGED = TRANCHE1 | TRANCHE2 | TRANCHE3 | TRANCHE4
 DD_ROWS = ("VX-01", "VX-42", "VX-59")
 CLOSING_TOKENS = {
     "HAVE", "HAVE-THIN", "MISSING", "SHIPPED-SOVEREIGN",
@@ -127,7 +131,7 @@ def test_08_section3_counts_equal_recount():
     text = MATRIX.read_text(encoding="utf-8")
     flat = " ".join(_section(text, "## \u00a73").split())
     m = re.search(
-        r"Cumulative judged counts \(tranches 1, 2 and 3\): HAVE (\d+), "
+        r"Cumulative judged counts \(tranches 1, 2, 3 and 4\): HAVE (\d+), "
         r"HAVE-THIN (\d+), MISSING (\d+), SHIPPED-SOVEREIGN (\d+), "
         r"NOT-YET-REJUDGED (\d+), of (\d+) rows\.", flat)
     assert m, flat

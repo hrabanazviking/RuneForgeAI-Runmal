@@ -35,6 +35,10 @@ route census 356/439, suite 6239 passed / 5 skipped /
 4503bb1 (the P-220 banking record), migration head 0042,
 route census 356/439, suite 6257 passed / 5 skipped /
 0 failed at P-221 opening.
+- Tranche note (P-222): base truth at P-222 opening: HEAD
+8e792a1 (the P-221 banking record), migration head 0042,
+route census 356/439, suite 6275 passed / 5 skipped /
+0 failed at P-222 opening.
 - Evidence rule (P-001's handover rule, kept by P-004): every
 closing verdict cites a proving test file or banked slice
 doc in THIS repo; citations must resolve to real paths. No
@@ -71,7 +75,8 @@ A sketch, labelled a sketch and re-derived per slice:
 P-219 founding (this slice; tranche 1 = Part II rows);
 P-220 judged (tranche 2 = Part III rows,
 10 rows); P-221 judged (tranche 3 = Part IV rows,
-14 rows); P-222 Part V; P-223 Part VI;
+14 rows); P-222 judged (tranche 4 = Part V rows,
+12 rows); P-223 Part VI;
 P-224 Part VII; P-225 Part VIII; P-226 Part IX; P-227
 Part X; P-228 Part XI; P-229 Part XII; P-230 Part XIII;
 P-231 reconciliation (whole-matrix mechanical recount, the
@@ -101,6 +106,10 @@ Tranche 3 closing counts: HAVE 2, HAVE-THIN 10,
 MISSING 2, SHIPPED-SOVEREIGN 0, NOT-YET-REJUDGED 0,
 of 14 rows.
 
+Tranche 4 closing counts: HAVE 5, HAVE-THIN 6,
+MISSING 1, SHIPPED-SOVEREIGN 0, NOT-YET-REJUDGED 0,
+of 12 rows.
+
 Cumulative judged counts (tranches 1 and 2): HAVE 4,
 HAVE-THIN 17, MISSING 1, SHIPPED-SOVEREIGN 0,
 NOT-YET-REJUDGED 0, of 22 rows.
@@ -109,7 +118,11 @@ Cumulative judged counts (tranches 1, 2 and 3): HAVE 6,
 HAVE-THIN 27, MISSING 3, SHIPPED-SOVEREIGN 0,
 NOT-YET-REJUDGED 0, of 36 rows.
 
-Unjudged remainder: 105 rows NOT-YET-REJUDGED.
+Cumulative judged counts (tranches 1, 2, 3 and 4): HAVE 11,
+HAVE-THIN 33, MISSING 4, SHIPPED-SOVEREIGN 0,
+NOT-YET-REJUDGED 0, of 48 rows.
+
+Unjudged remainder: 93 rows NOT-YET-REJUDGED.
 
 Tranche 2 note (P-220): the rows judged in tranche 2 are
 ST-15, ST-16, ST-17, ST-18, ST-20, ST-22, ST-23, ST-25,
@@ -139,6 +152,18 @@ tranche 1; ST-41 is left to reconciliation (P-231);
 ST-40 was dropped by the P-014 gate and is named in
 ST-74's cell.
 
+Tranche 4 note (P-222): the rows judged in tranche 4 are
+ST-07, ST-13, ST-14, ST-46, ST-47, ST-48, ST-49, ST-50,
+ST-51, ST-53, ST-60, VX-06. Borderline
+dispositions: ST-50 is judged in tranche 4
+under the keeper's Q1 ruling (the banked P-014
+gate homed ST-50 as explicit scope of P-068 and
+the scope was not built there); ST-53 is confirmed to the Part V tranche;
+ST-11 is left to reconciliation (P-231); ST-12 is left
+to reconciliation (P-231); ST-52 is left to reconciliation
+(P-231); ST-54 was already judged in tranche 1;
+ST-56 is left to tranche 5.
+
 ## Table A - SillyTavern rows (P-002) at the close
 
 | # | Feature (short) | Opening verdict | Road home | Closing verdict | Evidence |
@@ -149,14 +174,14 @@ ST-74's cell.
 | ST-04 | Card editing depth (stats, favourite, duplicate, gallery) | HAVE-THIN | P-023, P-024, P-025 | HAVE-THIN - per-card usage stats still not proven; favourite toggle, duplicate/version handling and card assets/gallery are proven | `tests/test_p024_library_organisation.py`, `tests/test_p025_character_versions.py`, `tests/test_p023_card_assets.py` |
 | ST-05 | Extended card ops (link lore, scenario override, convert, rename-relink, source link, replace) | HAVE-THIN | Part II (P-015–P-019, P-025, P-029) | HAVE-THIN - convert character/persona and rename-relink not proven; lorebook link, scenario carriage, source/provenance and replace-as-version are proven | `tests/test_p029_provenance_on_import.py`, `tests/test_p025_character_versions.py`, `tests/test_p026_scenario_interop.py`, `docs/CHARACTER_BOOK_BINDING_2026-11-06.md` |
 | ST-06 | Advanced definitions (prompt overrides, creator metadata, char note depth/role, talkativeness) | HAVE-THIN | Part IV (P-049, P-057) | HAVE-THIN - a character note injected at a selectable depth and role as a card citizen still missing (no card field carries it; depth/role note injection exists only as the per-chat author's note, P-056, a different citizen); per-card prompt overrides, creator metadata and talkativeness through group speaker policies are proven | `src/runmal/cards/models.py`, `src/runmal/prompt/post_history.py`, `src/runmal/prompt/authors_note.py`, `src/runmal/groupchat/policies.py` |
-| ST-07 | Alternate greetings | HAVE-THIN | P-079 | NOT-YET-REJUDGED | - |
+| ST-07 | Alternate greetings | HAVE-THIN | P-079 | HAVE | `src/runmal/chats/greetings.py`, `src/runmal/chats/service.py`, `tests/test_p079_greeting_controls.py` |
 | ST-08 | Personas (switch mid-chat, batch re-attribution) | HAVE-THIN | P-018 | HAVE-THIN - batch sync re-attribution of past messages still absent (grep-verified at founding); the persona citizen and its file interop are proven | `tests/test_p018_persona_interop.py` |
 | ST-09 | Persona description positions (story string / AN depth & role / disabled) | MISSING | P-018 | HAVE | `tests/test_p018_persona_interop.py` |
 | ST-10 | Persona locking/default/temp override/per-character picker, persona backup | HAVE-THIN | P-018 | HAVE-THIN - locking to chat/character, session/temp override and a per-character picker still not proven; personas remain a file citizen with no persona store (P-030 gate section 8), riding the general archive | `tests/test_p018_persona_interop.py` |
 | ST-11 | Group chats (members, mute, re-order, force-trigger) | HAVE | — (depth in P-070) | NOT-YET-REJUDGED | - |
 | ST-12 | Group reply-order strategies (Manual/Natural/List/Pooled) | HAVE | — | NOT-YET-REJUDGED | - |
-| ST-13 | Group generation handling (swap vs join cards, join templates) | HAVE-THIN | P-070 | NOT-YET-REJUDGED | - |
-| ST-14 | Group extras (auto-mode, self-response, group scenario override, peek/edit member) | HAVE-THIN | P-070 | NOT-YET-REJUDGED | - |
+| ST-13 | Group generation handling (swap vs join cards, join templates) | HAVE-THIN | P-070 | HAVE | `src/runmal/groupchat/deepening.py`, `tests/test_p070_group_deepening.py` |
+| ST-14 | Group extras (auto-mode, self-response, group scenario override, peek/edit member) | HAVE-THIN | P-070 | HAVE-THIN - background auto-mode still missing (what shipped is a bounded driven loop behind an explicit call, POST /run capped at 1..10 turns and by auto_mode.max_turns; the P-070 record states there is no background daemon) and branched override inheritance still missing (a branch of a group room is a standalone chat with the group link deliberately not carried, so no override inheritance across branches exists); the self-response rule, a group scenario override in both modes, member peek and room-scoped member override edits that never mutate the card are proven | `src/runmal/groupchat/deepening.py`, `tests/test_p070_group_deepening.py` |
 | ST-15 | Keyword-triggered lore entries (regex keys, scan buffer) | HAVE-THIN | Part III (P-031 kin) | HAVE-THIN - regex keys as patterns still missing (keys are escaped and match literally by design, no regex-key flag exists in the lorebook tree), macros resolvable inside a key still missing, and the name-prefixed per-message scan buffer still missing (messages reach the scanner as raw texts); keyword scanning with whole-word and case toggles and the resolved scan window (depth, whole-chat, caller-supplied external segment) are proven | `src/runmal/lorebooks/scan.py`, `src/runmal/lorebooks/windows.py`, `tests/test_p037_scan_windows.py` |
 | ST-16 | Selective logic AND ANY/ALL, NOT ANY/ALL | HAVE-THIN | P-032 | HAVE | `src/runmal/lorebooks/logic.py`, `tests/test_p032_selective_logic.py`, `docs/PART_III_GATE_2026-11-06.md` |
 | ST-17 | Entry strategies: constant / keyword / vectorised | HAVE-THIN | P-035, P-041 | HAVE | `src/runmal/lorebooks/states.py`, `src/runmal/lorebooks/vector_match.py`, `tests/test_p035_entry_states.py`, `tests/test_p041_vectorised_lore.py` |
@@ -188,21 +213,21 @@ ST-74's cell.
 | ST-43 | Text Completion backend breadth (llama.cpp/KoboldCpp/Tabby/NovelAI/Horde…) | HAVE-THIN | P-008 | NOT-YET-REJUDGED | - |
 | ST-44 | AI Horde out of the box (zero-setup free pool) | MISSING | P-008 (wanted/unwanted judgement) — no build slice, flagged for P-014 | NOT-YET-REJUDGED | - |
 | ST-45 | Per-source secrets (server-side, never in chat data) | HAVE | — | NOT-YET-REJUDGED | - |
-| ST-46 | Swipes (alternates kept on a message, navigated in place) | HAVE-THIN | P-065 | NOT-YET-REJUDGED | - |
-| ST-47 | Message editing with movement (edit/copy/delete/move) | HAVE-THIN | P-068 | NOT-YET-REJUDGED | - |
-| ST-48 | Branches (fork at any message, linked child chat) | MISSING | P-066 | NOT-YET-REJUDGED | - |
-| ST-49 | Checkpoints (named snapshots, one-click return) | MISSING | P-067 | NOT-YET-REJUDGED | - |
-| ST-50 | Message inclusion toggle (exclude from model's view, keep in chat) | MISSING | P-068 kin; no dedicated slice — flagged for P-014 | NOT-YET-REJUDGED | - |
-| ST-51 | Continue (extend last message, nudge/prefill) | HAVE-THIN | P-069 | NOT-YET-REJUDGED | - |
+| ST-46 | Swipes (alternates kept on a message, navigated in place) | HAVE-THIN | P-065 | HAVE-THIN - navigation on voice turns still missing (voice orchestrator turns are ephemeral TurnRecords, never persisted as chat messages, so there is no stored voice-turn row to navigate; only a voice-origin session committed as a message becomes navigable via import_session_swipes); unlimited persisted alternates with the deck invariant, navigation (next/prev clamped, first/last, goto, strict select), per-chat swipe-regen settings and session candidates landing as decks are proven | `src/runmal/chats/swipes.py`, `src/runmal/chats/service.py`, `tests/test_p065_swipes.py` |
+| ST-47 | Message editing with movement (edit/copy/delete/move) | HAVE-THIN | P-068 | HAVE | `src/runmal/chats/actions.py`, `src/runmal/chats/service.py`, `tests/test_p068_message_actions.py` |
+| ST-48 | Branches (fork at any message, linked child chat) | MISSING | P-066 | HAVE | `src/runmal/chats/branches.py`, `tests/test_p066_branches.py` |
+| ST-49 | Checkpoints (named snapshots, one-click return) | MISSING | P-067 | HAVE | `src/runmal/chats/checkpoints.py`, `tests/test_p067_checkpoints.py` |
+| ST-50 | Message inclusion toggle (exclude from model's view, keep in chat) | MISSING | P-068 kin; no dedicated slice — flagged for P-014 | MISSING - the per-message inclusion toggle is absent as engine behaviour: the Message model carries content, swipes, variant history, provenance, reasoning, pinned and position, with no exclusion field of any kind, and no exclude-from-model-view road or prompt-assembly exclusion exists for a kept message (grep-verified at P-222); a message can be deleted or pinned, never excluded from the model view while kept in chat; the row was homed as explicit scope of P-068 by the banked P-014 gate and the scope was not built there | `docs/PART_I_GATE_2026-10-30.md`, `src/runmal/db/models.py`, `tests/test_p068_message_actions.py` |
+| ST-51 | Continue (extend last message, nudge/prefill) | HAVE-THIN | P-069 | HAVE-THIN - prefill still missing (no caller-supplied prefill text exists anywhere in the continue road; the nudge is an instruction, not a prefilled assistant opening) and a per-call sampler surface still missing (continue/impersonate accept an instruction only; generation uses backend defaults); continue as a named operation in three modes (extend, next, auto) with exactly one trailing nudge instruction landing only on a clean generation finish is proven | `src/runmal/chats/continue_impersonate.py`, `tests/test_p069_continue_impersonate.py` |
 | ST-52 | Impersonate (model drafts the user's message) | HAVE | — (paired depth at P-069) | NOT-YET-REJUDGED | - |
-| ST-53 | Regenerate (discard + re-roll as its own generation type) | HAVE-THIN | Part V kin (P-065/P-069) | NOT-YET-REJUDGED | - |
+| ST-53 | Regenerate (discard + re-roll as its own generation type) | HAVE-THIN | Part V kin (P-065/P-069) | HAVE-THIN - a chat-level regenerate operation on a persisted message still missing (no message regenerate route exists in the chats router; regeneration lives at the session/tools layer and its re-roll appends a new alternate, nothing is discarded) and lore/triggers keying on the generation type still missing (no generation-type vocabulary exists in the lorebooks tree); regenerate as a distinct generation type (Mode.REGENERATE with the stable-prompt fingerprint discipline), exposed as a tools-service action, with re-rolled candidates landing as swipe decks is proven | `src/runmal/generation/modes.py`, `src/runmal/tools/service.py`, `src/runmal/chats/swipes.py`, `tests/test_p065_swipes.py` |
 | ST-54 | Chat file management (import/export/rename, chat→group conversion) | HAVE-THIN | P-020, P-078 | HAVE-THIN - in-place chat-to-group conversion still absent (grep-verified at founding); JSONL import/export and rename are proven | `tests/test_p020_chat_import.py` |
 | ST-55 | Welcome screen + Assistant (recent chats, quick uncarded chat, default Assistant) | HAVE-THIN | Part XIII (title only) — flagged for P-014 | NOT-YET-REJUDGED | - |
 | ST-56 | Per-message utility actions (translate/image/narrate/prompt view) | HAVE-THIN | Part VI (P-086, P-087 kin) | NOT-YET-REJUDGED | - |
 | ST-57 | Extension system (UI extensions + server plugins, distribution channel) | MISSING | P-081, P-082, P-083 | NOT-YET-REJUDGED | - |
 | ST-58 | Summarize extension (editable rolling summary, {{summary}} injection) | HAVE-THIN | P-084 | NOT-YET-REJUDGED | - |
 | ST-59 | Vector Storage / RAG extension (history, Data Bank, lore) | HAVE | — (plugin shape at P-085) | NOT-YET-REJUDGED | - |
-| ST-60 | Data Bank (per-chat/global attached documents + scrapers) | MISSING | P-074 | NOT-YET-REJUDGED | - |
+| ST-60 | Data Bank (per-chat/global attached documents + scrapers) | MISSING | P-074 | HAVE-THIN - scrapers still missing (the P-074 record declines them in plain words: no scraper registry exists in Runmal yet, and none is claimed; grep at P-222 confirms none exists in src/); the Data Bank itself is proven whole - per-chat and global attached text documents, sealed files, a declared per-chat token budget with whole-document greedy selection and honest discards, and prompt integration counted by the governor | `src/runmal/chats/databank.py`, `tests/test_p074_databank.py` |
 | ST-61 | Image generation extension | MISSING | P-087 | NOT-YET-REJUDGED | - |
 | ST-62 | TTS extension (pluggable narration, per-message) | HAVE-THIN | P-091 | NOT-YET-REJUDGED | - |
 | ST-63 | Speech recognition (voice input to chat) | HAVE-THIN | P-091 | NOT-YET-REJUDGED | - |
@@ -227,7 +252,7 @@ ST-74's cell.
 | VX-03 | Character assets & generated expressions, Emotes/States | HAVE-THIN | P-023; Part X (title only) | HAVE-THIN - expression generation as a character pipeline not proven as such; character assets and expression sets/states are proven | `tests/test_p023_card_assets.py`, `tests/test_p092_expressions.py` |
 | VX-04 | Voices as character equipment (Voices Studio, favourites, culture filter) | HAVE-THIN | Part VII (title only); census at P-010 | NOT-YET-REJUDGED | - |
 | VX-05 | User identity in prompt; scenario impersonation override | HAVE-THIN | P-018 kin; Part IX (title only) | NOT-YET-REJUDGED | - |
-| VX-06 | Multi-character chats + history sharing with absent characters | HAVE-THIN | P-071 | NOT-YET-REJUDGED | - |
+| VX-06 | Multi-character chats + history sharing with absent characters | HAVE-THIN | P-071 | HAVE-THIN - automatic injection of the digest into the returning character's next generated prompt still missing (a digest_prompt_message helper exists ready to sit ahead of the scene history, but the group generation road never calls it; delivery is the return document, not a wired prompt citizen) and exactness under anchor deletion still missing (on the by_count_fallback window the earliest missed messages can be lost when the last-seen anchor and further pre-window messages were deleted; the exact window is proven only on the by_id road); multi-character rooms plus the returning-character digest of missed history (explicit leave/return presence, capped entries with omitted_count, by-speaker counts, preview and presence roads) are proven | `src/runmal/groupchat/presence.py`, `tests/test_p071_absent_digest.py` |
 | VX-07 | Companions vs assistants as distinct kinds (default assistant) | MISSING | Part XIII (title only) — flagged for P-014 | NOT-YET-REJUDGED | - |
 | VX-08 | Chat style & flow taxonomy (Companion/Roleplay/Storytelling/Assistant; Chat/Story flow) | MISSING | Part IX (title only) — flagged for P-014 | NOT-YET-REJUDGED | - |
 | VX-09 | Real-time voice both ways, interruptible mid-sentence | HAVE | — (speed feeds P-009/P-010) | NOT-YET-REJUDGED | - |
