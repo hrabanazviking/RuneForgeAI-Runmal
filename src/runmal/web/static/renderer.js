@@ -118,10 +118,45 @@ function windowMessages(messages, limit) {
            hidden: messages.length - limit };
 }
 
+/* Assistant View reasoning panel model (P-206).
+ * Pure view-model over the banked P-205 active reasoning view
+ * (chats/reasoning.py active_view): the stored record of ONE
+ * message, as already carried in the thread message dict.
+ * Tolerant reader in the P-205 idiom: null / malformed input
+ * yields null (no panel) and never throws; a recorded record
+ * without usable text, and any unrecognised status, land on
+ * the unknown status line - text is never fabricated and an
+ * unrecognised status is never echoed raw. The status string
+ * is read from `status` only; the `reasoning_status`
+ * duplicate key is not consulted (one source of truth). */
+function reasoningView(reasoning) {
+  if (!reasoning || typeof reasoning !== "object") return null;
+  var status = reasoning.status;
+  if (status === "recorded") {
+    var text = reasoning.text;
+    if (typeof text === "string" && text.length > 0) {
+      return { kind: "recorded", label: "Thinking", text: text };
+    }
+    return { kind: "status",
+             text: "Thinking record state is unknown for this reply." };
+  }
+  if (status === "not_present") {
+    return { kind: "status",
+             text: "No thinking was returned for this reply." };
+  }
+  if (status === "not_recorded") {
+    return { kind: "status",
+             text: "Thinking was not recorded for this reply." };
+  }
+  return { kind: "status",
+           text: "Thinking record state is unknown for this reply." };
+}
+
 var api = {
   escapeHtml: escapeHtml,
   renderMarkdownLite: renderMarkdownLite,
   renderMarkedTranscript: renderMarkedTranscript,
+  reasoningView: reasoningView,
   windowMessages: windowMessages,
 };
 

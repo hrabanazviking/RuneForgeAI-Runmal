@@ -307,3 +307,15 @@ button#stop { background: var(--danger); }
 .stt-low { text-decoration: underline dotted; text-underline-offset: 3px;
   background: var(--stt-low-tint); border-radius: 3px; }
 .voice-marking { margin-top: 6px; font-size: 0.85em; opacity: 0.85; }
+
+/* P-206 Assistant View: the thinking panel under a reply.
+   Muted and subordinate to the bubble it sits under; design
+   tokens only, no raw colours or sizes. */
+.reasoning { margin-top: var(--space-2); color: var(--dim);
+  font-size: 0.85em; border-top: 1px solid var(--line);
+  padding-top: var(--space-1); }
+.reasoning summary { cursor: pointer; color: var(--dim); }
+.reasoning-text { margin-top: var(--space-1); white-space: pre-wrap;
+  color: var(--dim); }
+.reasoning-status { margin-top: var(--space-2); font-size: 0.85em;
+  color: var(--dim); opacity: 0.85; }
