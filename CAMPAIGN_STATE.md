@@ -22001,3 +22001,149 @@ P-162 BANKED - Character Face History
     whose road home was Part
     VI, re-judged (scout in
     rotation team-02).
+    P-223 BANKED - Parity
+    matrix tranche 5 (Part XIV,
+    The Proof Spine; scope
+    DERIVED - the roadmap gives
+    Part XIV only its part-
+    table line, P-219..P-232,
+    plus founding principle 4).
+    - team-02 commit 6b621a6
+    merged (no-ff) into
+    yrsa/two-mirrors-build as b
+    8859b57c5e6a184df794fc05c27
+    00f6b72d1fac (parents
+    2566117 + 6b621a6). Merge
+    CLEAN - 7 files, +455/-33:
+    docs/PARITY_MATRIX_2026-11-
+    10.md tranche 5 judged, tes
+    ts/test_p223_parity_matrix.
+    py NEW (18 tests), tests/te
+    st_p219_parity_matrix.py
+    pins 5/6/8 healed to the
+    cumulative tranche 1 union
+    2 union 3 union 4 union 5
+    shape plus its pin 9
+    restated under heal class
+    5, tests/test_p220_parity_m
+    atrix.py pins 6/9 healed
+    (pin 8 extended) plus its
+    pin 10 restated under heal
+    class 5, tests/test_p221_pa
+    rity_matrix.py pins 6/9
+    healed (JUDGED gains
+    TRANCHE5) plus its pin 10
+    restated under heal class
+    5, tests/test_p222_parity_m
+    atrix.py pins 6/9 healed
+    (JUDGED gains TRANCHE5)
+    plus its pin 10 restated
+    under heal class 5, docs/CL
+    EAN_ROOM_LOG_2026-10-30.md
+    +1 headed P-223 entry.
+    Scope: tranche 5 closing
+    judgements for the nineteen
+    rows whose road home was
+    Part VI (ST-27, ST-56,
+    ST-57, ST-58, ST-61, ST-62,
+    ST-63, ST-64, ST-65, ST-66,
+    ST-67, ST-68, VX-20, VX-25,
+    VX-26, VX-34, VX-42, VX-51,
+    VX-66) under the keeper
+    rulings Q1 (ST-27 included
+    as MISSING - the banked
+    P-014 gate homed ST-27 as
+    kin scope under P-081/P-093
+    and the entry-firing
+    automation act was never
+    built), Q2 (VX-26 included
+    as HAVE-THIN - the banked
+    P-014 gate homed VX-26 as
+    explicit scope of P-085)
+    and Q3 (VX-42 included as
+    SHIPPED-SOVEREIGN - first-
+    home rule, its dedicated
+    home names P-082, with
+    P-231's end-to-end audit of
+    the DELIBERATELY-DIFFERENT
+    rows expressly preserved):
+    HAVE 2 / HAVE-THIN 15 /
+    MISSING 1 / SHIPPED-
+    SOVEREIGN 1. Cumulative
+    judged 67 rows: HAVE 13 /
+    HAVE-THIN 48 / MISSING 5 /
+    SHIPPED-SOVEREIGN 1; the
+    remaining 74 rows printed
+    NOT-YET-REJUDGED. Heal
+    class 5 (keeper ruling
+    2026-11-10, granted after
+    the build lead's stop-and-
+    report): the four
+    DELIBERATELY-DIFFERENT
+    disposition pins (P-219 pin
+    9; P-220, P-221 and P-222
+    pin 10) predate ruling Q3
+    and asserted a blanket NOT-
+    YET-REJUDGED closing the
+    ruling lawfully superseded;
+    each is restated per-row at
+    greater strength - VX-01
+    and VX-59 stay pinned NOT-
+    YET-REJUDGED exactly as
+    before, VX-42 is pinned to
+    its exact Q3 closing
+    verdict SHIPPED-SOVEREIGN
+    with P-231's audit
+    preserved - the campaign's
+    established merged-truth
+    heal pattern, no pin
+    loosened and no other pin
+    widened. NO src change, NO
+    migration; head stays 0042.
+    Route census stays 356
+    paths / 439 operations.
+    Evidence (team-02 hidden_fi
+    les/P223_EVIDENCE.md +
+    logs): battery 18 passed;
+    neighbours fence 297
+    passed; combined 315
+    passed; team full suite
+    6311 passed / 5 skipped / 0
+    failed in 417.92s (= 6293
+    banked at P-222 + 18
+    exact). Banking: combined
+    fence on the merged tree
+    315 passed / 0 failed in
+    27.30s (= 18 new + 297
+    neighbours exact; run at
+    banking, log forge hidden_f
+    iles/P223_COMBINED.log);
+    forge confirmation full
+    suite 6311 passed / 5
+    skipped / 0 failed in
+    425.48s, exit 0 - exact, no
+    contention failure, no solo
+    re-run needed (log forge hi
+    dden_files/P223_FORGE_FULL.
+    log). Carried items
+    unchanged: D1 stateless SSE
+    error-swallowing FENCED,
+    ruling outstanding; per-
+    swipe thinking browsing
+    DECLINED-PENDING-WORD; K-A
+    binding label update, K-B
+    retention / bulk clear and
+    K-C unified-search history
+    NAMED OPEN. Defects in
+    banked code: none found at
+    banking. Banked now
+    P-001..P-223 + the
+    commissioned binding
+    depth/role slice. PART XIV
+    OPEN (P-219..P-232, gate
+    P-232). Next in roadmap
+    order: P-224 - parity
+    matrix tranche 6, the rows
+    whose road home was Part
+    VII, re-judged (scout in
+    rotation team-03).
