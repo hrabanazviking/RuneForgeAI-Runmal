@@ -21181,3 +21181,93 @@ P-162 BANKED - Character Face History
     close-group control, per
     team-02 hidden_files/P215_
     DESIGN.md.
+    P-215 BANKED - Explicit
+    composer mode toggle (Part
+    XIII, DERIVED). - team-02
+    commit d970d66 merged (no-
+    ff) into yrsa/two-mirrors-
+    build as 4a803d9 (parents
+    1994b62 + d970d66). Merge
+    CLEAN - no conflicts in
+    any file. Scope: explicit
+    composer mode toggle -
+    group.html gains
+    button#close-group
+    (disabled) and p#group-
+    mode reading Stateless
+    room, directly after open-
+    group in the Saved groups
+    block; group.js restates
+    the mode on the
+    openSavedGroup success
+    path and gains
+    closeSavedGroup() directly
+    after it, guard-first, a
+    reload-equivalent reset
+    that leaves persistent
+    mode in-page with no
+    fetch, no storage and no
+    delete, wired on
+    DOMContentLoaded beside
+    the open wiring. NO
+    migration; head stays
+    0042. Route census stays
+    356 paths / 439
+    operations. Heals, all at
+    equal-or-greater strength:
+    (1) S311 group golden
+    healed ONLY via
+    RUNMAL_UPDATE_GOLDENS -
+    only tests/fixtures/ui/gro
+    up.golden.txt moved,
+    exactly +button#close-
+    group and +p#group-mode,
+    every other golden byte-
+    unmoved; (2) P-214 pin 14
+    census restated - every
+    prior id PLUS close-group
+    and group-mode; (3) P-213
+    test_05 loader segment
+    restated over the loader
+    block proper
+    (loadSavedGroups through
+    openSavedGroup, to the
+    closeSavedGroup()
+    boundary), same
+    assertions. D1 stays
+    FENCED unchanged - NOT
+    fixed by this slice.
+    Evidence (team-02 hidden_f
+    iles/P215_EVIDENCE.md +
+    logs): battery 14 passed;
+    neighbours fence 151
+    passed / 0 failed; S311
+    golden watch 3 passed
+    post-heal; team full suite
+    6150 passed / 5 skipped /
+    0 failed, exit 0 (= 6136
+    banked at P-214 + 14
+    exact). Banking: combined
+    fence on the merged tree
+    (test_p215 + the neighbour
+    files + the S311 file) 168
+    passed / 0 failed (=
+    battery 14 + neighbours
+    151 + S311 3 exact); forge
+    confirmation full suite
+    6150 passed / 5 skipped /
+    0 failed, in 411.28s, exit
+    0 - exact (log hidden_file
+    s/P215_FORGE_FULL.log).
+    Defects in banked code:
+    none found at banking.
+    Banked now P-001..P-215 +
+    the commissioned binding
+    depth/role slice. PART
+    XIII OPEN (P-203..P-218,
+    gate P-218). Next in
+    roadmap order: P-216 (Part
+    XIII, DERIVED) - saved-
+    group creation, per
+    team-03 hidden_files/P216_
+    DESIGN.md.
