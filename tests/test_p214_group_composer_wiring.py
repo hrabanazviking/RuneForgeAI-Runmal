@@ -300,9 +300,13 @@ def test_14_census_head_and_page_integrity(tmp_path, monkeypatch):
     import runmal.db.migrations as migrations_pkg
     names = os.listdir(os.path.dirname(migrations_pkg.__file__))
     assert not any(name.startswith("m0043") for name in names)
-    # group.html is untouched by this slice: exactly the
-    # P-213 control set (saved-group + open-group present,
-    # no new ids) and the banked script order.
+    # P-215 heal (named in advance in the P-215 design,
+    # section 5): group.html now carries exactly the
+    # P-213/P-214 control set PLUS the two ids P-215 adds
+    # by design (close-group, group-mode) and no others -
+    # the same exact-census assertion, restated at equal
+    # strength in its true P-215 form; the P-215 battery
+    # pin 14 asserts this same census.
     html = GROUP_HTML.read_text()
     assert '<select id="saved-group"' in html
     assert 'id="open-group" type="button">Open</button>' in html
@@ -310,7 +314,8 @@ def test_14_census_head_and_page_integrity(tmp_path, monkeypatch):
     assert ids == {
         "group-main", "error-banner", "error-text",
         "error-dismiss", "group-layout", "saved-group",
-        "open-group", "roster", "strategy", "group-thread",
+        "open-group", "close-group", "group-mode", "roster",
+        "strategy", "group-thread",
         "group-form", "group-input", "palette",
         "palette-card", "palette-input", "palette-list",
     }
