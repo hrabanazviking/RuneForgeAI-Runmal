@@ -15,6 +15,7 @@ link:/static/style.css
 main#group-main
 script:/static/group.js
 script:/static/palette.js
+script:/static/renderer.js
 script:/static/theme.js
 select#strategy
 span#error-text
