@@ -44,7 +44,13 @@ TRANCHE6 = {
 TRANCHE7 = {
     "VX-50",
 }
-JUDGED = TRANCHE1 | TRANCHE2 | TRANCHE3 | TRANCHE4 | TRANCHE5 | TRANCHE6 | TRANCHE7
+TRANCHE8 = {
+    "VX-02", "VX-05", "VX-08", "VX-13", "VX-17", "VX-28",
+    "VX-29", "VX-30", "VX-31", "VX-32", "VX-33", "VX-35",
+    "VX-36", "VX-37", "VX-38", "VX-39", "VX-40", "VX-41",
+    "VX-43", "VX-44", "VX-45", "VX-46", "VX-47",
+}
+JUDGED = TRANCHE1 | TRANCHE2 | TRANCHE3 | TRANCHE4 | TRANCHE5 | TRANCHE6 | TRANCHE7 | TRANCHE8
 DD_ROWS = ("VX-01", "VX-42", "VX-59")
 CLOSING_TOKENS = {
     "HAVE", "HAVE-THIN", "MISSING", "SHIPPED-SOVEREIGN",
@@ -180,7 +186,24 @@ def test_08_section3_counts_equal_recount():
         r"NOT-YET-REJUDGED (\d+), of (\d+) rows\.", flat)
     assert m7, flat
     got7 = tuple(int(g) for g in m7.groups())
-    assert got7 == (counts["HAVE"], counts["HAVE-THIN"],
+    # P-226 heal: the tranches 1-7 line is re-pinned against
+    # the judged7 subset recount, at equal strength.
+    judged7 = TRANCHE1 | TRANCHE2 | TRANCHE3 | TRANCHE4 | TRANCHE5 | TRANCHE6 | TRANCHE7
+    counts7 = {t: 0 for t in CLOSING_TOKENS}
+    for rid in judged7:
+        counts7[_closing_token(rows[rid])] += 1
+    assert got7 == (counts7["HAVE"], counts7["HAVE-THIN"],
+                    counts7["MISSING"], counts7["SHIPPED-SOVEREIGN"],
+                    counts7["NOT-YET-REJUDGED"], len(judged7))
+    # P-226 heal: the cumulative tranches 1-8 line is pinned
+    # against the full JUDGED recount, at equal strength.
+    m8 = re.search(
+        r"Cumulative judged counts \(tranches 1, 2, 3, 4, 5, 6, 7 and 8\): HAVE (\d+), "
+        r"HAVE-THIN (\d+), MISSING (\d+), SHIPPED-SOVEREIGN (\d+), "
+        r"NOT-YET-REJUDGED (\d+), of (\d+) rows\.", flat)
+    assert m8, flat
+    got8 = tuple(int(g) for g in m8.groups())
+    assert got8 == (counts["HAVE"], counts["HAVE-THIN"],
                     counts["MISSING"], counts["SHIPPED-SOVEREIGN"],
                     counts["NOT-YET-REJUDGED"], len(JUDGED))
     m2 = re.search(r"Unjudged remainder: (\d+) rows NOT-YET-REJUDGED\.", flat)

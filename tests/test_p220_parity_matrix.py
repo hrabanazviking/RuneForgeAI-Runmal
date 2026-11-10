@@ -50,6 +50,12 @@ TRANCHE6 = {
 TRANCHE7 = {
     "VX-50",
 }
+TRANCHE8 = {
+    "VX-02", "VX-05", "VX-08", "VX-13", "VX-17", "VX-28",
+    "VX-29", "VX-30", "VX-31", "VX-32", "VX-33", "VX-35",
+    "VX-36", "VX-37", "VX-38", "VX-39", "VX-40", "VX-41",
+    "VX-43", "VX-44", "VX-45", "VX-46", "VX-47",
+}
 DD_ROWS = ("VX-01", "VX-42", "VX-59")
 CLOSING_TOKENS = {
     "HAVE", "HAVE-THIN", "MISSING", "SHIPPED-SOVEREIGN",
@@ -146,8 +152,8 @@ def test_05_tranche2_rows_carry_closing_verdicts():
 
 def test_06_rows_outside_tranches_exactly_not_yet_rejudged():
     rows = _rows(MATRIX)
-    # P-225 heal: restated to the cumulative tranches 1-7 truth.
-    judged = TRANCHE1 | TRANCHE2 | TRANCHE3 | TRANCHE4 | TRANCHE5 | TRANCHE6 | TRANCHE7
+    # P-226 heal: restated to the cumulative tranches 1-8 truth.
+    judged = TRANCHE1 | TRANCHE2 | TRANCHE3 | TRANCHE4 | TRANCHE5 | TRANCHE6 | TRANCHE7 | TRANCHE8
     for rid, cells in rows.items():
         if rid in judged:
             continue
@@ -222,6 +228,13 @@ def test_09_section3_counts_equal_recount():
     judged = TRANCHE1 | TRANCHE2 | TRANCHE3 | TRANCHE4 | TRANCHE5 | TRANCHE6 | TRANCHE7
     gotc7 = _count_line(flat, label7)
     assert gotc7 == _as_tuple(_counts(rows, judged), len(judged))
+    # P-226 heal: restated to the cumulative tranches 1-8 truth.
+    got8 = _count_line(flat, "Tranche 8 closing counts")
+    assert got8 == _as_tuple(_counts(rows, TRANCHE8), len(TRANCHE8))
+    label8 = "Cumulative judged counts [(]tranches 1, 2, 3, 4, 5, 6, 7 and 8[)]"
+    judged = TRANCHE1 | TRANCHE2 | TRANCHE3 | TRANCHE4 | TRANCHE5 | TRANCHE6 | TRANCHE7 | TRANCHE8
+    gotc8 = _count_line(flat, label8)
+    assert gotc8 == _as_tuple(_counts(rows, judged), len(judged))
     remainder = sum(1 for rid, cells in rows.items()
                     if rid not in judged
                     and cells[4] == "NOT-YET-REJUDGED")
