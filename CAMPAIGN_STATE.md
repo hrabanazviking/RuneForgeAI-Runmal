@@ -21799,3 +21799,95 @@ P-162 BANKED - Character Face History
     parity matrix tranche 3,
     the rows whose road home
     was Part IV, re-judged.
+    P-221 BANKED - Parity
+    matrix tranche 3 (Part XIV,
+    The Proof Spine; scope
+    DERIVED - the roadmap gives
+    Part XIV only its part-
+    table line, P-219..P-232,
+    plus founding principle 4).
+    - team-03 commit aa2ff8c
+    merged (no-ff) into
+    yrsa/two-mirrors-build as
+    e9db01046205afe1f78e39f20d8
+    57a39725c4f21 (parents
+    4503bb1 + aa2ff8c). Merge
+    CLEAN - 5 files, +362/-20:
+    docs/PARITY_MATRIX_2026-11-
+    10.md tranche 3 judged, tes
+    ts/test_p221_parity_matrix.
+    py NEW (18 tests), tests/te
+    st_p219_parity_matrix.py
+    pins 5/6/8 healed to the
+    cumulative tranche 1 union
+    2 union 3 shape, tests/test
+    _p220_parity_matrix.py pins
+    6/8/9 healed to the
+    cumulative shape, docs/CLEA
+    N_ROOM_LOG_2026-10-30.md +1
+    headed P-221 entry. Scope:
+    tranche 3 closing
+    judgements for the fourteen
+    rows whose road home was
+    Part IV (ST-06, ST-28,
+    ST-29, ST-30, ST-31, ST-32,
+    ST-33, ST-35, ST-36, ST-38,
+    ST-39, ST-74, VX-16, VX-18)
+    under the keeper rulings Q1
+    (ST-30 and VX-18 included
+    as MISSING) and Q2 (ST-39
+    included as HAVE-THIN):
+    HAVE 2 / HAVE-THIN 10 /
+    MISSING 2 / SHIPPED-
+    SOVEREIGN 0. Cumulative
+    judged 36 rows: HAVE 6 /
+    HAVE-THIN 27 / MISSING 3 /
+    SHIPPED-SOVEREIGN 0; the
+    remaining 105 rows printed
+    NOT-YET-REJUDGED. NO src
+    change, NO migration; head
+    stays 0042. Route census
+    stays 356 paths / 439
+    operations. Evidence
+    (team-03 hidden_files/P221_
+    EVIDENCE.md + logs):
+    battery 18 passed;
+    neighbours fence 200
+    passed; combined 218
+    passed; team full suite
+    6275 passed / 5 skipped / 0
+    failed in 425.43s (= 6257
+    banked at P-220 + 18
+    exact). Banking: combined
+    fence on the merged tree
+    218 passed / 0 failed (= 18
+    new + 200 neighbours
+    exact); forge confirmation
+    full suite 6275 passed / 5
+    skipped / 0 failed in
+    420.68s, exit 0 - exact, no
+    contention failure, no solo
+    re-run needed (log forge hi
+    dden_files/P221_FORGE_FULL.
+    log). Carried items
+    unchanged: D1 stateless SSE
+    error-swallowing FENCED,
+    ruling outstanding; per-
+    swipe thinking browsing
+    DECLINED-PENDING-WORD; K-A
+    binding label update, K-B
+    retention / bulk clear and
+    K-C unified-search history
+    NAMED OPEN. Defects in
+    banked code: none found at
+    banking. Banked now
+    P-001..P-221 + the
+    commissioned binding
+    depth/role slice. PART XIV
+    OPEN (P-219..P-232, gate
+    P-232). Next in roadmap
+    order: P-222 - parity
+    matrix tranche 4, the rows
+    whose road home was Part V,
+    re-judged (scout in
+    rotation team-01).
