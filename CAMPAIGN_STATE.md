@@ -22741,3 +22741,155 @@ P-162 BANKED - Character Face History
     judged (VX-58's home
     tranche; scout in
     rotation team-01).
+    P-228 BANKED - Parity
+    matrix tranche 10 (Part
+    XIV, The Proof Spine;
+    scope DERIVED - the
+    roadmap gives Part XIV
+    only its part-table
+    line, P-219..P-232, plus
+    founding principle 4).
+    - team-01 commit 6bbac3d
+    fc82a0efab79b3e23340c367
+    f11f4a677 merged (no-ff)
+    into yrsa/two-mirrors-
+    build as 04b24f7948d953e
+    fe7e4a3f01977ea80ccfd265
+    2 (parents fee88c8 +
+    6bbac3d). Merge CLEAN -
+    12 files: docs/PARITY_MA
+    TRIX_2026-11-10.md
+    tranche 10 judged, docs/
+    CLEAN_ROOM_LOG_2026-10-
+    30.md +1 headed P-228
+    entry, tests/test_p228_p
+    arity_matrix.py NEW (18
+    tests), tests/test_p219_
+    parity_matrix.py through
+    tests/test_p227_parity_m
+    atrix.py healed (class 1
+    only).
+    Scope: tranche 10
+    closing judgement for
+    the 5 rows whose road
+    home was Part XI, under
+    the keeper rulings Q1/Q2
+    (Q1: VX-54 = HAVE-THIN;
+    Q2: VX-57 = MISSING -
+    both the scout proposed
+    branch, so no class-2
+    branch restatement
+    arose; VX-55, VX-56 and
+    VX-58 MISSING, certain):
+    HAVE 0 / HAVE-THIN 1
+    (VX-54) / MISSING 4
+    (VX-55, VX-56, VX-57,
+    VX-58) / SHIPPED-
+    SOVEREIGN 0.
+    Cumulative judged 105
+    rows: HAVE 14 / HAVE-
+    THIN 62 / MISSING 28 /
+    SHIPPED-SOVEREIGN 1; the
+    remaining 36 rows
+    printed NOT-YET-
+    REJUDGED.
+    Heals (class 1 only, the
+    standing cumulative
+    restatement, each marked
+    "P-228 heal" in-file):
+    all nine prior batteries
+    (test_p219..test_p227) -
+    JUDGED sets extended
+    with TRANCHE10 (JUDGED9
+    intermediate added where
+    the chain required),
+    earlier cumulative lines
+    re-pinned against the
+    subset recounts
+    (JUDGED9), tranche-10 +
+    cumulative 1-10 stages
+    added against the full
+    JUDGED recount,
+    remainder literals 41 ->
+    36 in
+    test_p226/test_p227.
+    P-227 clean-room pin-12
+    range ends at its own
+    slice and did not move.
+    Class 2: none (rulings
+    match the scout
+    proposal). Class 3:
+    none. Class 4: clean-
+    room log +1 P-228 entry
+    exactly once. Class 5:
+    NONE (no DELIBERATELY-
+    DIFFERENT row in tranche
+    10; DD pins assert only
+    VX-01/VX-59 NOT-YET +
+    VX-42 SHIPPED-SOVEREIGN,
+    untouched and passing).
+    NO src change, NO
+    migration; head stays
+    0042. Route census stays
+    356 paths / 439
+    operations.
+    Evidence (team-01 hidden
+    _files/P228_EVIDENCE.md
+    + logs): battery 18
+    passed; neighbours fence
+    559 passed; combined 577
+    passed; team full suite
+    6401 passed / 5 skipped
+    / 0 failed (= 6383 base
+    passed + 18 new, exact;
+    no timing-class failure
+    occurred, no solo re-run
+    needed).
+    Banking: combined fence
+    on the merged tree 577
+    passed / 0 failed (= 18
+    new + 559 neighbours
+    exact; run at banking,
+    log forge hidden_files/P
+    228_COMBINED.log; the
+    first banking fence run
+    omitted the two Part III
+    gate legs -
+    test_s503_stt.py and tes
+    t_p048_inspector_leg.py
+    - and read 557 passed,
+    the corrected full set
+    was re-run clean before
+    banking proceeded);
+    forge confirmation full
+    suite 6401 passed / 5
+    skipped / 0 failed in
+    429.48s, exit 0 - exact,
+    no solo re-run needed
+    (log forge hidden_files/
+    P228_FORGE_FULL.log).
+    Carried items unchanged:
+    D1 stateless SSE error-
+    swallowing FENCED,
+    ruling outstanding; per-
+    swipe thinking browsing
+    DECLINED-PENDING-WORD;
+    K-A binding label
+    update, K-B retention /
+    bulk clear and K-C
+    unified-search history
+    NAMED OPEN. Defects in
+    banked code: none found
+    at banking. Banked now
+    P-001..P-228 + the
+    commissioned binding
+    depth/role slice. PART
+    XIV OPEN (P-219..P-232,
+    gate P-232). Next in
+    roadmap order: P-229 -
+    parity matrix tranche
+    11, the rows whose road
+    home was Part XII, re-
+    judged (VX-59/VX-61;
+    scout in rotation
+    team-02).
