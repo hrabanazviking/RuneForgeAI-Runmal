@@ -100,7 +100,35 @@ function markingBadge(marking) {
   return badge;
 }
 
-function appendMessage(role, text, rendered, marking) {
+function reasoningPanel(view) {
+  // P-206 Assistant View: the thinking panel under a reply,
+  // built ONLY from the P-205 stored record the thread read
+  // already carried. Recorded thinking is text in a native
+  // <details> disclosure, collapsed by default (the reply
+  // stays primary); every other status is one honest status
+  // line. Text via textContent ONLY - never as HTML, never
+  // through the markdown renderer (the markingBadge rule:
+  // thinking is data shown as text, not message content).
+  if (!view) return null;
+  if (view.kind === "recorded") {
+    const details = document.createElement("details");
+    details.className = "reasoning";
+    const summary = document.createElement("summary");
+    summary.textContent = view.label;
+    details.appendChild(summary);
+    const body = document.createElement("div");
+    body.className = "reasoning-text";
+    body.textContent = view.text;
+    details.appendChild(body);
+    return details;
+  }
+  const line = document.createElement("div");
+  line.className = "reasoning-status";
+  line.textContent = view.text;
+  return line;
+}
+
+function appendMessage(role, text, rendered, marking, reasoning) {
   const div = document.createElement("div");
   div.className = "msg " + role;
   if (rendered && marking && marking.has_confidence_evidence) {
@@ -110,6 +138,8 @@ function appendMessage(role, text, rendered, marking) {
   else if (rendered) renderInto(div, text);
   else div.textContent = text;
   if (marking) div.appendChild(markingBadge(marking));
+  const panel = reasoningPanel(window.RunmalRenderer.reasoningView(reasoning));
+  if (panel) div.appendChild(panel);
   $("thread").appendChild(div);
   div.scrollIntoView({ block: "end" });
   return div;
@@ -156,7 +186,7 @@ function renderThread() {
     });
     thread.appendChild(more);
   }
-  for (const m of visible) appendMessage(m.role, m.content, true, m.voice_marking || null);
+  for (const m of visible) appendMessage(m.role, m.content, true, m.voice_marking || null, m.reasoning || null);
 }
 
 async function loadPresets() {
