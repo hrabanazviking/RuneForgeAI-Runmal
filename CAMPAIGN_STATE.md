@@ -22577,3 +22577,167 @@ P-162 BANKED - Character Face History
     whose road home was Part
     X, re-judged (scout in
     rotation team-03).
+    P-227 BANKED - Parity
+    matrix tranche 9 (Part
+    XIV, The Proof Spine;
+    scope DERIVED - the
+    roadmap gives Part XIV
+    only its part-table
+    line, P-219..P-232, plus
+    founding principle 4).
+    - team-03 commit b3a666d
+    merged (no-ff) into
+    yrsa/two-mirrors-build
+    as cb2acbc25684ac1962820
+    9b501857e5afd86cb33
+    (parents b4c906d +
+    b3a666d). Merge CLEAN -
+    11 files: docs/PARITY_MA
+    TRIX_2026-11-10.md
+    tranche 9 judged, docs/C
+    LEAN_ROOM_LOG_2026-10-
+    30.md +1 headed P-227
+    entry, tests/test_p227_p
+    arity_matrix.py NEW (18
+    tests), tests/test_p219_
+    parity_matrix.py through
+    tests/test_p226_parity_m
+    atrix.py healed (classes
+    1 + 2 only).
+    Scope: tranche 9 closing
+    judgement for the 4 rows
+    whose road home was Part
+    X, under the keeper
+    rulings Q1/Q2 (Q1: VX-48
+    = MISSING - animation is
+    the row's act and Part X
+    shipped only pure-read
+    pairing data, no timing
+    contract, renderer,
+    stage, animation or
+    playback anywhere in-
+    tree; the pairing is
+    recorded as preserved-
+    as-data, not credited as
+    the act. Q2: VX-53 =
+    MISSING - every
+    enumerated depth item is
+    grep-absent (ComfyUI,
+    LoRA, upscaler, img2img,
+    Civitai) and the P-087
+    provider seam was
+    already credited as
+    VX-51's core in tranche
+    5 and is not double-
+    counted): HAVE 0 / HAVE-
+    THIN 0 / MISSING 4
+    (VX-48, VX-49, VX-52,
+    VX-53) / SHIPPED-
+    SOVEREIGN 0. Every
+    MISSING cell states the
+    absent engine behaviour
+    (no portrait animation -
+    pairing preserved-as-
+    data only; no video or
+    3D avatar surface; no
+    video generation; the
+    generation plumbing
+    depth never built, P-087
+    seam not double-
+    counted).
+    Cumulative judged 100
+    rows: HAVE 14 / HAVE-
+    THIN 61 / MISSING 24 /
+    SHIPPED-SOVEREIGN 1; the
+    remaining 41 rows
+    printed NOT-YET-
+    REJUDGED.
+    Heals (classes 1 + 2
+    only, the standing
+    cumulative restatement,
+    each marked "P-227 heal"
+    in-file): pre-heal
+    failures exactly 15 (pin
+    6 (p219-p226) and pins
+    6/9 (p220-p226)) -
+    JUDGED sets extended
+    with TRANCHE9, the
+    tranches 1-8 lines re-
+    pinned against the
+    judged8 subset recounts,
+    tranche-9 + cumulative
+    1-9 stages added against
+    the full JUDGED recount;
+    class 2: the two ruled
+    rows (VX-48, VX-53)
+    leave the not-yet-
+    rejudged set as MISSING
+    inside the same marked
+    restatement, never
+    silently. No heal class
+    5 event (no
+    DELIBERATELY-DIFFERENT
+    row in tranche 9;
+    VX-42's SHIPPED-
+    SOVEREIGN disposition
+    pin carried unchanged in
+    substance; test_p226 pin
+    18's tranche-8 note text
+    unedited and passing
+    unhealed).
+    NO src change, NO
+    migration; head stays
+    0042. Route census stays
+    356 paths / 439
+    operations.
+    Evidence (team-03 hidden
+    _files/P227_EVIDENCE.md
+    + logs): battery 18
+    passed; neighbours fence
+    506 passed; combined 524
+    passed; team full suite
+    6383 passed / 5 skipped
+    / 0 failed in 420.96s,
+    exit 0 (= 6365 base
+    passed + 18 new, exact;
+    no timing-class failure
+    fired).
+    Banking: combined fence
+    on the merged tree 524
+    passed / 0 failed (= 18
+    new + 506 neighbours
+    exact; run at banking,
+    log forge hidden_files/P
+    227_COMBINED.log); forge
+    confirmation full suite
+    6383 passed / 5 skipped
+    / 0 failed in 425.13s,
+    exit 0 - exact, no solo
+    re-run needed (log forge
+    hidden_files/P227_FORGE_
+    FULL.log).
+    Carried items unchanged:
+    D1 stateless SSE error-
+    swallowing FENCED,
+    ruling outstanding; per-
+    swipe thinking browsing
+    DECLINED-PENDING-WORD;
+    K-A binding label
+    update, K-B retention /
+    bulk clear and K-C
+    unified-search history
+    NAMED OPEN. Defects in
+    banked code: none found
+    at banking. Banked now
+    P-001..P-227 + the
+    commissioned binding
+    depth/role slice. PART
+    XIV OPEN (P-219..P-232,
+    gate P-232). Next in
+    roadmap order: P-228 -
+    parity matrix tranche
+    10, the rows whose road
+    home was Part XI, re-
+    judged (VX-58's home
+    tranche; scout in
+    rotation team-01).
