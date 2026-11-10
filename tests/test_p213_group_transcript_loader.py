@@ -183,7 +183,18 @@ def test_04_bubbles_authored_from_stored_fields():
 
 
 def test_05_display_only_fence():
-    segment = loader_segment()
+    # P-215 heal (design section 5 contingency for P-213
+    # pins asserting group.js contents the toggle
+    # restates): the loader block proper is loadSavedGroups
+    # + openSavedGroup; closeSavedGroup is a NEW segment
+    # after it which BY DESIGN resets the stateless state
+    # on close, so the fence is asserted over the loader
+    # block itself, at equal strength - the loader still
+    # holds no reference to the turn state at all.
+    js = GROUP_JS.read_text()
+    start = js.index("async function loadSavedGroups")
+    end = js.index("function closeSavedGroup()")
+    segment = js[start:end]
     assert "sentHistory" not in segment
     assert "history" not in segment  # no reference to the turn state
     assert "POST" not in segment

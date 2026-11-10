@@ -143,9 +143,27 @@ async function openSavedGroup() {
       }
     }
     openGroupId = groupId;
+    $("group-mode").textContent = "Saved group mode";
+    $("close-group").disabled = false;
   } catch (err) {
     showError(String(err));
   }
+}
+
+// P-215: leaving persistent mode in-page - the equivalent
+// of the P-214 reload exit, minus any re-load: the thread
+// empties, the stateless turn state resets (so no context
+// the user cannot see is ever sent), the mode line and the
+// control return to their resting state, and the stored
+// group and its transcript are left wholly untouched.
+function closeSavedGroup() {
+  if (!openGroupId) return;
+  openGroupId = null;
+  $("group-thread").textContent = "";
+  history = [];
+  rrCursor = 0;
+  $("group-mode").textContent = "Stateless room";
+  $("close-group").disabled = true;
 }
 
 function selectedIds() {
@@ -270,5 +288,8 @@ document.addEventListener("DOMContentLoaded", () => {
   loadSavedGroups().catch((err) => showError(String(err)));
   $("open-group").addEventListener("click", () => {
     openSavedGroup();
+  });
+  $("close-group").addEventListener("click", () => {
+    closeSavedGroup();
   });
 });
