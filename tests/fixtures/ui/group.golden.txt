@@ -1,4 +1,5 @@
 button#error-dismiss
+button#open-group
 div#error-banner
 div#group-layout
 div#group-thread
@@ -17,6 +18,7 @@ script:/static/group.js
 script:/static/palette.js
 script:/static/renderer.js
 script:/static/theme.js
+select#saved-group
 select#strategy
 span#error-text
 textarea#group-input
