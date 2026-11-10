@@ -63,6 +63,10 @@ route census 356/439, suite 6365 passed / 5 skipped /
 fee88c8 (the P-227 banking record), migration head 0042,
 route census 356/439, suite 6383 passed / 5 skipped /
 0 failed at P-228 opening.
+- Tranche note (P-229): base truth at P-229 opening: HEAD
+148ac92 (the P-228 banking record), migration head 0042,
+route census 356/439, suite 6401 passed / 5 skipped /
+0 failed at P-229 opening.
 - Evidence rule (P-001's handover rule, kept by P-004): every
 closing verdict cites a proving test file or banked slice
 doc in THIS repo; citations must resolve to real paths. No
@@ -107,7 +111,8 @@ P-224 judged (tranche 6 = Part VII rows,
 1 row); P-226 judged (tranche 8 = Part IX rows,
 23 rows); P-227 judged (tranche 9 = Part
 X rows, 4 rows); P-228 judged (tranche 10 = Part XI rows,
-5 rows); P-229 Part XII; P-230 Part XIII;
+5 rows); P-229 judged (tranche 11 = Part XII rows,
+2 rows); P-230 Part XIII;
 P-231 reconciliation (whole-matrix mechanical recount, the
 principle-4 sovereign-shape statements audited end to end,
 a generated machine-readable twin is a named candidate);
@@ -163,6 +168,10 @@ Tranche 10 closing counts: HAVE 0, HAVE-THIN 1,
 MISSING 4, SHIPPED-SOVEREIGN 0, NOT-YET-REJUDGED 0,
 of 5 rows.
 
+Tranche 11 closing counts: HAVE 0, HAVE-THIN 1,
+MISSING 0, SHIPPED-SOVEREIGN 1, NOT-YET-REJUDGED 0,
+of 2 rows.
+
 Cumulative judged counts (tranches 1 and 2): HAVE 4,
 HAVE-THIN 17, MISSING 1, SHIPPED-SOVEREIGN 0,
 NOT-YET-REJUDGED 0, of 22 rows.
@@ -199,7 +208,11 @@ Cumulative judged counts (tranches 1, 2, 3, 4, 5, 6, 7, 8, 9 and 10): HAVE 14,
 HAVE-THIN 62, MISSING 28, SHIPPED-SOVEREIGN 1,
 NOT-YET-REJUDGED 0, of 105 rows.
 
-Unjudged remainder: 36 rows NOT-YET-REJUDGED.
+Cumulative judged counts (tranches 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 and 11): HAVE 14,
+HAVE-THIN 63, MISSING 28, SHIPPED-SOVEREIGN 2,
+NOT-YET-REJUDGED 0, of 107 rows.
+
+Unjudged remainder: 34 rows NOT-YET-REJUDGED.
 
 Tranche 2 note (P-220): the rows judged in tranche 2 are
 ST-15, ST-16, ST-17, ST-18, ST-20, ST-22, ST-23, ST-25,
@@ -365,6 +378,30 @@ VX-66 and VX-17 were already judged on their first homes
 and are not re-judged here; the five rows are judged here
 once on their Part XI homes.
 
+Tranche 11 note (P-229): the rows judged in tranche 11 are
+VX-59, VX-61.
+Borderline dispositions: VX-61 is judged in tranche 11
+under the keeper's Q1 ruling (its first PART home is
+Part XII; the P-028 kin home named no dedicated home
+and tranche 1 never took it - the VX-02/VX-05 pattern;
+the core archive carriage is proven, and its still-missing
+depth is named in the cell: chat-attached / generated
+image payloads do not ride the .runmal archive, no
+missing-dependency warning surface exists on restore,
+and there is no per-chat pack) with verdict HAVE-THIN;
+VX-59 is judged in tranche 11 under the keeper's Q2
+ruling (the DELIBERATELY-DIFFERENT no-central-store
+shape shipped whole as the Part XII local owner-scoped
+registry, gate PASSES, in the VX-42 form; signed packs
+(gate K-D) and friend-instance exchange (gate K-E)
+stand in the cell as declined-at-the-gate; creator
+profiles are ruled out by the row itself (gate K-H);
+P-231's end-to-end audit of the DELIBERATELY-DIFFERENT
+rows is preserved, never weakened) with verdict
+SHIPPED-SOVEREIGN; VX-60 was already judged in tranche 1
+on its P-028 first home and is not re-judged here; the
+two rows are judged here once on their Part XII homes.
+
 ## Table A - SillyTavern rows (P-002) at the close
 
 | # | Feature (short) | Opening verdict | Road home | Closing verdict | Evidence |
@@ -506,9 +543,9 @@ once on their Part XI homes.
 | VX-56 | Assistant tooling breadth (shell, Python, web search, MCP, user scripts) | MISSING | Part XI/XIII (titles only) | MISSING - assistant tooling breadth was never built - no shell tool, no Python tool, no MCP tools (mcp occurs nowhere in src/), and no user-script execution (P-027: content stays data, never code; gate K5 declines execution absolutely); the one enumerated item with a citizen, web search (P-088), is an explicit opt-in citizen action already judged under ST-66, whose cell rules it is never a tool the backend calls | `src/runmal/plugins/web_search.py`, `tests/test_p088_web_search.py`, `docs/PART_XI_GATE_2026-11-09.md`, `docs/DELTA_TABLE_2026-10-30.md` |
 | VX-57 | Tool-calling security pass (review destructive calls, path rules, scopes) | MISSING | Part XI (title only) | MISSING - the tool-calling security pass was never built - no destructive-call review, no read/write screening or path-rules engine, no secret-read flagging, no web-fetch allow/deny lists or redirect inspection, no tool grant/revoke surface and no API-key scopes exist; the VX-57 guard exists only as the named fence inside the workspaces modules' honesty notes, with no module, road or battery of its own, and the bridge/secrets substrate the Delta Table weighed guards bridges, not workspace tool calls | `src/runmal/workspaces/bindings.py`, `src/runmal/workspaces/content.py`, `docs/PART_XI_GATE_2026-11-09.md`, `docs/DELTA_TABLE_2026-10-30.md`, `docs/VOXTA_CENSUS_2026-10-30.md` |
 | VX-58 | Done notifications (OS-integrated completion notices) | MISSING | Part XI (title only) — flagged for P-014 | MISSING - no done-notification surface exists on either candidate home - the word notification occurs nowhere in src/ or the web static, no OS integration, push surface, service worker or PWA manifest exists; Part XI built no done-signal and Part VII (the P-014 queue's PWA scope) built no notification surface either; judged here under the P-224 keeper Q3 ruling | `docs/PART_I_GATE_2026-10-30.md`, `docs/PART_XI_GATE_2026-11-09.md`, `docs/PART_VII_GATE_2026-11-08.md`, `docs/DELTA_TABLE_2026-10-30.md` |
-| VX-59 | The Content Hub (browse/install/share, creator profiles) | DELIBERATELY-DIFFERENT | Part XII (title only) | NOT-YET-REJUDGED | - |
+| VX-59 | The Content Hub (browse/install/share, creator profiles) | DELIBERATELY-DIFFERENT | Part XII (title only) | SHIPPED-SOVEREIGN - the sovereign shape shipped in place of the mirror central store: a local, owner-scoped registry over the sealed local pack formats (P-187), with browse over entry contents (P-188), metadata / content / unified search (P-190-P-192) and the estate censuses, every surface a pure read over packs the operator already holds, gate-proven (Part XII gate: Census / Together / Custody / Accounting PASS); no central store, no catalogue and no creator profile exist anywhere in the tree, by the row own ruling (gate K-H); declined, named, not gaps dressed as shipped: pack signing / attestation (gate K-D - the registry rides the sealed packs without signatures, checksum claims never presented as verified) and friend-instance exchange transport (gate K-E - no hub road fetches, sends or syncs anything); hub-side install is declined (gate K-F) because each pack kind own inspect+import road is the install road; judged here on its only named home under the keeper Q2 ruling, and P-231 end-to-end audit of the DELIBERATELY-DIFFERENT rows is expressly preserved | `docs/PART_XII_GATE_2026-11-09.md`, `src/runmal/hub/registry.py`, `src/runmal/hub/router.py`, `src/runmal/hub/unified_search.py`, `docs/HUB_REGISTRY_2026-11-09.md`, `docs/DELTA_TABLE_2026-10-30.md` |
 | VX-60 | Content packages (`.voxpak`: bundle, encryption, protected publish) | HAVE-THIN | P-028; Part XII (title only) | HAVE-THIN - .voxpak interop not proven and encrypted/protected packs not built - pack signing and friend-instance exchange stayed declined through Part XII (the hub census record); the .runmal pack substrate is proven and grew at P-028 | `tests/test_p028_portable_archive_growth.py` |
-| VX-61 | Chats travel as packs (with images, dependency warnings) | HAVE-THIN | P-028 kin; Part XII (title only) | NOT-YET-REJUDGED | - |
+| VX-61 | Chats travel as packs (with images, dependency warnings) | HAVE-THIN | P-028 kin; Part XII (title only) | HAVE-THIN - chats travel as packs: the portable .runmal archive carries every chat with its messages as a sealed member under the per-member SHA-256 manifest discipline, with the chat whole dependency estate (characters, lorebooks, memories, presets, groups, character asset bytes) in the same archive, audited whole at P-028; a missing asset file at export is named as a warning, never dropped silently; still missing: chat-attached / generated image payloads do not ride the archive (message image attachments live in the vision attachment store, which the portable archive never reads), no missing-dependency warning surface exists on restore (restore is whole-estate and count-verified), and there is no per-chat pack and no road warns that a travelled chat dependency is absent at the far end; judged here under the keeper Q1 ruling | `src/runmal/portable/archive.py`, `src/runmal/portable/restore.py`, `tests/test_p028_portable_archive_growth.py`, `docs/PORTABLE_ARCHIVE_GROWTH_2026-11-06.md`, `docs/DELTA_TABLE_2026-10-30.md` |
 | VX-62 | Clients (Windows desktop, Linux server+browser, Android companion) | HAVE-THIN | P-011 (decision record) | NOT-YET-REJUDGED | - |
 | VX-63 | Web UI phone-shaped (master-detail, cards, bottom sheets, step flows) | HAVE-THIN | P-011 kin | NOT-YET-REJUDGED | - |
 | VX-64 | Shared accounts (several sign-ins on one account, users management) | HAVE-THIN | NO HOME in defined parts — flagged for P-014 | NOT-YET-REJUDGED | - |

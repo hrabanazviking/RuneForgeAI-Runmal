@@ -64,6 +64,11 @@ TRANCHE10 = {
 }
 TRANCHE10_HAVE_THIN = {"VX-54"}
 TRANCHE10_MISSING = TRANCHE10 - TRANCHE10_HAVE_THIN
+TRANCHE11 = {
+    "VX-59", "VX-61",
+}
+TRANCHE11_HAVE_THIN = {"VX-61"}
+TRANCHE11_SHIPPED_SOVEREIGN = {"VX-59"}
 DD_ROWS = ("VX-01", "VX-42", "VX-59")
 CLOSING_TOKENS = {
     "HAVE", "HAVE-THIN", "MISSING", "SHIPPED-SOVEREIGN",
@@ -161,7 +166,8 @@ def test_05_tranche2_rows_carry_closing_verdicts():
 def test_06_rows_outside_tranches_exactly_not_yet_rejudged():
     rows = _rows(MATRIX)
     # P-226 heal: restated to the cumulative tranches 1-8 truth.
-    judged = TRANCHE1 | TRANCHE2 | TRANCHE3 | TRANCHE4 | TRANCHE5 | TRANCHE6 | TRANCHE7 | TRANCHE8 | TRANCHE9 | TRANCHE10
+    # P-229 heal: restated to the cumulative tranches 1-11 truth.
+    judged = TRANCHE1 | TRANCHE2 | TRANCHE3 | TRANCHE4 | TRANCHE5 | TRANCHE6 | TRANCHE7 | TRANCHE8 | TRANCHE9 | TRANCHE10 | TRANCHE11
     for rid, cells in rows.items():
         if rid in judged:
             continue
@@ -257,6 +263,13 @@ def test_09_section3_counts_equal_recount():
     judged = TRANCHE1 | TRANCHE2 | TRANCHE3 | TRANCHE4 | TRANCHE5 | TRANCHE6 | TRANCHE7 | TRANCHE8 | TRANCHE9 | TRANCHE10
     gotc10 = _count_line(flat, label10)
     assert gotc10 == _as_tuple(_counts(rows, judged), len(judged))
+    # P-229 heal: restated to the cumulative tranches 1-11 truth.
+    got11 = _count_line(flat, "Tranche 11 closing counts")
+    assert got11 == _as_tuple(_counts(rows, TRANCHE11), len(TRANCHE11))
+    label11 = "Cumulative judged counts [(]tranches 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 and 11[)]"
+    judged = TRANCHE1 | TRANCHE2 | TRANCHE3 | TRANCHE4 | TRANCHE5 | TRANCHE6 | TRANCHE7 | TRANCHE8 | TRANCHE9 | TRANCHE10 | TRANCHE11
+    gotc11 = _count_line(flat, label11)
+    assert gotc11 == _as_tuple(_counts(rows, judged), len(judged))
     remainder = sum(1 for rid, cells in rows.items()
                     if rid not in judged
                     and cells[4] == "NOT-YET-REJUDGED")
@@ -269,10 +282,16 @@ def test_10_deliberately_different_rows_carry_disposition():
     text = MATRIX.read_text(encoding="utf-8")
     rows = _rows(MATRIX)
     s4 = _section(text, "## " + S + "4")
-    for rid in ("VX-01", "VX-59"):
-        assert rows[rid][2] == "DELIBERATELY-DIFFERENT", rid
-        assert rows[rid][4] == "NOT-YET-REJUDGED", rid
-        assert rid in s4, rid
+    # P-229 heal class 5 (keeper class-5 grant, the P-223
+    # precedent): VX-59 restated per-row at greater strength
+    # to its exact Q2 SHIPPED-SOVEREIGN closing; VX-01 still
+    # NOT-YET-REJUDGED; VX-42 pin untouched below.
+    assert rows["VX-01"][2] == "DELIBERATELY-DIFFERENT"
+    assert rows["VX-01"][4] == "NOT-YET-REJUDGED"
+    assert "VX-01" in s4
+    assert rows["VX-59"][2] == "DELIBERATELY-DIFFERENT"
+    assert _closing_token(rows["VX-59"]) == "SHIPPED-SOVEREIGN"
+    assert "VX-59" in s4
     # Heal class 5 (keeper ruling, 2026-11-10): VX-42 closed
     # SHIPPED-SOVEREIGN at P-223 under ruling Q3, superseding
     # the pre-ruling blanket pin. Pin its exact closing
