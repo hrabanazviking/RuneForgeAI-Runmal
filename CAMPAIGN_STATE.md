@@ -21891,3 +21891,113 @@ P-162 BANKED - Character Face History
     whose road home was Part V,
     re-judged (scout in
     rotation team-01).
+    P-222 BANKED - Parity
+    matrix tranche 4 (Part XIV,
+    The Proof Spine; scope
+    DERIVED - the roadmap gives
+    Part XIV only its part-
+    table line, P-219..P-232,
+    plus founding principle 4).
+    - team-01 commit 6c1cf17
+    merged (no-ff) into
+    yrsa/two-mirrors-build as 3
+    a0ea0a161c0163cfb46b333686e
+    e9dc099f1367 (parents
+    8e792a1 + 6c1cf17). Merge
+    CLEAN - 6 files, +360/-20:
+    docs/PARITY_MATRIX_2026-11-
+    10.md tranche 4 judged, tes
+    ts/test_p222_parity_matrix.
+    py NEW (18 tests), tests/te
+    st_p219_parity_matrix.py
+    pins 5/6/8 healed to the
+    cumulative tranche 1 union
+    2 union 3 union 4 shape, te
+    sts/test_p220_parity_matrix
+    .py pins 6/8/9 healed to
+    the cumulative shape, tests
+    /test_p221_parity_matrix.py
+    pins 6/9 healed to the
+    cumulative shape (JUDGED
+    gains TRANCHE4), docs/CLEAN
+    _ROOM_LOG_2026-10-30.md +1
+    headed P-222 entry. Scope:
+    tranche 4 closing
+    judgements for the twelve
+    rows whose road home was
+    Part V (ST-07, ST-13,
+    ST-14, ST-46, ST-47, ST-48,
+    ST-49, ST-50, ST-51, ST-53,
+    ST-60, VX-06) under the
+    keeper ruling Q1 (ST-50
+    included as MISSING): HAVE
+    5 / HAVE-THIN 6 / MISSING 1
+    / SHIPPED-SOVEREIGN 0.
+    Cumulative judged 48 rows:
+    HAVE 11 / HAVE-THIN 33 /
+    MISSING 4 / SHIPPED-
+    SOVEREIGN 0; the remaining
+    93 rows printed NOT-YET-
+    REJUDGED. NO src change, NO
+    migration; head stays 0042.
+    Route census stays 356
+    paths / 439 operations.
+    Evidence (team-01 hidden_fi
+    les/P222_EVIDENCE.md +
+    logs): battery 18 passed;
+    neighbours fence 253
+    passed; combined 271
+    passed; team full suite
+    6293 passed / 5 skipped / 0
+    failed in 426.05s (= 6275
+    banked at P-221 + 18
+    exact). Fence recount note
+    (honest delta, not a
+    failure): the design
+    expected 243 neighbours on
+    a heritage figure of 101
+    carried from P-220;
+    recounting the named
+    heritage files at this base
+    gives 111, the delta of
+    exactly 10 being tests/test
+    _p202_gate_record.py, so
+    the combined fence is 271,
+    not the design arithmetic
+    261; every fence pin
+    passed. Banking: combined
+    fence on the merged tree
+    271 passed / 0 failed in
+    71.67s (= 18 new + 253
+    neighbours exact; run at
+    banking, log forge hidden_f
+    iles/P222_COMBINED.log);
+    forge confirmation full
+    suite 6293 passed / 5
+    skipped / 0 failed in
+    428.86s, exit 0 - exact, no
+    contention failure, no solo
+    re-run needed (log forge hi
+    dden_files/P222_FORGE_FULL.
+    log). Carried items
+    unchanged: D1 stateless SSE
+    error-swallowing FENCED,
+    ruling outstanding; per-
+    swipe thinking browsing
+    DECLINED-PENDING-WORD; K-A
+    binding label update, K-B
+    retention / bulk clear and
+    K-C unified-search history
+    NAMED OPEN. Defects in
+    banked code: none found at
+    banking. Banked now
+    P-001..P-222 + the
+    commissioned binding
+    depth/role slice. PART XIV
+    OPEN (P-219..P-232, gate
+    P-232). Next in roadmap
+    order: P-223 - parity
+    matrix tranche 5, the rows
+    whose road home was Part
+    VI, re-judged (scout in
+    rotation team-02).
