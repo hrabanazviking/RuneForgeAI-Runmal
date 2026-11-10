@@ -21271,3 +21271,119 @@ P-162 BANKED - Character Face History
     group creation, per
     team-03 hidden_files/P216_
     DESIGN.md.
+    P-216 BANKED - Saved-group
+    creation on the group page
+    (Part XIII, DERIVED). -
+    team-03 commit 8deeee3
+    merged (no-ff) into
+    yrsa/two-mirrors-build as
+    6a97f3f (parents 33dc1c5
+    + 8deeee3). Merge CLEAN -
+    no conflicts in any file.
+    Scope: saved-group
+    creation on the group
+    page - group.html gains
+    input#new-group-name and
+    button#create-group,
+    directly after the P-215
+    group-mode line inside the
+    aside Saved groups block;
+    group.js gains
+    createGroup() POSTing via
+    api() to the banked POST
+    /api/v1/groups road with
+    the trimmed name and
+    member_character_ids from
+    selectedIds(), selected-
+    never-opened on success
+    (name input cleared,
+    loadSavedGroups() re-run,
+    select#saved-group set to
+    the returned group.id; no
+    openSavedGroup call, no
+    openGroupId reference, no
+    /messages fetch), empty
+    name showErrors with no
+    POST, failure via
+    showError with no picker
+    rebuild and no input
+    clear, wired on
+    DOMContentLoaded beside
+    the open-group and
+    close-group wiring. NO
+    migration; head stays
+    0042. Route census stays
+    356 paths / 439
+    operations. Heals, all at
+    equal-or-greater strength:
+    (1) S311 group golden
+    healed ONLY via
+    RUNMAL_UPDATE_GOLDENS -
+    only tests/fixtures/ui/gro
+    up.golden.txt moved,
+    exactly +button#create-
+    group and +input#new-
+    group-name, every other
+    golden byte-unmoved; (2)
+    P-215 battery pin 14
+    census restated - every
+    prior id PLUS
+    new-group-name and
+    create-group; (3) P-214
+    battery pin 14 census
+    restated the same way,
+    appended to its P-215 heal
+    comment. Segment-placement
+    contingency applied
+    (design section 5):
+    createGroup sits directly
+    after selectedIds() and
+    before sendPersistent in
+    group.js, and NO banked pin
+    was edited for placement -
+    the slice one POST lives
+    only inside createGroup
+    block. D1 stays FENCED
+    unchanged - NOT fixed by
+    this slice. Evidence
+    (team-03 hidden_f
+    iles/P216_EVIDENCE.md +
+    logs): battery 14 passed;
+    neighbours fence 168
+    passed / 0 failed (= 165
+    banked + S311 watch 3);
+    S311 golden watch 3
+    passed post-heal; team
+    full suite 6164 passed /
+    5 skipped / 0 failed, exit
+    0 in 489.48s (= 6150
+    banked at P-215 + 14
+    exact). Banking: combined
+    fence on the merged tree
+    (test_p216 + the neighbour
+    files + the S311 file) 182
+    passed / 0 failed (=
+    battery 14 + neighbours
+    168 exact); forge
+    confirmation full suite
+    6164 passed / 5 skipped / 0
+    failed, in 409.31s, exit 0
+    - exact (log hidden_f
+    iles/P216_FORGE_
+    CONFIRM.log). Defects in
+    banked code: none found at
+    banking. Banked now
+    P-001..P-216 + the
+    commissioned binding
+    depth/role slice. PART
+    XIII OPEN (P-203..P-218,
+    gate P-218). Next in
+    roadmap order: P-217 (Part
+    XIII, DERIVED) - the two
+    group-page refinements
+    (roster/strategy disable
+    in persistent mode and
+    picker-count refresh after
+    a persistent send), per
+    team-01 hidden_files/P217_
+    DESIGN.md.
