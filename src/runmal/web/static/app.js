@@ -269,6 +269,7 @@ async function streamGeneration(chatId) {
   setRetryVisible(false);
   const bubble = appendMessage("assistant", "");
   let full = "";
+  let reasoningParts = [];
   let stopped = false;
   try {
     const res = await fetch("/api/v1/generate", {
@@ -300,6 +301,11 @@ async function streamGeneration(chatId) {
           if (event.type === "token") {
             full += event.text;
             bubble.textContent = full; // incremental token rendering
+          } else if (event.type === "reasoning") {
+            // P-209: collected for STORAGE only, in arrival
+            // order -- never rendered live, never merged into
+            // the answer text (P-206 stored-only rendering).
+            reasoningParts.push(event.text);
           } else if (event.type === "done") {
             if (event.finish_reason === "cancelled") stopped = true;
           }
@@ -311,7 +317,16 @@ async function streamGeneration(chatId) {
     announce(stopped ? "Generation stopped." : "Reply received.");
     await api("/api/v1/chats/" + chatId + "/messages", {
       method: "POST",
-      body: JSON.stringify({ role: "assistant", content: full || "(no output)" }),
+      body: JSON.stringify({
+        role: "assistant",
+        content: full || "(no output)",
+        // P-209: the record this stream produced, riding the
+        // one append that persists the reply; the panel still
+        // renders the STORED record on the next thread read.
+        reasoning: reasoningParts.length
+          ? { status: "recorded", text: reasoningParts.join("") }
+          : { status: "not_present" },
+      }),
     });
     state.allMessages.push({ role: "assistant", content: full || "(no output)" });
     state.totalMessages += 1;

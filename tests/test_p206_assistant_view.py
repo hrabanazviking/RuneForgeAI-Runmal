@@ -16,8 +16,10 @@ migration, no server change):
   throwing (node pins, S302/P-107 road).
 - app.js wires m.reasoning through renderThread /
   appendMessage, sets thinking text via textContent only,
-  and streamGeneration stays untouched (the stored-only
-  honesty position, pinned so live wiring cannot sneak in).
+  and streamGeneration renders no live thinking (the
+  stored-only honesty position; P-209 restated test_16 when
+  the stream began collecting reasoning for storage only --
+  the pin now asserts the collector AND no live rendering).
 - Fences: migration head stays 0042; the app route census
   equals the P-205 census (354 paths / 437 operations).
 Fixtures mirror test_p205_reasoning_record.py.
@@ -278,13 +280,28 @@ def test_15_thinking_text_set_via_textcontent_only():
     assert "details.open" not in panel and ".setAttribute(\"open\"" not in panel
 
 
-def test_16_stream_generation_untouched_by_the_slice():
+def test_16_stream_generation_collects_for_storage_renders_nothing_live():
+    # Restated by P-209 (the one named heal; P-207 test_e3
+    # precedent): streamGeneration now COLLECTS reasoning
+    # dicts for storage only, so the old '"reasoning" not in
+    # stream' sentence is false BY DESIGN. The new truth, at
+    # equal-or-greater strength: the collector is present,
+    # token / done handling is intact, and NOTHING in the
+    # stream path renders live thinking -- the panel still
+    # renders the STORED record at thread read time.
     source = APP_JS.read_text()
     stream = source.split("async function streamGeneration", 1)[1].split(
         "async function sendMessage", 1)[0]
     assert 'event.type === "token"' in stream
     assert 'event.type === "done"' in stream
-    assert "reasoning" not in stream  # no live-SSE wiring snuck in
+    assert 'event.type === "reasoning"' in stream  # the collector
+    assert "reasoningParts.push(event.text)" in stream
+    assert 'reasoningParts.join("")' in stream  # built for the append
+    assert 'status: "recorded"' in stream
+    assert 'status: "not_present"' in stream
+    assert "reasoningView" not in stream  # no live rendering
+    assert "reasoningPanel" not in stream  # no live panel
+    assert "bubble.textContent = full" in stream  # tokens only
 
 
 # -- Fence pins ------------------------------------------------------------------

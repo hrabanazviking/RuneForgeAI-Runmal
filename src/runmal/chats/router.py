@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.chats import metadata as metadata_mod
 from runmal.chats.greetings import GreetingChoice
+from runmal.chats import reasoning as reasoning_mod
 from runmal.chats import service
 from runmal.chats.service import chat_to_dict, event_to_dict, message_to_dict
 from runmal.chats.swipes import settings_to_data
@@ -99,9 +100,27 @@ class ChatUpdate(BaseModel):
     title: str
 
 
+class ReasoningIn(BaseModel):
+    """One swipe's reasoning record on the wire (P-209): the
+    record's shape only -- never a document. Converted with
+    the strict builder before anything is stored, so a lying
+    payload is refused (422), never stored."""
+
+    status: Literal["recorded", "not_present", "not_recorded", "unknown"]
+    text: str | None = None
+
+
+def _reasoning_record(reasoning: ReasoningIn | None) -> dict | None:
+    if reasoning is None:
+        return None
+    return reasoning_mod.build_record(
+        status=reasoning.status, text=reasoning.text)
+
+
 class MessageCreate(BaseModel):
     role: Literal["user", "assistant", "system"]
     content: str = Field(min_length=1)
+    reasoning: ReasoningIn | None = None
 
 
 class MessageUpdate(BaseModel):
@@ -132,6 +151,7 @@ class ChatBackendProfileIn(BaseModel):
 
 class SwipeCreate(BaseModel):
     content: str = Field(min_length=1)
+    reasoning: ReasoningIn | None = None
 
 
 class SwipeSelectIn(BaseModel):
@@ -460,7 +480,9 @@ async def append_message(
     session: AsyncSession = Depends(get_session),
 ):
     try:
-        message = await service.append_message(session, user_id, chat_id, body.role, body.content)
+        message = await service.append_message(
+            session, user_id, chat_id, body.role, body.content,
+            reasoning=_reasoning_record(body.reasoning))
     except KeyError:
         raise HTTPException(status_code=404, detail="chat not found") from None
     except ValueError as exc:
@@ -698,7 +720,8 @@ async def add_swipe(
     """Append an alternate to a message's swipe deck (P-065)."""
     try:
         message = await service.add_swipe(
-            session, user_id, chat_id, message_id, body.content
+            session, user_id, chat_id, message_id, body.content,
+            reasoning=_reasoning_record(body.reasoning),
         )
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc

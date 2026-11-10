@@ -1387,18 +1387,32 @@ async def add_swipe(
     chat_id: str,
     message_id: str,
     content: str,
+    *,
+    reasoning: dict | None = None,
 ) -> Message | None:
     """Append a new alternate to a message's swipe deck (P-065).
 
     The new alternate becomes the active one. Returns None when the
     chat or message is missing/foreign. Invalid content raises
     ValueError. The mutation event records only counts -- never
-    the alternate text.
+    the alternate text. P-209: ``reasoning`` is the new swipe's
+    ONE reasoning record (strict, P-205), supplied by a caller
+    that generated the alternate; None keeps the standing
+    not_recorded stamp.
     """
     message = await _get_owned_message(session, user_id, chat_id, message_id)
     if message is None:
         return None
     swipe_mod.validate_new_alternate(content)
+    if reasoning is not None:
+        # P-209: a caller landing a GENERATED alternate may
+        # attach that generation's reasoning record. Strict-
+        # validate it BEFORE any store, so a lying record
+        # leaves the deck and the document untouched. With no
+        # record attached this seam invents nothing (the
+        # append_message P-205 doctrine verbatim: no param,
+        # no capture, not_recorded).
+        reasoning_mod.build_document(reasoning)
     await _journal(session, user_id, chat_id, "message.swipe_add", {"message_id": message_id})
     deck, _idx = _deck(message)
     new_deck = list(deck)
@@ -1420,7 +1434,8 @@ async def add_swipe(
     message.reasoning_json = reasoning_mod.dump_document(
         reasoning_mod.with_record_for_swipe(
             reasoning_mod.parse_reasoning(message), new_id,
-            reasoning_mod.not_recorded_record()))
+            reasoning if reasoning is not None
+            else reasoning_mod.not_recorded_record()))
     await _record_event(
         session,
         chat_id,
