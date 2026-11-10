@@ -458,14 +458,18 @@ def test_route_set_grows_by_exactly_one(tmp_path, monkeypatch):
         path for path in paths if path.startswith("/api/v1/inspector")}
     # P-203 banked exactly one inspector road; P-204 adds
     # exactly the events road beside it - no more.
+    # P-210 heal: P-210 adds exactly the reasoning road
+    # beside those two in its own slice; the set is still
+    # exact - no more.
     assert inspector_paths == {
         "/api/v1/inspector/chats/{chat_id}",
         "/api/v1/inspector/chats/{chat_id}/events",
+        "/api/v1/inspector/chats/{chat_id}/reasoning",
     }
     assert "get" in paths["/api/v1/inspector/chats/{chat_id}/events"]
     from runmal.inspector.router import router as inspector_router
 
-    assert len(inspector_router.routes) == 2
+    assert len(inspector_router.routes) == 3
 
 
 def test_events_document_is_a_pure_read(tmp_path, monkeypatch):

@@ -375,8 +375,11 @@ def test_15_route_census_stays_354_437(tmp_path, monkeypatch):
         len([k for k in methods
              if k in ("get", "post", "put", "delete", "patch")])
         for methods in paths.values())
-    assert len(paths) == 354  # no new road
-    assert operations == 437
+    # P-210 heal: 355 / 438 - exactly one new road since
+    # this pin was written (P-210's Inspector reasoning
+    # road); P-209 itself added no road.
+    assert len(paths) == 355
+    assert operations == 438
 
 
 async def test_16_content_law_on_both_new_seams(tmp_path, monkeypatch):

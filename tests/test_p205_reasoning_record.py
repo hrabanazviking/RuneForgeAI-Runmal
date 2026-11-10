@@ -502,9 +502,16 @@ async def test_d4_full_document_road_all_swipes_and_404(tmp_path, monkeypatch):
         assert await svc.get_message_reasoning(
             session, other, chat_id, message_id) is None
     # HTTP road: exactly one reasoning road in the app, house 404 idiom.
+    # P-210 heal: a second /reasoning road exists since
+    # P-210 (the Inspector census road); the P-205
+    # per-message road is still exactly one, now pinned
+    # by its full path, and the /reasoning total is exact.
     client = make_client(tmp_path / "http", monkeypatch)
     paths = list(client.get("/openapi.json").json()["paths"])
-    assert len([p for p in paths if p.endswith("/reasoning")]) == 1
+    assert [
+        p for p in paths if p.endswith("/messages/{message_id}/reasoning")
+    ] == ["/api/v1/chats/{chat_id}/messages/{message_id}/reasoning"]
+    assert len([p for p in paths if p.endswith("/reasoning")]) == 2
     created = client.post("/api/v1/chats", json={"title": "Saga"})
     assert created.status_code == 201, created.text
     http_chat = created.json()["id"]

@@ -1731,3 +1731,27 @@ async def list_chat_provenance(
         "messages": messages,
         "summary": prov_mod.summarise_provenance(views),
     }
+
+
+async def list_chat_reasoning(
+    session: AsyncSession, user_id: str, chat_id: str
+) -> dict | None:
+    """A chat's per-message reasoning views: every message's
+    ACTIVE view and FULL document (P-210), for the Inspector
+    reasoning census. None when the chat is missing or
+    foreign. Pure read over the banked P-205 tolerant
+    readers; persists nothing."""
+    if await _get_owned_chat(session, user_id, chat_id) is None:
+        return None
+    history = await _ordered_messages(session, chat_id)
+    messages = []
+    for message in history:
+        messages.append({
+            "message_id": message.id, "role": message.role,
+            "active": reasoning_mod.active_view(message, _deck(message)[1]),
+            "full": reasoning_mod.full_view(message),
+        })
+    return {
+        "chat_id": chat_id,
+        "messages": messages,
+    }
