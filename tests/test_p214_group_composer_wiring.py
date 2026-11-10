@@ -200,9 +200,20 @@ def test_07_reply_renders_via_the_p213_pair():
 
 
 def test_08_null_message_renders_nothing():
+    # P-217 heal (named in advance in the P-217 design,
+    # section 5): the early-return form this pin asserted
+    # is replaced BY DESIGN with the guarded render, so a
+    # null message renders nothing AND reaches the P-217
+    # picker-refresh tail - the same null-message truth,
+    # restated at equal-or-greater strength in its true
+    # P-217 form; the P-217 battery pin 7 asserts exactly
+    # this form.
     segment = persistent_segment()
-    guard_at = segment.index("if (!m) return;")
+    assert "if (!m) return;" not in segment
+    guard_at = segment.index("if (m) {")
     assert guard_at < segment.index("addBubble(m.speaker_name")
+    assert segment.index("addBubble(m.speaker_name") \
+        < segment.index("await loadSavedGroups();")
 
 
 def test_09_stateless_body_intact():

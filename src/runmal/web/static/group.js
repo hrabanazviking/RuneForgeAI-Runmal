@@ -123,7 +123,11 @@ async function openSavedGroup() {
   // are never copied into the stateless turn state, never
   // sent back, and nothing is written to web storage;
   // opening a saved group puts the composer into that
-  // group's persistent mode (P-214). The thread is cleared
+  // group's persistent mode (P-214). The roster and
+  // strategy controls govern only the stateless room, so
+  // opening a saved group disables them - the group's own
+  // stored policy governs speaker choice here (P-217). The
+  // thread is cleared
   // only after a successful
   // fetch - a failure surfaces via showError and leaves the
   // visible thread untouched.
@@ -145,6 +149,9 @@ async function openSavedGroup() {
     openGroupId = groupId;
     $("group-mode").textContent = "Saved group mode";
     $("close-group").disabled = false;
+    $("strategy").disabled = true;
+    document.querySelectorAll(".roster-check")
+      .forEach((box) => { box.disabled = true; });
   } catch (err) {
     showError(String(err));
   }
@@ -164,6 +171,9 @@ function closeSavedGroup() {
   rrCursor = 0;
   $("group-mode").textContent = "Stateless room";
   $("close-group").disabled = true;
+  $("strategy").disabled = false;
+  document.querySelectorAll(".roster-check")
+    .forEach((box) => { box.disabled = false; });
 }
 
 function selectedIds() {
@@ -222,13 +232,20 @@ async function sendPersistent(text) {
     });
     const result = await res.json();
     const m = result.message;
-    if (!m) return;
-    const body = addBubble(m.speaker_name || "user", m.content);
-    if (m.reasoning) {
-      const panel = reasoningPanel(
-        window.RunmalRenderer.reasoningView(m.reasoning));
-      if (panel) body.parentElement.appendChild(panel);
+    if (m) {
+      const body = addBubble(m.speaker_name || "user", m.content);
+      if (m.reasoning) {
+        const panel = reasoningPanel(
+          window.RunmalRenderer.reasoningView(m.reasoning));
+        if (panel) body.parentElement.appendChild(panel);
+      }
     }
+    // P-217: the send stored turns server-side, so the
+    // picker's counts are re-read from the banked list
+    // road (display-only) and the picker is re-set to
+    // the opened group.
+    await loadSavedGroups();
+    $("saved-group").value = openGroupId;
   } catch (err) {
     showError(String(err));
   }
