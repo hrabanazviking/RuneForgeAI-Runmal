@@ -24,7 +24,10 @@ Contract under test (P210_DESIGN.md):
 - The P-203 overview and P-204 events documents are
   unchanged by the join; migration head stays 0042
   (no m0043); the route census grows by exactly one
-  road to 355 paths / 438 operations.
+  road to 355 paths / 438 operations (P-211 heal: the
+  census has since grown by P-211's one road to
+  356 paths / 439 operations; this slice's own growth
+  statement stands as written).
 Fixtures mirror test_p204_inspector_events.py /
 test_p209_swipe_generate_reasoning.py.
 """
@@ -505,8 +508,10 @@ def test_13_route_census_grows_by_exactly_one_road(tmp_path, monkeypatch):
         )
         for methods in paths.values()
     )
-    assert len(paths) == 355  # 354 at P-209 + this one road
-    assert operations == 438
+    # P-211 heal: 356 / 439 since P-211's one new road
+    # (the Inspector group reasoning road).
+    assert len(paths) == 356  # 354 at P-209 + P-210/P-211 roads
+    assert operations == 439
     assert "/api/v1/inspector/chats/{chat_id}/reasoning" in paths
 
 

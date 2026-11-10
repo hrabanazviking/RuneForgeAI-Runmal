@@ -461,15 +461,19 @@ def test_route_set_grows_by_exactly_one(tmp_path, monkeypatch):
     # P-210 heal: P-210 adds exactly the reasoning road
     # beside those two in its own slice; the set is still
     # exact - no more.
+    # P-211 heal: P-211 adds exactly the group reasoning
+    # road beside those three in its own slice; the set
+    # is still exact - no more.
     assert inspector_paths == {
         "/api/v1/inspector/chats/{chat_id}",
         "/api/v1/inspector/chats/{chat_id}/events",
         "/api/v1/inspector/chats/{chat_id}/reasoning",
+        "/api/v1/inspector/groups/{group_id}/reasoning",
     }
     assert "get" in paths["/api/v1/inspector/chats/{chat_id}/events"]
     from runmal.inspector.router import router as inspector_router
 
-    assert len(inspector_router.routes) == 3
+    assert len(inspector_router.routes) == 4
 
 
 def test_events_document_is_a_pure_read(tmp_path, monkeypatch):

@@ -1,17 +1,22 @@
-"""Inspector HTTP surface (P-203, P-204, P-210): the
-composed overview on GET /inspector/chats/{chat_id},
+"""Inspector HTTP surface (P-203, P-204, P-210, P-211):
+the composed overview on GET /inspector/chats/{chat_id},
 the events document on GET
-/inspector/chats/{chat_id}/events and the reasoning
-document on GET /inspector/chats/{chat_id}/reasoning -
-bearer-gated like every API in app.py and owner-scoped
-like every chat road. Unknown or foreign chats answer
-the house 404 idiom ("chat not found"), never a leaked
-existence signal beyond what sibling chat roads already
-give. The truth layer lives in runmal.inspector.overview,
-runmal.inspector.events and runmal.inspector.reasoning;
-this module is only the HTTP shape. All three roads are
-pure reads: they write nothing, compose no prompt and
-run no activation inspection.
+/inspector/chats/{chat_id}/events, the reasoning
+document on GET /inspector/chats/{chat_id}/reasoning
+and the group reasoning document on GET
+/inspector/groups/{group_id}/reasoning - bearer-gated
+like every API in app.py and owner-scoped like every
+chat and group road. Unknown or foreign chats answer
+the house 404 idiom ("chat not found") and unknown or
+foreign groups the group idiom ("group not found"),
+never a leaked existence signal beyond what sibling
+chat and group roads already give. The truth layer
+lives in runmal.inspector.overview,
+runmal.inspector.events, runmal.inspector.reasoning
+and runmal.inspector.group_reasoning; this module is
+only the HTTP shape. All four roads are pure reads:
+they write nothing, compose no prompt and run no
+activation inspection.
 """
 
 from __future__ import annotations
@@ -21,6 +26,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.db.deps import get_owner_id, get_session
 from runmal.inspector import events as events_service
+from runmal.inspector import group_reasoning as group_reasoning_service
 from runmal.inspector import overview as overview_service
 from runmal.inspector import reasoning as reasoning_service
 
@@ -75,4 +81,23 @@ async def get_inspector_reasoning(
         session, user_id, chat_id)
     if payload is None:
         raise HTTPException(status_code=404, detail="chat not found")
+    return payload
+
+
+@router.get("/inspector/groups/{group_id}/reasoning")
+async def get_inspector_group_reasoning(
+    group_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """The group's Inspector group reasoning document
+    (P-211): the P-205 reasoning record as landed in the
+    groupchat store, as a per-group census - the P-210
+    summary shape, a per-speaker roll-up and per-message
+    entries carrying speaker identity - with no thinking
+    text and no message content anywhere."""
+    payload = await group_reasoning_service.build_group_reasoning_document(
+        session, user_id, group_id)
+    if payload is None:
+        raise HTTPException(status_code=404, detail="group not found")
     return payload

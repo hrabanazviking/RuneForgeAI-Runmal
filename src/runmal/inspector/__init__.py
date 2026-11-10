@@ -32,12 +32,26 @@ Inspector & Bots).
   (list_chat_reasoning), never re-implements it, and
   carries NO thinking text anywhere; the text stays on
   the banked raw road each entry points at.
+- ``group_reasoning`` - the Inspector group reasoning
+  document (P-211): ONE read-only, schema-versioned
+  document per owned group joining the banked P-205
+  reasoning record as landed in the groupchat store
+  (P-208) into the Inspector as a census - the P-210
+  summary shape verbatim, a per-speaker roll-up and
+  per-message entries carrying speaker identity. The
+  service CALLS the banked-shape groupchat-store read
+  (list_group_reasoning) and the banked
+  summarise_reasoning aggregator, never re-implements
+  either, and carries NO thinking text and NO message
+  content anywhere; the text stays on the banked group
+  transcript road the document points at.
 - ``router`` - the HTTP roads: GET
   /inspector/chats/{chat_id}, GET
-  /inspector/chats/{chat_id}/events and GET
-  /inspector/chats/{chat_id}/reasoning, owner-scoped
-  like every chat road; unknown or foreign chats answer
-  the house 404 idiom.
+  /inspector/chats/{chat_id}/events, GET
+  /inspector/chats/{chat_id}/reasoning and GET
+  /inspector/groups/{group_id}/reasoning, owner-scoped
+  like every chat and group road; unknown or foreign
+  chats and groups answer the house 404 idiom.
 """
 
 from __future__ import annotations
@@ -51,4 +65,12 @@ EVENTS_SCHEMA = "runmal-p204-inspector-events-v1"
 #: Schema id of the Inspector reasoning document.
 REASONING_SCHEMA = "runmal-p210-inspector-reasoning-v1"
 
-__all__ = ["EVENTS_SCHEMA", "OVERVIEW_SCHEMA", "REASONING_SCHEMA"]
+#: Schema id of the Inspector group reasoning document.
+GROUP_REASONING_SCHEMA = "runmal-p211-inspector-group-reasoning-v1"
+
+__all__ = [
+    "EVENTS_SCHEMA",
+    "GROUP_REASONING_SCHEMA",
+    "OVERVIEW_SCHEMA",
+    "REASONING_SCHEMA",
+]

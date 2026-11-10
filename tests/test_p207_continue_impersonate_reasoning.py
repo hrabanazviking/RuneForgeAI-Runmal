@@ -365,11 +365,12 @@ def test_15_route_census_equals_p206_census(tmp_path, monkeypatch):
         len([k for k in methods
              if k in ("get", "post", "put", "delete", "patch")])
         for methods in paths.values())
-    # P-210 heal: 355 / 438 since P-210's one new road
-    # (the P-206 census this pin was written against was
+    # P-211 heal: 356 / 439 since P-211's one new road
+    # (P-210 heal: 355 / 438 since P-210's one new road;
+    # the P-206 census this pin was written against was
     # 354 / 437; P-207 itself added no road).
-    assert len(paths) == 355
-    assert operations == 438
+    assert len(paths) == 356
+    assert operations == 439
 
 
 async def test_16_declined_family_still_not_recorded(tmp_path):
