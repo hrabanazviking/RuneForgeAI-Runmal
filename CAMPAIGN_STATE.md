@@ -20652,3 +20652,70 @@ P-162 BANKED - Character Face History
     roadmap order: P-208 (Part XIII,
     DERIVED) - candidate groupchat
     reasoning wiring.
+    P-208 BANKED - Groupchat
+    reasoning wiring (Part XIII,
+    DERIVED). - team-01 commit
+    460fcc1 merged (no-ff) into
+    yrsa/two-mirrors-build as
+    02fa411 (parents 986a94c +
+    460fcc1). Merge CLEAN - no
+    conflicts in any file. Scope:
+    the P-205 reasoning record is
+    now wired into both groupchat
+    roads: the persistent road
+    (P-070 deepening) lands the
+    record in the groupchat store
+    beside the message, and the
+    stateless road forwards the
+    record live on the SSE stream.
+    D2, the persistent road
+    failure-contract gap, is FIXED
+    in this slice - a failed
+    generation now surfaces under
+    the adopted failure contract
+    instead of landing silently.
+    D1, the stateless road
+    error-swallowing, is FENCED
+    unchanged - named here and
+    awaiting a keeper / Volmarr
+    ruling; it is NOT fixed by
+    this slice. NO migration;
+    head stays 0042. Evidence
+    (team-01 hidden_files/
+    P208_EVIDENCE.md + logs):
+    battery 18 passed; neighbours
+    fence 166 passed / 0 failed;
+    team full suite raw 6047
+    passed / 5 skipped / 2 failed,
+    both failures contention-class
+    and solo-green on re-run
+    (test_s503 solo 4 passed,
+    test_p099 module solo 24
+    passed), effective 6049
+    passed / 5 skipped / 0 failed
+    (= 6031 banked at P-207 + 18
+    exact). Banking: combined
+    batteries re-run in the forge
+    (test_p208 + test_p205) 184
+    passed; forge confirmation
+    full suite 6049 passed / 5
+    skipped / 0 failed, in 428.85s
+    - exact. Defects in banked
+    code: none known. Carried
+    limitations: manual swipes and
+    web /generate replies still
+    read not_recorded; the P-207
+    carried items stand unchanged
+    (extend onto a legacy / manual
+    / imported swipe drops the
+    extension generation thinking
+    BY DESIGN; impersonate
+    reasoning stays draft-only);
+    D1 fenced as above. Banked now
+    P-001..P-208 + the commissioned
+    binding depth/role slice. PART
+    XIII OPEN (P-203..P-218). Next in
+    roadmap order: P-209 (Part XIII,
+    DERIVED) - scout to derive its
+    exact scope from the roadmap
+    and the reasoning-debt trail.
