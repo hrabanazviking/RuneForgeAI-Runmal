@@ -6,6 +6,7 @@ const $ = (id) => document.getElementById(id);
 let history = [];       // [{author, content}] — the shared state
 let rrCursor = 0;       // round-robin cursor, carried across turns
 let colorOf = {};       // author name -> color class index
+let openGroupId = null; // P-214: the saved group currently open, null = the stateless room
 
 function showError(text) {
   $("error-text").textContent = text;
@@ -121,8 +122,9 @@ async function openSavedGroup() {
   // stream path uses. DISPLAY-ONLY fence: fetched messages
   // are never copied into the stateless turn state, never
   // sent back, and nothing is written to web storage;
-  // opening a saved group never changes what the composer
-  // sends. The thread is cleared only after a successful
+  // opening a saved group puts the composer into that
+  // group's persistent mode (P-214). The thread is cleared
+  // only after a successful
   // fetch - a failure surfaces via showError and leaves the
   // visible thread untouched.
   const groupId = $("saved-group").value;
@@ -140,6 +142,7 @@ async function openSavedGroup() {
         if (panel) body.parentElement.appendChild(panel);
       }
     }
+    openGroupId = groupId;
   } catch (err) {
     showError(String(err));
   }
@@ -150,12 +153,46 @@ function selectedIds() {
     .map((b) => b.value);
 }
 
+async function sendPersistent(text) {
+  // P-214: one persistent turn on the opened group through
+  // the banked next-turn road. The group itself chooses
+  // the speaker, from its own stored policy and roster;
+  // this branch touches none of the stateless turn state
+  // and never calls the stateless turn road. The reply
+  // renders through the same addBubble + reasoningPanel
+  // pair the P-213 stored path uses. A null message (no
+  // speaker picked) renders nothing further - the user
+  // turn is stored server-side and the page invents no
+  // reply. Errors surface via the existing showError.
+  try {
+    const res = await api("/api/v1/groups/" + openGroupId + "/next", {
+      method: "POST",
+      body: JSON.stringify({ user_text: text, generate: true }),
+    });
+    const result = await res.json();
+    const m = result.message;
+    if (!m) return;
+    const body = addBubble(m.speaker_name || "user", m.content);
+    if (m.reasoning) {
+      const panel = reasoningPanel(
+        window.RunmalRenderer.reasoningView(m.reasoning));
+      if (panel) body.parentElement.appendChild(panel);
+    }
+  } catch (err) {
+    showError(String(err));
+  }
+}
+
 $("group-form").addEventListener("submit", async (ev) => {
   ev.preventDefault();
   const text = $("group-input").value.trim();
   if (!text) return;
   $("group-input").value = "";
   addBubble("user", text);
+  if (openGroupId) {
+    await sendPersistent(text);
+    return;
+  }
   const sentHistory = history.slice();
   history.push({ author: "user", content: text });
   try {
