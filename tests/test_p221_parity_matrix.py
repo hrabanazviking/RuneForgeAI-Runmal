@@ -38,7 +38,11 @@ TRANCHE3 = {
     "ST-33", "ST-35", "ST-36", "ST-38", "ST-39", "ST-74",
     "VX-16", "VX-18",
 }
-JUDGED = TRANCHE1 | TRANCHE2 | TRANCHE3
+TRANCHE4 = {
+    "ST-07", "ST-13", "ST-14", "ST-46", "ST-47", "ST-48",
+    "ST-49", "ST-50", "ST-51", "ST-53", "ST-60", "VX-06",
+}
+JUDGED = TRANCHE1 | TRANCHE2 | TRANCHE3 | TRANCHE4
 DD_ROWS = ("VX-01", "VX-42", "VX-59")
 CLOSING_TOKENS = {
     "HAVE", "HAVE-THIN", "MISSING", "SHIPPED-SOVEREIGN",
@@ -175,7 +179,9 @@ def test_09_section3_counts_equal_recount():
     flat = " ".join(_section(text, "## " + S + "3").split())
     got3 = _count_line(flat, "Tranche 3 closing counts")
     assert got3 == _as_tuple(_counts(rows, TRANCHE3), len(TRANCHE3))
-    label = "Cumulative judged counts [(]tranches 1, 2 and 3[)]"
+    got4 = _count_line(flat, "Tranche 4 closing counts")
+    assert got4 == _as_tuple(_counts(rows, TRANCHE4), len(TRANCHE4))
+    label = "Cumulative judged counts [(]tranches 1, 2, 3 and 4[)]"
     gotc = _count_line(flat, label)
     assert gotc == _as_tuple(_counts(rows, JUDGED), len(JUDGED))
     remainder = sum(1 for rid, cells in rows.items()
