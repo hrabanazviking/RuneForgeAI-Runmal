@@ -22281,3 +22281,161 @@ P-162 BANKED - Character Face History
     whose road home was Part
     VIII, re-judged (scout in
     rotation team-01).
+    P-225 BANKED - Parity
+    matrix tranche 7 (Part XIV,
+    The Proof Spine; scope
+    DERIVED - the roadmap gives
+    Part XIV only its part-
+    table line, P-219..P-232,
+    plus founding principle 4).
+    - team-01 commit 3a10c22
+    merged (no-ff) into
+    yrsa/two-mirrors-build as
+    4581f9794110a7602b6e024842
+    7a9160b92eabcf (parents
+    e01547b + 3a10c22). Merge
+    CLEAN - 9 files, +427/-14:
+    docs/PARITY_MATRIX_2026-11-
+    10.md tranche 7 judged, tes
+    ts/test_p225_parity_matrix.
+    py NEW (18 tests), tests/te
+    st_p219_parity_matrix.py
+    pins 6/8 healed, tests/test
+    _p220_parity_matrix.py pins
+    6/9 extended, tests/test_p2
+    21_parity_matrix.py pin 9
+    restated (JUDGED gains
+    TRANCHE7), tests/test_p222_
+    parity_matrix.py pin 9
+    restated, tests/test_p223_p
+    arity_matrix.py pin 9
+    restated, tests/test_p224_p
+    arity_matrix.py pin 9
+    restated, docs/CLEAN_ROOM_L
+    OG_2026-10-30.md +1 headed
+    P-225 entry.
+    Scope: tranche 7 closing
+    judgement for the one row
+    whose road home was Part
+    VIII (VX-50) under the
+    keeper ruling Q1 (VX-43 NOT
+    judged in tranche 7 - no
+    P-014-style homing
+    instrument homes VX-43 to
+    Part VIII; its road home is
+    Part IX and its home
+    tranche is P-226, next):
+    HAVE 0 / HAVE-THIN 1 /
+    MISSING 0 / SHIPPED-
+    SOVEREIGN 0 (VX-50 HAVE-
+    THIN; the still-missing
+    depth named in its cell: no
+    semantic caption provider
+    in-tree - semantic_caption_
+    available is False, stated
+    as data (gate K1), no
+    screen capture, no webcam/
+    camera flow (K3), the
+    watcher a polling scan not
+    a daemon (K4), no OCR
+    (K2)).
+    Cumulative judged 73 rows:
+    HAVE 13 / HAVE-THIN 54 /
+    MISSING 5 / SHIPPED-
+    SOVEREIGN 1; the remaining
+    68 rows printed NOT-YET-
+    REJUDGED.
+    Heals (class 1 only, the
+    standing cumulative
+    restatement, each marked
+    "P-225 heal" in-file): the
+    P-219 pins 6/8 restated,
+    P-220 pins 6 and 9
+    extended, the P-221, P-222,
+    P-223 and P-224 pin 9
+    restated the same way with
+    JUDGED constants extended
+    by TRANCHE7 - the campaign
+    established merged-truth
+    heal pattern, no pin
+    loosened. No class-2 heal
+    (Branch A), no heal class 5
+    event (no DELIBERATELY-
+    DIFFERENT row in tranche 7;
+    VX-42's SHIPPED-SOVEREIGN
+    disposition pin carried
+    unchanged).
+    NO src change, NO
+    migration; head stays 0042.
+    Route census stays 356
+    paths / 439 operations.
+    Evidence (team-01 hidden_fi
+    les/P225_EVIDENCE.md +
+    logs): battery 18 passed;
+    neighbours fence 400
+    passed; combined 418
+    passed; team full suite
+    6346 passed / 5 skipped / 1
+    failed in 539.07s (= 6329
+    banked at P-224 + 18 on the
+    passed side apart from the
+    one failure below) - the
+    one failure the timing-
+    class s503 STT contract
+    test (tests/test_s503_stt.
+    py::test_real_faster_whisp
+    er_meets_predeclared_contr
+    act, RTF p50 1.406 over
+    contract, the WER accuracy
+    leg passed; solo re-run 1
+    failed / 3 passed, RTF p50
+    1.448) under proven shared-
+    machine contention (load
+    15.52 rising to 18.98,
+    another campaign's
+    processes at ~920% CPU);
+    the slice changes no src
+    and the same test was green
+    in the base suite at the
+    P-224 banking.
+    Banking: combined fence on
+    the merged tree 418 passed
+    / 0 failed in 31.85s (= 18
+    new + 400 neighbours exact;
+    run at banking, log forge h
+    idden_files/P225_COMBINED.l
+    og); forge confirmation
+    full suite 6347 passed / 5
+    skipped / 0 failed in
+    421.92s, exit 0 - exact, the
+    s503 timing test green in
+    the forge run, no solo
+    re-run needed (log forge hi
+    dden_files/P225_FORGE_FULL.
+    log).
+    Carried items unchanged: D1
+    stateless SSE error-
+    swallowing FENCED, ruling
+    outstanding; per-swipe
+    thinking browsing DECLINED-
+    PENDING-WORD; K-A binding
+    label update, K-B retention
+    / bulk clear and K-C
+    unified-search history
+    NAMED OPEN. Defects in
+    banked code: none found at
+    banking (the s503 item
+    above is a timing-class
+    contention failure, not a
+    defect). Banked now
+    P-001..P-225 + the
+    commissioned binding
+    depth/role slice. PART XIV
+    OPEN (P-219..P-232, gate
+    P-232). Next in roadmap
+    order: P-226 - parity
+    matrix tranche 8, the rows
+    whose road home was Part
+    IX, re-judged (VX-43's home
+    tranche; scout in rotation
+    team-02).
