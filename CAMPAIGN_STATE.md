@@ -21090,3 +21090,94 @@ P-162 BANKED - Character Face History
     derive from the roadmap
     part text and what Part
     XIII still owes.
+    P-214 BANKED - Persistent-
+    group composer wiring
+    (Part XIII, DERIVED). -
+    team-01 commit 5ac4d4e
+    merged (no-ff) into
+    yrsa/two-mirrors-build as
+    5fae786 (parents 87d1bbc +
+    5ac4d4e). Merge CLEAN - no
+    conflicts in any file.
+    Scope: persistent-group
+    composer wiring - group.js
+    alone gains openGroupId
+    page state, set by
+    openSavedGroup on success
+    only; the group-form
+    handler branches on it
+    BEFORE any sentHistory or
+    history touch and awaits
+    the new
+    sendPersistent(text),
+    which POSTs via api() to
+    the banked
+    /api/v1/groups/{id}/next
+    road with user_text and
+    generate true, and renders
+    result.message via
+    addBubble plus the group-
+    local reasoningPanel over
+    the banked reasoningView
+    model, a null message
+    rendering nothing further,
+    errors via showError under
+    the banked P-207/D2
+    failure contract; the
+    stateless body runs byte-
+    unchanged when no group is
+    open. The P-213 loader
+    fence stands restated:
+    fetched messages never
+    enter the stateless
+    history state, are never
+    sent back, no storage
+    write, the loader issues
+    no POST. NO migration;
+    head stays 0042. Route
+    census stays 356 paths /
+    439 operations with ZERO
+    census heals in this
+    slice. The S311 group
+    golden UNMOVED - no golden
+    regenerated, no golden
+    file changed. D1 stays
+    FENCED unchanged - NOT
+    fixed by this slice.
+    Evidence (team-01 hidden_f
+    iles/P214_EVIDENCE.md +
+    logs): battery 14 passed;
+    neighbours fence 137
+    passed / 0 failed; S311
+    golden watch 3 passed,
+    group golden unmoved; team
+    full suite 6136 passed / 5
+    skipped / 0 failed in
+    497.10s, exit 0 (= 6122
+    banked at P-213 + 14
+    exact). Banking: combined
+    fence re-run in the forge
+    (test_p214 + the neighbour
+    files + the S311 file) 154
+    passed / 0 failed, the
+    eight-file core fence 140
+    exact plus test_p213 14;
+    forge confirmation full
+    suite 6136 passed / 5
+    skipped / 0 failed, in
+    415.68s, exit 0 - exact.
+    Zero banked pins healed by
+    the build. Defects in
+    banked code: none found at
+    banking. Banked now
+    P-001..P-214 + the
+    commissioned binding
+    depth/role slice. PART
+    XIII OPEN (P-203..P-218,
+    gate P-218). Next in
+    roadmap order: P-215 (Part
+    XIII, DERIVED) - explicit
+    composer mode toggle /
+    close-group control, per
+    team-02 hidden_files/P215_
+    DESIGN.md.
