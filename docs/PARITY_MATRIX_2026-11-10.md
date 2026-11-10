@@ -59,6 +59,10 @@ route census 356/439, suite 6347 passed / 5 skipped /
 b4c906d (the P-226 banking record), migration head 0042,
 route census 356/439, suite 6365 passed / 5 skipped /
 0 failed at P-227 opening.
+- Tranche note (P-228): base truth at P-228 opening: HEAD
+fee88c8 (the P-227 banking record), migration head 0042,
+route census 356/439, suite 6383 passed / 5 skipped /
+0 failed at P-228 opening.
 - Evidence rule (P-001's handover rule, kept by P-004): every
 closing verdict cites a proving test file or banked slice
 doc in THIS repo; citations must resolve to real paths. No
@@ -102,7 +106,8 @@ P-224 judged (tranche 6 = Part VII rows,
 5 rows); P-225 judged (tranche 7 = Part VIII rows,
 1 row); P-226 judged (tranche 8 = Part IX rows,
 23 rows); P-227 judged (tranche 9 = Part
-X rows, 4 rows); P-228 Part XI; P-229 Part XII; P-230 Part XIII;
+X rows, 4 rows); P-228 judged (tranche 10 = Part XI rows,
+5 rows); P-229 Part XII; P-230 Part XIII;
 P-231 reconciliation (whole-matrix mechanical recount, the
 principle-4 sovereign-shape statements audited end to end,
 a generated machine-readable twin is a named candidate);
@@ -154,6 +159,10 @@ Tranche 9 closing counts: HAVE 0, HAVE-THIN 0,
 MISSING 4, SHIPPED-SOVEREIGN 0, NOT-YET-REJUDGED 0,
 of 4 rows.
 
+Tranche 10 closing counts: HAVE 0, HAVE-THIN 1,
+MISSING 4, SHIPPED-SOVEREIGN 0, NOT-YET-REJUDGED 0,
+of 5 rows.
+
 Cumulative judged counts (tranches 1 and 2): HAVE 4,
 HAVE-THIN 17, MISSING 1, SHIPPED-SOVEREIGN 0,
 NOT-YET-REJUDGED 0, of 22 rows.
@@ -186,7 +195,11 @@ Cumulative judged counts (tranches 1, 2, 3, 4, 5, 6, 7, 8 and 9): HAVE 14,
 HAVE-THIN 61, MISSING 24, SHIPPED-SOVEREIGN 1,
 NOT-YET-REJUDGED 0, of 100 rows.
 
-Unjudged remainder: 41 rows NOT-YET-REJUDGED.
+Cumulative judged counts (tranches 1, 2, 3, 4, 5, 6, 7, 8, 9 and 10): HAVE 14,
+HAVE-THIN 62, MISSING 28, SHIPPED-SOVEREIGN 1,
+NOT-YET-REJUDGED 0, of 105 rows.
+
+Unjudged remainder: 36 rows NOT-YET-REJUDGED.
 
 Tranche 2 note (P-220): the rows judged in tranche 2 are
 ST-15, ST-16, ST-17, ST-18, ST-20, ST-22, ST-23, ST-25,
@@ -326,6 +339,32 @@ not left here; VX-48 and VX-49's tranche-8 deferral
 to this slice is discharged; the four rows are
 judged here once on their Part X homes.
 
+Tranche 10 note (P-228): the rows judged in tranche 10 are
+VX-54, VX-55, VX-56, VX-57, VX-58.
+Borderline dispositions: VX-54 is judged in tranche 10
+under the keeper's Q1 ruling (the workspace binding shipped
+whole and is consumed live by listing, content read, tree,
+searches and censuses, Part XI gate Together PASS, so the
+shipped core substance closes HAVE-THIN in the VX-28 form;
+the missing depth is write / edit / delete inside a bound
+folder, fenced behind the never-built VX-57 guard, gate K4,
+run / launch, declined absolutely, gate K5, and any Work
+page or files browser web UI, which does not exist) with
+verdict HAVE-THIN; VX-57 is judged in tranche 10 under the
+keeper's Q2 ruling (the tool-calling security pass was
+never built - no destructive-call review, no path-rules
+engine, no fetch allow/deny, no grant/revoke surface and
+no key scopes exist; the guard exists only as a named fence
+in the workspaces modules' honesty notes, and substrate
+already credited under Part VI rows is not double-counted)
+with verdict MISSING; VX-58 is judged here under the
+P-224 keeper's Q3 ruling, and its tranche-6 and tranche-7
+deferral to this slice is discharged; VX-56 is judged
+here on its first home and is not left to P-230; VX-60,
+VX-66 and VX-17 were already judged on their first homes
+and are not re-judged here; the five rows are judged here
+once on their Part XI homes.
+
 ## Table A - SillyTavern rows (P-002) at the close
 
 | # | Feature (short) | Opening verdict | Road home | Closing verdict | Evidence |
@@ -462,11 +501,11 @@ judged here once on their Part X homes.
 | VX-51 | Image generation in the companion (`/imagine`, avatar defaults) | MISSING | P-087; Part X (title only) | HAVE-THIN - the /imagine command still missing (no imagine vocabulary exists anywhere in src/; generation is invoked through the citizen's service road, never by a chat command) and avatar defaults still missing (generation feeding avatar defaults is the row's Part X face and no avatar-default wiring exists in the P-087 citizen); image generation in the companion via its P-087 home - prompt-from-scene plus manual prompts as equals, local-first providers with honest road naming, per-chat opt-in, results landing as character assets - is proven; judged here once on its first home under the first-home rule | `src/runmal/plugins/image_generation.py`, `tests/test_p087_image_generation.py` |
 | VX-52 | Video generation (WAN-class, img→video, resumable jobs) | MISSING | Part X (title only) — flagged for P-014 | MISSING - no video generation exists - no WAN-class engine, no img-to-video path, no resumable generation jobs; the only media generation citizen (P-087) generates still images and was judged under VX-51; the row was queued to Part X by the P-014 gate under the founding licence gate for any engine proposed there, and no engine was proposed or built | `src/runmal/plugins/image_generation.py`, `docs/PART_I_GATE_2026-10-30.md`, `docs/DELTA_TABLE_2026-10-30.md` |
 | VX-53 | Generation plumbing depth (ComfyUI/Diffusers backends, upscaler, LoRA panels) | MISSING | Part X (title only) — flagged for P-014 | MISSING - the generation plumbing depth was never built - no ComfyUI / ComfyCloud backend, no Diffusers generation backend (the word occurs in src/ only as a voice-backend install pin), no dedicated upscaler module, no LoRA panels or LoRA concept, no img2img, no workflow upload, no background-removal service and no Civitai previews exist; the single local-diffusion endpoint shape that does exist (P-087) was credited as VX-51's core in tranche 5 and is not double-counted here; judged MISSING under the keeper's Q2 ruling | `src/runmal/plugins/image_generation.py`, `src/runmal/voice/backends.py`, `docs/DELTA_TABLE_2026-10-30.md`, `docs/VOXTA_CENSUS_2026-10-30.md` |
-| VX-54 | Workspaces (chat bound to a real folder; read/write/edit, run, launch) | MISSING | Part XI (title only) | NOT-YET-REJUDGED | - |
-| VX-55 | Coding-agent backends (Claude Code / Codex class, permissioned) | MISSING | Part XI (title only) | NOT-YET-REJUDGED | - |
-| VX-56 | Assistant tooling breadth (shell, Python, web search, MCP, user scripts) | MISSING | Part XI/XIII (titles only) | NOT-YET-REJUDGED | - |
-| VX-57 | Tool-calling security pass (review destructive calls, path rules, scopes) | MISSING | Part XI (title only) | NOT-YET-REJUDGED | - |
-| VX-58 | Done notifications (OS-integrated completion notices) | MISSING | Part XI (title only) — flagged for P-014 | NOT-YET-REJUDGED | - |
+| VX-54 | Workspaces (chat bound to a real folder; read/write/edit, run, launch) | MISSING | Part XI (title only) | HAVE-THIN - a chat binds to a real folder as a shipped citizen (P-169: owner-scoped binding, folder state judged live at read time, custody on chat deletion, history P-173/P-175) and the bound folder is read live by the app - listing (P-170), content read (P-172), tree (P-176/P-179), filename / content / unified search (P-178/P-180/P-182) and the estate, folder, history, tree, content and unified censuses, gate-proven to agree on one bound world (Part XI gate, Together PASS); still missing: write / edit / delete inside a bound folder (fenced behind the VX-57 guard, gate K4); run / launch (execution declined ABSOLUTELY, gate K5); the Work page and right-panel files browser (no web-UI workspace surface exists; the part is API-only; watching declined, gate K6) | `src/runmal/workspaces/bindings.py`, `src/runmal/workspaces/router.py`, `tests/test_p169_workspace_binding.py`, `tests/test_p186_part_xi_gate.py`, `docs/WORKSPACE_BINDING_2026-11-09.md`, `docs/PART_XI_GATE_2026-11-09.md` |
+| VX-55 | Coding-agent backends (Claude Code / Codex class, permissioned) | MISSING | Part XI (title only) | MISSING - no coding-agent backend exists - no Claude Code / Codex class backend, no tool-call permissions system, no persistent agent memory, no harness; claude / codex occur nowhere in src/, the P-008 backend ledger parks the row in Part XI as a consumer of inference rather than a backend, and the Part XI gate carries execution as K5, declined ABSOLUTELY with commissioned road none | `docs/BACKEND_PARITY_LEDGER_2026-10-30.md`, `docs/PART_XI_GATE_2026-11-09.md`, `src/runmal/workspaces/bindings.py`, `docs/DELTA_TABLE_2026-10-30.md` |
+| VX-56 | Assistant tooling breadth (shell, Python, web search, MCP, user scripts) | MISSING | Part XI/XIII (titles only) | MISSING - assistant tooling breadth was never built - no shell tool, no Python tool, no MCP tools (mcp occurs nowhere in src/), and no user-script execution (P-027: content stays data, never code; gate K5 declines execution absolutely); the one enumerated item with a citizen, web search (P-088), is an explicit opt-in citizen action already judged under ST-66, whose cell rules it is never a tool the backend calls | `src/runmal/plugins/web_search.py`, `tests/test_p088_web_search.py`, `docs/PART_XI_GATE_2026-11-09.md`, `docs/DELTA_TABLE_2026-10-30.md` |
+| VX-57 | Tool-calling security pass (review destructive calls, path rules, scopes) | MISSING | Part XI (title only) | MISSING - the tool-calling security pass was never built - no destructive-call review, no read/write screening or path-rules engine, no secret-read flagging, no web-fetch allow/deny lists or redirect inspection, no tool grant/revoke surface and no API-key scopes exist; the VX-57 guard exists only as the named fence inside the workspaces modules' honesty notes, with no module, road or battery of its own, and the bridge/secrets substrate the Delta Table weighed guards bridges, not workspace tool calls | `src/runmal/workspaces/bindings.py`, `src/runmal/workspaces/content.py`, `docs/PART_XI_GATE_2026-11-09.md`, `docs/DELTA_TABLE_2026-10-30.md`, `docs/VOXTA_CENSUS_2026-10-30.md` |
+| VX-58 | Done notifications (OS-integrated completion notices) | MISSING | Part XI (title only) — flagged for P-014 | MISSING - no done-notification surface exists on either candidate home - the word notification occurs nowhere in src/ or the web static, no OS integration, push surface, service worker or PWA manifest exists; Part XI built no done-signal and Part VII (the P-014 queue's PWA scope) built no notification surface either; judged here under the P-224 keeper Q3 ruling | `docs/PART_I_GATE_2026-10-30.md`, `docs/PART_XI_GATE_2026-11-09.md`, `docs/PART_VII_GATE_2026-11-08.md`, `docs/DELTA_TABLE_2026-10-30.md` |
 | VX-59 | The Content Hub (browse/install/share, creator profiles) | DELIBERATELY-DIFFERENT | Part XII (title only) | NOT-YET-REJUDGED | - |
 | VX-60 | Content packages (`.voxpak`: bundle, encryption, protected publish) | HAVE-THIN | P-028; Part XII (title only) | HAVE-THIN - .voxpak interop not proven and encrypted/protected packs not built - pack signing and friend-instance exchange stayed declined through Part XII (the hub census record); the .runmal pack substrate is proven and grew at P-028 | `tests/test_p028_portable_archive_growth.py` |
 | VX-61 | Chats travel as packs (with images, dependency warnings) | HAVE-THIN | P-028 kin; Part XII (title only) | NOT-YET-REJUDGED | - |

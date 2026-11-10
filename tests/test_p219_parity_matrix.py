@@ -53,8 +53,14 @@ TRANCHE8 = {
 TRANCHE9 = {
     "VX-48", "VX-49", "VX-52", "VX-53",
 }
+TRANCHE10 = {
+    "VX-54", "VX-55", "VX-56", "VX-57", "VX-58",
+}
+TRANCHE10_HAVE_THIN = {"VX-54"}
+TRANCHE10_MISSING = TRANCHE10 - TRANCHE10_HAVE_THIN
 JUDGED8 = TRANCHE1 | TRANCHE2 | TRANCHE3 | TRANCHE4 | TRANCHE5 | TRANCHE6 | TRANCHE7 | TRANCHE8
-JUDGED = JUDGED8 | TRANCHE9
+JUDGED9 = JUDGED8 | TRANCHE9
+JUDGED = JUDGED9 | TRANCHE10
 DD_ROWS = ("VX-01", "VX-42", "VX-59")
 CLOSING_TOKENS = {
     "HAVE", "HAVE-THIN", "MISSING", "SHIPPED-SOVEREIGN",
@@ -223,7 +229,23 @@ def test_08_section3_counts_equal_recount():
         r"NOT-YET-REJUDGED (\d+), of (\d+) rows\.", flat)
     assert m9, flat
     got9 = tuple(int(g) for g in m9.groups())
-    assert got9 == (counts["HAVE"], counts["HAVE-THIN"],
+    # P-228 heal: the tranches 1-9 line is re-pinned against
+    # the judged9 subset recount, at equal strength.
+    counts9 = {t: 0 for t in CLOSING_TOKENS}
+    for rid in JUDGED9:
+        counts9[_closing_token(rows[rid])] += 1
+    assert got9 == (counts9["HAVE"], counts9["HAVE-THIN"],
+                    counts9["MISSING"], counts9["SHIPPED-SOVEREIGN"],
+                    counts9["NOT-YET-REJUDGED"], len(JUDGED9))
+    # P-228 heal: the cumulative tranches 1-10 line is pinned
+    # against the full JUDGED recount, at equal strength.
+    m10 = re.search(
+        r"Cumulative judged counts \(tranches 1, 2, 3, 4, 5, 6, 7, 8, 9 and 10\): HAVE (\d+), "
+        r"HAVE-THIN (\d+), MISSING (\d+), SHIPPED-SOVEREIGN (\d+), "
+        r"NOT-YET-REJUDGED (\d+), of (\d+) rows\.", flat)
+    assert m10, flat
+    got10 = tuple(int(g) for g in m10.groups())
+    assert got10 == (counts["HAVE"], counts["HAVE-THIN"],
                     counts["MISSING"], counts["SHIPPED-SOVEREIGN"],
                     counts["NOT-YET-REJUDGED"], len(JUDGED))
     m2 = re.search(r"Unjudged remainder: (\d+) rows NOT-YET-REJUDGED\.", flat)
