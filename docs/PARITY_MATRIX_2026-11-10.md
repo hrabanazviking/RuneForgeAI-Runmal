@@ -67,6 +67,10 @@ route census 356/439, suite 6383 passed / 5 skipped /
 148ac92 (the P-228 banking record), migration head 0042,
 route census 356/439, suite 6401 passed / 5 skipped /
 0 failed at P-229 opening.
+- Tranche note (P-230): base truth at P-230 opening: HEAD
+dbc6a31 (the P-229 banking record), migration head 0042,
+route census 356/439, suite 6419 passed / 5 skipped /
+0 failed at P-230 opening.
 - Evidence rule (P-001's handover rule, kept by P-004): every
 closing verdict cites a proving test file or banked slice
 doc in THIS repo; citations must resolve to real paths. No
@@ -112,7 +116,8 @@ P-224 judged (tranche 6 = Part VII rows,
 23 rows); P-227 judged (tranche 9 = Part
 X rows, 4 rows); P-228 judged (tranche 10 = Part XI rows,
 5 rows); P-229 judged (tranche 11 = Part XII rows,
-2 rows); P-230 Part XIII;
+2 rows); P-230 judged (tranche 12 =
+Part XIII rows, 4 rows);
 P-231 reconciliation (whole-matrix mechanical recount, the
 principle-4 sovereign-shape statements audited end to end,
 a generated machine-readable twin is a named candidate);
@@ -212,7 +217,15 @@ Cumulative judged counts (tranches 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 and 11): HAVE 1
 HAVE-THIN 63, MISSING 28, SHIPPED-SOVEREIGN 2,
 NOT-YET-REJUDGED 0, of 107 rows.
 
-Unjudged remainder: 34 rows NOT-YET-REJUDGED.
+Tranche 12 closing counts: HAVE 0, HAVE-THIN 2,
+MISSING 2, SHIPPED-SOVEREIGN 0, NOT-YET-REJUDGED 0,
+of 4 rows.
+
+Cumulative judged counts (tranches 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 and 12): HAVE 14,
+HAVE-THIN 65, MISSING 30, SHIPPED-SOVEREIGN 2,
+NOT-YET-REJUDGED 0, of 111 rows.
+
+Unjudged remainder: 30 rows NOT-YET-REJUDGED.
 
 Tranche 2 note (P-220): the rows judged in tranche 2 are
 ST-15, ST-16, ST-17, ST-18, ST-20, ST-22, ST-23, ST-25,
@@ -402,6 +415,33 @@ SHIPPED-SOVEREIGN; VX-60 was already judged in tranche 1
 on its P-028 first home and is not re-judged here; the
 two rows are judged here once on their Part XII homes.
 
+Tranche 12 note (P-230): the rows judged in tranche 12 are
+ST-55, VX-07, VX-65, VX-67.
+Borderline dispositions: ST-55 is judged in tranche 12
+under the keeper's Q1 ruling (all three named acts are
+absent - no welcome surface exists, "welcome" is zero-hit
+tree-wide and the web root redirects straight to /chat;
+no temporary unsaved quick uncarded chat surface exists;
+no default Assistant character exists - Part XIII's
+Assistant View is a reasoning rendering, not that
+character; the general chat UI and recent-sorted chat
+list are founding substrate, not this row's acts) with
+verdict MISSING; VX-65 is judged in tranche 12 under the
+keeper's Q2 ruling (the per-chat Inspector itself shipped
+and was gate-proven in its home part as four pure-read
+documents - overview, events/actions census, reasoning
+joins - the row's core act, in the VX-54 form; the
+missing depth is named in the cell: no script log as log
+lines, no snippet browser, no Flags/Contexts views,
+flags reading not_applicable, hidden calls in the
+not_recorded family) with verdict HAVE-THIN; VX-66 was
+already judged in tranche 5 on its P-081 first home and
+is not re-judged here; VX-17 was already judged in
+tranche 8 on its Part IX first home and is not left to
+P-230; VX-56 was already judged in tranche 10 on its
+Part XI first home and is not left to P-230; the four
+rows are judged here once on their Part XIII homes.
+
 ## Table A - SillyTavern rows (P-002) at the close
 
 | # | Feature (short) | Opening verdict | Road home | Closing verdict | Evidence |
@@ -460,7 +500,7 @@ two rows are judged here once on their Part XII homes.
 | ST-52 | Impersonate (model drafts the user's message) | HAVE | — (paired depth at P-069) | NOT-YET-REJUDGED | - |
 | ST-53 | Regenerate (discard + re-roll as its own generation type) | HAVE-THIN | Part V kin (P-065/P-069) | HAVE-THIN - a chat-level regenerate operation on a persisted message still missing (no message regenerate route exists in the chats router; regeneration lives at the session/tools layer and its re-roll appends a new alternate, nothing is discarded) and lore/triggers keying on the generation type still missing (no generation-type vocabulary exists in the lorebooks tree); regenerate as a distinct generation type (Mode.REGENERATE with the stable-prompt fingerprint discipline), exposed as a tools-service action, with re-rolled candidates landing as swipe decks is proven | `src/runmal/generation/modes.py`, `src/runmal/tools/service.py`, `src/runmal/chats/swipes.py`, `tests/test_p065_swipes.py` |
 | ST-54 | Chat file management (import/export/rename, chat→group conversion) | HAVE-THIN | P-020, P-078 | HAVE-THIN - in-place chat-to-group conversion still absent (grep-verified at founding); JSONL import/export and rename are proven | `tests/test_p020_chat_import.py` |
-| ST-55 | Welcome screen + Assistant (recent chats, quick uncarded chat, default Assistant) | HAVE-THIN | Part XIII (title only) — flagged for P-014 | NOT-YET-REJUDGED | - |
+| ST-55 | Welcome screen + Assistant (recent chats, quick uncarded chat, default Assistant) | HAVE-THIN | Part XIII (title only) — flagged for P-014 | MISSING - the welcome screen + Assistant row was never built as a row - no welcome surface exists (the web root redirects straight to /chat), no temporary unsaved quick uncarded chat surface exists, and no default Assistant character exists (no kind or default anywhere, VX-07); the chat UI and chat list the opening verdict credited are founding substrate (S109/S111), not this row's act, and Part XIII's Assistant View is a reasoning rendering, not this row's Assistant | `src/runmal/web/router.py`, `src/runmal/web/templates/chat.html`, `src/runmal/chats/router.py`, `src/runmal/chats/service.py`, `docs/DELTA_TABLE_2026-10-30.md`, `docs/PART_I_GATE_2026-10-30.md` |
 | ST-56 | Per-message utility actions (translate/image/narrate/prompt view) | HAVE-THIN | Part VI (P-086, P-087 kin) | HAVE-THIN - a per-message utility action surface still missing: no road binds a stored message to translate / image / narrate as actions on that message (the citizens act on chats and caller-supplied text, the plugins router carries no translate / image / voice route, and no utility-action vocabulary exists in src/); prompt view via the founding inspector, narration via the founding voice stack and the TTS citizen, the translate citizen and the image citizen are proven | `src/runmal/plugins/translate.py`, `src/runmal/plugins/image_generation.py`, `src/runmal/plugins/tts.py`, `tests/test_p086_translate_plugin.py`, `tests/test_p087_image_generation.py` |
 | ST-57 | Extension system (UI extensions + server plugins, distribution channel) | MISSING | P-081, P-082, P-083 | HAVE-THIN - a distribution channel beyond local packs still missing (packs are local files installed by hand, no plugin surface exists in src/runmal/hub/, and the pack road is data-only in v1, so a distributed plugin's executable handlers can never arrive through the channel that exists); the extension substrate whole - Plugin API v1, the sandbox law, the manager with permission cards and durable ledger, sixteen citizens passing the conformance kit composed in one registry, settings UI and data custody - is proven | `src/runmal/plugins/api.py`, `src/runmal/plugins/manager.py`, `src/runmal/plugins/settings_ui.py`, `docs/PART_VI_GATE_2026-11-07.md` |
 | ST-58 | Summarize extension (editable rolling summary, {{summary}} injection) | HAVE-THIN | P-084 | HAVE-THIN - the summary as a user-editable chat citizen still missing (no edit road exists for the summary itself, and editing an already-summarized message does not rewrite that frozen summary version) and {{summary}} template injection still missing (no summary macro exists in the macro registry; injection is by plugin slot, never by the template macro the row names); the rolling summary citizen re-rolling versioned summaries plus a kind='summary' memory on message mutation, injected by the summary-slot prompt hook, is proven | `src/runmal/plugins/summarise.py`, `src/runmal/prompt/macros.py`, `tests/test_p084_memory_summarise.py` |
@@ -491,7 +531,7 @@ two rows are judged here once on their Part XII homes.
 | VX-04 | Voices as character equipment (Voices Studio, favourites, culture filter) | HAVE-THIN | Part VII (title only); census at P-010 | HAVE-THIN - a Voices Studio surface, favourites, and a culture filter still missing (never built); per-character voice profiles shipped (S512: backend/voice/params reference with field-level fallback, voice an independent modality) and every TTS backend exposing its voice list are proven | `src/runmal/voice/profiles.py`, `src/runmal/voice/backends.py`, `tests/test_p010_voice_provider_census.py` |
 | VX-05 | User identity in prompt; scenario impersonation override | HAVE-THIN | P-018 kin; Part IX (title only) | HAVE-THIN - the scenario impersonation override still missing (impersonation_name / impersonation_description are stored fields on the definition with no consumer outside src/runmal/scenarios/, so a bound scenario does not change who the user plays); user identity in prompt is proven (the persona citizen, P-018; ST-08's tranche-1 record); judged here under the keeper's Q2 ruling (its unjudged half is Part IX subject matter stored by Part IX's own contract; ST-08's judgement was a different row) | `src/runmal/scenarios/filemodels.py`, `tests/test_p018_persona_interop.py`, `docs/DELTA_TABLE_2026-10-30.md` |
 | VX-06 | Multi-character chats + history sharing with absent characters | HAVE-THIN | P-071 | HAVE-THIN - automatic injection of the digest into the returning character's next generated prompt still missing (a digest_prompt_message helper exists ready to sit ahead of the scene history, but the group generation road never calls it; delivery is the return document, not a wired prompt citizen) and exactness under anchor deletion still missing (on the by_count_fallback window the earliest missed messages can be lost when the last-seen anchor and further pre-window messages were deleted; the exact window is proven only on the by_id road); multi-character rooms plus the returning-character digest of missed history (explicit leave/return presence, capped entries with omitted_count, by-speaker counts, preview and presence roads) are proven | `src/runmal/groupchat/presence.py`, `tests/test_p071_absent_digest.py` |
-| VX-07 | Companions vs assistants as distinct kinds (default assistant) | MISSING | Part XIII (title only) — flagged for P-014 | NOT-YET-REJUDGED | - |
+| VX-07 | Companions vs assistants as distinct kinds (default assistant) | MISSING | Part XIII (title only) — flagged for P-014 | MISSING - the distinct-kinds shape was never built - characters carry no kind of any spelling (the card citizen declares no kind, type or assistant flag), no default-assistant concept exists, no Assistants page lists, marks or changes a default, and no companion character carries a dedicated prompt of any kind; Part XIII's Assistant View is a reasoning rendering, not a kind, and the scenario style value spelled "assistant" was already credited to VX-08 in tranche 8 (a declared vocabulary with no behavioural effect) and is not double-counted here | `src/runmal/cards/models.py`, `src/runmal/web/router.py`, `src/runmal/scenarios/filemodels.py`, `docs/DELTA_TABLE_2026-10-30.md`, `docs/VOXTA_CENSUS_2026-10-30.md` |
 | VX-08 | Chat style & flow taxonomy (Companion/Roleplay/Storytelling/Assistant; Chat/Story flow) | MISSING | Part IX (title only) — flagged for P-014 | HAVE-THIN - any behavioural effect still missing (no flow or style value is read by chats, prompt assembly or generation, and style narrows no offered actions or tools); the chat style & flow taxonomy shipped as the scenario citizen's declared vocabulary - FLOWS (chat, story) and STYLES (companion, roleplay, storytelling, assistant) are the definition's own fields with both spellings round-tripped, the meaning the P-014 gate queued the row to Part IX for - is proven; judged HAVE-THIN under the keeper's ruling at P-226 muster (the design's recorded MISSING alternative not taken) | `src/runmal/scenarios/filemodels.py`, `docs/PART_I_GATE_2026-10-30.md`, `docs/DELTA_TABLE_2026-10-30.md` |
 | VX-09 | Real-time voice both ways, interruptible mid-sentence | HAVE | — (speed feeds P-009/P-010) | NOT-YET-REJUDGED | - |
 | VX-10 | Adaptive VAD & learned turn detection, filler tolerance | HAVE-THIN | Part VII (title only) | HAVE-THIN - learned/adaptive turn detection and filler tolerance still missing (thresholds are fixed predeclared constants; no learned mechanism exists in the voice tree); Silero VAD behind a model seam with hysteresis/hangover/pre-roll and tunable thresholds, held to the predeclared S502 segmentation contract, with TurnCoordinator turn detection and barge-in interruption shipped, are proven | `src/runmal/voice/vad.py`, `src/runmal/voice/turntaking.py`, `tests/test_s502_vad.py`, `tests/test_p102_live_voice.py` |
@@ -549,9 +589,9 @@ two rows are judged here once on their Part XII homes.
 | VX-62 | Clients (Windows desktop, Linux server+browser, Android companion) | HAVE-THIN | P-011 (decision record) | NOT-YET-REJUDGED | - |
 | VX-63 | Web UI phone-shaped (master-detail, cards, bottom sheets, step flows) | HAVE-THIN | P-011 kin | NOT-YET-REJUDGED | - |
 | VX-64 | Shared accounts (several sign-ins on one account, users management) | HAVE-THIN | NO HOME in defined parts — flagged for P-014 | NOT-YET-REJUDGED | - |
-| VX-65 | Chat Inspector (script log, flags/contexts views, hidden calls recorded) | MISSING | Part XIII (title only) | NOT-YET-REJUDGED | - |
+| VX-65 | Chat Inspector (script log, flags/contexts views, hidden calls recorded) | MISSING | Part XIII (title only) | HAVE-THIN - the per-chat Inspector shipped in Part XIII as four pure-read owner-scoped documents - the overview (provenance, prompt roads pointed at, lore activation pointers, scenario binding state), the events document (the by-kind census over the persisted chat event log with the message-action kinds counted from the same census), and the chat / group reasoning censuses - gate-proven whole on one fresh world, still missing: a script log carried as log lines and a code-snippet browser (the events document is counts-only by the no-payload law; drill-down stays on the raw road), a Flags view and a Contexts view as views (the flags section reads not_applicable - flags are bind-time bool seeds nothing mutates - and points at the overview), and any recording of hidden calls (generation events and plugin dispatch outcomes are not written to the log; the events document names them in its own not_recorded family) | `src/runmal/inspector/router.py`, `src/runmal/inspector/events.py`, `src/runmal/inspector/overview.py`, `docs/INSPECTOR_EVENTS_2026-11-09.md`, `docs/PART_XIII_GATE_2026-11-10.md`, `docs/DELTA_TABLE_2026-10-30.md`, `docs/VOXTA_CENSUS_2026-10-30.md` |
 | VX-66 | Open extension surface (SDK, Python modules, MCP, API, scopes) | HAVE-THIN | P-081; Part XIII (title only) | HAVE-THIN - an SDK as a packaged author surface still missing (no SDK package or external-author distribution exists; authorship is in-tree by design in v1) and MCP as an extension surface still missing (no MCP vocabulary exists in src/runmal/plugins/); Plugin API v1 as a documented, versioned author contract, Python modules as the citizen shape (sixteen citizens composed in one registry at the gate), and scopes as enforced data (declared capabilities plus permissions judged at registration, grant derivation that cannot widen) are proven | `docs/PLUGIN_API_V1_2026-11-07.md`, `src/runmal/plugins/api.py`, `tests/test_p081_plugin_api.py` |
-| VX-67 | Games, apps & bots (incl. Discord bot per channel) | HAVE-THIN | Part XIII (title only) | NOT-YET-REJUDGED | - |
+| VX-67 | Games, apps & bots (incl. Discord bot per channel) | HAVE-THIN | Part XIII (title only) | HAVE-THIN - characters connect into games the user plays through the shipped game bridges (VRChat OSC, Conan RCON, Skyrim HTTP over the scoped bridge conversation surface, S601-S611), this row's own opening-proven core, still proven; still missing: a Discord bot surface of any kind (no per-channel character / scenario binding, no per-channel cost limit, no bot sessions) and any bot runtime at all - Part XIII founded no bots package, road or store (its gate carries bots as substrateless, named) - and no app integration beyond the game bridges exists | `src/runmal/bridges/vrchat_osc.py`, `src/runmal/bridges/conan.py`, `src/runmal/bridges/skyrim_http.py`, `tests/test_s605_vrchat_osc.py`, `docs/PART_XIII_GATE_2026-11-10.md`, `docs/DELTA_TABLE_2026-10-30.md`, `docs/VOXTA_CENSUS_2026-10-30.md` |
 
 ## §4 Carried items
 
