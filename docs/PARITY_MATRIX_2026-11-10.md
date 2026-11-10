@@ -31,6 +31,10 @@ record), migration head 0042, route census 356/439, suite
 5f3b01d (the P-219 banking record), migration head 0042,
 route census 356/439, suite 6239 passed / 5 skipped /
 0 failed at P-220 opening.
+- Tranche note (P-221): base truth at P-221 opening: HEAD
+4503bb1 (the P-220 banking record), migration head 0042,
+route census 356/439, suite 6257 passed / 5 skipped /
+0 failed at P-221 opening.
 - Evidence rule (P-001's handover rule, kept by P-004): every
 closing verdict cites a proving test file or banked slice
 doc in THIS repo; citations must resolve to real paths. No
@@ -66,7 +70,8 @@ cell, in the P-004 discipline.
 A sketch, labelled a sketch and re-derived per slice:
 P-219 founding (this slice; tranche 1 = Part II rows);
 P-220 judged (tranche 2 = Part III rows,
-10 rows); P-221 Part IV; P-222 Part V; P-223 Part VI;
+10 rows); P-221 judged (tranche 3 = Part IV rows,
+14 rows); P-222 Part V; P-223 Part VI;
 P-224 Part VII; P-225 Part VIII; P-226 Part IX; P-227
 Part X; P-228 Part XI; P-229 Part XII; P-230 Part XIII;
 P-231 reconciliation (whole-matrix mechanical recount, the
@@ -92,11 +97,19 @@ Tranche 2 closing counts: HAVE 2, HAVE-THIN 7,
 MISSING 1, SHIPPED-SOVEREIGN 0, NOT-YET-REJUDGED 0,
 of 10 rows.
 
+Tranche 3 closing counts: HAVE 2, HAVE-THIN 10,
+MISSING 2, SHIPPED-SOVEREIGN 0, NOT-YET-REJUDGED 0,
+of 14 rows.
+
 Cumulative judged counts (tranches 1 and 2): HAVE 4,
 HAVE-THIN 17, MISSING 1, SHIPPED-SOVEREIGN 0,
 NOT-YET-REJUDGED 0, of 22 rows.
 
-Unjudged remainder: 119 rows NOT-YET-REJUDGED.
+Cumulative judged counts (tranches 1, 2 and 3): HAVE 6,
+HAVE-THIN 27, MISSING 3, SHIPPED-SOVEREIGN 0,
+NOT-YET-REJUDGED 0, of 36 rows.
+
+Unjudged remainder: 105 rows NOT-YET-REJUDGED.
 
 Tranche 2 note (P-220): the rows judged in tranche 2 are
 ST-15, ST-16, ST-17, ST-18, ST-20, ST-22, ST-23, ST-25,
@@ -107,6 +120,25 @@ two of its three sub-items were never built); ST-74 is
 deferred to the Part IV tranche (P-221); ST-19, ST-21 and
 ST-24 are left to reconciliation (P-231).
 
+Tranche 3 note (P-221): the rows judged in tranche 3 are
+ST-06, ST-28, ST-29, ST-30, ST-31, ST-32, ST-33, ST-35,
+ST-36, ST-38, ST-39, ST-74, VX-16, VX-18. Borderline
+dispositions: ST-30 and VX-18 are judged in tranche 3
+under the keeper's Q1 ruling (the banked P-014 gate homed
+the pair to Part IV as explicit scope of P-052/P-053 and
+the scope was never built there); ST-39 is judged in
+tranche 3 under the keeper's Q2 ruling (the banked P-014
+gate split-homed the row: prompt toggles to P-049/P-052,
+the vision half to the Part VIII queue; no prompt-level
+toggle was built, the vision half shipped as Part VIII
+citizens, so the row closes HAVE-THIN with the unbuilt
+prompt-toggle half named as its still-missing depth);
+ST-74 is confirmed to the Part IV tranche; ST-37 is left
+to reconciliation (P-231); ST-34 was already judged in
+tranche 1; ST-41 is left to reconciliation (P-231);
+ST-40 was dropped by the P-014 gate and is named in
+ST-74's cell.
+
 ## Table A - SillyTavern rows (P-002) at the close
 
 | # | Feature (short) | Opening verdict | Road home | Closing verdict | Evidence |
@@ -116,7 +148,7 @@ ST-24 are left to reconciliation (P-231).
 | ST-03 | Library-scale search/sort/tags-as-folders | HAVE-THIN | P-024 | HAVE-THIN - sort by usage/size not proven and no collections or folders exist (the tag folder/manager depth is absent, P-024 record); search, tag filtering, favourites and the named sorts are proven | `tests/test_p024_library_organisation.py` |
 | ST-04 | Card editing depth (stats, favourite, duplicate, gallery) | HAVE-THIN | P-023, P-024, P-025 | HAVE-THIN - per-card usage stats still not proven; favourite toggle, duplicate/version handling and card assets/gallery are proven | `tests/test_p024_library_organisation.py`, `tests/test_p025_character_versions.py`, `tests/test_p023_card_assets.py` |
 | ST-05 | Extended card ops (link lore, scenario override, convert, rename-relink, source link, replace) | HAVE-THIN | Part II (P-015–P-019, P-025, P-029) | HAVE-THIN - convert character/persona and rename-relink not proven; lorebook link, scenario carriage, source/provenance and replace-as-version are proven | `tests/test_p029_provenance_on_import.py`, `tests/test_p025_character_versions.py`, `tests/test_p026_scenario_interop.py`, `docs/CHARACTER_BOOK_BINDING_2026-11-06.md` |
-| ST-06 | Advanced definitions (prompt overrides, creator metadata, char note depth/role, talkativeness) | HAVE-THIN | Part IV (P-049, P-057) | NOT-YET-REJUDGED | - |
+| ST-06 | Advanced definitions (prompt overrides, creator metadata, char note depth/role, talkativeness) | HAVE-THIN | Part IV (P-049, P-057) | HAVE-THIN - a character note injected at a selectable depth and role as a card citizen still missing (no card field carries it; depth/role note injection exists only as the per-chat author's note, P-056, a different citizen); per-card prompt overrides, creator metadata and talkativeness through group speaker policies are proven | `src/runmal/cards/models.py`, `src/runmal/prompt/post_history.py`, `src/runmal/prompt/authors_note.py`, `src/runmal/groupchat/policies.py` |
 | ST-07 | Alternate greetings | HAVE-THIN | P-079 | NOT-YET-REJUDGED | - |
 | ST-08 | Personas (switch mid-chat, batch re-attribution) | HAVE-THIN | P-018 | HAVE-THIN - batch sync re-attribution of past messages still absent (grep-verified at founding); the persona citizen and its file interop are proven | `tests/test_p018_persona_interop.py` |
 | ST-09 | Persona description positions (story string / AN depth & role / disabled) | MISSING | P-018 | HAVE | `tests/test_p018_persona_interop.py` |
@@ -138,18 +170,18 @@ ST-24 are left to reconciliation (P-231).
 | ST-25 | Four lore scopes layered (global/character/persona/chat) | HAVE-THIN | P-039, P-040 | HAVE-THIN - a chosen combined insertion strategy for the four-layer stack still missing (the layered preview gathers in one fixed declared order; no strategy vocabulary exists for the combined scopes, and the binding precedence choice governs only the two-book merge); all four scopes as citizens with per-scope budgets, dedupe to the most specific layer and the bound character book as the character layer are proven | `src/runmal/lorebooks/scopes.py`, `src/runmal/lorebooks/binding.py`, `tests/test_p040_lore_scopes.py`, `tests/test_p039_character_book_binding.py` |
 | ST-26 | Per-entry gating extras (character filter, generation-type triggers, extra scan sources) | MISSING | NO HOME — flagged for P-014 | MISSING - the per-entry gating core is absent as engine behaviour: the character filter and generation-type triggers were expressly not built at P-035 and the fields are preserved-as-data only in interop files; extra scan sources alone were built at P-037 (the external-context segment) | `docs/ENTRY_STATES_2026-11-06.md`, `tests/test_p019_lorebook_interop.py`, `tests/test_p037_scan_windows.py` |
 | ST-27 | Automation ID (entry firing runs a command) | MISSING | Part VI kin (P-081, P-093); no dedicated slice — flagged for P-014 | NOT-YET-REJUDGED | - |
-| ST-28 | Prompt Manager (ordered editable blocks, roles, depth, gen triggers) | HAVE-THIN | P-049 | NOT-YET-REJUDGED | - |
-| ST-29 | Prompt Manager utility surface (nudges, markers, squash, system merge…) | HAVE-THIN | P-049 | NOT-YET-REJUDGED | - |
-| ST-30 | Reasoning controls (visibility toggle, reasoning effort) | MISSING | NO HOME — flagged for P-014 (nearest kin P-052) | NOT-YET-REJUDGED | - |
-| ST-31 | Advanced Formatting (system/context/instruct templates, auto-derivation) | HAVE-THIN | P-050, P-051 | NOT-YET-REJUDGED | - |
-| ST-32 | Context template / story string (Handlebars anchors) | HAVE-THIN | P-051 | NOT-YET-REJUDGED | - |
-| ST-33 | Instruct templates (ChatML/Llama-3/Alpaca class, per model) | HAVE-THIN | P-050 | NOT-YET-REJUDGED | - |
+| ST-28 | Prompt Manager (ordered editable blocks, roles, depth, gen triggers) | HAVE-THIN | P-049 | HAVE-THIN - per-block role editing, per-block generation-type triggers, in-chat depth positioning for arbitrary blocks, and a persisted layout still missing (a PromptBlock is exactly {block, enabled}; layout is request/service data only); ordered toggleable prompt blocks and preset-carried prompt sets are proven | `src/runmal/prompt/manager.py`, `tests/test_p049_prompt_manager.py` |
+| ST-29 | Prompt Manager utility surface (nudges, markers, squash, system merge…) | HAVE-THIN | P-049 | HAVE-THIN - the named prompt-manager utilities still missing (group nudge and continue nudge as manager citizens, new-chat / new-group / new-example markers, character-names behaviour strategies, squash consecutive system messages, wrap user message in quotes, continue prefill, system-prompt merge mode; no squash / nudge / prefill / quote-wrap vocabulary exists in src/runmal/prompt/); post-history quick-edit, format-template wrapping and the layout toggle/reorder surface are proven | `src/runmal/prompt/manager.py`, `src/runmal/prompt/context.py`, `tests/test_p057_post_history.py` |
+| ST-30 | Reasoning controls (visibility toggle, reasoning effort) | MISSING | NO HOME — flagged for P-014 (nearest kin P-052) | MISSING - the reasoning effort control is absent as the P-052/P-053-homed sampler-side scope (the P-052 catalogue of 29 sampler specs carries no reasoning control of any kind and the P-053 truth table carries no reasoning row); reasoning visibility exists only via Part XIII's capture/panel shape (P-205/P-206), not as the homed control | `docs/PART_I_GATE_2026-10-30.md`, `src/runmal/backends/samplers.py`, `src/runmal/chats/reasoning.py` |
+| ST-31 | Advanced Formatting (system/context/instruct templates, auto-derivation) | HAVE-THIN | P-050, P-051 | HAVE-THIN - separately saved template files still missing (every selection is request/service data; no template store exists) and auto-derivation from a backend template hash still missing (derivation is a model-name substring table plus preset carriage); the three template families as separately editable data, carried by presets and model profiles, are proven | `src/runmal/prompt/instruct.py`, `tests/test_p050_instruct_templates.py`, `tests/test_p051_context_templates.py` |
+| ST-32 | Context template / story string (Handlebars anchors) | HAVE-THIN | P-051 | HAVE-THIN - example_separator is carried data only with no apply effect, stops_from_separators is surfaced in the echo only and not wired as generation stops, and extension anchors beyond the named anchor set still missing (unknown placeholders raise by design); the story-string form as data with round-trip and census anchor aliases is proven | `src/runmal/prompt/context.py`, `tests/test_p051_context_templates.py` |
+| ST-33 | Instruct templates (ChatML/Llama-3/Alpaca class, per model) | HAVE-THIN | P-050 | HAVE | `src/runmal/prompt/instruct.py`, `tests/test_p050_instruct_templates.py` |
 | ST-34 | Presets (shareable JSON bundles per API type) | HAVE-THIN | P-021, P-054 | HAVE | `tests/test_p021_preset_interop.py`, `docs/PRESET_BUNDLES_2026-11-06.md` |
-| ST-35 | Sampler surface (temp, top-p/k, min-p, penalties, DRY/XTC class) | HAVE-THIN | P-052, P-053 | NOT-YET-REJUDGED | - |
-| ST-36 | Macros ({{char}}/{{user}}/{{original}}/{{outlet::…}} + wider set) | HAVE-THIN | P-055 | NOT-YET-REJUDGED | - |
+| ST-35 | Sampler surface (temp, top-p/k, min-p, penalties, DRY/XTC class) | HAVE-THIN | P-052, P-053 | HAVE-THIN - DRY/XTC serving still missing (the class exists as canonical surface plus truth, not as generation behaviour: no adapter declares or forwards DRY or XTC, nor dynamic temperature; they are dropped with reasons on every backend profile); the complete canonical surface of 29 controls as data with honest per-backend truth is proven | `src/runmal/backends/samplers.py`, `tests/test_p052_sampler_surface.py`, `tests/test_p053_capability_truth.py` |
+| ST-36 | Macros ({{char}}/{{user}}/{{original}}/{{outlet::…}} + wider set) | HAVE-THIN | P-055 | HAVE-THIN - the outlet macro still missing ({{outlet::…}} has no registry entry and no pull-model exists) and macro expansion is not wired into compose() itself (the engine lives at the text layer and the tools API; inspect_prompt does not expand macros); the documented registry (identity, clock, seeded random / dice, variables, transforms) with unknown macros reported is proven | `src/runmal/prompt/macros.py`, `tests/test_p055_macros.py` |
 | ST-37 | Author's Note (per-chat, depth/frequency) | HAVE | — (frequency deepened at P-056) | NOT-YET-REJUDGED | - |
-| ST-38 | Post-history instructions (manager citizen, per-card override) | HAVE-THIN | P-057 | NOT-YET-REJUDGED | - |
-| ST-39 | Multimodal & tool toggles (inline image/video, web search tool, function calling) | HAVE-THIN | Part IV kin; vision in Part VIII (title only) — flagged for P-014 | NOT-YET-REJUDGED | - |
+| ST-38 | Post-history instructions (manager citizen, per-card override) | HAVE-THIN | P-057 | HAVE | `src/runmal/prompt/post_history.py`, `src/runmal/prompt/manager.py`, `tests/test_p057_post_history.py` |
+| ST-39 | Multimodal & tool toggles (inline image/video, web search tool, function calling) | HAVE-THIN | Part IV kin; vision in Part VIII (title only) — flagged for P-014 | HAVE-THIN - prompt-level multimodal and tool toggles still missing (inline image/video send, request-image-back, web-search tool and function-calling as prompt settings were never built at P-049/P-052; no toggle vocabulary exists in src/runmal/prompt/); capability negotiation substrate and the vision half shipped as Part VIII citizens (P-117/P-118) are proven | `src/runmal/prompt/vision_link.py`, `tests/test_p117_vision_foundation.py`, `tests/test_p118_vision_template_variable.py` |
 | ST-40 | Token probabilities viewer (alternatives, reroll from a token) | MISSING | NO HOME — flagged for P-014 | NOT-YET-REJUDGED | - |
 | ST-41 | Two API paradigms (Chat Completion vs Text Completion) | HAVE-THIN | P-008 (ledger judgement) | NOT-YET-REJUDGED | - |
 | ST-42 | Chat Completion source breadth (OpenAI/Claude/Google/Mistral/DeepSeek/…) | HAVE-THIN | P-008 | NOT-YET-REJUDGED | - |
@@ -184,7 +216,7 @@ ST-24 are left to reconciliation (P-231).
 | ST-71 | User accounts (multi-user isolation, roles) | HAVE-THIN | NO HOME in defined parts — flagged for P-014 | NOT-YET-REJUDGED | - |
 | ST-72 | Full user-data backup (download all of a user's data) | HAVE | — (archive growth at P-028) | NOT-YET-REJUDGED | - |
 | ST-73 | Clean-up tool (orphan/stale file scan with risk warnings) | MISSING | NO HOME — flagged for P-014 (nearest kin S804) | NOT-YET-REJUDGED | - |
-| ST-74 | Token accounting surfaces (per-card, per-message usage) | HAVE-THIN | Part IV kin (P-044 lore-side, P-059) | NOT-YET-REJUDGED | - |
+| ST-74 | Token accounting surfaces (per-card, per-message usage) | HAVE-THIN | Part IV kin (P-044 lore-side, P-059) | HAVE-THIN - the token-probability inspection component still missing (ST-40 was dropped from the defined road by the P-014 gate, its re-open condition was never met, and no logprob surface exists anywhere in src/ at base); per-character token counts, the per-message prompt/token-usage view, the budget governor and provider-reported usage recorded on generation are proven | `src/runmal/prompt/preview.py`, `tests/test_p059_prompt_preview.py`, `tests/test_p044_token_accounting.py`, `src/runmal/tokens.py` |
 
 ## Table B - Voxta rows (P-003) at the close
 
@@ -205,9 +237,9 @@ ST-24 are left to reconciliation (P-231).
 | VX-13 | Narrator voice (scenario-named, per message type) | MISSING | Part IX (title only) | NOT-YET-REJUDGED | - |
 | VX-14 | Many ears (multiple STT services, local/cloud) | HAVE-THIN | P-010 (census); Part VII (title only) | NOT-YET-REJUDGED | - |
 | VX-15 | Service-type architecture (labelled coexisting services per type, auto-select) | HAVE-THIN | P-008, P-010 (ledgers) | NOT-YET-REJUDGED | - |
-| VX-16 | Local LLM engines (llama.cpp/ExLlama class) + structured output | HAVE-THIN | P-008; P-061 | NOT-YET-REJUDGED | - |
+| VX-16 | Local LLM engines (llama.cpp/ExLlama class) + structured output | HAVE-THIN | P-008; P-061 | HAVE-THIN - a direct llama.cpp/ExLlama-class engine adapter still missing (Ollama is the local-engine shape Runmal ships) and grammar mode is served nowhere (greyed on every backend with grammar_not_on_wire, carried as Part IV gate finding F1); the shipped engine breadth behind the shared backend contract and structured output served on the wire are proven | `src/runmal/backends/structured.py`, `tests/test_p061_structured_output.py`, `docs/PART_IV_GATE_2026-11-07.md` |
 | VX-17 | Decisions (dedicated multiple-choice service for speaker/action/tool gating) | MISSING | Part IX/XIII (titles only) — flagged for P-014 | NOT-YET-REJUDGED | - |
-| VX-18 | Reasoning budgeted separately (reply budget stated, summarizer can think) | MISSING | NO HOME — flagged for P-014 | NOT-YET-REJUDGED | - |
+| VX-18 | Reasoning budgeted separately (reply budget stated, summarizer can think) | MISSING | NO HOME — flagged for P-014 | MISSING - no reasoning budget separate from the reply budget exists (no stated reply budget and no summarizer-thinking control exists anywhere in src/ at base); the pair was homed to Part IV by the banked P-014 gate as explicit scope of P-052/P-053 and the scope was never built there | `docs/PART_I_GATE_2026-10-30.md`, `src/runmal/backends/samplers.py`, `src/runmal/chats/reasoning.py` |
 | VX-19 | VRAM awareness (estimator, launch prevention, load breakdown) | MISSING | P-009 kin — flagged for P-014 | NOT-YET-REJUDGED | - |
 | VX-20 | Module system (installable feature modules with config pages) | MISSING | P-081, P-082, P-083 | NOT-YET-REJUDGED | - |
 | VX-21 | Long-term memory across conversations | HAVE | — | NOT-YET-REJUDGED | - |
