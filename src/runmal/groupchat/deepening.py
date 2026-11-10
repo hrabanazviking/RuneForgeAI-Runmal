@@ -43,6 +43,21 @@ the S305 precedent) and does NOT route through the prompt composer
 call, never a background daemon; activation state lives in
 ``speaker_config``, so concurrent next/run calls are
 last-writer-wins, matching the room config's existing semantics.
+
+P-208 wiring: the persistent generation seam (_generate) now
+collects the generation service's reasoning dicts in arrival
+order beside the answer text and returns a strict P-205 record
+(recorded with the verbatim joined thinking, else not_present);
+next_turn lands it beside provenance through the group store's
+reasoning= param, so generated group turns carry their thinking
+in the transcript while manual and user appends keep reading
+not_recorded. The rewritten collector adopts the P-207 failure
+contract whole (the D2 fix): an error dict, a finish of None /
+cancelled / error, or empty text raises GenerationFailedError,
+no record is built and nothing is stored. No combination rule
+exists on this road and none is built: no group generation grows
+an existing message, so each record describes exactly its own
+production and P-207's extend combination is NOT copied here.
 """
 
 from __future__ import annotations
@@ -53,6 +68,7 @@ import json
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.chats import provenance as prov_mod
+from runmal.chats import reasoning as reasoning_mod
 from runmal.cards import import_card
 from runmal.characters.service import get_character
 from runmal.db.models import ChatEvent, Group
@@ -632,12 +648,12 @@ async def next_turn(
         lore_enabled=override.get("lore_enabled", True),
     )
     prompt_messages = build_prompt_messages(picked, roster, deepening, history, lore_texts)
-    text = await _generate(prompt_messages)
+    text, reasoning_record = await _generate(prompt_messages)
     from runmal.generation import service as _gen_service
 
     _backend_key, _model_id = prov_mod.backend_model_fields(
         _gen_service.default_backend())
-    record = prov_mod.build_record(
+    prov_record = prov_mod.build_record(
         origin_kind="group_generated",
         origin={"strategy": group.speaker_policy, "speaker_id": picked},
         model=prov_mod.model_section(
@@ -647,7 +663,8 @@ async def next_turn(
         speaker={"speaker_id": picked,
                  "speaker_name": result["speaker_name"]})
     message = await store.append_message(
-        session, user_id, group_id, picked, text, provenance=record)
+        session, user_id, group_id, picked, text,
+        provenance=prov_record, reasoning=reasoning_record)
     chat = await store._room_chat(session, group.id)
     await _record_event(
         session,
@@ -662,20 +679,48 @@ async def next_turn(
     return result
 
 
-async def _generate(prompt_messages: list[dict]) -> str:
+async def _generate(prompt_messages: list[dict]) -> tuple[str, dict]:
+    """Collect one generation's text and reasoning record through
+    the generation service (P-208). Reasoning dicts are collected
+    in arrival order, exactly as the bridge loop and the P-207 seam
+    collect them; reasoning text is NEVER merged into the answer
+    text. The failure contract is the P-207 contract adopted whole
+    (the D2 fix): an error dict, a finish of None / cancelled /
+    error, or empty text raises GenerationFailedError -- no record
+    is built and the caller stores nothing."""
     from runmal.generation import service as generation
 
     prompt_text = "\n".join(m["content"] for m in prompt_messages)
-    text = ""
+    parts: list[str] = []
+    reasoning_parts: list[str] = []
+    finish: str | None = None
+    error_message: str | None = None
     request_id = generation.new_request_id()
     async for event in generation.generate_events(request_id, prompt_text, plugin_events=False):
-        if event.get("type") == "token":
-            text += event["text"]
-        elif event.get("type") == "error":
-            raise GenerationFailedError(str(event.get("message") or "generation error"))
+        kind = event.get("type")
+        if kind == "token":
+            parts.append(event["text"])
+        elif kind == "reasoning":
+            reasoning_parts.append(event["text"])
+        elif kind == "error":
+            error_message = str(event.get("message") or "generation error")
+        elif kind == "done":
+            finish = event.get("finish_reason")
+    if error_message is not None:
+        raise GenerationFailedError(error_message)
+    if finish in (None, "cancelled", "error"):
+        raise GenerationFailedError(
+            f"generation did not finish cleanly: {finish}")
+    text = "".join(parts)
     if not text.strip():
         raise GenerationFailedError("generation produced no text")
-    return text
+    reasoning_text = "".join(reasoning_parts)
+    if reasoning_text:
+        record = reasoning_mod.build_record(
+            status="recorded", text=reasoning_text)
+    else:
+        record = reasoning_mod.build_record(status="not_present")
+    return text, record
 
 
 async def run_turns(

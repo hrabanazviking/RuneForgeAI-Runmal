@@ -92,6 +92,9 @@ async def group_turn(
                 if event.get("type") == "token":
                     text += event["text"]
                     yield _event({"type": "token", "author": speaker.name, "text": event["text"]})
+                elif event.get("type") == "reasoning":
+                    yield _event({"type": "reasoning", "author": speaker.name,
+                                  "text": event["text"]})
             chat.history.append(GroupMessage(speaker.name, text))
             chat.note_spoke(strategy, speaker)
             yield _event({"type": "message", "author": speaker.name, "content": text})
