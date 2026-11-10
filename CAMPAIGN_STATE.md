@@ -21522,3 +21522,94 @@ P-162 BANKED - Character Face History
     View, Inspector & Bots
     gate, per team-01 hidden_f
     iles/P218_DESIGN.md.
+    P-218 BANKED - Part XIII
+    gate (Assistant View,
+    Inspector & Bots) - GATE
+    PASSED. Part XIII COMPLETE
+    (P-203..P-218). - team-01
+    commit a548d33 merged (no-
+    ff) into yrsa/two-mirrors-
+    build as 3cda2c603e777496597
+    801189031c49489ea5fd7
+    (parents 35be28d + a548d33).
+    Merge CLEAN - no conflicts
+    in any file (the only
+    possible overlap, docs/CLEAN
+    _ROOM_LOG_2026-10-30.md,
+    merged as a pure additive
+    union with the P-218 entry
+    exactly once). Scope: the
+    gate judged Part XIII whole
+    on the fresh ZqxGate218
+    world - gate battery G=35
+    passed, gate-record battery
+    R=10 passed, docs/PART_XIII_
+    GATE_2026-11-10.md filed,
+    clean-room log +3. NO src
+    change, NO web change, NO
+    fixture change, NO
+    migration; head stays 0042.
+    Route census stays 356 paths
+    / 439 operations. S311 group
+    golden UNMOVED - all eight
+    UI goldens hash-identical
+    (group golden sha256 bef5447
+    cce4839b434ddcc00e8ff6808738
+    975a8e8f4676371c63ac8a8108c3
+    c), tests/fixtures/ diff
+    empty, no
+    RUNMAL_UPDATE_GOLDENS run.
+    Evidence (team-01 hidden_fil
+    es/P218_EVIDENCE.md + logs):
+    gate battery 35 passed;
+    gate-record 10 passed;
+    neighbours fence 238 passed
+    / 0 failed (230 Part XIII
+    citizen tests P-203..P-217 +
+    S305 stateless 5 + S311
+    golden watch 3); team full
+    suite 6223 passed / 5
+    skipped / 0 failed in
+    428.68s (= 6178 banked at
+    P-217 + 35 + 10 exact).
+    Banking: combined fence on
+    the merged tree (the two
+    P-218 batteries + the
+    neighbour files + the S311
+    file) 283 passed / 0 failed
+    (= 35 + 10 + 238 exact);
+    forge confirmation full
+    suite 6223 passed / 5
+    skipped / 0 failed, exit 0,
+    in 442.22s - exact (log
+    /tmp/p218_forge_full.log;
+    the confirmation ran
+    detached via nohup with an
+    exit file, as its 442s
+    outlasts a single device
+    invoke). Carried items: all
+    17 accounted in the gate
+    record - D1 stateless SSE
+    error-swallowing FENCED,
+    ruling outstanding; per-
+    swipe thinking browsing
+    DECLINED-PENDING-WORD; K-A
+    binding label update, K-B
+    retention / bulk clear and
+    K-C unified-search history
+    NAMED OPEN; the remaining
+    standing declines, by-design
+    limitations and the P-208 /
+    P-209 record facts stand as
+    pinned in docs/PART_XIII_GAT
+    E_2026-11-10.md. Defects in
+    banked code: none found at
+    banking. Banked now
+    P-001..P-218 + the
+    commissioned binding
+    depth/role slice. PART XIII
+    COMPLETE. Next in roadmap
+    order: Part XIV opens in
+    roadmap order (P-219..P-232,
+    The Proof Spine - the parity
+    matrix, published).
