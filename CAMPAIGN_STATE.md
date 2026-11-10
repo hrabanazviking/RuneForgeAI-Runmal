@@ -20807,3 +20807,64 @@ P-162 BANKED - Character Face History
     Part XIII still owes (Inspector
     & Bots territory beyond the
     reasoning trail).
+    P-210 BANKED - Inspector
+    reasoning join (Part XIII,
+    DERIVED). - team-03 commit
+    3e07379 merged (no-ff) into
+    yrsa/two-mirrors-build as
+    8a0c9a5 (parents f225c01 +
+    3e07379). Merge CLEAN - no
+    conflicts in any file. Scope:
+    the P-205 reasoning record is
+    now joined into the Inspector
+    as a read-only census document
+    (runmal-p210-inspector-
+    reasoning-v1 on GET
+    /inspector/chats/{chat_id}/
+    reasoning), built from the new
+    list_chat_reasoning chats-
+    service read mirroring
+    list_chat_provenance:
+    per-message active status and
+    recorded swipe indexes with a
+    raw-road pointer, per-status
+    counts over active views and
+    over all swipe documents, and
+    no thinking text anywhere.
+    Six banked census pins were
+    restated in the team commit at
+    the merged 355 paths / 438
+    operations truth, each with a
+    P-210 heal comment (the new
+    road adds one path and one
+    operation). NO migration;
+    head stays 0042. D1, the
+    stateless groupchat road
+    error-swallowing, stays FENCED
+    unchanged - NOT fixed by this
+    slice. Evidence (team-03
+    hidden_files/ P210_EVIDENCE.md
+    + logs): battery 14 passed;
+    neighbours fence 139 passed /
+    0 failed; team full suite
+    6079 passed / 5 skipped /
+    0 failed (= 6065 banked at
+    P-209 + 14 exact). Banking:
+    combined fence re-run in the
+    forge (test_p210 + the nine
+    neighbour files) 153 passed;
+    forge confirmation full suite
+    6079 passed / 5 skipped /
+    0 failed, in 393.88s - exact,
+    no contention failure fired,
+    no solo re-run needed. Defects
+    in banked code: none found at
+    banking. Banked now
+    P-001..P-210 + the commissioned
+    binding depth/role slice. PART
+    XIII OPEN (P-203..P-218, gate
+    P-218). Next in roadmap order:
+    P-211 (Part XIII, DERIVED) -
+    scout to derive from the
+    roadmap part text and what
+    Part XIII still owes.
