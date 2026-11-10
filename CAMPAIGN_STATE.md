@@ -20574,3 +20574,81 @@ P-162 BANKED - Character Face History
     XIII OPEN (P-203..P-218). Next in
     roadmap order: P-207 (Part XIII,
     DERIVED).
+    P-207 BANKED - Reasoning wiring
+    for continue / impersonate
+    (Part XIII, DERIVED). -
+    team-03 commit 1ffe5eb merged
+    (no-ff) into yrsa/two-mirrors-build
+    as e46cedd (parents ee09ce3 +
+    1ffe5eb). Merge CLEAN - no
+    conflicts in any file. Scope:
+    the P-205 reasoning record is
+    now wired into the P-069
+    continue / impersonate pair
+    through its shared generation
+    seam in continue_impersonate.py:
+    _generate_text collects the
+    bridge reasoning dicts in
+    arrival order and returns them
+    beside the text; continue NEXT
+    stores the record beside
+    provenance on append_message;
+    continue EXTEND reads the active
+    view before the deck grows and
+    combines per the design table
+    (recorded+recorded concatenates
+    in production order,
+    not_present+recorded becomes
+    recorded, recorded+not_present
+    keeps the existing text,
+    not_present+not_present stays
+    not_present, not_recorded or
+    unknown leaves reasoning_json
+    byte-untouched); impersonate
+    returns the record transiently
+    on the draft document only.
+    One heal rode in the team
+    commit: tests/test_p205
+    test_e3 continue half restated
+    to the new wired truth (recorded,
+    scripted thought verbatim), one
+    assertion ADDED, none weakened,
+    group-manual half byte-identical.
+    NO migration; head stays 0042.
+    Evidence (team-03 hidden_files/
+    P207_EVIDENCE.md + logs): battery
+    16 passed; neighbours fence 185
+    passed / 0 failed; team full
+    suite 6031 passed / 5 skipped /
+    0 failed (= 6015 banked at P-206
+    + 16 exact). Banking: combined
+    batteries re-run in the forge
+    (test_p207 + test_p205) 39
+    passed; forge confirmation
+    full suite 6031 passed / 5
+    skipped / 0 failed, exit 0,
+    in 403.01s - exact, no
+    contention failure fired, no
+    test_s503 solo re-run needed.
+    Defects in banked code: none.
+    Carried limitations: extend
+    onto a legacy / manual /
+    imported swipe drops the
+    extension generation thinking
+    on the floor BY DESIGN (those
+    swipes keep reading not_recorded
+    until re-generated whole);
+    impersonate reasoning is
+    draft-only - it lives only in
+    the draft document and nothing
+    persists it once the draft is
+    accepted or dropped; groupchat
+    generations, manual swipes and
+    web /generate replies still
+    read not_recorded. Banked now
+    P-001..P-207 + the commissioned
+    binding depth/role slice. PART
+    XIII OPEN (P-203..P-218). Next in
+    roadmap order: P-208 (Part XIII,
+    DERIVED) - candidate groupchat
+    reasoning wiring.
