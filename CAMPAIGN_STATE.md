@@ -21387,3 +21387,138 @@ P-162 BANKED - Character Face History
     a persistent send), per
     team-01 hidden_files/P217_
     DESIGN.md.
+    P-217 BANKED - Persistent-
+    mode refinements on the
+    group page (Part XIII,
+    DERIVED). - team-01 commit
+    a5fc6a7 merged (no-ff)
+    into yrsa/two-mirrors-
+    build as 91879f1 (parents
+    2b92450 + a5fc6a7). Merge
+    CLEAN - no conflicts in
+    any file. Scope:
+    persistent-mode
+    refinements on the group
+    page - group.js ONLY:
+    openSavedGroup success
+    path, after the P-215 mode
+    restatement, disables the
+    strategy control and every
+    roster checkbox
+    (roster/strategy govern
+    only the stateless room;
+    the group's own stored
+    policy governs speaker
+    choice here);
+    closeSavedGroup re-enables
+    both after its null guard
+    among its restatements;
+    sendPersistent replaces
+    the P-214 early return
+    with a guarded render so
+    the refresh tail runs on
+    null sends, then after the
+    render, still inside the
+    try, awaits
+    loadSavedGroups() and
+    restores the saved-group
+    select to openGroupId;
+    catch unchanged (showError
+    only). NO markup, backend,
+    road, stylesheet or
+    migration change; head
+    stays 0042. Route census
+    stays 356 paths / 439
+    operations. Heals: (1)
+    DESIGNED heal - P-214
+    battery pin 8 (test_08_nul
+    l_message_renders_nothing)
+    restated at equal-or-
+    greater strength in its
+    true P-217 form, named in
+    advance in P217_DESIGN.md
+    section 5: no early return
+    remains, the guarded
+    render precedes await
+    loadSavedGroups(), a null
+    message renders nothing
+    AND reaches the refresh.
+    The healed pin's wrapped
+    continuation line was re-
+    wrapped to the banked two-
+    line form after a ruff
+    E501 trip - a formatting
+    repair of the heal itself,
+    no strength change. (2) NO
+    other heal fired: no other
+    banked battery asserts the
+    early-return form (grep-
+    verified at the build
+    base), the exact-census
+    contingency did not fire,
+    no census heal, no
+    placement move, no other
+    pin touched. S311 group
+    golden UNMOVED - byte-
+    identical to base
+    (tests/fixtures/ verified
+    empty diff), no
+    RUNMAL_UPDATE_GOLDENS run,
+    no golden heal, as
+    expected for a slice with
+    no markup change. D1 stays
+    FENCED unchanged - NOT
+    fixed by this slice.
+    Evidence (team-01 hidden_f
+    iles/P217_EVIDENCE.md +
+    logs): battery 14 passed;
+    neighbours fence 179
+    passed / 0 failed (the
+    twelve banked files:
+    test_s305_group_ui 5,
+    test_p205_reasoning_record
+    23,
+    test_p206_assistant_view
+    18, test_p208_groupchat_re
+    asoning 18, test_p209_swip
+    e_generate_reasoning 16, t
+    est_p210_inspector_reasoni
+    ng 14, test_p211_inspector
+    _group_reasoning 15, test_
+    p212_group_assistant_view
+    14, test_p213_group_transc
+    ript_loader 14, test_p214_
+    group_composer_wiring 14, 
+    test_p215_group_mode_toggl
+    e 14,
+    test_p216_group_creation
+    14); S311 golden watch 3
+    passed; team full suite
+    6178 passed / 5 skipped /
+    0 failed, exit 0 in
+    407.25s (= 6164 banked at
+    P-216 + 14 exact).
+    Banking: combined fence on
+    the merged tree (test_p217
+    + the neighbour files +
+    the S311 file) 196 passed
+    / 0 failed (= battery 14 +
+    neighbours 179 + S311 3
+    exact); forge confirmation
+    full suite 6178 passed / 5
+    skipped / 0 failed, in
+    419.62s, exit 0 - exact
+    (log
+    /tmp/p217_forge_full.log).
+    Defects in banked code:
+    none found at banking.
+    Banked now P-001..P-217 +
+    the commissioned binding
+    depth/role slice. PART
+    XIII OPEN (P-203..P-218,
+    gate P-218). Next in
+    roadmap order: P-218 (Part
+    XIII gate) - Assistant
+    View, Inspector & Bots
+    gate, per team-01 hidden_f
+    iles/P218_DESIGN.md.
