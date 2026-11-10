@@ -43,6 +43,10 @@ route census 356/439, suite 6275 passed / 5 skipped /
 2566117 (the P-222 banking record), migration head 0042,
 route census 356/439, suite 6293 passed / 5 skipped /
 0 failed at P-223 opening.
+- Tranche note (P-224): base truth at P-224 opening: HEAD
+d940375 (the P-223 banking record), migration head 0042,
+route census 356/439, suite 6311 passed / 5 skipped /
+0 failed at P-224 opening.
 - Evidence rule (P-001's handover rule, kept by P-004): every
 closing verdict cites a proving test file or banked slice
 doc in THIS repo; citations must resolve to real paths. No
@@ -82,7 +86,8 @@ P-220 judged (tranche 2 = Part III rows,
 14 rows); P-222 judged (tranche 4 = Part V rows,
 12 rows); P-223 judged (tranche 5 = Part VI rows,
 19 rows);
-P-224 Part VII; P-225 Part VIII; P-226 Part IX; P-227
+P-224 judged (tranche 6 = Part VII rows,
+5 rows); P-225 Part VIII; P-226 Part IX; P-227
 Part X; P-228 Part XI; P-229 Part XII; P-230 Part XIII;
 P-231 reconciliation (whole-matrix mechanical recount, the
 principle-4 sovereign-shape statements audited end to end,
@@ -119,6 +124,10 @@ Tranche 5 closing counts: HAVE 2, HAVE-THIN 15,
 MISSING 1, SHIPPED-SOVEREIGN 1, NOT-YET-REJUDGED 0,
 of 19 rows.
 
+Tranche 6 closing counts: HAVE 0, HAVE-THIN 5,
+MISSING 0, SHIPPED-SOVEREIGN 0, NOT-YET-REJUDGED 0,
+of 5 rows.
+
 Cumulative judged counts (tranches 1 and 2): HAVE 4,
 HAVE-THIN 17, MISSING 1, SHIPPED-SOVEREIGN 0,
 NOT-YET-REJUDGED 0, of 22 rows.
@@ -135,7 +144,11 @@ Cumulative judged counts (tranches 1, 2, 3, 4 and 5): HAVE 13,
 HAVE-THIN 48, MISSING 5, SHIPPED-SOVEREIGN 1,
 NOT-YET-REJUDGED 0, of 67 rows.
 
-Unjudged remainder: 74 rows NOT-YET-REJUDGED.
+Cumulative judged counts (tranches 1, 2, 3, 4, 5 and 6): HAVE 13,
+HAVE-THIN 53, MISSING 5, SHIPPED-SOVEREIGN 1,
+NOT-YET-REJUDGED 0, of 72 rows.
+
+Unjudged remainder: 69 rows NOT-YET-REJUDGED.
 
 Tranche 2 note (P-220): the rows judged in tranche 2 are
 ST-15, ST-16, ST-17, ST-18, ST-20, ST-22, ST-23, ST-25,
@@ -195,6 +208,21 @@ left to P-231 reconciliation; ST-65, VX-34, VX-51 and VX-66
 are judged here once on their Part VI slice homes (P-092,
 P-093, P-087, P-081) under the first-home rule, and their
 later title tranches record them as already judged.
+
+Tranche 6 note (P-224): the rows judged in tranche 6 are
+VX-04, VX-10, VX-11, VX-12, VX-14. Borderline
+dispositions: VX-11 is judged in tranche 6 under the
+keeper's Q1 ruling (the P-014 definition queue homed
+VX-11 to Part VII and Part VII built its substance) with
+verdict HAVE-THIN under the keeper's Q2 ruling
+(confidence marks and the replacement lexicon fully
+built and the repeat-request signal layer built; the
+character-asks half remains open as the P-116 gate's
+item K1); VX-09 is not judged in tranche 6 (dash road
+home) and is left to P-231 reconciliation; VX-58 is
+left to the Part XI tranche (P-228) under the keeper's
+Q3 ruling; the five rows are judged here once on their
+Part VII homes.
 
 ## Table A - SillyTavern rows (P-002) at the close
 
@@ -282,17 +310,17 @@ later title tranches record them as already judged.
 | VX-01 | Local server + web UI, cloud optional / Lite tier | DELIBERATELY-DIFFERENT | — (sovereign shape shipped) | NOT-YET-REJUDGED | - |
 | VX-02 | Characters (distinct fields + culture/language/date sense) | HAVE-THIN | Part II kin; template side in Part IX (title only) | NOT-YET-REJUDGED | - |
 | VX-03 | Character assets & generated expressions, Emotes/States | HAVE-THIN | P-023; Part X (title only) | HAVE-THIN - expression generation as a character pipeline not proven as such; character assets and expression sets/states are proven | `tests/test_p023_card_assets.py`, `tests/test_p092_expressions.py` |
-| VX-04 | Voices as character equipment (Voices Studio, favourites, culture filter) | HAVE-THIN | Part VII (title only); census at P-010 | NOT-YET-REJUDGED | - |
+| VX-04 | Voices as character equipment (Voices Studio, favourites, culture filter) | HAVE-THIN | Part VII (title only); census at P-010 | HAVE-THIN - a Voices Studio surface, favourites, and a culture filter still missing (never built); per-character voice profiles shipped (S512: backend/voice/params reference with field-level fallback, voice an independent modality) and every TTS backend exposing its voice list are proven | `src/runmal/voice/profiles.py`, `src/runmal/voice/backends.py`, `tests/test_p010_voice_provider_census.py` |
 | VX-05 | User identity in prompt; scenario impersonation override | HAVE-THIN | P-018 kin; Part IX (title only) | NOT-YET-REJUDGED | - |
 | VX-06 | Multi-character chats + history sharing with absent characters | HAVE-THIN | P-071 | HAVE-THIN - automatic injection of the digest into the returning character's next generated prompt still missing (a digest_prompt_message helper exists ready to sit ahead of the scene history, but the group generation road never calls it; delivery is the return document, not a wired prompt citizen) and exactness under anchor deletion still missing (on the by_count_fallback window the earliest missed messages can be lost when the last-seen anchor and further pre-window messages were deleted; the exact window is proven only on the by_id road); multi-character rooms plus the returning-character digest of missed history (explicit leave/return presence, capped entries with omitted_count, by-speaker counts, preview and presence roads) are proven | `src/runmal/groupchat/presence.py`, `tests/test_p071_absent_digest.py` |
 | VX-07 | Companions vs assistants as distinct kinds (default assistant) | MISSING | Part XIII (title only) — flagged for P-014 | NOT-YET-REJUDGED | - |
 | VX-08 | Chat style & flow taxonomy (Companion/Roleplay/Storytelling/Assistant; Chat/Story flow) | MISSING | Part IX (title only) — flagged for P-014 | NOT-YET-REJUDGED | - |
 | VX-09 | Real-time voice both ways, interruptible mid-sentence | HAVE | — (speed feeds P-009/P-010) | NOT-YET-REJUDGED | - |
-| VX-10 | Adaptive VAD & learned turn detection, filler tolerance | HAVE-THIN | Part VII (title only) | NOT-YET-REJUDGED | - |
-| VX-11 | Mishearing handled (repeat request, replacements, STT confidence marks) | MISSING | NO HOME — flagged for P-014 (Part VII kin) | NOT-YET-REJUDGED | - |
-| VX-12 | Expressive voices: prosody/affects, Emotion Tags, TTS playground | HAVE-THIN | P-010 (census); Part VII (title only) | NOT-YET-REJUDGED | - |
+| VX-10 | Adaptive VAD & learned turn detection, filler tolerance | HAVE-THIN | Part VII (title only) | HAVE-THIN - learned/adaptive turn detection and filler tolerance still missing (thresholds are fixed predeclared constants; no learned mechanism exists in the voice tree); Silero VAD behind a model seam with hysteresis/hangover/pre-roll and tunable thresholds, held to the predeclared S502 segmentation contract, with TurnCoordinator turn detection and barge-in interruption shipped, are proven | `src/runmal/voice/vad.py`, `src/runmal/voice/turntaking.py`, `tests/test_s502_vad.py`, `tests/test_p102_live_voice.py` |
+| VX-11 | Mishearing handled (repeat request, replacements, STT confidence marks) | MISSING | NO HOME — flagged for P-014 (Part VII kin) | HAVE-THIN - the character-asks half still missing (the signal creates no chat message and calls no responder; the P-116 gate's item K1); confidence marks and the replacement lexicon fully built (P-105 detection + ReplacementStore, P-106 projection mark, P-107 rendered markings) and the repeat-request signal layer built (P-108/P-111/P-114/P-115) are proven; judged here under the keeper's Q1 ruling (the P-014 definition queue homed VX-11 to Part VII) with verdict HAVE-THIN under the keeper's Q2 ruling | `src/runmal/voice/mishearing.py`, `src/runmal/voice/markings.py`, `src/runmal/voice/repeat_requests.py`, `tests/test_p105_voice_mishearing.py`, `tests/test_p108_voice_repeat_requests.py` |
+| VX-12 | Expressive voices: prosody/affects, Emotion Tags, TTS playground | HAVE-THIN | P-010 (census); Part VII (title only) | HAVE-THIN - the engine half still missing (consumed_by_backends is False, no backend renders an affect; Emotion Tags as synthesis instruction and the TTS playground were never built; the P-116 gate's item K2); the affects data half shipped at P-109 (closed vocabulary neutral + anger / whispering / laughing; strict write doors, tolerant reads; carried on the profile params and session snapshot) is proven | `src/runmal/voice/affects.py`, `tests/test_p109_voice_affects.py`, `docs/VOICE_AFFECTS_2026-11-08.md` |
 | VX-13 | Narrator voice (scenario-named, per message type) | MISSING | Part IX (title only) | NOT-YET-REJUDGED | - |
-| VX-14 | Many ears (multiple STT services, local/cloud) | HAVE-THIN | P-010 (census); Part VII (title only) | NOT-YET-REJUDGED | - |
+| VX-14 | Many ears (multiple STT services, local/cloud) | HAVE-THIN | P-010 (census); Part VII (title only) | HAVE-THIN - the registered extras still missing as running ears (no install recipe; they do not run) and no per-service native adapter or ElevenLabs-class connector beyond the one generic shape; multiple STT services, local and cloud - faster-whisper (the default shipped ear, forge-verified WER 0.1111) and distil-whisper locally, further ears registered-but-unverified with honest labels, and the F-03 generic OpenAI-compatible speech adapter as the cloud road (OpenAI STT, Pollinations, any compatible server) behind the STT seam - are proven | `src/runmal/voice/stt_backends.py`, `src/runmal/voice/openai_compat.py`, `tests/test_p010_voice_provider_census.py` |
 | VX-15 | Service-type architecture (labelled coexisting services per type, auto-select) | HAVE-THIN | P-008, P-010 (ledgers) | NOT-YET-REJUDGED | - |
 | VX-16 | Local LLM engines (llama.cpp/ExLlama class) + structured output | HAVE-THIN | P-008; P-061 | HAVE-THIN - a direct llama.cpp/ExLlama-class engine adapter still missing (Ollama is the local-engine shape Runmal ships) and grammar mode is served nowhere (greyed on every backend with grammar_not_on_wire, carried as Part IV gate finding F1); the shipped engine breadth behind the shared backend contract and structured output served on the wire are proven | `src/runmal/backends/structured.py`, `tests/test_p061_structured_output.py`, `docs/PART_IV_GATE_2026-11-07.md` |
 | VX-17 | Decisions (dedicated multiple-choice service for speaker/action/tool gating) | MISSING | Part IX/XIII (titles only) — flagged for P-014 | NOT-YET-REJUDGED | - |
