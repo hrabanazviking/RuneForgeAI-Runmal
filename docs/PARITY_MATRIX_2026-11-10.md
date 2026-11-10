@@ -55,6 +55,10 @@ route census 356/439, suite 6329 passed / 5 skipped /
 a39920c (the P-225 banking record), migration head 0042,
 route census 356/439, suite 6347 passed / 5 skipped /
 0 failed at P-226 opening.
+- Tranche note (P-227): base truth at P-227 opening: HEAD
+b4c906d (the P-226 banking record), migration head 0042,
+route census 356/439, suite 6365 passed / 5 skipped /
+0 failed at P-227 opening.
 - Evidence rule (P-001's handover rule, kept by P-004): every
 closing verdict cites a proving test file or banked slice
 doc in THIS repo; citations must resolve to real paths. No
@@ -97,8 +101,8 @@ P-220 judged (tranche 2 = Part III rows,
 P-224 judged (tranche 6 = Part VII rows,
 5 rows); P-225 judged (tranche 7 = Part VIII rows,
 1 row); P-226 judged (tranche 8 = Part IX rows,
-23 rows); P-227
-Part X; P-228 Part XI; P-229 Part XII; P-230 Part XIII;
+23 rows); P-227 judged (tranche 9 = Part
+X rows, 4 rows); P-228 Part XI; P-229 Part XII; P-230 Part XIII;
 P-231 reconciliation (whole-matrix mechanical recount, the
 principle-4 sovereign-shape statements audited end to end,
 a generated machine-readable twin is a named candidate);
@@ -146,6 +150,10 @@ Tranche 8 closing counts: HAVE 1, HAVE-THIN 7,
 MISSING 15, SHIPPED-SOVEREIGN 0, NOT-YET-REJUDGED 0,
 of 23 rows.
 
+Tranche 9 closing counts: HAVE 0, HAVE-THIN 0,
+MISSING 4, SHIPPED-SOVEREIGN 0, NOT-YET-REJUDGED 0,
+of 4 rows.
+
 Cumulative judged counts (tranches 1 and 2): HAVE 4,
 HAVE-THIN 17, MISSING 1, SHIPPED-SOVEREIGN 0,
 NOT-YET-REJUDGED 0, of 22 rows.
@@ -174,7 +182,11 @@ Cumulative judged counts (tranches 1, 2, 3, 4, 5, 6, 7 and 8): HAVE 14,
 HAVE-THIN 61, MISSING 20, SHIPPED-SOVEREIGN 1,
 NOT-YET-REJUDGED 0, of 96 rows.
 
-Unjudged remainder: 45 rows NOT-YET-REJUDGED.
+Cumulative judged counts (tranches 1, 2, 3, 4, 5, 6, 7, 8 and 9): HAVE 14,
+HAVE-THIN 61, MISSING 24, SHIPPED-SOVEREIGN 1,
+NOT-YET-REJUDGED 0, of 100 rows.
+
+Unjudged remainder: 41 rows NOT-YET-REJUDGED.
 
 Tranche 2 note (P-220): the rows judged in tranche 2 are
 ST-15, ST-16, ST-17, ST-18, ST-20, ST-22, ST-23, ST-25,
@@ -291,6 +303,28 @@ judged in tranche 5 on their first homes; VX-48 and
 VX-49 are left to the Part X tranche (P-227); the
 twenty-three rows are judged here once on their
 Part IX homes.
+
+Tranche 9 note (P-227): the rows judged in tranche 9 are
+VX-48, VX-49, VX-52, VX-53.
+Borderline dispositions: VX-48 is judged in tranche 9
+under the keeper's Q1 ruling (animation is the row's
+act; Part X shipped only pure-read pairing data, with
+no timing contract, renderer, stage, animation or
+playback anywhere in-tree, gate K2; substance absent
+is MISSING, the pairing recorded as preserved-as-data,
+not credited as the act) with verdict MISSING; VX-53 is
+judged in tranche 9 under the keeper's Q2 ruling
+(every enumerated depth item is grep-absent - ComfyUI,
+LoRA, upscaler, img2img, Civitai; the P-087 provider
+seam was already credited as VX-51's core in tranche 5
+and must not be double-counted across two rows) with
+verdict MISSING; ST-65, VX-03 and VX-51 were already
+judged on their first homes (VX-03 in tranche 1;
+ST-65 and VX-51 in tranche 5) and are not re-judged
+here; VX-45 was already judged in tranche 8 and is
+not left here; VX-48 and VX-49's tranche-8 deferral
+to this slice is discharged; the four rows are
+judged here once on their Part X homes.
 
 ## Table A - SillyTavern rows (P-002) at the close
 
@@ -422,12 +456,12 @@ Part IX homes.
 | VX-45 | Visual-novel play (authored scenario as VN with voices/images) | MISSING | Part IX/X (titles only) | MISSING - no visual-novel play exists (no VN mode or play surface exists anywhere in src/, and the Part X gate carries the scenario VN stage integration as open - Part IX's cast and Part X's faces remain unjoined); judged here under the keeper's Q4 ruling (first-home rule: judged at its first home despite the later Part X title; not left to P-227) | `docs/PART_X_GATE_2026-11-08.md`, `docs/DELTA_TABLE_2026-10-30.md` |
 | VX-46 | HUD & stage effects (bars/chips/inventory/checklist, splash, screen effects, sprites) | MISSING | Part IX (title only) | MISSING - no HUD or stage system exists (hud_widget elements are unmappable; no bars, chips, inventory, checklist, splash, screen effects or sprites exist as scenario surfaces) | `src/runmal/scenarios/filemodels.py`, `docs/PART_IX_GATE_2026-11-08.md` |
 | VX-47 | Clickable maps, inventories, HUD widgets | MISSING | Part IX (title only) | MISSING - no clickable maps, inventories or HUD widgets exist anywhere in the tree | `src/runmal/scenarios/filemodels.py`, `docs/DELTA_TABLE_2026-10-30.md` |
-| VX-48 | Portrait animation (still picture speaks with the voice) | MISSING | Part X (title only) | NOT-YET-REJUDGED | - |
-| VX-49 | Video & 3D avatars (MP4/AVIF, VRM popout) | MISSING | Part X (title only) | NOT-YET-REJUDGED | - |
+| VX-48 | Portrait animation (still picture speaks with the voice) | MISSING | Part X (title only) | MISSING - no portrait animation exists - Part X shipped the speaking face as data only: P-157 pairs a ready face descriptor with the character's resolved voice in one pure-read document (the paired flag), carried by the speaking roster, histories, boards and census, but every faces module states it performs no lip-sync or animation, no timing contract exists in-tree, no document carries audio, and the Part X gate carries the absence as K2 (no renderer, stage, animation, lip-sync or playback module anywhere - data only, by design). The still picture never moves or speaks; the pairing is preserved-as-data only; judged MISSING under the keeper's Q1 ruling | `src/runmal/faces/speaking.py`, `src/runmal/faces/__init__.py`, `tests/test_p157_speaking_face.py`, `docs/PART_X_GATE_2026-11-08.md` |
+| VX-49 | Video & 3D avatars (MP4/AVIF, VRM popout) | MISSING | Part X (title only) | MISSING - no video or 3D avatar surface exists - the word video occurs nowhere in src/, no MP4 / AVIF / VRM / popout surface exists, the asset citizens sniff still-image formats only (png / jpeg / gif / webp), and Part X built no stage an avatar could be a citizen of (gate K2) | `src/runmal/assets/imaging.py`, `src/runmal/assets/models.py`, `docs/PART_X_GATE_2026-11-08.md`, `docs/DELTA_TABLE_2026-10-30.md` |
 | VX-50 | Vision on request (screen/photo/webcam/folder watcher) | MISSING | Part VIII (title only) | HAVE-THIN - a semantic caption provider, screen capture, a webcam/camera flow and OCR still missing (no semantic caption provider exists in-tree - semantic_caption_available is False, stated as data, so descriptions are metadata truth, never what the image shows, gate item K1; no screen capture and no webcam/camera flow were built, gate item K3; the folder watcher is a polling scan, not a daemon, gate item K4; no OCR, gate item K2); vision on request shipped as the Part VIII citizen set (gate PASSED at P-130): POST /vision/describe describes an attachment, a character asset or inline bytes on demand, with an optional question, behind an honest provider seam (P-117 metadata provider, which never fabricates; P-119 provider selection with capability truth stated as data); image attachments on chat messages (P-120) with thumbnails (P-123) and history, search and custody (P-122/P-125); describe-on-attach (P-126) and describe-on-scan (P-128) opt-ins; watched folders ingest as attachments by explicit polling scan, sha256-deduped (P-121, custody and control P-124, history P-127, control parity P-129); the chat's last description resolves as the {{last_vision_description}} prompt variable (P-118) are proven | `src/runmal/vision/service.py`, `src/runmal/vision/router.py`, `src/runmal/vision/selection.py`, `src/runmal/vision/watcher.py`, `src/runmal/prompt/vision_link.py`, `tests/test_p117_vision_foundation.py`, `tests/test_p118_vision_template_variable.py`, `tests/test_p119_vision_provider_selection.py`, `tests/test_p121_folder_watcher.py`, `docs/PART_VIII_GATE_2026-11-08.md` |
 | VX-51 | Image generation in the companion (`/imagine`, avatar defaults) | MISSING | P-087; Part X (title only) | HAVE-THIN - the /imagine command still missing (no imagine vocabulary exists anywhere in src/; generation is invoked through the citizen's service road, never by a chat command) and avatar defaults still missing (generation feeding avatar defaults is the row's Part X face and no avatar-default wiring exists in the P-087 citizen); image generation in the companion via its P-087 home - prompt-from-scene plus manual prompts as equals, local-first providers with honest road naming, per-chat opt-in, results landing as character assets - is proven; judged here once on its first home under the first-home rule | `src/runmal/plugins/image_generation.py`, `tests/test_p087_image_generation.py` |
-| VX-52 | Video generation (WAN-class, img→video, resumable jobs) | MISSING | Part X (title only) — flagged for P-014 | NOT-YET-REJUDGED | - |
-| VX-53 | Generation plumbing depth (ComfyUI/Diffusers backends, upscaler, LoRA panels) | MISSING | Part X (title only) — flagged for P-014 | NOT-YET-REJUDGED | - |
+| VX-52 | Video generation (WAN-class, img→video, resumable jobs) | MISSING | Part X (title only) — flagged for P-014 | MISSING - no video generation exists - no WAN-class engine, no img-to-video path, no resumable generation jobs; the only media generation citizen (P-087) generates still images and was judged under VX-51; the row was queued to Part X by the P-014 gate under the founding licence gate for any engine proposed there, and no engine was proposed or built | `src/runmal/plugins/image_generation.py`, `docs/PART_I_GATE_2026-10-30.md`, `docs/DELTA_TABLE_2026-10-30.md` |
+| VX-53 | Generation plumbing depth (ComfyUI/Diffusers backends, upscaler, LoRA panels) | MISSING | Part X (title only) — flagged for P-014 | MISSING - the generation plumbing depth was never built - no ComfyUI / ComfyCloud backend, no Diffusers generation backend (the word occurs in src/ only as a voice-backend install pin), no dedicated upscaler module, no LoRA panels or LoRA concept, no img2img, no workflow upload, no background-removal service and no Civitai previews exist; the single local-diffusion endpoint shape that does exist (P-087) was credited as VX-51's core in tranche 5 and is not double-counted here; judged MISSING under the keeper's Q2 ruling | `src/runmal/plugins/image_generation.py`, `src/runmal/voice/backends.py`, `docs/DELTA_TABLE_2026-10-30.md`, `docs/VOXTA_CENSUS_2026-10-30.md` |
 | VX-54 | Workspaces (chat bound to a real folder; read/write/edit, run, launch) | MISSING | Part XI (title only) | NOT-YET-REJUDGED | - |
 | VX-55 | Coding-agent backends (Claude Code / Codex class, permissioned) | MISSING | Part XI (title only) | NOT-YET-REJUDGED | - |
 | VX-56 | Assistant tooling breadth (shell, Python, web search, MCP, user scripts) | MISSING | Part XI/XIII (titles only) | NOT-YET-REJUDGED | - |
