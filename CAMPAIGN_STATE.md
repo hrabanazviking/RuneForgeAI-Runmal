@@ -22147,3 +22147,137 @@ P-162 BANKED - Character Face History
     whose road home was Part
     VII, re-judged (scout in
     rotation team-03).
+    P-224 BANKED - Parity
+    matrix tranche 6 (Part XIV,
+    The Proof Spine; scope
+    DERIVED - the roadmap gives
+    Part XIV only its part-
+    table line, P-219..P-232,
+    plus founding principle 4).
+    - team-03 commit 4b4f1f0
+    merged (no-ff) into
+    yrsa/two-mirrors-build as d
+    71a269a3484f4b5fcd8fbbe96cb
+    f548c30d6fb2 (parents
+    d940375 + 4b4f1f0). Merge
+    CLEAN - 8 files, +419/-18:
+    docs/PARITY_MATRIX_2026-11-
+    10.md tranche 6 judged, tes
+    ts/test_p224_parity_matrix.
+    py NEW (18 tests), tests/te
+    st_p219_parity_matrix.py
+    counts pin restated (the
+    tranches 1-5 line re-scoped
+    to the tranche 1-5 subset,
+    the 1-6 line pinned against
+    full JUDGED), tests/test_p2
+    20_parity_matrix.py pins
+    6/9 extended, tests/test_p2
+    21_parity_matrix.py pin 9
+    restated (JUDGED gains
+    TRANCHE6), tests/test_p222_
+    parity_matrix.py pin 9
+    restated, tests/test_p223_p
+    arity_matrix.py pin 9
+    restated, docs/CLEAN_ROOM_L
+    OG_2026-10-30.md +1 headed
+    P-224 entry.
+    Scope: tranche 6 closing
+    judgements for the five
+    rows whose road home was
+    Part VII (VX-04, VX-10,
+    VX-11, VX-12, VX-14) under
+    the keeper rulings Q1
+    (VX-11 included - the
+    banked P-014 definition
+    queue homed VX-11 to Part
+    VII and Part VII built its
+    substance, the ST-27 kin-
+    scope precedent), Q2 (VX-11
+    judged HAVE-THIN - the
+    confidence marks and
+    replacement lexicon fully
+    built, the repeat-request
+    signal layer built, the
+    open character-asks act per
+    the P-116 gate K1 the named
+    missing depth) and Q3
+    (VX-58 confirmed out of
+    tranche 6 - its home is the
+    Part XI tranche P-228;
+    VX-09 excluded per the
+    dash-home to P-231
+    precedent): HAVE 0 / HAVE-
+    THIN 5 / MISSING 0 /
+    SHIPPED-SOVEREIGN 0.
+    Cumulative judged 72 rows:
+    HAVE 13 / HAVE-THIN 53 /
+    MISSING 5 / SHIPPED-
+    SOVEREIGN 1; the remaining
+    69 rows printed NOT-YET-
+    REJUDGED.
+    Heals (design section 5
+    standing class only, each
+    marked in-file): the P-219
+    counts pin restated, P-220
+    pins 6 and 9 extended, the
+    P-221, P-222 and P-223 pin
+    9 restated the same way
+    with JUDGED constants
+    extended by TRANCHE6 - the
+    campaign established
+    merged-truth heal pattern,
+    no pin loosened. No heal
+    class 5 event (no
+    DELIBERATELY-DIFFERENT row
+    in tranche 6).
+    NO src change, NO
+    migration; head stays 0042.
+    Route census stays 356
+    paths / 439 operations.
+    Evidence (team-03 hidden_fi
+    les/P224_EVIDENCE.md +
+    logs): battery 18 passed;
+    neighbours fence 346
+    passed; combined 364
+    passed; team full suite
+    6329 passed / 5 skipped / 0
+    failed in 547.82s (= 6311
+    banked at P-223 + 18
+    exact).
+    Banking: combined fence on
+    the merged tree 364 passed
+    / 0 failed in 27.72s (= 18
+    new + 346 neighbours exact;
+    run at banking, log forge h
+    idden_files/P224_COMBINED.l
+    og); forge confirmation
+    full suite 6329 passed / 5
+    skipped / 0 failed in
+    419.28s, exit 0 - exact, no
+    contention failure, no solo
+    re-run needed (log forge hi
+    dden_files/P224_FORGE_FULL.
+    log).
+    Carried items unchanged: D1
+    stateless SSE error-
+    swallowing FENCED, ruling
+    outstanding; per-swipe
+    thinking browsing DECLINED-
+    PENDING-WORD; K-A binding
+    label update, K-B retention
+    / bulk clear and K-C
+    unified-search history
+    NAMED OPEN. Defects in
+    banked code: none found at
+    banking. Banked now
+    P-001..P-224 + the
+    commissioned binding
+    depth/role slice. PART XIV
+    OPEN (P-219..P-232, gate
+    P-232). Next in roadmap
+    order: P-225 - parity
+    matrix tranche 7, the rows
+    whose road home was Part
+    VIII, re-judged (scout in
+    rotation team-01).
