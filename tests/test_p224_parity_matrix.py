@@ -80,7 +80,16 @@ JUDGED8 = TRANCHE1 | TRANCHE2 | TRANCHE3 | TRANCHE4 | TRANCHE5 | TRANCHE6 | TRAN
 JUDGED9 = JUDGED8 | TRANCHE9
 JUDGED10 = JUDGED9 | TRANCHE10
 JUDGED11 = JUDGED10 | TRANCHE11
-JUDGED = JUDGED11 | TRANCHE12
+# P-231 heal: JUDGED extended with TRANCHE13 (complete at 141).
+JUDGED12 = JUDGED11 | TRANCHE12
+TRANCHE13 = {
+    "ST-01", "ST-11", "ST-12", "ST-19", "ST-21", "ST-24",
+    "ST-37", "ST-40", "ST-41", "ST-42", "ST-43", "ST-44",
+    "ST-45", "ST-52", "ST-59", "ST-69", "ST-70", "ST-71",
+    "ST-72", "ST-73", "VX-01", "VX-09", "VX-15", "VX-19",
+    "VX-21", "VX-23", "VX-24", "VX-62", "VX-63", "VX-64",
+}
+JUDGED = JUDGED12 | TRANCHE13
 DD_ROWS = ("VX-01", "VX-42", "VX-59")
 CLOSING_TOKENS = {
     "HAVE", "HAVE-THIN", "MISSING", "SHIPPED-SOVEREIGN",
@@ -259,7 +268,15 @@ def test_09_section3_counts_equal_recount():
     assert got12 == _as_tuple(_counts(rows, TRANCHE12), len(TRANCHE12))
     label12 = "Cumulative judged counts [(]tranches 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 and 12[)]"
     gotc12 = _count_line(flat, label12)
-    assert gotc12 == _as_tuple(_counts(rows, JUDGED), len(JUDGED))
+    # P-231 heal: the tranches 1-12 line is re-pinned against
+    # the JUDGED12 subset recount, at equal strength.
+    assert gotc12 == _as_tuple(_counts(rows, JUDGED12), len(JUDGED12))
+    # P-231 heal: restated to the cumulative tranches 1-13 truth.
+    got13 = _count_line(flat, "Tranche 13 closing counts")
+    assert got13 == _as_tuple(_counts(rows, TRANCHE13), len(TRANCHE13))
+    label13 = "Cumulative judged counts [(]tranches 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 and 13[)]"
+    gotc13 = _count_line(flat, label13)
+    assert gotc13 == _as_tuple(_counts(rows, JUDGED), len(JUDGED))
     remainder = sum(1 for rid, cells in rows.items()
                     if rid not in JUDGED
                     and cells[4] == "NOT-YET-REJUDGED")
@@ -277,8 +294,20 @@ def test_10_deliberately_different_rows_carry_disposition():
     # precedent): VX-59 restated per-row at greater strength
     # to its exact Q2 SHIPPED-SOVEREIGN closing; VX-01 still
     # NOT-YET-REJUDGED; VX-42 pin untouched below.
+    # P-231 heal class 5 (keeper class-5 grants Q1/Q2/Q5 plus
+    # the Q6 audit restatement): VX-01 restated per-row at
+    # greater strength to its exact Q1 SHIPPED-SOVEREIGN
+    # closing; the granted gate-DD rows ST-44 / ST-71 / VX-64
+    # pinned to their SHIPPED-SOVEREIGN closings; section 4
+    # restated (VX-59 corrected to its judged cell).
     assert rows["VX-01"][2] == "DELIBERATELY-DIFFERENT"
-    assert rows["VX-01"][4] == "NOT-YET-REJUDGED"
+    assert _closing_token(rows["VX-01"]) == "SHIPPED-SOVEREIGN"
+    assert _closing_token(rows["ST-44"]) == "SHIPPED-SOVEREIGN"
+    assert _closing_token(rows["ST-71"]) == "SHIPPED-SOVEREIGN"
+    assert _closing_token(rows["VX-64"]) == "SHIPPED-SOVEREIGN"
+    s4flat231 = " ".join(s4.split())
+    assert "local owner-scoped registry over sealed local packs" in s4flat231
+    assert "signed local packs" not in s4flat231
     assert "VX-01" in s4
     assert rows["VX-59"][2] == "DELIBERATELY-DIFFERENT"
     assert _closing_token(rows["VX-59"]) == "SHIPPED-SOVEREIGN"
