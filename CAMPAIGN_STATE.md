@@ -23231,3 +23231,179 @@ P-162 BANKED - Character Face History
     ledger) re-judged;
     scout in rotation
     team-01.
+    P-231 BANKED - Parity
+    matrix tranche 13
+    (RECONCILIATION) (Part
+    XIV, The Proof Spine;
+    scope DERIVED - the
+    roadmap gives Part XIV
+    only its part-table
+    line, P-219..P-232, plus
+    founding principle 4).
+    - team-01 commit
+    164a68ed5910507ef289423e1126f99283f18ee0
+    merged (no-ff) into
+    yrsa/two-mirrors-build as
+    f72fded3ed5696bebb10a260d1f783a2df0cf070
+    (parents 1ea22aa +
+    164a68e). Merge CLEAN -
+    15 files:
+    docs/PARITY_MATRIX_2026-11-10.md
+    tranche 13 judged, docs/
+    CLEAN_ROOM_LOG_2026-10-
+    30.md +1 headed P-231
+    entry,
+    tests/test_p231_parity_matrix.py
+    NEW (18 tests),
+    tests/test_p219_parity_matrix.py
+    through
+    tests/test_p230_parity_matrix.py
+    healed (classes 1 + 5).
+    Scope: tranche 13
+    RECONCILIATION closing
+    judgement for the 30-row
+    remainder (dash / NO-HOME
+    / ledger) - the rows no
+    home tranche carried -
+    under the keeper rulings
+    Q1..Q10 (Q1: VX-01 =
+    SHIPPED-SOVEREIGN,
+    class-5 granted; Q2:
+    ST-44 = SHIPPED-
+    SOVEREIGN, class-5
+    granted; Q3: ST-69 =
+    HAVE-THIN; Q4: ST-70 =
+    MISSING; Q5: ST-71 +
+    VX-64 = SHIPPED-
+    SOVEREIGN, class-5
+    granted for the pair;
+    Q6: matrix section 4
+    VX-59 passage restated
+    to match its judged
+    cell; Q7: VX-19 =
+    HAVE-THIN; Q8: VX-62 =
+    HAVE-THIN; Q9: VX-09 =
+    HAVE; Q10: machine-
+    readable twin ROWS-ONLY
+    here, the twin itself
+    left to the P-232 gate):
+    HAVE 13 / HAVE-THIN 11 /
+    MISSING 2 / SHIPPED-
+    SOVEREIGN 4 (VX-01,
+    ST-44, ST-71, VX-64).
+    Cumulative judged 141
+    rows: HAVE 27 / HAVE-
+    THIN 76 / MISSING 32 /
+    SHIPPED-SOVEREIGN 6;
+    remaining 0 rows - the
+    parity matrix stands
+    FULLY JUDGED, no row
+    left NOT-YET-REJUDGED.
+    Heals (classes 1 + 5,
+    each marked in-file):
+    Class 1 - the standing
+    cumulative restatement,
+    marked "P-231 heal": all
+    twelve prior batteries
+    (test_p219..test_p230) -
+    TRANCHE13 constants
+    added; JUDGED extended
+    with TRANCHE13 (complete
+    at 141); counts pins
+    restated to the
+    cumulative tranches
+    1-13 truth (tranche-13
+    closing line +
+    cumulative 1-13 line
+    pinned); the tranches
+    1-12 line re-pinned
+    against the JUDGED12
+    subset at equal
+    strength; remainder
+    assertions 30 -> 0
+    where the file carried
+    an explicit figure.
+    Class 5 (keeper grants
+    Q1/Q2/Q5, marked
+    "P-231 heal class 5"
+    in-file): DD disposition
+    pins restated for the
+    rows those grants judge
+    SHIPPED-SOVEREIGN
+    (VX-01, ST-44, ST-71,
+    VX-64), inside the same
+    marked restatement.
+    Class 2: none. Class 3:
+    none. Class 4: clean-
+    room log +1 headed
+    P-231 entry exactly
+    once, additive only.
+    Pre-heal run of the
+    twelve prior batteries:
+    35 failed, 179 passed,
+    all failures inside
+    classes 1 + 5; post-heal
+    battery + healed priors
+    = 232 passed (18 + 214).
+    NO src change, NO
+    migration; head stays
+    0042. Route census stays
+    356 paths / 439
+    operations.
+    Evidence (team-01 hidden
+    _files/P231_EVIDENCE.md
+    + logs): battery 18
+    passed; neighbours fence
+    613 passed; combined 631
+    passed; team full suite
+    6455 passed / 5 skipped
+    / 0 failed (= 6437 base
+    passed + 18 new, exact;
+    425.43s, exit 0).
+    Banking: combined fence
+    on the merged tree raw
+    630 passed / 1 failed
+    (= 18 new + 613
+    neighbours; the sole
+    failure the known load-
+    timing class, tests/
+    test_s503_stt.py::test_
+    real_faster_whisper_
+    meets_predeclared_
+    contract, solo re-run
+    4 passed - effective
+    fence 631 green; run at
+    banking, log forge
+    hidden_files/P231_
+    COMBINED.log, 182.23s;
+    solo log forge
+    hidden_files/P231_S503_
+    SOLO.log); forge
+    confirmation full suite
+    6455 passed / 5 skipped
+    / 0 failed in 495.12s,
+    exit 0 - exact (log forge
+    hidden_files/P231_FORGE_
+    FULL.log).
+    Carried items unchanged:
+    D1 stateless SSE error-
+    swallowing FENCED,
+    ruling outstanding; per-
+    swipe thinking browsing
+    DECLINED-PENDING-WORD;
+    K-A binding label
+    update, K-B retention /
+    bulk clear and K-C
+    unified-search history
+    NAMED OPEN. Defects in
+    banked code: none found
+    at banking. Banked now
+    P-001..P-231 + the
+    commissioned binding
+    depth/role slice. PART
+    XIV OPEN (P-219..P-232,
+    gate P-232). Next in
+    roadmap order: P-232 -
+    Part XIV gate (The Proof
+    Spine); scout in
+    rotation team-02.
