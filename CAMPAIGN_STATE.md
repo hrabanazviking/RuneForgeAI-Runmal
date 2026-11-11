@@ -23407,3 +23407,116 @@ P-162 BANKED - Character Face History
     Part XIV gate (The Proof
     Spine); scout in
     rotation team-02.
+    P-232 BANKED - Part XIV
+    gate (The Proof Spine)
+    (Part XIV, The Proof
+    Spine; scope DERIVED -
+    the roadmap gives Part
+    XIV only its part-table
+    line, P-219..P-232, plus
+    founding principle 4).
+    PART XIV COMPLETE /
+    GATE PASSED.
+    - team-02 commit
+    4edaa2d542c6a986ed88595564978f850d993429
+    merged (no-ff) into
+    yrsa/two-mirrors-build as
+    f104c871cb7ffad1742bbce0a9eb39fe24478b67
+    (parents 09750a9 +
+    4edaa2d). Merge CLEAN -
+    4 files:
+    tests/test_p232_part_
+    xiv_gate.py NEW (35
+    tests),
+    tests/test_p232_gate_
+    record.py NEW (10
+    tests),
+    docs/PART_XIV_GATE_
+    2026-11-10.md NEW,
+    docs/CLEAN_ROOM_LOG_
+    2026-10-30.md +1 headed
+    P-232 entry.
+    Gate verdict: the parity
+    matrix stands FULLY
+    JUDGED - 141 rows,
+    remainder 0: HAVE 27 /
+    HAVE-THIN 76 / MISSING
+    32 / SHIPPED-SOVEREIGN
+    6, recounted
+    mechanically and agreed
+    by the gate doc, the
+    thirteen tranche
+    batteries and the banked
+    record chain. Live spot-
+    checks on the fresh
+    ZqxGate232 world: VX-32
+    HAVE, VX-65 HAVE-THIN,
+    VX-48 MISSING, VX-59
+    SHIPPED-SOVEREIGN.
+    Carried items accounted
+    BY NAME: D1 FENCED;
+    per-swipe browsing
+    DECLINED-PENDING-WORD;
+    bot runtime
+    substrateless
+    (chat.write RESERVED at
+    both sites); K-A / K-B /
+    K-C NAMED OPEN (K-A's
+    delete_chat cascade half
+    reserved expressly for
+    Volmarr); P-208 / P-209
+    record gaps as census
+    facts; VX-59 packs
+    WITHOUT signatures;
+    Evaluation Sitting never
+    queued; web /generate
+    live-SSE still excluded;
+    Q10 machine-readable
+    twin discharged as the
+    gate's mechanical
+    recount, ROWS-ONLY
+    standing, no twin file
+    founded.
+    NO src change, NO new
+    road, NO migration -
+    head stays 0042. Route
+    census stays 356 paths /
+    439 operations.
+    Evidence (team-02 hidden
+    _files/P232_EVIDENCE.md
+    + logs): gate battery 45
+    passed; neighbours fence
+    240 passed; combined
+    fence 285 passed; team
+    full suite 6500 passed /
+    5 skipped / 0 failed
+    (= 6455 base passed + 45
+    new, exact; 453.82s,
+    exit 0).
+    Banking: gate battery on
+    the merged tree 45
+    passed (log forge
+    hidden_files/P232_
+    GATE_CONFIRM.log,
+    7.68s); forge
+    confirmation full suite
+    6500 passed / 5 skipped
+    / 0 failed in 630.56s,
+    exit 0 - exact (log forge
+    hidden_files/P232_FULL_
+    CONFIRM.log). Defects in
+    banked code: none found
+    at banking.
+    Banked now P-001..P-232.
+    PART XIV COMPLETE - the
+    Two Mirrors parity
+    roadmap (fourteen parts,
+    232 slices) stands
+    COMPLETE. Next in
+    roadmap order: none -
+    no Part XV exists in the
+    governing roadmap; the
+    Evaluation Sitting
+    remains Volmarr's to
+    call and was never
+    queued.
