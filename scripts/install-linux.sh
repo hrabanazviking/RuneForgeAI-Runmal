@@ -35,6 +35,12 @@ fi
 command -v curl >/dev/null 2>&1 || fail "curl is required for this source installer."
 command -v unzip >/dev/null 2>&1 || fail "unzip is required for this source installer."
 
+# This installer is architecture-neutral by design: it installs from
+# source and pip resolves the correct wheels for the running machine
+# (x86_64 and aarch64 alike). Report the architecture it detected so
+# the log always shows which machine shape was served.
+say "Detected architecture: $(uname -m)"
+
 say "Downloading Rúnmál"
 ARCHIVE="$TMP/runmal.zip"
 curl -fL "https://github.com/$REPO/archive/refs/heads/$REF.zip" -o "$ARCHIVE"

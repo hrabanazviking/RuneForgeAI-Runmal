@@ -36,6 +36,8 @@ curl -fL "https://github.com/$REPO/archive/refs/heads/$REF.zip" -o "$TMP/runmal.
 ditto -x -k "$TMP/runmal.zip" "$TMP/source"
 SOURCE="$(find "$TMP/source" -mindepth 1 -maxdepth 1 -type d | head -n 1)"
 [[ -f "$SOURCE/pyproject.toml" ]] || fail "Downloaded archive is missing pyproject.toml."
+VERSION="$(sed -n 's/^version = "\(.*\)"/\1/p' "$SOURCE/pyproject.toml" | head -n 1)"
+[[ -n "$VERSION" ]] || fail "Could not read the Rúnmál version from the downloaded source."
 
 say "Installing Rúnmál into a private environment"
 mkdir -p "$INSTALL_ROOT" "$APP_DIR"
@@ -56,8 +58,8 @@ cat > "$APP/Contents/Info.plist" <<EOF
   <key>CFBundleName</key><string>Rúnmál</string>
   <key>CFBundleDisplayName</key><string>Rúnmál</string>
   <key>CFBundleIdentifier</key><string>dev.runmal.desktop</string>
-  <key>CFBundleVersion</key><string>0.1.0</string>
-  <key>CFBundleShortVersionString</key><string>0.1.0</string>
+  <key>CFBundleVersion</key><string>$VERSION</string>
+  <key>CFBundleShortVersionString</key><string>$VERSION</string>
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>LSMinimumSystemVersion</key><string>11.0</string>
 </dict>
