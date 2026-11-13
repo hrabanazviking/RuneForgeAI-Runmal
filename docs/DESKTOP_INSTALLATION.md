@@ -120,6 +120,14 @@ The builder creates and smoke-tests the `.app`, builds the native DMG with `hdiu
 
 A package is considered a real distributable only after the native builder has actually produced and smoke-tested the file on its target operating system.
 
+### Package freshness (2026-11-13)
+
+With the Two Mirrors roadmap complete and merged into `main`:
+
+- `runmal_0.1.0_amd64.deb` and `runmal_0.1.0_arm64.deb` are fresh native builds of the completed application. The arm64 package was built and smoke-tested on a Raspberry Pi 5, which also installed the current `main` through the Linux source installer (doctor green).
+- `Runmal-Setup.exe` and both macOS `.dmg` files still date from 2026-11-02 and contain the earlier code. Rebuild them on their native machines with `scripts/build-windows-local.ps1` and `scripts/build-macos-local.sh`. Until then, the source/bootstrap installers below are the current-code path on Windows and macOS, because they always install the current `main`.
+- ARM Linux (aarch64) is a supported target for the core application. The optional CosyVoice TTS backend cannot install on ARM — its upstream `pyworld` dependency ships no aarch64 wheel or source distribution — and degrades gracefully without affecting the rest of the app.
+
 ## Source/bootstrap installers
 
 The readable bootstrap scripts remain useful for testing, repair, or platforms where a prebuilt package is not available:

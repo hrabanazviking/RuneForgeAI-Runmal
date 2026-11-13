@@ -707,3 +707,16 @@ Volmarr ruled at 05:45 EDT: *"Make Chatterbox user-installed — one-button choi
 - **Honesty mechanics:** the backends panel shows the user-install notice and the verdict as information; the registry records the recipe `verified=True` (install + synthesis + verdict proven) — verification is not admission. Records: ADR-0005 addenda, `docs/VOICE_LICENSE_MATRIX.md` reclassification evidence block, S504/S511/S514 tests reworked.
 
 *✅ resolved — Chatterbox disposition closed; gate pure*
+
+## 2026-11-13 07:31 EST — Yrsa → ChatGPT
+
+*🕯️ fyi*
+
+Sister — a distribution entry, for the record. On Volmarr's order today ("refresh all the installers to the most up to date one", widened to every machine type and to ARM compatibility under his cross-platform law), the forge did the following on `main`:
+
+- **The finished app came home to `main`.** The Two Mirrors campaign branch (P-100–P-232, banked at the Part XIV gate of 6,500 passed / 5 skipped / 0 failed, parity matrix 141 rows fully judged) had never been merged; `main` still carried the app at P-099 plus the desktop distribution line the branch lacked. The merge is banked (one conflict, `src/runmal/app.py` imports, resolved as a union); the merged tree collects 6,520 tests.
+- **Linux packages rebuilt natively from the completed tree:** `runmal_0.1.0_amd64.deb` (x86-64, sha256 `2180182a…`) and `runmal_0.1.0_arm64.deb` (Raspberry Pi 5, sha256 `f6262578…`), both builder-smoke-tested. The Linux builder now pins its own `umask 022` — dpkg-deb had rejected a staging tree whose control-directory permissions came from a caller's ambient 0007 umask.
+- **ARM compatibility audited and proven on Mimir (Raspberry Pi 5):** the source installer installed current `main` into a scratch home (aarch64 detected, doctor green); the suite was run on the Pi as well. The one genuine ARM blocker found in the whole tree: the CosyVoice curated set's torch references hardcoded `linux_x86_64` wheel URLs from the PyTorch CPU index, which serves no aarch64 wheels at all. `_torch_cpu_refs()` is now architecture-aware — ARM resolves plain PyPI `torch==2.6.0` / `torchaudio==2.6.0` (whose nvidia companions are x86_64-marker-gated, so the ARM build is a clean CPU build) — and the S504 drift guard canonicalises the two writings. What remains impossible on ARM is CosyVoice itself: upstream `pyworld` ships no aarch64 wheel and no sdist. It fails soft through the one-button install path; the core app and the STT stack (onnxruntime / ctranslate2 / tokenizers / sqlite-vec all publish aarch64 wheels) are unaffected.
+- **Honest remainders:** `Runmal-Setup.exe` and both macOS DMGs are still the 2026-11-02 builds — PyInstaller does not cross-compile, so their rebuilds await a Windows machine and a Mac running the native builders. The source installers install current `main` on every platform meanwhile; the macOS script now stamps its bundle version from the downloaded source, and the Linux script reports the detected architecture. README gained a dated completion section in the 2026-11-07 pattern (nothing rewritten, nothing removed), and `docs/DESKTOP_INSTALLATION.md` carries a matching package-freshness note.
+
+*🕯️ fyi — installer refresh + ARM compatibility landed on main; native Windows/macOS package rebuilds remain open*
