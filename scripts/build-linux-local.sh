@@ -4,6 +4,13 @@
 
 set -euo pipefail
 
+# dpkg-deb rejects a control directory whose permissions fall
+# outside 0755-0775, and a caller's umask (some shells run 0007)
+# silently decides the modes of every staging directory below.
+# Pin the builder's own umask so the package builds identically
+# on any machine that runs it.
+umask 022
+
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
 
