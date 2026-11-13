@@ -65,6 +65,49 @@ function renderMarkdownLite(input) {
   return out.join("");
 }
 
+/* STT confidence markings (P-107, VX-11 rendered markings).
+ * Mirrors the P-105 token law: a token matches when its
+ * punctuation-stripped core, lower-cased, is a low-confidence
+ * word; punctuation stays OUTSIDE the span. Escape-first XSS
+ * discipline is inherited from renderMarkdownLite: the mark
+ * placeholders are control characters that escaping leaves
+ * alone, and the span is substituted only after every
+ * transform has run, so no user text can become markup. */
+var STT_PUNCT = ".,!?;:'()[]{}<>" + String.fromCharCode(34) + "“”‘’«»";
+var MARK_OPEN = "";
+var MARK_CLOSE = "";
+
+function splitAffixes(token) {
+  var start = 0;
+  while (start < token.length && STT_PUNCT.indexOf(token[start]) >= 0) start++;
+  var end = token.length;
+  while (end > start && STT_PUNCT.indexOf(token[end - 1]) >= 0) end--;
+  return { lead: token.slice(0, start), core: token.slice(start, end),
+           trail: token.slice(end) };
+}
+
+function renderMarkedTranscript(input, lowWords) {
+  var text = String(input == null ? "" : input);
+  var low = {};
+  (lowWords || []).forEach(function (w) {
+    low[String(w).toLowerCase()] = true;
+  });
+  if (!Object.keys(low).length) return renderMarkdownLite(text);
+  var marked = text.split(" ").map(function (token) {
+    var parts = splitAffixes(token);
+    if (parts.core && low[parts.core.toLowerCase()]) {
+      return parts.lead + MARK_OPEN + parts.core + MARK_CLOSE + parts.trail;
+    }
+    return token;
+  }).join(" ");
+  return renderMarkdownLite(marked).replace(
+    /([^]*)/g,
+    function (_, core) {
+      return '<span class="stt-low" title="Low speech-to-text confidence">'
+        + core + "</span>";
+    });
+}
+
 /* Thread windowing ("virtualized" thread): render only the newest
  * `limit` messages; the UI offers earlier ones on demand. */
 function windowMessages(messages, limit) {
@@ -75,9 +118,45 @@ function windowMessages(messages, limit) {
            hidden: messages.length - limit };
 }
 
+/* Assistant View reasoning panel model (P-206).
+ * Pure view-model over the banked P-205 active reasoning view
+ * (chats/reasoning.py active_view): the stored record of ONE
+ * message, as already carried in the thread message dict.
+ * Tolerant reader in the P-205 idiom: null / malformed input
+ * yields null (no panel) and never throws; a recorded record
+ * without usable text, and any unrecognised status, land on
+ * the unknown status line - text is never fabricated and an
+ * unrecognised status is never echoed raw. The status string
+ * is read from `status` only; the `reasoning_status`
+ * duplicate key is not consulted (one source of truth). */
+function reasoningView(reasoning) {
+  if (!reasoning || typeof reasoning !== "object") return null;
+  var status = reasoning.status;
+  if (status === "recorded") {
+    var text = reasoning.text;
+    if (typeof text === "string" && text.length > 0) {
+      return { kind: "recorded", label: "Thinking", text: text };
+    }
+    return { kind: "status",
+             text: "Thinking record state is unknown for this reply." };
+  }
+  if (status === "not_present") {
+    return { kind: "status",
+             text: "No thinking was returned for this reply." };
+  }
+  if (status === "not_recorded") {
+    return { kind: "status",
+             text: "Thinking was not recorded for this reply." };
+  }
+  return { kind: "status",
+           text: "Thinking record state is unknown for this reply." };
+}
+
 var api = {
   escapeHtml: escapeHtml,
   renderMarkdownLite: renderMarkdownLite,
+  renderMarkedTranscript: renderMarkedTranscript,
+  reasoningView: reasoningView,
   windowMessages: windowMessages,
 };
 

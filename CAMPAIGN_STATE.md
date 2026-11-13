@@ -6626,3 +6626,16897 @@ P-099 BANKED - Failure manners (Part VI)
     (= 4017 P-098 confirmation + 24, exact;
     log hidden_files/p099_forge_confirmation.log).
     Next in roadmap order: P-100 (Part VI gate).
+P-100 BANKED - Part VI gate (Part VI) - PART VI COMPLETE / GATE PASSED
+    - team-03 commit b0768fa merged (no-ff)
+    into yrsa/two-mirrors-build as a610c30
+    and pushed; ls-remote verified
+    a610c30852891755baa1397f81f7a4da24cd78a3.
+    Evidence (team-03 worktree
+    hidden_files/P100_EVIDENCE.md):
+    gate battery 16 passed + gate-record
+    module 10 passed = 26 passed,
+    neighbours 628 passed, team full suite
+    4067 passed / 4 skipped / 0 failed
+    (= 4041 P-099 baseline + 26, exact).
+    Gate verdict: Area A (Row) PASS,
+    Area B (Blind) PASS, Area C
+    (Accounting) PASS. The full corpus of
+    16 citizens passes the P-097 kit as
+    shipped and is listable; the blind
+    plugin acme.word-counter, authored
+    only against the documented
+    conformance surface, passed on data
+    alone with its submission unmutated.
+    Slice:
+    tests/test_p100_gate.py (16 tests),
+    tests/test_p100_gate_record.py
+    (10 tests),
+    docs/PART_VI_GATE_2026-11-07.md,
+    clean-room log append (+1). 4 files,
+    +907.
+    Migration: NONE (head stays 0041).
+    Finding F1 (commissioned follow-up,
+    NOT fixed in-slice - the gate commit is
+    gate files only): extend P-094
+    CITIZEN_PLUGIN_IDS with
+    runmal.game-bridge and
+    runmal.plugin-settings-ui at the next
+    custody touch. Finding F2: no new
+    engine defect found by this gate.
+    Merge conflicts: none (the slice base
+    was the forge head). Combined
+    batteries on the merged tree: 26 passed
+    / 0 failed (16 + 10, exact). Forge
+    confirmation suite: 4067 passed /
+    4 skipped / 0 failed (log
+    /tmp/p100_forge_suite.log on
+    purplelongship).
+    PART VI COMPLETE. Next in roadmap
+    order: Part VII opens (P-101 onward).
+P-101 BANKED - Voice Sessions (Part VII) - PART VII OPENED
+    - team-01 commit 908ed5a merged (no-ff)
+    into yrsa/two-mirrors-build as 52e6f2c
+    and pushed; ls-remote verified
+    52e6f2ce3348c4c3480418adc463dac14671f6f6.
+    Evidence (team-01 worktree
+    hidden_files/P101_EVIDENCE.md):
+    battery 28 passed, neighbours
+    268 passed / 2 skipped, team full suite
+    4095 passed / 4 skipped / 0 failed
+    (= 4067 P-100 baseline + 28, exact).
+    Derived scope ACCEPTED: the roadmap
+    gives Part VII only its part line;
+    P-101 is derived as Voice Sessions
+    (voice/session.py
+    resolve_session_settings with
+    ProviderTruth as registry data,
+    VoiceTurnRecord.from_orchestrator
+    under S508 truth discipline,
+    VoiceSession lifecycle +
+    VoiceSessionStore in
+    voice_sessions.json, 6 routes,
+    owner-scoped).
+    Slice:
+    src/runmal/voice/session.py (new),
+    src/runmal/voice/router.py (+6 routes),
+    src/runmal/voice/__init__.py,
+    tests/test_p101_voice_sessions.py
+    (28 tests),
+    docs/VOICE_SESSIONS_2026-11-07.md,
+    clean-room log append (+1). 6 files,
+    +1258.
+    Migration: NONE (head stays 0041).
+    Honest limitations carried: no live
+    orchestrator wired into the app
+    process yet; session turns are not
+    projected into chat messages;
+    P-091 citizens remain unregistered
+    in the running app, unchanged.
+    Merge conflicts: none (the slice base
+    was the forge head). Forge
+    confirmation suite: 4095 passed /
+    4 skipped / 0 failed (log
+    /tmp/p101_forge_suite.log on
+    purplelongship).
+    PART VII OPENED. Next in roadmap
+    order: P-102.
+P-102 BANKED - Live Voice Orchestrator (Part VII)
+    - team-02 commit 8692867 merged (no-ff)
+    into yrsa/two-mirrors-build as 048c23d
+    and pushed; ls-remote verified
+    048c23d793041e7db68753350a0b4ca4fb06061f.
+    Evidence (team-02 worktree
+    hidden_files/P102_EVIDENCE.md):
+    battery 24 passed, neighbours
+    310 passed / 2 skipped / 5 failed
+    (all 5 structural: P-101 HTTP tests
+    whose routes live in the P-101
+    router, absent on the P-100 base by
+    design), union check with the P-101
+    router stacked locally 76 passed /
+    0 failed, team full suite 4114 passed /
+    4 skipped / 5 failed (same 5
+    structural only).
+    Derived scope L1 stated plainly:
+    the roadmap gives Part VII only its
+    part line; P-102 is derived as the
+    live voice orchestrator wiring that
+    closes P-101 limitation L1 (no live
+    orchestrator wired into the app
+    process). Slice:
+    src/runmal/voice/live.py (new,
+    build_live_orchestrator +
+    LiveVoiceController, honest
+    unavailable default responder, never
+    a fabricated reply, S508
+    PlaybackLedger subscribed before any
+    turn runs),
+    src/runmal/voice/live_router.py (new,
+    5 roads under
+    /voice/sessions/{id}/live*;
+    voice/router.py NOT touched),
+    src/runmal/voice/orchestrator.py
+    (+speak_text, additive only),
+    src/runmal/app.py (controller wired
+    in create_app),
+    src/runmal/voice/__init__.py,
+    tests/test_p102_live_voice.py
+    (24 tests),
+    docs/LIVE_VOICE_ORCHESTRATOR_2026-11-07.md,
+    clean-room log append (+1). 8 files,
+    +1260 on the team base; +1257 against
+    the forge head (the P-101 stacked
+    lines already banked).
+    Migration: NONE (head stays 0041).
+    Honest limitations carried: L2 turn
+    projection into chat messages still
+    open; L3 P-091 citizen registration
+    still deliberate host-explicit,
+    unchanged; the default responder is
+    honest-unavailable (labelled error
+    turns, never a fabricated reply);
+    live hosts die with the process
+    (sessions and turns persist).
+    Merge conflicts: voice/__init__.py
+    and docs/CLEAN_ROOM_LOG_2026-10-30.md
+    (append-on-append / stacked lines),
+    resolved as additive unions keeping
+    both the P-101 and P-102 lines
+    exactly once; app.py and
+    orchestrator.py merged clean.
+    Combined batteries on the merged
+    tree: 52 passed / 0 failed (28 + 24).
+    Forge confirmation suite: raw
+    4118 passed / 4 skipped / 1 failed -
+    the one failure the P-077 longchat
+    timing tripwire under shared load,
+    solo re-run 4/4 green (contention,
+    not a defect); effective confirmation
+    4119 passed / 4 skipped / 0 failed
+    (= 4095 P-101 confirmation + 24,
+    exact). Logs /tmp/p102_combined.log
+    and /tmp/p102_forge_suite.log on
+    purplelongship.
+    Next in roadmap order: P-103.
+P-103 BANKED - Voice Turn Projection (Part VII)
+    - team-03 commit b7bc52e merged (no-ff)
+    into yrsa/two-mirrors-build as 7219996
+    and pushed; ls-remote verified
+    7219996697708ed3cebf2811d29425d82a00c944.
+    Evidence (team-03 worktree
+    hidden_files/P103_EVIDENCE.md):
+    battery 19 passed, neighbours
+    335 passed / 2 skipped, team full suite
+    4138 passed / 4 skipped / 0 failed
+    (on the reconciled 0e24e32 base).
+    Derived scope L2 ACCEPTED: the roadmap
+    gives Part VII only its part line;
+    P-103 is derived as the voice turn
+    projection that closes P-102
+    limitation L2 (session turns not
+    projected into chat messages).
+    Slice:
+    src/runmal/voice/projection.py (new,
+    planner + provenance builders under
+    the P-075/P-089 doctrine - origin kind
+    stays manual, via="voice_session";
+    unplayed text never lands, error turns
+    land no assistant message),
+    src/runmal/voice/projection_router.py
+    (new, POST project / GET projection),
+    src/runmal/voice/session.py
+    (projection state on VoiceTurnRecord
+    with tolerant from_dict),
+    src/runmal/app.py (wiring),
+    src/runmal/voice/__init__.py,
+    tests/test_p103_voice_projection.py
+    (19 tests),
+    docs/VOICE_TURN_PROJECTION_2026-11-07.md,
+    clean-room log append (+1). 8 files,
+    +943.
+    Migration: NONE (head stays 0041).
+    Combined batteries on the merged
+    tree: 71 passed / 0 failed
+    (28 + 24 + 19). Log
+    /tmp/p103_combined.log on
+    purplelongship.
+    Forge confirmation suite: raw
+    4137 passed / 4 skipped / 1 failed -
+    the one failure the P-077 longchat
+    timing tripwire under shared load,
+    solo re-run 17/17 green (contention,
+    not a defect); effective confirmation
+    4138 passed / 4 skipped / 0 failed
+    (= 4119 P-102 effective + 19, exact).
+    Logs /tmp/p103_confirm.log and
+    /tmp/p103_p077_solo.log on
+    purplelongship.
+    Honest limitations carried: projection
+    is explicit, not automatic - the
+    P-102 controller is synchronous and
+    DB-free by design, so projection is a
+    deliberate host act; L3 P-091 citizen
+    registration remains deliberate
+    host-explicit, unchanged.
+    Next in roadmap order: P-104.
+P-104 BANKED - Voice Auto-Projection (Part VII)
+    - team-01 commit b39f43c merged (no-ff)
+    into yrsa/two-mirrors-build as 01af9c6
+    and pushed; ls-remote verified
+    01af9c6e387507954147220f4f16e1c17f9463eb.
+    Evidence (team-01 worktree
+    hidden_files/P104_EVIDENCE.md):
+    battery 17 passed, neighbours
+    249 passed / 2 skipped (fence
+    S501-S514 + P-010/P-091/P-101/P-102/
+    P-103; skips are pre-existing
+    environmental optionals), team full
+    suite 4155 passed / 4 skipped /
+    0 failed (= 4138 + 17 exact, no
+    flakes, on the 7219996 base).
+    Derived scope ACCEPTED by the keeper:
+    P-104 is the async auto-projecting
+    host deferred in P-103 section 5 -
+    the roadmap gives Part VII only its
+    part line. NOT taken, with reasons
+    recorded in the slice doc: L3
+    registration, process-death hosts,
+    VX-11/12/13.
+    Slice:
+    src/runmal/voice/autoproject.py (new,
+    async host), src/runmal/voice/
+    autoproject_router.py (new, POST
+    toggle / GET status, owner-scoped
+    404), src/runmal/voice/session.py
+    (VoiceSession.auto_project durable
+    opt-in, default OFF; pre-P-104
+    sessions load OFF), wiring only in
+    async HTTP roads (live speak, live
+    stop catch-up, P-101 manual /turns);
+    P-102 controller stays synchronous/
+    DB-free (two additive read
+    accessors), src/runmal/app.py,
+    src/runmal/voice/__init__.py,
+    tests/test_p104_voice_autoproject.py
+    (17 tests),
+    docs/VOICE_AUTO_PROJECTION_2026-11-07.md,
+    clean-room log append (+1). 11 files,
+    +880/-7.
+    Migration: NONE (head stays 0041).
+    Combined batteries on the merged
+    tree: 88 passed / 0 failed
+    (28 + 24 + 19 + 17). Log
+    hidden_files/p104_forge_suite.log
+    (forge) on purplelongship.
+    Forge confirmation suite:
+    4155 passed / 4 skipped / 0 failed
+    in 207.61s, exit 0 - exact match to
+    the team suite, no contention
+    re-runs needed.
+    Honest limitations carried:
+    in-process hosts must call
+    autoproject_session themselves;
+    live start does not back-project
+    pre-existing turns (next speak/stop
+    or the manual P-103 road catches
+    up); auto-projection failure is
+    reported in-band, never raised, and
+    never resurrects a deleted chat;
+    L3 (P-091 citizen registration)
+    remains open by design.
+    Next in roadmap order: P-105.
+P-105 BANKED - Voice Mishearing Truth (Part VII)
+    - team-02 commit 41c9dd4 merged (no-ff)
+    into yrsa/two-mirrors-build as 2a24cf8
+    and pushed; ls-remote verified
+    2a24cf89aaa36c74d8216325d7e43f64b0e85df0.
+    Evidence (team-02 worktree
+    hidden_files/P105_EVIDENCE.md):
+    battery 21 passed, neighbours
+    249 passed / 2 skipped (fence
+    S501-S514 + P-010/P-091/P-101/P-102/
+    P-103; P-104's battery could not run
+    on its base, reconciled at this
+    merge; skips are pre-existing
+    environmental optionals), team full
+    suite 4159 passed / 4 skipped /
+    0 failed (= 4138 + 21 exact, on the
+    c53d053 base).
+    Derived scope ACCEPTED by the keeper:
+    P-105 is the census VX-11 truth layer -
+    the roadmap gives Part VII only its
+    part line. NOT taken, with reasons
+    recorded in the slice doc: L3
+    registration, VX-12, VX-13.
+    Slice:
+    src/runmal/voice/session.py
+    (WordConfidence + transcript_words on
+    the turn record, persisted verbatim
+    from S503 TranscriptWord.probability;
+    tolerant legacy load),
+    src/runmal/voice/mishearing.py (new,
+    low-confidence detection under a
+    predeclared 0.5 threshold,
+    needs_repeat as data; versioned JSON
+    replacement lexicon whose output is a
+    SUGGESTED correction view - the stored
+    transcript is never rewritten),
+    src/runmal/voice/mishearing_router.py
+    (new, GET session mishearings
+    owner-scoped 404; GET/PUT/DELETE
+    lexicon, 422 roads),
+    src/runmal/voice/router.py (manual
+    /turns accepts optional
+    transcript_words, malformed -> 422),
+    src/runmal/app.py,
+    src/runmal/voice/__init__.py,
+    tests/test_p105_voice_mishearing.py
+    (21 tests),
+    docs/VOICE_MISHEARING_2026-11-07.md,
+    clean-room log append (+1). 9 files,
+    +988/-0.
+    Migration: NONE (head stays 0041).
+    Combined batteries on the merged
+    tree: 109 passed / 0 failed
+    (28 + 24 + 19 + 17 + 21). Log
+    hidden_files/p105_combined.log
+    (forge) on purplelongship.
+    Forge confirmation suite:
+    4176 passed / 4 skipped / 0 failed
+    in 217.21s, exit 0 - exact match to
+    expectation (= 4155 + 21), no
+    contention re-runs needed.
+    Merge heals: conflicts in app.py,
+    voice/__init__.py and the clean-room
+    log resolved as additive unions
+    (P-104 and P-105 entries/imports kept
+    exactly once each); session.py
+    auto-merged and verified to carry
+    BOTH P-104 auto_project and P-105
+    transcript_words.
+    Honest limitations carried:
+    confidence is the backend's own
+    uncalibrated estimate, persisted
+    verbatim; turns with no word evidence
+    report has_confidence_evidence false,
+    never "all confident"; detection is
+    data, not dialogue - no character
+    asks for a repeat; P-103 projection
+    still lands the original transcript
+    unmarked; the lexicon is whole-word
+    only and install-wide; no UI renders
+    the markings.
+    Next in roadmap order: P-106.
+P-106 BANKED - Voice Projection Mishearing Mark (Part VII)
+    - team-03 commit f0fba84 merged (no-ff)
+    into yrsa/two-mirrors-build as 4db276a;
+    banking heal a2f152b (below) on top;
+    merge + heal pushed; ls-remote verified
+    a2f152b1ae3ee3babf9058fb13890bda6bbd52ec.
+    Evidence (team-03 worktree
+    hidden_files/P106_EVIDENCE.md):
+    battery 18 passed, neighbours
+    273 passed / 2 skipped (voice fence
+    S501-S509/S511/S512 + P-010/P-091/
+    P-101/P-102/P-103/P-104 + P-075
+    provenance + S107 chats + S111 chat
+    management; 20 files; skips are
+    pre-existing environmental optionals),
+    team full suite 4173 passed /
+    4 skipped / 0 failed (= 4155 + 18
+    exact, on the c067a57 base).
+    Derived scope ACCEPTED by the keeper:
+    P-106 is the later slice P-105's slice
+    doc section 4 named - it takes the
+    MARK half of that gap (P-103
+    projection landed the original
+    transcript unmarked) and DECLINES the
+    suggestion half, on the record in the
+    slice doc section 2: provenance holds
+    no content (P-075 law), and landing a
+    rewrite would put words in the user's
+    mouth in their own chat history; the
+    suggestion stays a view on P-105's
+    mishearings surface. The roadmap gives
+    Part VII only its part line.
+    Slice:
+    src/runmal/voice/projection.py (ONLY
+    code file: pure
+    transcript_mishearing_mark reading
+    word evidence duck-typed; scalar
+    mishearing facts on
+    transcript_provenance, always present;
+    additive per-turn marks + aggregates
+    on projection_status and the
+    project_session_turns report; threshold
+    is P-105's LOW_CONFIDENCE_THRESHOLD
+    imported when present, else the same
+    0.5 as fallback, pinned equal whenever
+    the import succeeds),
+    tests/test_p106_voice_projection_mishearing.py
+    (18 tests),
+    docs/VOICE_PROJECTION_MISHEARING_MARK_2026-11-07.md,
+    clean-room log append (+1). 4 files,
+    +606/-0.
+    Migration: NONE (head stays 0041).
+    Threshold reconciliation PASSED on
+    the merged tree: the real
+    LOW_CONFIDENCE_THRESHOLD import road
+    verified live, and merged session.py
+    carries BOTH P-104 auto_project and
+    P-105 transcript_words. Merge conflict
+    only in the clean-room log, resolved
+    with both entries kept exactly once.
+    BANKING STOP + DEFECT + HEAL: combined
+    batteries on the merged tree first ran
+    125 passed / 2 failed (expected 127).
+    The two failures were the slice's
+    service-level tests
+    (test_service_landing_carries_mark_and_content_law,
+    test_service_idempotent_reprojection_keeps_mark):
+    they build turns whose transcript_words
+    are duck-typed FakeWord objects (text/
+    probability only), and on the merged
+    tree P-105's VoiceTurnRecord.to_dict
+    persists transcript_words by calling
+    w.to_dict() on each word -
+    AttributeError inside save_session.
+    Exposed only at reconciliation: on
+    team-03's P-104 base P-105 was unbanked
+    and the mark's fallback road never
+    persisted the fakes. The mark reader
+    itself is fine (all 16 pure-mark tests
+    passed throughout) and production code
+    is self-consistent (real turns always
+    hold real WordConfidence objects).
+    Heal a2f152b is TEST-ONLY, P-021/P-023
+    precedent: the two service tests now
+    build transcript_words from the real
+    runmal.voice.session.WordConfidence
+    with the same text/probability values,
+    so every assertion about the mark,
+    counts and content law stands unchanged
+    at equal strength; FakeWord stays in
+    use for the pure mark-function tests,
+    where duck-typing is the design's
+    contract. NO production code changed:
+    making session.py's to_dict tolerant
+    was expressly NOT the fix - it would
+    weaken P-105's persisted-shape
+    discipline. After the heal: battery
+    18 passed; combined batteries on the
+    merged tree 127 passed / 0 failed
+    (28 + 24 + 19 + 17 + 21 + 18). Logs
+    hidden_files/p106_battery_healed.log
+    and hidden_files/p106_combined.log
+    (forge) on purplelongship.
+    Forge confirmation suite:
+    4194 passed / 4 skipped / 0 failed
+    in 209.53s, exit 0 - exact match to
+    expectation (= 4176 + 18), no
+    contention re-runs needed. Log
+    hidden_files/p106_confirm.log (forge).
+    Honest limitations carried:
+    the mark is a receipt, not a
+    rendering - no UI shows it and no
+    character asks for a repeat (VX-11's
+    rendered markings stay open); turns
+    projected before P-105/P-106 are not
+    back-marked (a landed message's
+    provenance is its production receipt,
+    P-075), while the status/report marks,
+    being views over the session store, do
+    show the mark for such turns; word
+    texts of low-confidence words appear
+    only in the status/report mark, never
+    in provenance; the response side is
+    untouched; no new HTTP road, store or
+    migration in this slice.
+    Next in roadmap order: P-107.
+P-107 BANKED - Voice Rendered Confidence Markings (Part VII)
+    - team-01 commit d849329 merged (no-ff)
+    into yrsa/two-mirrors-build as cad03e9;
+    merge pushed; ls-remote verified
+    cad03e992ae1a41815ac87319b6f18c043c0339b.
+    Evidence (team-01 worktree
+    hidden_files/P107_EVIDENCE.md):
+    battery 12 passed, neighbours
+    181 passed (P-091, P-101-P-105,
+    S302, S511), battery + S301 together
+    after the in-slice fix 19 passed,
+    team full suite 4188 passed /
+    4 skipped / 0 failed (= 4176 + 12
+    exact, on the fc4ea07 base).
+    Derived scope ACCEPTED by the keeper:
+    P-107 is VX-11 rendered markings -
+    the rendering half P-105 section 4
+    and P-106 both left open (P-106 banked
+    the receipt, not a rendering). The
+    marking is a read-time view over
+    P-105 truth via the P-103 provenance
+    link: threshold, bands and suggested
+    hearing are imported from
+    runmal.voice.mishearing, never
+    redeclared, so the rendering and
+    P-106 receipt cannot disagree. The
+    roadmap gives Part VII only its
+    part line.
+    Slice:
+    src/runmal/voice/markings.py (new:
+    pure voice_origin / message_marking /
+    markings_for_messages views over the
+    P-103 provenance link and the P-101
+    store, trimmed to rendering facts
+    plus evidence_available),
+    src/runmal/chats/router.py (thread
+    surfaces run message dicts through
+    the attach helper; additive
+    voice_marking key only, tolerant -
+    any voice-store failure leaves dicts
+    unmarked rather than bricking the
+    thread),
+    src/runmal/web/static/renderer.js
+    (renderMarkedTranscript: escape-first,
+    low-confidence word cores wrapped in
+    span.stt-low, punctuation outside),
+    src/runmal/web/static/app.js (thread
+    renders marked transcripts and the
+    badge: Heard with doubt with the
+    P-105 suggested hearing as text,
+    Heard clearly, or the honest
+    no-evidence / unavailable lines),
+    src/runmal/web/static/style.css
+    (.stt-low dotted underline carries
+    the signal, tint assists, never
+    colour alone; .voice-marking),
+    tests/test_p107_voice_markings.py
+    (12 tests),
+    docs/VOICE_RENDERED_MARKINGS_2026-11-08.md,
+    clean-room log append (+1). 8 files,
+    +595/-6.
+    Migration: NONE (head stays 0041).
+    One own-slice defect was found and
+    fixed in-slice: the first .stt-low
+    rule carried a raw rgba tint,
+    breaking the S301 design-token law
+    (test_no_raw_colors_outside_token_blocks
+    failed on the first full-suite run);
+    the tint is now the --stt-low-tint
+    token in every theme token block,
+    pinned by a battery test and S301.
+    Merge conflict only in the clean-room
+    log, resolved with both the P-106 and
+    P-107 entries kept exactly once each.
+    Merged tree carries BOTH P-106
+    transcript_mishearing_mark in
+    voice/projection.py AND P-107
+    markings (voice/markings.py, the
+    chats/router.py voice_marking attach,
+    renderer renderMarkedTranscript);
+    py_compile green on all touched
+    Python files.
+    Combined batteries on the merged
+    tree: 139 passed / 0 failed
+    (28 + 24 + 19 + 17 + 21 + 18 + 12).
+    Log hidden_files/p107_combined.log
+    (forge) on purplelongship.
+    Forge confirmation suite:
+    4206 passed / 4 skipped / 0 failed
+    in 216.10s, exit 0 - exact match to
+    expectation (= 4194 + 12), no
+    contention re-runs needed (the run
+    shared the laptop with team-02
+    P-108 work and stayed clean). Log
+    hidden_files/p107_confirm.log (forge).
+    Honest limitations carried:
+    the badge and spans render in the
+    founding web thread only; other
+    consumers of the messages API receive
+    the same voice_marking data and may
+    render it or not. Word alignment is
+    token-based: a repeated low word is
+    marked at every occurrence, and a
+    word fused into markup-like text is
+    one token whose core is not the word,
+    so it stays unmarked (and escaped).
+    Streaming (in-flight) messages are
+    not marked; markings attach to landed
+    history, where the evidence lives.
+    Mid-dialogue repeat requests, VX-12
+    and VX-13 stay open, as recorded in
+    the slice doc.
+    Next in roadmap order: P-108.
+P-108 BANKED - Voice Repeat-Request Signal (Part VII)
+    - team-02 commit cf21eb8 merged (no-ff)
+    into yrsa/two-mirrors-build as 860f7d2;
+    merge pushed; ls-remote verified
+    860f7d2d9e186bc37d124c99af3ea754a1cd8445.
+    Evidence (team-02 worktree
+    hidden_files/P108_EVIDENCE.md):
+    battery 15 passed, neighbours
+    302 passed / 2 skipped / 0 failed
+    (fence S501-S514 + P-010 + P-091 +
+    P-101..P-105 + P-108 batteries; the
+    2 skips are the pre-existing
+    environmental optionals), team full
+    suite 4191 passed / 4 skipped /
+    0 failed (= 4176 + 15 exact, on
+    the fc4ea07 base).
+    Derived scope ACCEPTED by the keeper:
+    P-108 is the host-facing half of
+    VX-11's ask-to-repeat - the signal
+    half P-105, P-106 and P-107 each
+    left open. A turn is a pending
+    repeat request exactly when P-105's
+    turn_mishearing says needs_repeat:
+    pending requests are derived purely
+    from that one truth source (the
+    predeclared threshold and bands are
+    imported, never redeclared), so the
+    signal cannot disagree with P-105's
+    view, P-106's receipt or P-107's
+    rendering. The acknowledgement
+    lifecycle is durable (the P-105
+    voice JSON-store house pattern):
+    first acknowledgement wins, clearing
+    returns the request to pending with
+    the truth untouched, and acknowledging
+    a turn with no request answers 422.
+    No dialogue is fabricated, no chat
+    message is created, no text is
+    generated, and the P-102 responder
+    is untouched. The roadmap gives
+    Part VII only its part line.
+    Slice:
+    src/runmal/voice/repeat_requests.py
+    (new: turn_repeat_request /
+    session_repeat_requests pure views
+    over the P-105 truth + the durable
+    AcknowledgementStore),
+    src/runmal/voice/repeat_router.py
+    (new: 3 roads - GET the session's
+    repeat-request signal, POST
+    acknowledge a turn's request,
+    DELETE clear an acknowledgement;
+    owner rule: unknown and foreign
+    sessions answer 404),
+    src/runmal/app.py (repeat_router
+    wiring, additive),
+    src/runmal/voice/__init__.py
+    (module-map entry, additive),
+    tests/test_p108_voice_repeat_requests.py
+    (15 tests),
+    docs/VOICE_REPEAT_REQUESTS_2026-11-08.md,
+    clean-room log append (+1). 7 files,
+    +905/-0.
+    Migration: NONE (head stays 0041).
+    Merge conflict only in the clean-room
+    log, resolved with the P-106, P-107
+    and P-108 entries kept exactly once
+    each; app.py and voice/__init__.py
+    merged cleanly as additive unions
+    keeping all banked P-101..P-107
+    wiring. Merged tree carries P-106
+    transcript_mishearing_mark in
+    voice/projection.py, P-107 markings
+    (voice/markings.py, the chats/router.py
+    voice_marking attach) AND P-108
+    repeat_requests + repeat_router with
+    its 3 roads wired in app.py;
+    py_compile green on all touched
+    Python files.
+    Combined batteries on the merged
+    tree: 154 passed / 0 failed
+    (28 + 24 + 19 + 17 + 21 + 18 + 12 + 15).
+    Log hidden_files/p108_combined.log
+    (forge) on purplelongship.
+    Forge confirmation suite:
+    4221 passed / 4 skipped / 0 failed
+    in 212.31s, exit 0 - exact match to
+    expectation (= 4206 + 15), no
+    contention re-runs needed (the run
+    shared the laptop with team-03's
+    P-109 work and stayed clean). Log
+    hidden_files/p108_confirm.log (forge).
+    Honest limitations carried:
+    the character-asks half of VX-11
+    stays open on the P-102 responder
+    seam, which this slice does not
+    cross. The signal is poll-based:
+    a host reads the road; no push or
+    event is emitted. Acknowledgements
+    are install-wide records keyed by
+    session, not per-host - which is
+    precisely the do-not-ask-twice
+    protection. A deleted session's
+    acknowledgements become inert
+    records: they name a session that
+    no longer exists and drive nothing.
+    VX-12 and VX-13 stay open, as
+    recorded in the slice doc.
+    Next in roadmap order: P-109.
+P-109 BANKED - Voice Affects as Carried Data (Part VII)
+    - team-03 commit 5bb15ec merged (no-ff)
+    into yrsa/two-mirrors-build as 805e5e1;
+    merge pushed; ls-remote verified
+    805e5e130f68b7d6c9a16034f93b99261750cc84.
+    Evidence (team-03 worktree
+    hidden_files/P109_EVIDENCE.md):
+    battery 13 passed, neighbours
+    133 passed / 0 failed (battery +
+    neighbours combined 146 passed =
+    P-101..P-106 + S512 profiles),
+    team full suite 4207 passed /
+    4 skipped / 0 failed on the
+    dfdd07c base (P-106 banking record;
+    the slice was built on that base
+    while P-107 and P-108 banked ahead
+    of it, and was reconciled at this
+    banking in roadmap order).
+    Derived scope ACCEPTED by the keeper:
+    P-109 is the first step of VX-12
+    (voices carry emotion) - the DATA
+    half only. The census row's named
+    affects (anger, whispering,
+    laughing) plus neutral form one
+    closed vocabulary in
+    voice/affects.py, imported never
+    copied; profiles validate
+    params[affect] strictly at the
+    write door (unknown affect =
+    ValueError); SessionSettings
+    carries affect + affect_source,
+    snapshotted once at session start
+    under the P-101 snapshot law, with
+    tolerant read fallback NAMED (a
+    corrupt stored affect never bricks
+    a stored session; pre-P-109
+    snapshots construct unchanged).
+    Every surface states the truth
+    consumed: False with the reason as
+    data - no backend consumes an
+    affect and no fake prosody is
+    claimed anywhere. The roadmap
+    gives Part VII only its part line.
+    Slice:
+    src/runmal/voice/affects.py
+    (new: the closed vocabulary as
+    data + normalize / tolerant
+    from-params / with_affect /
+    consumption views),
+    src/runmal/voice/profiles.py
+    (set_character_voice validates
+    params[affect] strictly),
+    src/runmal/voice/session.py
+    (SessionSettings affect +
+    affect_source, snapshot law),
+    src/runmal/voice/router.py
+    (founding road, additive: GET
+    /voice/affects and GET
+    /voice/sessions/{id}/affect),
+    src/runmal/voice/__init__.py
+    (module-map entry, additive),
+    tests/test_p109_voice_affects.py
+    (13 tests),
+    docs/VOICE_AFFECTS_2026-11-08.md,
+    clean-room log append (+1). 8 files,
+    +478/-0.
+    Migration: NONE (head stays 0041).
+    Merge completed by the previous
+    banking coordinator and finished
+    at this banking: the merged tree
+    was verified to carry P-107
+    markings, P-108 repeat_requests +
+    repeat_router AND P-109 affects
+    (py_compile green on all touched
+    Python files; the combined
+    batteries below prove the union).
+    In-slice fix recorded in the
+    evidence: the SessionSettings
+    round trip silently rewrote
+    affect_source for a neutral affect;
+    fixed in _stored_affect and pinned
+    by added battery assertions.
+    Combined batteries on the merged
+    tree: 167 passed / 0 failed
+    (28 + 24 + 19 + 17 + 21 + 18 + 12 + 15 + 13).
+    Log hidden_files/p109_combined.log
+    (forge) on purplelongship.
+    Forge confirmation suite:
+    4234 passed / 4 skipped / 0 failed
+    in 214.13s, exit 0 - exact match to
+    expectation (= 4221 + 13), no
+    contention re-runs needed. Log
+    hidden_files/p109_confirm.log (forge).
+    Honest limitations carried:
+    no backend consumes an affect -
+    synthesis is byte-identical with
+    or without one; the engine half
+    of VX-12 (a backend seam accepting
+    affect, prosody rendering) stays
+    open for its own slice. Per-turn
+    affect changes are not modelled:
+    the affect is the profile's
+    standing intention, snapshotted
+    at session start. The vocabulary
+    is the census three + neutral;
+    widening it is a design act for a
+    later slice. VX-13, the
+    character-asks repeat half and
+    P-108's limitations stay open.
+    Next in roadmap order: P-110.
+P-110 BANKED - Voice Turn Latency Evidence (Part VII)
+    - team-01 commit 9bed9b4 merged (no-ff)
+    into yrsa/two-mirrors-build as 683905d;
+    merge pushed; ls-remote verified
+    683905d8e580b923f73a85a398afe390e42a77bc.
+    Evidence (team-01 worktree
+    hidden_files/P110_EVIDENCE.md):
+    battery 16 passed, neighbours
+    314 passed / 2 skipped / 0 failed
+    (21 voice files: p010, p091,
+    p101-p107, p110, s501-s509, s511,
+    s512; the 2 skips are the
+    pre-existing environmental
+    optionals), team full suite
+    4222 passed / 4 skipped / 0 failed
+    on the 462a675 base (P-107 banking
+    record; the slice was built on
+    that base while P-108 and P-109
+    banked ahead of it, and was
+    reconciled at this merge in
+    roadmap order).
+    Derived scope ACCEPTED by the keeper:
+    P-110 gives the P-101 session
+    citizen the latency evidence its
+    persisted turns never carried.
+    voice/latency.py derives one
+    turn's durations ONLY from the
+    orchestrator transitions stamped
+    with that turn_id (S505's
+    clock-stamped log): a duration
+    exists only when both of its
+    stage endpoints were stamped for
+    that turn; a negative span is
+    dropped, never clamped; nothing
+    is zero-filled and no wall clock
+    is read for evidence. Aggregates
+    report {count, p50, p95} per
+    duration key via S510's own
+    percentile - imported, never
+    reimplemented (VOICE_ARCHITECTURE
+    sections 2 and 10). response_seconds
+    is named generation duration,
+    never time-to-first-token: the
+    first token is not stamped and
+    is not claimed. A manually
+    recorded turn carries no evidence
+    and the views say so
+    (has_latency_evidence False) -
+    evidence-or-nothing throughout.
+    The roadmap gives Part VII only
+    its part line.
+    Slice:
+    src/runmal/voice/latency.py
+    (new: turn_durations /
+    turn_latency_view /
+    session_latency_view pure views
+    + clean_durations tolerant
+    stored-read),
+    src/runmal/voice/session.py
+    (VoiceTurnRecord gains durations,
+    default empty = NO evidence;
+    from_orchestrator /
+    append_orchestrator_turn accept
+    the transition log and derive
+    at record time),
+    src/runmal/voice/live.py
+    (the live host's persist road
+    passes its orchestrator's
+    transitions into the append road,
+    one additive argument),
+    src/runmal/voice/router.py
+    (founding road, additive: GET
+    /voice/sessions/{id}/latency;
+    session payloads carry turn
+    durations additively),
+    src/runmal/voice/__init__.py
+    (module-map entry, additive),
+    tests/test_p110_voice_latency.py
+    (16 tests),
+    tests/test_p102_live_voice.py
+    (the labelled session double's
+    append road accepts the new
+    transitions argument; no
+    assertion changed - the in-slice
+    fix recorded in the evidence),
+    docs/VOICE_LATENCY_EVIDENCE_2026-11-08.md,
+    clean-room log append (+1). 9 files,
+    +662/-2.
+    Migration: NONE (head stays 0041).
+    Merge conflicts in the clean-room
+    log and voice/session.py, both
+    resolved as additive unions: the
+    log keeps the P-108, P-109 and
+    P-110 entries exactly once each;
+    session.py keeps BOTH the P-109
+    affect_from_params import and the
+    P-110 latency imports, with both
+    usages live. __init__.py and
+    router.py auto-merged; the merged
+    tree carries P-108 repeat_requests
+    + repeat_router (3 roads wired in
+    app.py), P-109 affects (both
+    founding-road affect routes) AND
+    P-110 latency (the /latency road),
+    py_compile green on all touched
+    Python files. No banking heal
+    needed.
+    Combined batteries on the merged
+    tree: 183 passed / 0 failed
+    (28 + 24 + 19 + 17 + 21 + 18 + 12 + 15 + 13 + 16).
+    Log hidden_files/p110_combined.log
+    (forge) on purplelongship.
+    Forge confirmation suite:
+    4250 passed / 4 skipped / 0 failed
+    in 219.88s, exit 0 - exact match to
+    expectation (= 4234 + 16), no
+    contention re-runs needed. Log
+    hidden_files/p110_confirm.log (forge).
+    Honest limitations carried:
+    stage coverage is the transition
+    log's coverage - VAD speech-on
+    latency, endpoint hangover and
+    LLM TTFT are not stamped per turn
+    and stay unrecorded; interruption
+    detection-to-stop is not derivable
+    and is not claimed. The founding
+    /voice/status global
+    MetricsCollector remains unfed,
+    exactly as banked - named, not
+    silently half-wired. Speak turns
+    carry no STT/response stages;
+    their evidence is partial by
+    construction and reads as such.
+    VX-12's engine half, VX-13, the
+    character-asks repeat half and
+    P-108's limitations stay open.
+    Next in roadmap order: P-111.
+P-111 BANKED - Voice Repeat-Acknowledgement Housekeeping (Part VII)
+    - team-02 commit 3a3ae47 merged (no-ff)
+    into yrsa/two-mirrors-build as 4b9d292;
+    merge pushed; ls-remote verified
+    4b9d292f7050eb78a934f79e5e6ff1fabee7090e.
+    Evidence (team-02 worktree
+    hidden_files/P111_EVIDENCE.md):
+    battery 18 passed, neighbours
+    320 passed / 2 skipped / 0 failed,
+    team full suite
+    4239 passed / 4 skipped / 0 failed
+    on the 2e7864c base (P-108 banking
+    record; the slice was built on
+    that base while P-109 and P-110
+    banked ahead of it, and was
+    reconciled at this merge in
+    roadmap order).
+    Derived scope ACCEPTED by the keeper:
+    P-111 closes the limitation P-108
+    recorded plainly: a deleted session's
+    repeat-request acknowledgements
+    became inert records naming a session
+    that no longer exists, and no road
+    could ever remove them (the only
+    housekeeping road hung off a session
+    view answering 404 for a deleted
+    session). Inert means exactly one
+    thing: the record's session id is
+    absent from the P-101 session store
+    - no age, count or heuristic
+    threshold invented. Housekeeping
+    removes acknowledgement handling
+    records only: P-105 detection truth
+    is never touched, a live session's
+    acknowledged requests stay
+    acknowledged through any prune, and
+    no road creates a chat message.
+    The roadmap gives Part VII only
+    its part line.
+    Slice:
+    src/runmal/voice/repeat_requests.py
+    (extended: AcknowledgementStore
+    session_ids / record_count /
+    prune_orphans, plus the pure
+    housekeeping_view and
+    prune_inert_acknowledgements views;
+    a no-op prune leaves the store
+    document byte-identical and creates
+    no file for an absent store),
+    src/runmal/voice/repeat_router.py
+    (extended: GET
+    /voice/repeat-requests/housekeeping
+    pure-read view + POST
+    /voice/repeat-requests/housekeeping/prune,
+    install-wide, bearer-gated),
+    src/runmal/voice/router.py
+    (DELETE session road extended: the
+    drop act now prunes every orphaned
+    acknowledgement in the same act and
+    reports the act total additively as
+    repeat_acknowledgements_pruned),
+    tests/test_p111_voice_repeat_housekeeping.py
+    (18 tests),
+    docs/VOICE_REPEAT_HOUSEKEEPING_2026-11-08.md,
+    clean-room log append (+1). 6 files,
+    +658/-2.
+    Migration: NONE (head stays 0041).
+    Merge conflict only in the clean-room
+    log (append-vs-append), resolved as
+    an additive union: the log keeps the
+    P-108, P-109, P-110 and P-111 entries
+    exactly once each. voice/router.py
+    auto-merged; the merged tree carries
+    P-109 affects (both founding-road
+    affect routes), P-110 latency (the
+    /latency road), P-108 repeat_requests
+    AND P-111 housekeeping + prune roads
+    (incl. the drop-road prune), py_compile
+    green on all touched Python files.
+    No banking heal needed.
+    Combined batteries on the merged
+    tree: 201 passed / 0 failed
+    (28 + 24 + 19 + 17 + 21 + 18 + 12 + 15 + 13 + 16 + 18).
+    Log hidden_files/p111_combined.log
+    (forge) on purplelongship.
+    Forge confirmation suite:
+    4268 passed / 4 skipped / 0 failed
+    in 282.46s, exit 0 - exact match to
+    expectation (= 4250 + 18), no
+    contention re-runs needed. Log
+    hidden_files/p111_confirm.log (forge).
+    Honest limitations carried:
+    the housekeeping roads are
+    install-wide, exactly like the
+    acknowledgement store itself - any
+    bearer-authenticated host can view
+    the inert set and prune it, stated
+    plainly. No periodic sweeper exists:
+    inert records are removed when a
+    host calls the prune road, or
+    opportunistically when any chat's
+    sessions are dropped. The
+    character-asks half of VX-11 stays
+    open on the P-102 responder seam.
+    VX-12's engine half, VX-13 and
+    P-108's remaining limitations stay
+    open.
+    Next in roadmap order: P-112.
+P-112 BANKED - Voice Live-Start Back-Projection (Part VII)
+    - team-03 commit 00feeae merged (no-ff)
+    into yrsa/two-mirrors-build as 20565c5;
+    merge pushed; ls-remote verified
+    20565c5438f9df1313ab9122dadd824227eea909.
+    Evidence (team-03 worktree
+    hidden_files/P112_EVIDENCE.md):
+    battery 11 passed, neighbours
+    372 passed / 2 skipped / 0 failed,
+    team full suite
+    4261 passed / 4 skipped / 0 failed
+    on the ff48970 base (P-110 banking
+    record; the slice was built on
+    that base while P-111 banked
+    ahead of it, and was reconciled
+    at this merge in roadmap order).
+    Derived scope ACCEPTED by the keeper:
+    P-112 closes the limitation P-104's
+    slice doc section 4 records
+    verbatim - Live start does not
+    back-project pre-existing turns -
+    the one projection-aware road (of
+    manual turns POST, live speak,
+    live stop, live start) that never
+    walked P-104's autoproject service.
+    The live/start HTTP road now walks
+    the module's existing shared
+    _maybe_autoproject helper strictly
+    after a successful start; an
+    opted-in session's pre-existing
+    unprojected turns land in their
+    chat at live start through P-103's
+    one landing service, and the
+    report rides only when a
+    projection was attempted. The
+    P-102/P-104 design law stands:
+    the LiveVoiceController stays
+    synchronous and DB-free.
+    Slice:
+    src/runmal/voice/live_router.py
+    (+15/-2: the start road gains the
+    speak/stop roads' db dependency
+    and walks _maybe_autoproject),
+    src/runmal/voice/autoproject.py
+    (+3/-1: docstring road list names
+    live start; no code change),
+    tests/test_p112_voice_live_start_projection.py
+    (11 tests),
+    docs/VOICE_LIVE_START_PROJECTION_2026-11-08.md,
+    clean-room log append (+1). 5 files,
+    +393/-3.
+    Migration: NONE (head stays 0041).
+    Merge conflict only in the clean-room
+    log (append-vs-append), resolved as
+    an additive union: the log keeps
+    the P-111 and P-112 entries exactly
+    once each. live_router.py and
+    autoproject.py auto-merged; the
+    merged tree carries P-111
+    housekeeping + prune roads (incl.
+    the drop-road prune) AND P-112
+    live-start back-projection (the
+    start road's _maybe_autoproject
+    walk), py_compile green on all
+    touched Python files.
+    No banking heal needed.
+    Combined batteries on the merged
+    tree: 212 passed / 0 failed
+    (28 + 24 + 19 + 17 + 21 + 18 + 12 + 15 + 13 + 16 + 18 + 11).
+    Log hidden_files/p112_combined.log
+    (forge) on purplelongship.
+    Forge confirmation suite:
+    4279 passed / 4 skipped / 0 failed
+    in 226.97s, exit 0 - exact match to
+    expectation (= 4268 + 11), no
+    contention re-runs needed. Log
+    hidden_files/p112_confirm.log (forge).
+    Honest limitations carried:
+    HTTP road only - an in-process
+    LiveVoiceController.start does not
+    back-project (it cannot, being
+    DB-free by design); the catch-up
+    point exists where a DB session
+    exists: the HTTP host.
+    Back-projection covers turns
+    pending at start; later turns
+    land through the standing
+    speak/stop/manual roads. The
+    character-asks half of VX-11
+    (P-102 responder seam), VX-12's
+    engine half, VX-13 and L3
+    (deliberate host-explicit
+    registration) stay open exactly
+    where P-110 and P-111 left them.
+    Next in roadmap order: P-113.
+P-113 BANKED - Plugin Custody Coverage (Part VII)
+    - team-01 commit 1773a21 merged (no-ff)
+    into yrsa/two-mirrors-build as 1b49a46;
+    banking record commit follows this
+    entry and is pushed with the merge;
+    ls-remote verification is reported
+    in the keeper run log.
+    Evidence (team-01 worktree
+    hidden_files/P113_EVIDENCE.md):
+    battery 17 passed, neighbours
+    981 passed / 2 skipped / 0 failed,
+    team full suite
+    4285 passed / 4 skipped / 0 failed
+    on the 69ba056 base (P-111 banking
+    record; the slice was built on
+    that base while P-112 banked
+    ahead of it, and was reconciled
+    at this merge in roadmap order).
+    Derived scope ACCEPTED by the keeper:
+    P-113 is the P-100 gate finding F1
+    fix - the next custody touch.
+    P-094 CITIZEN_PLUGIN_IDS omitted
+    runmal.game-bridge (P-096) and
+    runmal.plugin-settings-ui (P-098);
+    bare-id custody refused both. Both
+    are now first-class custody
+    citizens: CITIZEN_PLUGIN_IDS
+    12 -> 14 in roadmap order, with
+    real data sections - game-bridge
+    joins the durable file stores and
+    plugin-settings-ui gains a new
+    settings section served
+    section-scoped through the
+    settings_ui module own roads,
+    with custody_coverage gaining
+    the plugin_settings classification.
+    Weighed and not taken, with tree
+    evidence in the scout: L3
+    auto-registration of the P-091
+    voice citizens (deliberate
+    host-explicit law), the VX-12
+    engine half (no backend affect
+    seam), and marking projected
+    message content itself (P-106
+    declined it on the P-075 law).
+    Slice:
+    src/runmal/plugins/custody.py
+    (extended, +80: CITIZEN_PLUGIN_IDS
+    12 -> 14; _MANIFEST_MODULES + both;
+    game-bridge joins _FILE_STORES;
+    new _settings_ui_section +
+    dispatch in _data_sections;
+    custody_coverage plugin_settings
+    classification; docstring F1 note),
+    tests/test_p113_custody_coverage.py
+    (17 tests),
+    tests/test_p100_gate.py
+    (labelled in-slice update: the
+    Area C F1 pin rewritten to hold
+    the covered state, gate battery
+    count unchanged at 16),
+    tests/test_p094_plugin_custody.py
+    (labelled in-slice update:
+    coverage durable_file set gains
+    runmal.game-bridge),
+    docs/PLUGIN_CUSTODY_COVERAGE_2026-11-08.md,
+    clean-room log append (+1). 6 files,
+    +629/-14.
+    Migration: NONE (head stays 0041).
+    Merge conflict only in the clean-room
+    log (append-vs-append), resolved as
+    an additive union: the log keeps
+    the P-112 and P-113 entries exactly
+    once each. custody.py auto-merged;
+    the merged tree carries P-112
+    live-start back-projection AND
+    P-113 custody coverage,
+    py_compile green on all
+    touched Python files.
+    No banking heal needed.
+    Combined batteries on the merged
+    tree: 883 passed / 0 failed.
+    Log hidden_files/p113_combined.log
+    (forge) on purplelongship.
+    Forge confirmation suite:
+    4296 passed / 4 skipped / 0 failed
+    in 226.41s, exit 0 - exact match to
+    expectation (= 4279 + 17), no
+    contention re-runs needed. Log
+    hidden_files/p113_forge_fullsuite.log
+    (forge).
+    Honest limitations carried:
+    stored settings FOR a citizen are
+    still not part of that citizen own
+    custody export/delete (unchanged
+    from P-094 for every citizen);
+    the game-bridge in-memory observation
+    list is not custody data; gallery
+    and conformance remain outside
+    the fixed list (F1 named two ids);
+    L3 stands - no citizen is
+    registered by this slice and the
+    boot registry stays empty
+    (battery-pinned).
+    Next in roadmap order: P-114.
+P-114 BANKED - Voice Mishearing Session Report (Part VII)
+    - team-02 commit 62bc5d5 merged (no-ff)
+    into yrsa/two-mirrors-build as cfced69;
+    banking record commit follows this
+    entry and is pushed with the merge;
+    ls-remote verification is reported
+    in the keeper run log.
+    Evidence (team-02 worktree
+    hidden_files/P114_EVIDENCE.md):
+    battery 18 passed, neighbours
+    408 passed / 2 skipped / 0 failed,
+    team full suite
+    4297 passed / 4 skipped / 0 failed
+    on the b70b3bc base (P-112 banking
+    record; the slice was built on
+    that base while P-113 banked
+    ahead of it, and was reconciled
+    at this merge in roadmap order).
+    Derived scope ACCEPTED by the keeper:
+    P-114 is a session-level aggregate
+    over P-105's confidence evidence -
+    the mishearing report. It pools
+    ONLY what turn_mishearing already
+    states (the bands, the predeclared
+    0.5 threshold and the probabilities
+    are never recomputed under a second
+    law - one truth source) and adds
+    pooled probability statistics
+    (count/mean/percentiles over the
+    house metrics.percentile), the
+    often-missed-word table grouped
+    by the lexicon's own key law, the
+    lexicon-coverage view (covered vs
+    uncovered at occurrence and
+    distinct-word level), and the
+    per-backend split from each turn
+    record's stt_backend. The light
+    report view carries exactly the
+    totals session_mishearing already
+    states plus the aggregate and no
+    per-turn detail; the session view
+    gains the same aggregate
+    additively. Slice:
+    src/runmal/voice/mishearing.py
+    (extended: mishearing_aggregate +
+    session_mishearing_report +
+    _word_group_key),
+    src/runmal/voice/mishearing_router.py
+    (extended: GET /voice/sessions/{id}/
+    mishearing-report road),
+    src/runmal/voice/__init__.py
+    (module-map line),
+    tests/test_p114_voice_mishearing_report.py
+    (18 tests),
+    docs/VOICE_MISHEARING_REPORT_2026-11-08.md,
+    clean-room log append (+1). 6 files,
+    +661/-1.
+    Migration: NONE (head stays 0041).
+    Merge conflict only in the clean-room
+    log (append-vs-append), resolved as
+    an additive union: the log keeps
+    the P-113 and P-114 entries exactly
+    once each. The voice files
+    auto-merged; the merged tree carries
+    P-113 custody coverage AND P-114
+    mishearing report, py_compile green
+    on all touched Python files.
+    No banking heal needed.
+    Combined batteries on the merged
+    tree: 901 passed / 0 failed
+    (= 883 P-113 combined family + 18
+    exact). Log hidden_files/p114_combined.log
+    (forge) on purplelongship.
+    Forge confirmation suite:
+    4312 passed / 4 skipped / 2 failed
+    in 336.61s in-run, the 2 failures
+    being exactly the named contention
+    class under shared-machine load
+    (load average ~16 at the time):
+    the s503 STT timing contract
+    (RTF p50 1.718 over contract) and
+    the P-077 wall-clock tripwire
+    (median sample 0.281s against the
+    0.2s budget). Both pass solo:
+    test_p077 17 passed, test_s503
+    4 passed (logs
+    hidden_files/p114_solo_p077.log +
+    p114_solo_s503.log), so the
+    effective confirmation is
+    4314 passed / 4 skipped / 0 failed
+    - exact match to expectation
+    (= 4296 + 18). Logs
+    hidden_files/p114_confirm.log +
+    p114_confirm_solo.log (forge).
+    Honest limitations carried:
+    confidence is the backend's own
+    uncalibrated estimate and the
+    pooled statistics inherit that;
+    the aggregate is one session only
+    (no cross-session roll-up; the
+    repeat digest/aging candidate
+    stays open); grouping is
+    whole-word only (no stemming or
+    fuzzy matching); no UI renders
+    the report in this slice.
+    Next in roadmap order: P-115.
+P-115 BANKED - Voice Repeat-Request Digest & Aging (Part VII)
+    - team-03 commit 07c1e03 merged (no-ff)
+    into yrsa/two-mirrors-build as 26c7eb6;
+    banking record commit follows this
+    entry and is pushed with the merge;
+    ls-remote verification is reported
+    in the keeper run log.
+    Evidence (team-03 worktree
+    hidden_files/P115_EVIDENCE.md):
+    battery 16 passed, neighbours
+    423 passed / 2 skipped / 0 failed,
+    team full suite effective
+    4312 passed / 4 skipped / 0 failed
+    on the 93229da base (P-113 banking
+    record; the slice was built on
+    that base while P-114 banked
+    ahead of it, and was reconciled
+    at this merge in roadmap order).
+    Derived scope ACCEPTED by the keeper:
+    P-115 is the cross-session
+    repeat-request digest with
+    wall-clock aging - candidate (a)
+    from the P-114 scout's named-open
+    list. The digest counts are the
+    per-session P-108 views' sums by
+    construction (session_repeat_requests
+    is called per session; agreement
+    pinned field by field), and aging
+    is plain arithmetic with an
+    injected now: pending age =
+    now - recorded_at, acknowledged
+    age = now - acknowledged_at,
+    delay = acknowledged_at -
+    recorded_at. NO buckets, NO
+    thresholds, NO staleness verdict -
+    answering the P-114 scout's named
+    cost. Missing, unparseable or
+    future stamps and negative delays
+    yield no age: counted in
+    without_count, excluded from
+    oldest/newest/mean, never clamped
+    (the P-110 negative-span law).
+    The HTTP road is owner-scoped: a
+    foreign owner's doubted session is
+    entirely absent from the digest,
+    unlike the install-wide P-111
+    housekeeping roads. Digest reads
+    never write. Slice:
+    src/runmal/voice/repeat_requests.py
+    (extended: repeat_digest +
+    stamp/age helpers; recorded_at
+    added to turn_repeat_request
+    additively),
+    src/runmal/voice/repeat_router.py
+    (extended: GET /voice/repeat-requests/
+    digest, owner-scoped),
+    src/runmal/voice/__init__.py
+    (module-map line),
+    tests/test_p115_voice_repeat_digest.py
+    (16 tests),
+    docs/VOICE_REPEAT_DIGEST_2026-11-08.md,
+    clean-room log append (+1). 6 files,
+    +624/-1.
+    Migration: NONE (head stays 0041).
+    Merge conflict only in the clean-room
+    log (append-vs-append), resolved as
+    an additive union: the log keeps
+    the P-114 and P-115 entries exactly
+    once each. voice/__init__.py
+    auto-merged as an additive union;
+    the merged tree carries P-114
+    mishearing report AND P-115 repeat
+    digest, py_compile green on all
+    touched Python files.
+    No banking heal needed.
+    Combined batteries on the merged
+    tree: 917 passed / 0 failed
+    (= 901 P-114 combined family + 16
+    exact). Log hidden_files/p115_combined.log
+    (forge) on purplelongship.
+    Forge confirmation suite:
+    4330 passed / 4 skipped / 0 failed
+    in 281.80s, exit 0 - exact match
+    to expectation (= 4314 + 16),
+    a clean run with no contention
+    re-runs needed. Log
+    hidden_files/p115_confirm.log
+    (forge) on purplelongship.
+    Honest limitations carried:
+    the digest reports how long, never
+    "too long" (no staleness verdict;
+    thresholds are host policy); ages
+    inherit wall-clock skew honestly
+    (future stamps count as
+    without-age, never repaired); the
+    digest is a snapshot poll, not a
+    subscription, and no UI renders
+    it; the character half of VX-11's
+    ask stays open on the P-102
+    responder seam; VX-12's engine
+    half and L3 auto-registration
+    remain as the scout records them.
+    Next in roadmap order: P-116
+    (Part VII gate).
+P-116 BANKED - Part VII Gate - Voice, the Voxta Way (Part VII)
+    PART VII COMPLETE (P-101..P-116).
+    - team-01 commit ea0c742 merged (no-ff)
+    into yrsa/two-mirrors-build as eeafeea
+    (parents 3886cd2 + ea0c742); banking
+    record commit follows this entry and
+    is pushed with the merge; ls-remote
+    verification is reported in the keeper
+    run log.
+    Evidence (team-01 worktree
+    hidden_files/P116_EVIDENCE.md):
+    gate verdict PASS on all rows -
+    Census PASS, Together PASS, Digest
+    PASS (by auto-discovery), Accounting
+    PASS; per-row verdicts P-101..P-115
+    in docs/PART_VII_GATE_2026-11-08.md.
+    Battery 30 passed / 1 skipped
+    (gate 20 passed / 1 skipped +
+    gate-record 10 passed) on the
+    0333be0 base (P-114 banking record;
+    the slice was built on that base
+    while P-115 banked ahead of it, and
+    was reconciled at this merge in
+    roadmap order); the 1 skip is the
+    Area C digest-aging test, absent
+    by design on that base. Neighbours
+    445 passed / 3 skipped / 0 failed;
+    team full suite 4334 passed /
+    5 skipped / 0 failed.
+    Gate scope (derived, as every Part
+    VII slice scope is derived - the
+    filed roadmap gives Part VII only
+    its part line): the gate judges
+    Part VII against the census its own
+    banked slice docs declare -
+    sessions, the live host, projection
+    + auto-projection, mishearing truth
+    / markings / report, repeat-request
+    signal + housekeeping + digest,
+    affects as carried data, latency
+    evidence, live-start back-projection,
+    and custody coverage. No banked code
+    was changed by this slice. Slice:
+    tests/test_p116_gate.py (21 tests),
+    tests/test_p116_gate_record.py
+    (10 tests),
+    docs/PART_VII_GATE_2026-11-08.md,
+    clean-room log append (+1). 4 files,
+    +924/-0.
+    Migration: NONE (head stays 0041).
+    Merge conflict only in the clean-room
+    log (append-vs-append), resolved as
+    an additive union at merge time by
+    the keeper; the merged tree carries
+    P-115 repeat digest AND the P-116
+    gate, py_compile green.
+    No banking heal needed.
+    Gate battery re-run on the merged
+    tree by the banking finisher:
+    31 passed / 0 skipped / 0 failed -
+    the Area C digest-aging test runs
+    GREEN here (P-115 present), not
+    skipped.
+    Combined batteries on the merged
+    tree: 973 passed / 0 failed. Log
+    hidden_files/p116_combined.log
+    (forge) on purplelongship. Honest
+    note: the keeper's pre-run
+    expectation was 947 (= 917 P-115
+    combined family + 30 gate battery
+    as counted on team-01's base); the
+    merged-tree run read 973. Of the
+    +26, +1 is the digest-aging test
+    passing instead of skipping; the
+    log carries no collection listing
+    to decompose the remaining +25
+    further, and the summary line is
+    recorded exactly as read, not
+    forced to the expectation.
+    Forge confirmation suite:
+    4361 passed / 4 skipped / 0 failed
+    in 220.52s, exit 0 - a clean run
+    with no contention re-runs needed.
+    (= 4330 P-115 confirmation + 31
+    gate battery on the merged tree;
+    the +1 over the 4360 pre-merge
+    expectation is the same resolved
+    digest-aging skip.) Log
+    hidden_files/p116_confirm.log
+    (forge) on purplelongship.
+    Carried items named by the gate
+    (K1-K7, gate record S4): K1 the
+    character-asks half of VX-11 stays
+    open on the P-102 responder seam;
+    K2 VX-12's engine half has no
+    backend seam (affects are carried
+    data, consumed_by_backends False);
+    K3 L3 registration is deliberate
+    host-explicit law (boot registry
+    empty, no auto-registration); K4
+    several Part VII surfaces have no
+    UI (mishearing report, repeat
+    digest, latency evidence,
+    housekeeping are data + HTTP only);
+    K5 back-projection is HTTP-road
+    only (the in-process controller is
+    synchronous and DB-free by design);
+    K6 confidence is the backend's
+    uncalibrated estimate (0.5 threshold
+    predeclared, single-sourced from
+    P-105); K7 the digest reports how
+    long, never "too long" (no staleness
+    verdict, no buckets; ages inherit
+    wall-clock skew honestly).
+    Finding F2 (gate record S5):
+    app.openapi() raises app-wide
+    ("A response class is needed to
+    generate OpenAPI", at the HTML
+    voice page route) - pre-existing,
+    outside the gate footprint, NOT
+    fixed in this gate; commissioned
+    forward to P-117 by the keeper.
+    F1: no new engine defect found by
+    this gate.
+    Next in roadmap order: P-117
+    (Part VIII opening slice; the F2
+    openapi fix is its commissioned
+    first business).
+P-117 BANKED - Vision Foundation + OpenAPI fix (Part VIII)
+    PART VIII OPEN (P-117 is its first slice).
+    - team-02 commit 6ac3f27 merged (no-ff)
+    into yrsa/two-mirrors-build as 4cefef1
+    (parents ee235a2 + 6ac3f27); banking
+    record commit follows this entry and
+    is pushed with the merge; ls-remote
+    verification is reported in the keeper
+    run log.
+    Evidence (team-02 worktree
+    hidden_files/P117_EVIDENCE.md):
+    battery 15 passed / 0 failed;
+    neighbours 130 passed / 0 failed;
+    team full suite 4345 passed /
+    4 skipped / 0 failed on its base
+    3886cd2 (P-115 banking record;
+    P-116's gate files are NOT in that
+    base, reconciled at this merge in
+    roadmap order). Expectation check:
+    4330 P-115 confirmation + 15 new
+    = 4345 - exact match.
+    Commissioned fix F2 FIXED in-slice:
+    root cause - src/runmal/app.py
+    registered /voice and /memories with
+    an explicit response_class=None,
+    replacing FastAPI's default sentinel
+    and breaking app.openapi() app-wide
+    (gate finding F2, P-116 record).
+    Both registrations now declare
+    response_class=HTMLResponse. The
+    battery pins it: openapi.json 200,
+    both paths carry 200 responses,
+    both pages serve HTML 200. The gate
+    named the voice page; the memories
+    page carried the identical defect
+    and is fixed by the same change.
+    Slice scope (DERIVED, as Part VIII's
+    per-slice definitions are derived -
+    the filed roadmap gives Part VIII
+    only its part line): vision
+    descriptions as first-class
+    chat-bound records behind a provider
+    seam in src/runmal/vision/, with
+    provider truth carried as data;
+    MetadataVisionProvider, which never
+    fabricates - its description is only
+    the sniffed metadata truth about the
+    bytes, and a non-image is refused;
+    a durable vision_descriptions.json
+    store; owner-scoped describe /
+    descriptions / last-description
+    roads. No content is invented: a
+    metadata-only description is stated
+    as metadata-only.
+    Slice: src/runmal/app.py (F2 fix +
+    vision router wiring),
+    src/runmal/vision/__init__.py,
+    src/runmal/vision/service.py,
+    src/runmal/vision/router.py,
+    tests/test_p117_vision_foundation.py
+    (15 tests),
+    docs/VISION_FOUNDATION_2026-11-08.md,
+    clean-room log append (+1). 7 files,
+    +815/-2.
+    Migration: NONE (head stays 0041,
+    pinned in the battery).
+    Merge conflict only in the clean-room
+    log (append-vs-append), resolved as
+    an additive union at merge time by
+    the banking coordinator; the merged
+    tree carries P-116's gate entry AND
+    P-117's entry, each exactly once.
+    app.py auto-merged (P-116 touched no
+    app code); the merged app.py was
+    grep-verified to carry the F2 fix
+    (both HTMLResponse registrations,
+    no response_class=None remaining),
+    all P-116-era wiring, and the vision
+    router; create_app().openapi() on
+    the merged tree returns 260 paths
+    including the vision roads.
+    No banking heal needed.
+    Combined batteries on the merged
+    tree by the banking coordinator:
+    46 passed / 0 failed (P-116 gate
+    battery 31 + P-117 battery 15 -
+    exact). Log hidden_files/
+    p117_combined.log (forge) on
+    purplelongship.
+    Forge confirmation suite:
+    4376 passed / 4 skipped / 0 failed
+    in 289.83s, exit 0 - a clean run
+    with no contention re-runs needed.
+    (= 4361 P-116 confirmation + 15
+    P-117 battery - exact.) Log
+    hidden_files/p117_confirm.log
+    (forge) on purplelongship.
+    Derived scope ACCEPTED as banked.
+    Named-open carried items (not
+    dropped): semantic caption
+    providers; Capabilities.vision
+    truth wired into provider
+    selection; template-variable wiring
+    (prompt-composer consumption of the
+    last description as the VX-43/VX-50
+    template variable); screen capture /
+    folder watcher / camera flow / OCR /
+    message image attachments; vision
+    description custody on chat
+    deletion; app.py I001 import-order
+    cleanup (pre-existing on the base,
+    recorded in the slice evidence).
+    Next in roadmap order: P-118
+    (Part VIII continues).
+P-118 BANKED - The Last Vision Description Reaches the Prompt (Part VIII)
+    PART VIII continues (second slice).
+    - team-03 commit afacf23 merged (no-ff)
+    into yrsa/two-mirrors-build as a1f105b
+    (parents 6e523e3 + afacf23); banking
+    record commit follows this entry and
+    is pushed with the merge; ls-remote
+    verification is reported in the keeper
+    run log.
+    Evidence (team-03 worktree
+    hidden_files/P118_EVIDENCE.md):
+    battery 17 passed / 0 failed;
+    neighbours fence 162 passed /
+    1 skipped (battery + neighbours run;
+    neighbour-only 145 passed /
+    1 skipped); team full suite
+    4378 passed / 4 skipped / 0 failed
+    on its base ee235a2 (P-116 banking
+    record; P-117 is NOT in that base,
+    reconciled at this merge in roadmap
+    order). Expectation check: 4361 base
+    + 17 new = 4378 - exact match, no
+    s503.
+    Slice scope (DERIVED, as Part VIII's
+    per-slice definitions are derived -
+    the filed roadmap gives Part VIII
+    only its part line): the
+    {{last_vision_description}} template
+    variable (census VX-43/VX-50) via
+    new src/runmal/prompt/vision_link.py
+    reading P-117's
+    vision_descriptions.json format v1
+    as DATA only (never importing
+    runmal.vision), resolving to the
+    honest empty string when absent
+    (P-075, nothing fabricated), plus
+    vision custody: purge_chat wired
+    into chats/service.py delete_chat
+    in the house guarded lazy-import
+    pattern alongside the prior
+    checkpoints / databank / undo
+    custody blocks. Review found no
+    defect; two pre-existing ruff
+    findings in chats/service.py
+    (I001/E501) are base-identical and
+    out of footprint, recorded in the
+    slice evidence.
+    Slice: src/runmal/prompt/
+    vision_link.py (new),
+    src/runmal/prompt/variables.py,
+    src/runmal/tools/router.py,
+    src/runmal/chats/service.py,
+    tests/test_p118_vision_template_
+    variable.py (new, 17 tests),
+    tests/test_s307_variables.py,
+    docs/VISION_TEMPLATE_VARIABLE_
+    2026-11-08.md (new), clean-room log
+    append (+1). 8 files, +558/-5.
+    Migration: NONE (head stays 0041).
+    Merge conflict only in the clean-room
+    log (append-vs-append), resolved as
+    an additive union at merge time by
+    the banking coordinator; the merged
+    tree carries P-117's entry AND
+    P-118's entry, each exactly once.
+    The merged tree was verified: the
+    vision package (P-117) and
+    vision_link coexist, the variables
+    registry carries
+    last_vision_description,
+    delete_chat carries BOTH prior
+    custody blocks and the vision
+    purge, and py_compile is clean on
+    all touched modules.
+    No banking heal needed.
+    Combined batteries on the merged
+    tree by the banking coordinator:
+    32 passed / 0 failed (P-117 battery
+    15 + P-118 battery 17 - exact).
+    Forge confirmation suite:
+    4393 passed / 4 skipped / 0 failed
+    in 226.65s - a clean run with no
+    contention re-runs needed.
+    (= 4376 P-117 confirmation + 17
+    P-118 battery - exact.) Log
+    /tmp/p118_confirm.log on
+    purplelongship.
+    Derived scope ACCEPTED as banked.
+    Named-open carried items (not
+    dropped): semantic caption
+    providers; Capabilities.vision
+    selection; capture / watcher /
+    camera / OCR / attachments.
+    Next in roadmap order: P-119
+    (Part VIII continues).
+P-119 BANKED - Vision Provider Selection + Capability Truth (Part VIII)
+    PART VIII continues (third slice).
+    - team-01 commit fea41e9 merged (no-ff)
+    into yrsa/two-mirrors-build as 8e4bdd7
+    (parents 8065234 + fea41e9); banking
+    record commit follows this entry and
+    is pushed with the merge; ls-remote
+    verification is reported in the keeper
+    run log.
+    Evidence (team-01 worktree
+    hidden_files/P119_EVIDENCE.md):
+    battery 16 passed / 0 failed;
+    battery + neighbours (P-119 + P-117
+    + P-053) 71 passed / 0 failed
+    (battery-inclusive fence); team full
+    suite 4392 passed / 4 skipped /
+    0 failed on its base 6e523e3 (P-117
+    banking record; P-118 is NOT in that
+    base, reconciled at this merge in
+    roadmap order). Expectation check:
+    4376 base + 16 new = 4392 - exact
+    match.
+    Slice scope (DERIVED, as Part VIII's
+    per-slice definitions are derived -
+    the filed roadmap gives Part VIII
+    only its part line): the vision
+    provider catalogue as data - the
+    metadata provider and the
+    deterministic labelled TEST provider
+    (road deterministic_test, the
+    P-086/P-087 house pattern), both
+    semantic=False and never presented
+    as semantic anywhere; per-backend
+    Capabilities.vision truth read live
+    from the adapters' own declarations
+    via the P-053 road (all five
+    backends declare vision False);
+    plain refusals - an unknown provider
+    is refused naming the known roads,
+    and require_semantic with no
+    semantic provider available raises
+    VisionUnavailableError with no
+    silent fallback to a non-semantic
+    provider; additive provider /
+    require_semantic fields on
+    POST /vision/describe plus the
+    inspectable GET /vision/providers
+    surface (semantic_caption_available
+    stated as data).
+    Slice: src/runmal/vision/
+    selection.py (new),
+    src/runmal/vision/router.py,
+    src/runmal/vision/__init__.py,
+    tests/test_p119_vision_provider_
+    selection.py (new, 16 tests),
+    docs/VISION_PROVIDER_SELECTION_
+    2026-11-08.md (new), clean-room log
+    append (+1). 6 files, +674/-1.
+    Migration: NONE (head stays 0041).
+    Merge conflict only in the clean-room
+    log (append-vs-append), resolved as
+    an additive union at merge time by
+    the banking coordinator; the merged
+    tree carries P-118's entry AND
+    P-119's entry, each exactly once.
+    The merged tree was verified:
+    vision/selection.py present, the
+    GET /vision/providers road live in
+    the router, and py_compile clean on
+    all touched modules.
+    No banking heal needed.
+    Combined batteries on the merged
+    tree by the banking coordinator:
+    33 passed / 0 failed (P-118 battery
+    17 + P-119 battery 16 - exact).
+    Forge confirmation suite:
+    4409 passed / 4 skipped / 0 failed
+    in 278.53s - a clean run with no
+    contention re-runs needed.
+    (= 4393 P-118 confirmation + 16
+    P-119 battery - exact.) Log
+    /tmp/p119_confirm.log on
+    purplelongship.
+    Derived scope ACCEPTED as banked.
+    Honest limitation (explicit, not
+    faked): NO semantic caption exists
+    anywhere in Runmal yet - no vision
+    model, endpoint, or image wire
+    exists in-tree to call honestly;
+    the gap is queryable data, and the
+    deterministic test provider is
+    labelled a test provider in code,
+    catalogue data, output text, API,
+    and docs.
+    Named-open carried items (not
+    dropped): a real local semantic
+    caption provider; capture / watcher
+    / camera / OCR / attachments.
+    Next in roadmap order: P-120
+    (Part VIII continues).
+P-120 BANKED - Image Attachments on Chat Messages (Part VIII)
+    PART VIII continues (fourth slice).
+    - team-02 commit ee6a943 merged (no-ff)
+    into yrsa/two-mirrors-build as 6b56ef9
+    (parents 09dc4dd + ee6a943); banking
+    record commit follows this entry and
+    is pushed with the merge; ls-remote
+    verification is reported in the keeper
+    run log.
+    Evidence (team-02 worktree
+    hidden_files/P120_EVIDENCE.md):
+    battery 15 passed / 0 failed;
+    neighbours 132 passed / 0 failed
+    (P-117, P-118, s107, P-068, P-023,
+    P-075 fences); team full suite
+    4408 passed / 4 skipped / 0 failed
+    on its base 8065234 (P-118 banking
+    record; P-119 is NOT in that base,
+    reconciled at this merge in roadmap
+    order). Expectation check:
+    4393 base + 15 new = 4408 - exact
+    match. s503 solo 4/4 green.
+    Slice scope (DERIVED, as Part VIII's
+    per-slice definitions are derived -
+    the filed roadmap gives Part VIII
+    only its part line): the attachments
+    truth layer - vision_attachments.json
+    index plus per-attachment byte files
+    named by id with the extension taken
+    from the sniffed format; total
+    refusals storing nothing (empty,
+    over the shared 16 MiB image cap,
+    non-image bytes); owner-scoped
+    attachment roads (create / list /
+    read / content / delete) under
+    /vision/attachments; the P-117
+    describe road gains source_kind
+    attachment as a third named source;
+    an additive attachments view on the
+    message-history surface; custody
+    purges on message deletion and on
+    chat deletion (the P-118 lazy
+    custody-purge idiom).
+    Slice: src/runmal/vision/
+    attachments.py (new),
+    src/runmal/vision/router.py,
+    src/runmal/vision/service.py,
+    src/runmal/vision/__init__.py,
+    src/runmal/chats/router.py,
+    src/runmal/chats/service.py,
+    tests/test_p120_chat_image_
+    attachments.py (new, 15 tests),
+    docs/CHAT_IMAGE_ATTACHMENTS_
+    2026-11-08.md (new), clean-room log
+    append (+1). 9 files, +1005/-6.
+    Migration: NONE (head stays 0041;
+    the provisional 0042 was NOT needed
+    and NOT taken - attachments are not
+    SQL-queryable and do not ride the
+    chat tables' backups, like the
+    P-117 vision store).
+    Merge conflicts in the clean-room
+    log, vision/__init__.py and
+    vision/router.py, all resolved as
+    additive unions at merge time by
+    the banking coordinator; the merged
+    tree carries P-119's entries AND
+    P-120's entries, each exactly once,
+    and both road sets (GET
+    /vision/providers AND the
+    /vision/attachments roads). The
+    merged tree was verified:
+    chats/service.py carries P-118's
+    vision_link purge_chat AND P-120's
+    AttachmentStore purge idiom (chat
+    delete + message delete) together,
+    and py_compile clean on all touched
+    modules. No banking heal needed.
+    Combined batteries on the merged
+    tree by the banking coordinator:
+    31 passed / 0 failed (P-119 battery
+    16 + P-120 battery 15 - exact).
+    Forge confirmation suite:
+    4424 passed / 4 skipped / 0 failed
+    in 239.40s - a clean run with no
+    contention re-runs needed.
+    (= 4409 P-119 confirmation + 15
+    P-120 battery - exact.) Log
+    /tmp/p120_confirm.log on
+    purplelongship.
+    Derived scope ACCEPTED as banked.
+    Declined plainly, with evidence in
+    the slice doc: no semantic caption
+    provider and no OCR (no honest
+    in-tree engine exists for either);
+    no capture or camera surface (no
+    in-tree surface exists); the folder
+    watcher is deferred as the named
+    follow-on - attachments are its
+    destination, and it had no
+    destination until this slice.
+    Attaching performs no content
+    moderation: bytes are sniffed as
+    images only, and no record claims
+    a safety scan.
+    Named-open carried items (not
+    dropped): a real local semantic
+    caption provider; OCR; capture /
+    camera; the folder watcher as the
+    named follow-on.
+    Next in roadmap order: P-121
+    (Part VIII continues).
+
+P-121 BANKED - Folder Watcher: Watched Folders Ingest as Attachments (Part VIII)
+    PART VIII continues (fifth slice).
+    - team-03 commit fdfe3ae merged
+    (no-ff) into yrsa/two-mirrors-build
+    as a890b48 (parents 5692069 +
+    fdfe3ae); banking heal commit
+    3c4e9ea followed on top; merge +
+    heal pushed and ls-remote verified
+    at 3c4e9ea before this record;
+    banking record commit follows this
+    entry and is pushed after it.
+    Evidence (team-03 worktree
+    hidden_files/P121_EVIDENCE.md):
+    battery 19 passed / 0 failed;
+    neighbours 52 passed / 0 failed
+    (P-117 + P-118 + P-119 + s503
+    fence); team full suite 4428
+    passed / 4 skipped / 0 failed on
+    its base 09dc4dd (P-119 banking
+    record; P-120 is NOT in that base,
+    reconciled at this merge in
+    roadmap order).
+    Slice scope (DERIVED, as Part
+    VIII's per-slice definitions are
+    derived - the filed roadmap gives
+    Part VIII only its part line):
+    watch-folder registrations bound
+    to a designated chat plus an
+    explicit polling scan that ingests
+    new image files as P-120
+    chat-level attachments; the P-117
+    versioned JSON-store pattern
+    (vision_watcher.json, version 1);
+    plain total registration/scan
+    refusals and per-file named skips
+    store nothing; (path, sha256)
+    dedupe - an unchanged file never
+    duplicates, a changed file
+    ingests anew; candidates sorted,
+    files-only, capped at 200 per
+    scan with truncation named;
+    owner-scoped watch-folder roads
+    (create / list / delete / scan /
+    ingested) under
+    /vision/watch-folders.
+    Slice: src/runmal/vision/
+    watcher.py (new, 435 lines),
+    src/runmal/vision/router.py
+    (+102), src/runmal/vision/
+    __init__.py (+4),
+    tests/test_p121_folder_watcher.py
+    (new, 19 tests),
+    docs/FOLDER_WATCHER_2026-11-08.md
+    (new), clean-room log append
+    (+1). 6 files, +1081.
+    Migration: NONE (head stays 0041;
+    the provisional 0042 was NOT
+    needed and NOT taken - watch
+    registrations and ingested
+    records are JSON in the data dir,
+    not SQL-queryable and not in DB
+    backups, like the P-117 vision
+    store).
+    Merge conflicts in the clean-room
+    log (append-vs-append) and
+    vision/router.py (both slices
+    appended at the same anchor),
+    resolved as additive unions by
+    the banking coordinator;
+    vision/__init__.py auto-merged.
+    The merged tree carries P-120's
+    entries AND P-121's entries, each
+    exactly once, and both road sets
+    (5 /vision/attachments roads AND
+    5 /vision/watch-folders roads;
+    14 vision routes total),
+    py_compile clean. The union
+    reconstruction at first dropped
+    the watcher import line; the
+    merged battery caught it (4 HTTP
+    tests) and it was restored into
+    the merge commit before any push.
+    Reconciliation (a) - lazy
+    attacher: the watcher resolves
+    P-120's attach_image lazily at
+    scan time; verified at banking
+    against the landed P-120
+    signature (store positional;
+    chat_id / owner_id / data /
+    filename keywords - exact fit,
+    no heal needed) and end-to-end
+    through the real merged
+    attachments module: a real PNG
+    ingested as a chat-level
+    attachment with matching sha256
+    and size, a non-image file
+    refused by the real sniff, and a
+    second scan reporting
+    already_ingested with nothing
+    duplicated.
+    Reconciliation (b) - custody
+    wiring: watcher.purge_chat
+    shipped unwired in the slice; at
+    banking it was wired into
+    chats/service.py delete_chat
+    alongside the P-118 vision purge
+    and the P-120 AttachmentStore
+    purge, in the same guarded
+    lazy-import idiom (banking heal
+    commit 3c4e9ea), with a pinning
+    test (test_chat_deletion_purges_
+    watch_registrations) added to
+    the P-121 battery at banking: a
+    deleted chat's watch
+    registrations and ingested
+    records are purged; a surviving
+    chat's are untouched. The
+    battery on the merged tree is
+    20 collected: 19 passed + 1
+    skipped - the lazy-absence
+    honesty test skips by design
+    when the attachments module IS
+    present (recon (a) covers that
+    road end-to-end instead).
+    Combined batteries on the merged
+    tree by the banking coordinator:
+    vision fence 82 passed / 1
+    skipped / 0 failed (P-117 15 +
+    P-118 17 + P-119 16 + P-120 15 +
+    P-121 19 passes + its 1 design
+    skip - exact).
+    Forge confirmation suite:
+    4443 passed / 5 skipped /
+    0 failed in 325.03s - a clean
+    run with no contention re-runs
+    needed (a Mythic Coder suite
+    shared the machine throughout).
+    (= 4424 P-120 confirmation + 18
+    P-121 battery passes + 1 banking
+    pinning test; skipped 5 = the
+    standing 4 + the honesty test's
+    design skip.) Log
+    /tmp/p121_confirm.log on
+    purplelongship.
+    Derived scope ACCEPTED as
+    banked. Declined plainly, with
+    evidence in the slice doc: no
+    live watcher daemon (no such
+    machinery exists in-tree - the
+    scan is a deliberate polling
+    operation, stated plainly), no
+    semantic caption provider, no
+    OCR, no screen capture / camera
+    flow. Ingestion claims sniffed
+    truth only: no caption is
+    generated and no safety scan is
+    performed or claimed.
+    Named-open carried items (not
+    dropped): a real local semantic
+    caption provider; OCR; capture /
+    camera; a live watcher daemon
+    if honest machinery ever lands.
+    Next in roadmap order: P-122
+    (Part VIII continues).
+
+P-122 BANKED - Vision Description History, Search & Custody Completion (Part VIII)
+    PART VIII continues (sixth slice).
+    - team-01 commit c041246 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 7ec00e0 (parents 3726782 +
+    c041246); merge pushed and
+    ls-remote verified at 7ec00e0
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Evidence (team-01 worktree
+    hidden_files/P122_EVIDENCE.md):
+    battery 17 passed / 0 failed;
+    neighbours 86 passed / 0 failed
+    (P-122 + P-117 + P-118 + P-119 +
+    P-120 + s307); team full suite
+    4441 passed / 4 skipped / 0 failed
+    on its base 5692069 (P-120 banking
+    record; P-121 is NOT in that base,
+    reconciled at this merge in
+    roadmap order). Expectation check:
+    4424 (P-120 merged confirmation)
+    + 17 new = 4441 - exact match.
+    Slice scope (DERIVED, as Part
+    VIII's per-slice definitions are
+    derived - the filed roadmap gives
+    Part VIII only its part line):
+    VisionStore gains get /
+    list_for_owner / search / remove /
+    purge_source; owner-scoped history
+    and single-record roads (GET
+    /vision/history, GET + DELETE
+    /vision/descriptions/{id});
+    attachment delete gains
+    descriptions_purged source
+    custody. Search is literal
+    substring matching over stored
+    text - not semantic, not ranked -
+    and says so in code, API, tests
+    and docs.
+    Slice: src/runmal/vision/
+    service.py, src/runmal/vision/
+    router.py, src/runmal/vision/
+    __init__.py, src/runmal/chats/
+    service.py,
+    tests/test_p122_vision_history_
+    custody.py (new, 17 tests),
+    docs/VISION_HISTORY_CUSTODY_
+    2026-11-08.md (new), clean-room
+    log append (+1). 7 files,
+    +733/-3.
+    Migration: NONE (head stays 0041;
+    the provisional 0042 was NOT
+    needed and NOT taken - history is
+    the JSON store read in append
+    order; no SQL index).
+    Merge conflicts in the clean-room
+    log (append-vs-append; P-121's
+    entry AND P-122's entry kept,
+    each exactly once) and
+    vision/router.py (P-122's
+    attachment-delete custody return
+    vs P-121's watch-folder block at
+    the same anchor), resolved as
+    additive unions by the banking
+    coordinator; chats/service.py,
+    vision/service.py and
+    vision/__init__.py auto-merged.
+    The merged tree carries P-121's
+    watch-folder roads AND P-122's
+    history/descriptions roads
+    together (17 vision routes:
+    describe, providers, descriptions,
+    last, history, descriptions/{id}
+    get+delete, 5 attachments roads,
+    5 watch-folders roads),
+    py_compile clean.
+    Custody-hole closure (the slice's
+    core): before P-122, deleting a
+    P-120 attachment left its derived
+    descriptions behind, still able
+    to surface via
+    {{last_vision_description}}.
+    The merged tree was verified by
+    grep: chats/service.py delete_chat
+    carries BOTH custody wirings -
+    P-118's vision_link purge_chat,
+    P-120's AttachmentStore purge_chat
+    AND the P-121 banking heal
+    (3c4e9ea) WatchStore.purge_chat -
+    and delete_message carries P-120's
+    attachment purge WITH P-122's
+    derived-description purge_source
+    inside the same guarded block;
+    attachment delete in the vision
+    router likewise purges derived
+    descriptions by source. No banking
+    heal needed.
+    Combined batteries on the merged
+    tree by the banking coordinator:
+    vision fence 99 passed / 1 skipped
+    / 0 failed (P-117 15 + P-118 17 +
+    P-119 16 + P-120 15 + P-121 19
+    passes + its 1 design skip +
+    P-122 17 - exact); s307 10 passed
+    / 1 skipped / 0 failed; combined
+    109 passed / 2 skipped / 0 failed.
+    Logs /tmp/p122_fence.log,
+    /tmp/p122_fence_vision.log and
+    /tmp/p122_s307.log on
+    purplelongship.
+    Forge confirmation suite:
+    4460 passed / 5 skipped /
+    0 failed in 383.53s - a clean
+    run with no contention re-runs
+    needed (a Mythic Coder suite
+    shared the machine throughout).
+    (= 4443 P-121 confirmation + 17
+    P-122 battery - exact; skipped
+    stays 5 - P-121's lazy-absence
+    honesty test skips by design on
+    any tree carrying P-120.) Log
+    /tmp/p122_confirm.log on
+    purplelongship.
+    Derived scope ACCEPTED as
+    banked. Declined plainly, with
+    evidence in the slice doc:
+    describe-batch / gallery wiring
+    (no census behaviour, no gallery
+    surface), provider health
+    (P-119 already surfaces the
+    truth; neither local provider has
+    a health signal), a semantic
+    caption provider, OCR, and
+    capture / camera (no honest
+    in-tree basis for any of them).
+    Named-open carried items (not
+    dropped): a real local semantic
+    caption provider; OCR; capture /
+    camera.
+    Next in roadmap order: P-123
+    (Part VIII continues).
+P-123 BANKED - Attachment Thumbnails for Vision Surfaces (Part VIII)
+    PART VIII continues (seventh slice).
+    - team-02 commit 44ac59b merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 154522b (parents e0bac3f +
+    44ac59b); merge pushed and
+    ls-remote verified at 154522b
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Evidence (team-02 worktree
+    hidden_files/P123_EVIDENCE.md):
+    battery 14 passed / 0 failed;
+    neighbours 96 passed / 1 skipped
+    / 0 failed (vision fence P-117 +
+    P-118 + P-119 + P-120 + P-121 +
+    P-123; the skip is P-121's
+    lazy-absence honesty design
+    skip); team full suite 4457
+    passed / 5 skipped / 0 failed
+    on its base 3726782 (P-121 banking
+    record; P-122 is NOT in that base,
+    reconciled at this merge in
+    roadmap order). Expectation check:
+    4443 (P-121 merged confirmation)
+    + 14 new = 4457 - exact match.
+    Slice scope (DERIVED, as Part
+    VIII's per-slice definitions are
+    derived - the filed roadmap gives
+    Part VIII only its part line):
+    P-120 chat attachments could only
+    be fetched at full size; this
+    slice adds the attachment
+    thumbnail road riding the proven
+    P-023 PNG engine
+    (assets/imaging.make_png_thumbnail)
+    through a new thumbnail_bytes()
+    service in vision/attachments.py
+    and GET /vision/attachments/{id}/
+    thumbnail. Thumbnails are DERIVED
+    ON READ and NOTHING derived is
+    stored: no byte file, no index
+    change, no new custody surface -
+    P-120 custody remains the whole
+    custody story. Availability is a
+    request-time fact; the attachment
+    record carries no thumbnail claim
+    (pinned by battery).
+    Slice: src/runmal/vision/
+    attachments.py, src/runmal/vision/
+    router.py, src/runmal/vision/
+    __init__.py,
+    tests/test_p123_attachment_
+    thumbnails.py (new, 14 tests),
+    docs/VISION_ATTACHMENT_
+    THUMBNAILS_2026-11-08.md (new),
+    clean-room log append (+1).
+    6 files, +457/-2.
+    Migration: NONE (head stays 0041;
+    the provisional 0042 was NOT
+    needed and NOT taken - derivation
+    stores nothing, so no SQL index
+    and no store change).
+    Merge conflicts in the clean-room
+    log (append-vs-append; P-122's
+    entry AND P-123's entry kept,
+    each exactly once) and
+    vision/router.py + vision/
+    __init__.py (P-122 history/custody
+    text vs P-123 thumbnail appends
+    at the same anchors), resolved as
+    additive unions by the banking
+    coordinator. The merged tree
+    carries all 17 P-122-era vision
+    routes PLUS the new thumbnail
+    road (18 vision routes total:
+    describe, providers, descriptions,
+    last, history, descriptions/{id}
+    get+delete, 6 attachments roads
+    incl. thumbnail, 5 watch-folders
+    roads), grep-verified, py_compile
+    clean. attachments.py verified
+    purely additive against the
+    P-122-era tree: docstring
+    paragraph, one import, and
+    thumbnail_bytes() only - no index
+    or byte-file change. No banking
+    heal needed.
+    Combined batteries on the merged
+    tree by the banking coordinator:
+    vision fence P-117..P-123 113
+    passed / 1 skipped / 0 failed
+    (P-117 15 + P-118 17 + P-119 16 +
+    P-120 15 + P-121 19 passes + its
+    1 design skip + P-122 17 + P-123
+    14 - exact). Log
+    /tmp/p123_fence.log on
+    purplelongship.
+    Forge confirmation suite:
+    4474 passed / 5 skipped /
+    0 failed in 232.50s - a clean
+    run with no contention re-runs
+    needed. (= 4460 P-122
+    confirmation + 14 P-123 battery -
+    exact; skipped stays 5 - P-121's
+    lazy-absence honesty test skips
+    by design on any tree carrying
+    P-120.) Log /tmp/p123_confirm.log
+    on purplelongship.
+    Honest limitation (the PNG-only
+    bound, stated plainly): the
+    P-023 engine decodes PNG only, so
+    JPEG / GIF / WebP attachments
+    refuse 422 naming the bound and
+    the full bytes are never
+    substituted in a thumbnail's
+    place; PNGs outside the engine's
+    decodable subset (interlaced
+    etc.) likewise refuse 422 naming
+    that bound. Derivation is
+    per-request CPU with no cache -
+    the honest trade for storing
+    nothing.
+    Derived scope ACCEPTED as
+    banked. Declined plainly, with
+    evidence in the scout and slice
+    doc: watcher scan-history
+    persistence, vision settings via
+    the P-098 pattern, describe-on-
+    attach opt-in, a semantic caption
+    provider, OCR, capture / camera,
+    a watcher daemon, and non-PNG
+    thumbnails (no in-tree decoder
+    for any of them).
+    Named-open carried items (not
+    dropped): a real local semantic
+    caption provider; OCR; capture /
+    camera.
+    Next in roadmap order: P-124
+    (Part VIII continues).
+P-124 BANKED - Watcher Custody & Control Completion (Part VIII)
+    PART VIII continues (eighth slice).
+    - team-03 commit 409689e merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 5b50bc6 (parents f2bb0c2 +
+    409689e); merge pushed and
+    ls-remote verified at 5b50bc6
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Evidence (team-03 worktree
+    hidden_files/P124_EVIDENCE.md):
+    battery 13 passed / 0 failed;
+    neighbours 105 passed / 1 skipped
+    / 0 failed (P-117 + P-118 + P-119 +
+    P-120 + P-121 + P-122 + s307; the
+    skip is P-121's lazy-absence
+    honesty design skip); team full
+    suite 4473 passed / 5 skipped /
+    0 failed on its base e0bac3f
+    (P-122 banking record; P-123 is
+    NOT in that base, reconciled at
+    this merge in roadmap order).
+    Expectation check: 4460 (P-122
+    banking confirmation) + 13 new =
+    4473 - exact match.
+    Slice scope (DERIVED, as Part
+    VIII's per-slice definitions are
+    derived - the filed roadmap gives
+    Part VIII only its part line):
+    two proven gaps in the P-121
+    watcher store. (1) Dedupe
+    tombstone: ingested records
+    outlived their attachment - a
+    single attachment delete and a
+    message delete both left the
+    watch record behind, and the
+    source file was then skipped as
+    already-ingested forever (the
+    P-122 custody hole one store
+    over). Fixed by a new
+    WatchStore.forget_attachment,
+    wired into the attachment DELETE
+    road (which now also reports
+    watch_records_forgotten) and into
+    chats/service delete_message
+    custody inside the existing
+    guarded block.
+    (2) Unreachable control:
+    WatchFolder.enabled could never
+    be set - no verb and no road
+    reached it, though scan refuses
+    a disabled watch - and no
+    single-watch read road existed.
+    Fixed by WatchStore.set_enabled
+    plus a PATCH road for the enabled
+    flag and a GET-single watch road.
+    Slice: src/runmal/vision/
+    watcher.py, src/runmal/vision/
+    router.py, src/runmal/chats/
+    service.py, src/runmal/vision/
+    __init__.py,
+    tests/test_p124_watcher_custody_
+    control.py (new, 13 tests),
+    docs/VISION_WATCHER_CUSTODY_
+    CONTROL_2026-11-08.md (new),
+    clean-room log append (+1).
+    7 files, +599/-2.
+    Migration: NONE (head stays 0041;
+    the provisional 0042 was NOT
+    needed and NOT taken - both new
+    verbs ride the existing watcher
+    JSON store).
+    Merge conflicts in the clean-room
+    log (append-vs-append; P-123's
+    entry AND P-124's entry kept,
+    each exactly once) and
+    vision/router.py (additive
+    union), resolved as additive
+    unions by the banking
+    coordinator before this banking.
+    Combined batteries on the merged
+    tree by the banking coordinator:
+    vision fence 126 passed / 1
+    skipped / 0 failed (113 P-123
+    fence + 13 - exact). Log
+    /tmp/p124_fence.log on
+    purplelongship.
+    Forge confirmation suite:
+    4487 passed / 5 skipped /
+    0 failed - a clean run with no
+    contention re-runs needed.
+    (= 4474 P-123 confirmation + 13
+    P-124 battery - exact; skipped
+    stays 5.) Log
+    /tmp/p124_confirm.log on
+    purplelongship.
+    Derived scope ACCEPTED as
+    banked. Declined plainly, with
+    evidence in the scout and slice
+    doc: a semantic caption provider,
+    OCR, capture / camera, a watcher
+    daemon, and non-PNG thumbnails
+    (no in-tree basis for any of
+    them); attachment history/search
+    stands as the named P-125
+    candidate.
+    Named-open carried items (not
+    dropped): a real local semantic
+    caption provider; OCR; capture /
+    camera.
+    Next in roadmap order: P-125
+    (Part VIII continues).
+P-125 BANKED - Attachment History & Search (Part VIII)
+    PART VIII continues (ninth slice).
+    - team-01 commit 6eefa77 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as ad804d8 (parents 0ba0cd9 +
+    6eefa77); merge pushed and
+    ls-remote verified at ad804d8
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Evidence (team-01 worktree
+    hidden_files/P125_EVIDENCE.md):
+    battery 17 passed / 0 failed
+    (finisher re-run also 17 passed /
+    0 failed); neighbours 113 passed
+    / 1 skipped / 0 failed; team full
+    suite 4491 passed / 5 skipped /
+    0 failed on its base f2bb0c2
+    (P-123 banking record; P-124 is
+    NOT in that base, reconciled at
+    this merge in roadmap order).
+    Expectation check: 4474 (banked
+    base) + 17 new = 4491 - exact
+    match. Combined vision fence on
+    the merged tree (P-117 through
+    P-125): 143 passed / 1 skipped /
+    0 failed (126 P-124 fence + 17).
+    Forge confirmation suite on the
+    merged tree: 4504 passed /
+    5 skipped / 0 failed.
+    Expectation check: 4487 (P-124
+    banking confirmation) + 17 new =
+    4504 - exact match.
+    Slice scope (DERIVED, as Part
+    VIII's per-slice definitions are
+    derived - the filed roadmap gives
+    Part VIII only its part line):
+    the P-124 scout's standing
+    candidate and the parity gap it
+    named - P-122 gave vision
+    descriptions an owner-wide history
+    with literal search while P-120's
+    attachments could still be listed
+    only per-chat. The P-122
+    discipline ported exactly onto
+    the attachment store:
+    AttachmentStore.list_for_owner +
+    search - owner-scoped FIRST
+    (foreign rows are never matched,
+    counted, or returned), literal
+    case-insensitive substring over
+    filename + image_sha256 only,
+    never semantic, never ranked;
+    exact chat / message / format
+    filters with an unknown format
+    refused plainly; paging with the
+    full total; and one new road,
+    GET /vision/attachments/history,
+    declared BEFORE the
+    {attachment_id} roads so the
+    literal segment is not captured
+    as an id.
+    Slice: src/runmal/vision/
+    attachments.py, src/runmal/vision/
+    router.py, src/runmal/vision/
+    __init__.py,
+    tests/test_p125_attachment_
+    history_search.py (new, 17 tests),
+    docs/VISION_ATTACHMENT_HISTORY_
+    2026-11-08.md (new), clean-room
+    log append (+1).
+    6 files, +586/-1.
+    Migration: NONE (head stays 0041;
+    the provisional 0042 was NOT
+    needed and NOT taken - the
+    attachment store is a versioned
+    JSON index; no SQL surface is
+    touched).
+    Merge conflicts in the clean-room
+    log (append-vs-append; P-124's
+    entry AND P-125's entry kept,
+    each exactly once) and
+    vision/router.py (additive union:
+    P-124 watch roads AND the
+    /vision/attachments/history road
+    both present, history declared
+    before the {attachment_id} roads),
+    resolved as additive unions by
+    the banking coordinator before
+    this banking.
+    Derived scope ACCEPTED as
+    banked. Declined plainly, with
+    evidence in the scout and slice
+    doc: a semantic caption provider,
+    OCR, capture / camera, a watcher
+    daemon, non-PNG thumbnail
+    decoding, watcher scan-history
+    persistence, vision settings,
+    describe-on-attach, search over
+    descriptions from this surface
+    (already P-122's road), and bulk
+    export.
+    Named-open carried items (not
+    dropped): a real local semantic
+    caption provider; OCR; capture /
+    camera.
+    Next in roadmap order: P-126
+    (Part VIII continues).
+P-126 BANKED - Describe-on-Attach Opt-In (Part VIII)
+    PART VIII continues (tenth slice).
+    - team-02 commit 431f777 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 249318a (parents f29b712 +
+    431f777); merge pushed and
+    ls-remote verified at 249318a
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Evidence (team-02 worktree
+    hidden_files/P126_EVIDENCE.md):
+    battery 14 passed / 0 failed;
+    neighbours 113 passed / 1 skipped
+    / 0 failed (P-117..P-123 fence);
+    team full suite 4488 passed /
+    5 skipped / 0 failed on its base
+    f2bb0c2 (P-123 banking record;
+    P-124 and P-125 are NOT in that
+    base, reconciled at this merge in
+    roadmap order).
+    Expectation check: 4474 (banked
+    base) + 14 new = 4488 - exact
+    match. Combined vision fence on
+    the merged tree (P-117 through
+    P-126): 157 passed / 1 skipped /
+    0 failed (143 P-125 fence + 14).
+    Forge confirmation suite on the
+    merged tree: 4518 passed /
+    5 skipped / 0 failed - a clean run
+    with no contention re-runs needed.
+    Expectation check: 4504 (P-125
+    banking confirmation) + 14 new =
+    4518 - exact match. Log
+    hidden_files/P126_FORGE_CONFIRM.log
+    on purplelongship.
+    Slice scope (DERIVED, as Part
+    VIII per-slice definitions are
+    derived - the filed roadmap gives
+    Part VIII only its part line):
+    the attach road gains an explicit
+    per-request opt-in to describe the
+    new attachment in the same call.
+    attach_and_describe is an atomic
+    pair: provider selection via
+    P-119 runs BEFORE anything is
+    stored, and a describe failure
+    after the attach removes the
+    just-created attachment before
+    the refusal rides out. Plain
+    attach is byte-for-byte P-120
+    (no description key, no row).
+    attach_image itself is unchanged,
+    so the P-121 watcher scan keeps
+    its no-description bound exactly.
+    Honest rollback note: after a
+    describe-failure rollback an
+    emptied attachments index file
+    legitimately remains on disk -
+    no row, no bytes, and no
+    description survives; the file
+    is the store normal empty state,
+    not residue of the attachment.
+    Slice: src/runmal/vision/
+    attachments.py, src/runmal/vision/
+    router.py, src/runmal/vision/
+    __init__.py,
+    tests/test_p126_describe_on_
+    attach.py (new, 14 tests),
+    docs/VISION_DESCRIBE_ON_ATTACH_
+    2026-11-08.md (new), clean-room
+    log append (+1).
+    6 files, +556/-1.
+    Migration: NONE (head stays 0041;
+    the provisional 0042 was NOT
+    needed and NOT taken - both
+    records ride the existing v1
+    JSON stores).
+    Merge conflicts in the clean-room
+    log (append-vs-append; P-124,
+    P-125, and P-126 entries kept,
+    each exactly once) and
+    vision/router.py, vision/
+    __init__.py, and vision/
+    attachments.py (additive unions:
+    P-124 watch roads, the P-125
+    /vision/attachments/history road
+    with list_for_owner/search, and
+    the P-126 describe opt-in fields
+    with attach_and_describe all
+    present; history still declared
+    before the {attachment_id}
+    roads), resolved as additive
+    unions by the banking
+    coordinator before this banking.
+    Derived scope ACCEPTED as
+    banked. Declined plainly, with
+    evidence in the scout and slice
+    doc: a semantic caption provider,
+    OCR, capture / camera, a watcher
+    daemon, non-PNG thumbnails,
+    watcher scan-history persistence,
+    vision settings, describe-batch,
+    portable-archive inclusion, and
+    fork-carry.
+    Named-open carried items (not
+    dropped): a real local semantic
+    caption provider; OCR; capture /
+    camera.
+    Next in roadmap order: P-127
+    (Part VIII continues).
+P-127 BANKED - Watcher History & Search (Part VIII)
+    PART VIII continues (eleventh slice).
+    - team-03 commit 630ee50 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as bb8b103 (parents 0be09f6 +
+    630ee50); merge pushed and
+    ls-remote verified at bb8b103
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Evidence (team-03 worktree
+    hidden_files/P127_EVIDENCE.md):
+    battery 18 passed / 0 failed;
+    neighbours 149 passed / 1 skipped
+    / 0 failed (P-117..P-125 + s307);
+    team full suite 4522 passed /
+    5 skipped / 0 failed on its base
+    f29b712 (P-125 banking record;
+    P-126 is NOT in that base,
+    reconciled at this merge in
+    roadmap order).
+    Expectation check: 4504 (banked
+    base) + 18 new = 4522 - exact
+    match. Combined vision fence on
+    the merged tree (P-117 through
+    P-127): 175 passed / 1 skipped /
+    0 failed (157 P-126 fence + 18).
+    Forge confirmation suite on the
+    merged tree: 4536 passed /
+    5 skipped / 0 failed - a clean run
+    with no contention re-runs needed.
+    Expectation check: 4518 (P-126
+    banking confirmation) + 18 new =
+    4536 - exact match. Log
+    hidden_files/P127_FORGE_CONFIRM.log
+    on purplelongship.
+    Slice scope (DERIVED, as Part
+    VIII per-slice definitions are
+    derived - the filed roadmap gives
+    Part VIII only its part line):
+    the watcher store - the third and
+    last vision store - gains the
+    P-122/P-125 parity surface:
+    WatchStore.search plus
+    list_ingested_for_owner and
+    search_ingested, owner-scoped
+    first, literal substring matching
+    over the folder path and the
+    ingested records source_path +
+    sha256 only, never semantic,
+    never ranked; and the router
+    gains GET /vision/watch-folders/
+    history and GET /vision/watch-
+    folders/ingested/history, both
+    declared BEFORE the {watch_id}
+    roads so the literal segments are
+    not captured as ids. This slice
+    reads already-persisted ingested
+    records and persists nothing new.
+    Slice: src/runmal/vision/
+    watcher.py, src/runmal/vision/
+    router.py, src/runmal/vision/
+    __init__.py,
+    tests/test_p127_watcher_history_
+    search.py (new, 18 tests),
+    docs/VISION_WATCHER_HISTORY_
+    2026-11-08.md (new), clean-room
+    log append (+1).
+    6 files, +785/-0.
+    Migration: NONE (head stays 0041;
+    the provisional 0042 was NOT
+    needed and NOT taken - both new
+    surfaces ride the existing v1
+    watcher JSON document, format
+    unchanged).
+    Merge conflicts in the clean-room
+    log (append-vs-append; P-124,
+    P-125, P-126, and P-127 entries
+    kept, each exactly once) and
+    vision/router.py (additive union:
+    the P-126 describe opt-in
+    paragraph and the P-127 watcher
+    history paragraph both kept;
+    watch-folders history roads
+    declared before the {watch_id}
+    roads, the attachments history
+    road, the describe opt-in fields,
+    and list_for_owner/search plus
+    search_ingested all verified
+    present; py_compile clean),
+    resolved as additive unions by
+    the banking coordinator before
+    this banking. vision/__init__.py
+    auto-merged carrying both the
+    P-126 and P-127 map bullets.
+    Merged diff vs the forge head is
+    purely additive (+785/-0).
+    Derived scope ACCEPTED as
+    banked. Declined plainly, with
+    evidence in the scout and slice
+    doc: watcher scan-report
+    persistence - declined a fourth
+    time, on unchanged evidence, and
+    distinct from this slice, which
+    reads the already-persisted
+    ingested records and persists
+    nothing new; vision settings, a
+    semantic caption provider, OCR,
+    capture / camera, a watcher
+    daemon, describe-batch, and
+    fork-carry.
+    Named-open carried items (not
+    dropped): a real local semantic
+    caption provider; OCR; capture /
+    camera; portable-archive
+    inclusion of the vision stores.
+    Next in roadmap order: P-128
+    (Part VIII continues).
+P-128 BANKED - Describe-on-Scan Opt-In (Part VIII)
+    PART VIII continues (twelfth slice).
+    - team-01 commit e5cc0c6 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as b537e7b (parents d708d76 +
+    e5cc0c6); merge pushed and
+    ls-remote verified at b537e7b
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Evidence (team-01 worktree
+    hidden_files/P128_EVIDENCE.md):
+    battery 23 passed / 0 failed;
+    neighbours 184 passed / 2 skipped
+    / 0 failed; team full suite
+    4541 passed / 5 skipped / 0 failed
+    on its base 0be09f6 (P-126 banking
+    record; P-127 is NOT in that base,
+    reconciled at this merge in
+    roadmap order).
+    Expectation check: 4518 (banked
+    base) + 23 new = 4541 - exact
+    match. Combined vision fence on
+    the merged tree (P-117 through
+    P-128): 198 passed / 1 skipped /
+    0 failed (175 P-127 fence + 23).
+    Forge confirmation suite on the
+    merged tree: 4559 passed /
+    5 skipped / 0 failed - a clean run
+    in 260.47s with no contention
+    re-runs needed. Expectation
+    check: 4536 (P-127 banking
+    confirmation) + 23 new = 4559 -
+    exact match. Log
+    hidden_files/P128_FORGE_CONFIRM.log
+    on purplelongship.
+    Slice scope (DERIVED, as Part
+    VIII per-slice definitions are
+    derived - the filed roadmap gives
+    Part VIII only its part line):
+    scan_and_describe composition in
+    the watcher, riding P-126's
+    attach_and_describe at the
+    attacher seam, so each newly
+    ingested file lands as attachment
+    + description or as a named
+    refused skip, and already-ingested
+    files are never re-described;
+    the scan HTTP road gains an
+    optional opt-in body with P-119
+    provider selection BEFORE the
+    scan, so a selection refusal
+    ingests nothing. scan_watch and
+    attach_image are untouched and
+    plain scans stay byte-identical:
+    the report gains the described /
+    describe_requested keys only on
+    an opt-in scan. This closes the
+    last describe-shaped hole named
+    open in the record.
+    Slice: src/runmal/vision/
+    watcher.py, src/runmal/vision/
+    router.py, src/runmal/vision/
+    __init__.py,
+    tests/test_p128_describe_on_scan.py
+    (new, 23 tests),
+    docs/VISION_DESCRIBE_ON_SCAN_
+    2026-11-08.md (new), clean-room
+    log append (+1).
+    6 files, +935/-1.
+    Migration: NONE (head stays 0041;
+    the provisional 0042 was NOT
+    needed and NOT taken -
+    descriptions ride the existing
+    P-117 store and ingestions the
+    v1 watcher document).
+    Merge conflicts in the clean-room
+    log (append-vs-append; P-124,
+    P-125, P-126, P-127, and P-128
+    entries kept, each exactly once)
+    and vision/watcher.py,
+    vision/router.py, and
+    vision/__init__.py (additive
+    unions: the P-127 watcher history
+    paragraphs and the P-128 scan
+    opt-in paragraphs both kept;
+    watcher search / search_ingested
+    and scan_and_describe both
+    verified present; watch-folders
+    history roads still declared
+    before the {watch_id} roads;
+    py_compile clean), resolved as
+    additive unions by the banking
+    coordinator before this banking.
+    Merged diff vs the forge head is
+    exactly the team slice (+935/-1,
+    the single deletion being the
+    ScanReport to_dict restructure
+    for the conditional described
+    key).
+    Derived scope ACCEPTED as
+    banked. Declined plainly, with
+    evidence in the scout and slice
+    doc: a semantic caption provider,
+    OCR, capture / camera, a watcher
+    daemon, watcher scan-history
+    persistence, vision settings,
+    describe-batch, portable-archive
+    inclusion of the vision stores,
+    and fork-carry.
+    Named-open carried items (not
+    dropped): a real local semantic
+    caption provider; OCR; capture /
+    camera; portable-archive
+    inclusion of the vision stores.
+    Next in roadmap order: P-129
+    (Part VIII continues).
+
+P-129 BANKED - Watcher Registration Control Parity (Part VIII)
+    PART VIII continues (thirteenth slice).
+    - team-02 commit 8d0e931 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 74393f3 (parents d59e39a +
+    8d0e931); merge pushed and
+    ls-remote verified at 74393f3
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Evidence (team-02 worktree
+    hidden_files/P129_EVIDENCE.md):
+    battery 12 passed / 0 failed
+    (finisher re-run also 12 passed);
+    neighbours 187 passed / 1 skipped
+    / 0 failed; team full suite
+    4548 passed / 5 skipped / 0 failed
+    on its base d708d76 (P-127 banking
+    record; P-128 is NOT in that base,
+    reconciled at this merge in
+    roadmap order).
+    Expectation check: 4536 (banked
+    base) + 12 new = 4548 - exact
+    match. Combined vision fence on
+    the merged tree (P-117 through
+    P-129): 210 passed / 1 skipped /
+    0 failed (198 P-128 fence + 12).
+    Forge confirmation suite on the
+    merged tree: 4571 passed /
+    5 skipped / 0 failed - a clean run
+    in 249.98s with no contention
+    re-runs needed. Expectation
+    check: 4559 (P-128 banking
+    confirmation) + 12 new = 4571 -
+    exact match. Log
+    hidden_files/P129_FORGE_CONFIRM.log
+    on purplelongship.
+    Slice scope (DERIVED, as Part
+    VIII per-slice definitions are
+    derived - the filed roadmap gives
+    Part VIII only its part line):
+    WatchStore.set_recursive mirrors
+    set_enabled line for line (named
+    watch only, every other field and
+    ALL ingested records preserved,
+    unknown watch = None and no
+    write), so a registration's
+    recursive flag gains its first
+    handle; the PATCH road widens to
+    either behaviour flag or both
+    (enabled and/or recursive), an
+    empty body refused 422; the
+    DELETE road reads the ingested
+    count via list_ingested BEFORE
+    remove_watch and answers the
+    sibling delete roads' shape:
+    {"deleted": true, "id",
+    "ingested_records_removed": n}.
+    The attachments a scan ingested
+    are NOT touched - they are chat
+    attachments under P-120 custody.
+    Capabilities.vision stays False;
+    no provider is labelled semantic.
+    Slice: src/runmal/vision/
+    watcher.py, src/runmal/vision/
+    router.py, src/runmal/vision/
+    __init__.py,
+    tests/test_p129_watcher_control_parity.py
+    (new, 12 tests),
+    docs/VISION_WATCHER_CONTROL_PARITY_
+    2026-11-08.md (new), clean-room
+    log append (+1).
+    6 files, +601/-4.
+    Migration: NONE (head stays 0041;
+    the provisional 0042 was NOT
+    needed and NOT taken - both flags
+    already live in the v1 watcher
+    document; no storage shape
+    changes).
+    Merge conflicts in the clean-room
+    log (append-vs-append; P-128 and
+    P-129 entries kept, each exactly
+    once) and vision/watcher.py and
+    vision/router.py (additive
+    unions: the P-128 describe-on-scan
+    paragraphs and the P-129 control
+    parity paragraphs both kept;
+    scan_and_describe and
+    set_recursive /
+    ingested_records_removed both
+    verified present; py_compile
+    clean), resolved as additive
+    unions by the banking
+    coordinator before this banking.
+    vision/__init__.py auto-merged
+    carrying both bullets. Merged
+    diff vs the forge head is exactly
+    the team slice (+601/-4).
+    Derived scope ACCEPTED as
+    banked. Declined plainly, with
+    evidence in the scout and slice
+    doc: a semantic caption provider,
+    OCR, capture / camera, a watcher
+    daemon, watcher scan-history
+    persistence, vision settings,
+    describe-batch, portable-archive
+    inclusion of the vision stores,
+    fork-carry, and describe-on-scan
+    (P-128, banked ahead, not
+    duplicated).
+    Named-open carried items (not
+    dropped): a real local semantic
+    caption provider; OCR; capture /
+    camera; portable-archive
+    inclusion of the vision stores.
+    Next in roadmap order: P-130
+    (Part VIII gate).
+P-130 BANKED - Part VIII Gate - Vision Services (Part VIII)
+    PART VIII COMPLETE / GATE PASSED.
+    Part VIII (P-117..P-130) is closed.
+    - team-03 commit dca7dd1 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as ba5666e (parents 500516f +
+    dca7dd1); merge pushed and
+    ls-remote verified at ba5666e
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Gate verdict: Part VIII COMPLETE,
+    PASS on all areas - Census PASS,
+    Together PASS, Custody PASS,
+    Accounting PASS; all 13 rows
+    P-117..P-129 PASS.
+    Evidence (team-03 worktree
+    hidden_files/P130_EVIDENCE.md):
+    gate battery 26 passed / 0 failed;
+    gate-record module 10 passed
+    standalone (36 passed run together
+    with the battery); neighbours -
+    the full P-117..P-129 vision fence
+    - 210 passed / 1 skipped /
+    0 failed; team full suite
+    4597 passed / 5 skipped / 0 failed
+    on its base 500516f (P-129 banking
+    record).
+    Arithmetic reconciliation (stated
+    honestly, P-116 precedent): the
+    team's full-suite figure 4597 =
+    4571 (P-129 banking confirmation)
+    + 26 (gate battery only) - the
+    gate-record module's 10 tests were
+    NOT counted in that run's
+    arithmetic. On the merged tree the
+    full suite collects BOTH P-130
+    modules, verified explicitly:
+    pytest --collect-only on the whole
+    suite lists all 10 tests of
+    tests/test_p130_gate_record.py and
+    all 26 tests of
+    tests/test_p130_part_viii_gate.py,
+    4612 tests collected in total
+    (= 4607 passed + 5 skipped).
+    Combined batteries on the merged
+    tree (gate battery + gate-record
+    module + full P-117..P-129 vision
+    fence): 246 passed / 1 skipped /
+    0 failed (210 + 36 - exact match).
+    Forge confirmation suite on the
+    merged tree: 4607 passed /
+    5 skipped / 0 failed - a clean run
+    in 249.25s with no contention
+    re-runs needed. Expectation check:
+    4571 (P-129 banking confirmation)
+    + 36 (26 battery + 10 gate-record)
+    = 4607 - exact match, as counted
+    from the log. Log
+    hidden_files/P130_FORGE_CONFIRM.log
+    on purplelongship.
+    Findings: F1 - no new engine
+    defect was found by this gate.
+    F2 - the P-116 gate's openapi
+    finding is verified CLOSED (fixed
+    by P-117; the gate battery's
+    census re-measures app.openapi()
+    succeeding and naming the vision
+    roads).
+    Carried items named by the gate
+    (not dropped): K1 - a real local
+    semantic caption provider stays
+    open; K2 - OCR stays open;
+    K3 - capture / camera stays open;
+    K4 - a watcher daemon stays open,
+    deliberately; K5 - non-PNG
+    thumbnails stay open; K6 - watcher
+    scan-report persistence stays
+    open; K7 - vision settings stay
+    open; K8 - portable-archive
+    inclusion of the vision stores
+    stays open. Also carried without
+    separate rows: describe-batch and
+    fork-carry of vision rows.
+    Slice scope (DERIVED, as Part
+    VIII per-slice definitions are
+    derived - the filed roadmap gives
+    Part VIII only its part line):
+    the gate slice itself - a census,
+    togetherness, custody and honesty
+    battery over the whole banked
+    Part VIII surface, plus the
+    gate-record module pinning the
+    gate document. No banked code
+    changed by the gate (one probe
+    correction inside the battery
+    itself, recorded as part of F1
+    in the evidence). Slice:
+    tests/test_p130_part_viii_gate.py
+    (new, 26 tests),
+    tests/test_p130_gate_record.py
+    (new, 10 tests),
+    docs/PART_VIII_GATE_2026-11-08.md
+    (new), clean-room log append (+1).
+    4 files, +1343/-0.
+    Migration: NONE (head stays 0041;
+    no migration was added by this
+    gate).
+    Merge: CLEAN - no conflicts at
+    all, not even the clean-room log
+    (append-vs-append did not collide
+    this time); the merged diff vs
+    the forge head is exactly the
+    team slice (+1343/-0). No banking
+    heal needed.
+    Derived scope ACCEPTED as banked.
+    Next in roadmap order: P-131
+    (Part IX opening, in roadmap
+    order).
+P-131 BANKED - Scenario Definitions: the Scenario Truth Layer (Part IX)
+    PART IX OPENED. Part IX runs
+    P-131..P-154 (Scenarios - the
+    Visual Novel Engine, per the
+    governing roadmap part line).
+    - team-01 commit 28037a1 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as f43b1d1 (parents be86774 +
+    28037a1); merge pushed and
+    ls-remote verified at f43b1d1
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Derived scope ACCEPTED as banked:
+    Part IX opener, DERIVED scope per
+    the P-101 / P-117 precedent - the
+    filed roadmap gives Part IX only
+    its part line (P-131..P-154), no
+    per-slice entries; the slice scope
+    is derived from Runmal's own
+    in-tree record (P-026's docstring
+    "scenarios are not stored until
+    Part IX", the P-117 versioned-JSON
+    house store pattern, the P-027 law
+    that content is data, never code),
+    stated plainly as derived in the
+    slice doc and the evidence.
+    Evidence (team-01 worktree
+    hidden_files/P131_EVIDENCE.md):
+    battery 29 passed / 0 failed;
+    neighbours (P-026 scenario interop
+    + P-027 content safety rails +
+    P-030 Part II gate) 127 passed /
+    0 failed; team full suite
+    4636 passed / 5 skipped / 0 failed
+    on its base be86774 (P-130 banking
+    record). Arithmetic: 4607 (P-130
+    forge confirmation) + 29 battery
+    = 4636 - exact.
+    Combined batteries on the merged
+    tree (P-131 battery + the neighbour
+    fence): 156 passed / 0 failed
+    (29 + 127 - exact match).
+    Forge confirmation suite on the
+    merged tree: 4636 passed /
+    5 skipped / 0 failed - a clean run
+    in 255.56s with no contention
+    re-runs needed (no s503 STT timing
+    contract or P-077 tripwire failure
+    occurred). Expectation check:
+    4607 (P-130 banking confirmation)
+    + 29 = 4636 - exact match, as
+    counted from the log. Log
+    hidden_files/P131_FORGE_CONFIRM.log
+    on purplelongship.
+    In-slice defect found and FIXED
+    (never leave a discovered bug
+    unfixed): the landed ScenarioStore
+    _load converted rows via from_dict,
+    whose int() parse of revision
+    raised ValueError / TypeError on a
+    hand-damaged stored row ("abc" /
+    null), bricking every store verb -
+    against the design tolerant-load
+    law. Reproduced before the fix
+    (both probes crashed). Fix: _load
+    skips a malformed row (it reads as
+    absent), keeping the good rows
+    beside it. Pinned by 2 new battery
+    tests (malformed row never bricks;
+    good row survives a bad neighbour;
+    27 landed + 2 finisher = 29).
+    Honesty note (recorded, not
+    invented): hidden_files/
+    P131_SCOUT.md does NOT exist in
+    the team-01 worktree (verified by
+    the keeper and again by the
+    finisher). P131_DESIGN.md governed;
+    no scout content is claimed
+    anywhere in this slice's record.
+    Honest limitation: stored
+    definitions are the P-026 NATIVE
+    shape - a Voxta file's unmappable
+    raw values do not persist in a
+    stored definition; the record's
+    import report names every one, and
+    the stateless P-026 import/export
+    roads remain the lossless hand-back
+    road (slice doc section 5). No
+    instantiation, playback, or library
+    organisation in this slice (named
+    seams in the slice doc).
+    Slice scope: src/runmal/scenarios/
+    store.py (new - ScenarioDefinition
+    + ScenarioStore over the versioned
+    JSON document scenarios.json;
+    owner-scoped create / get /
+    list_for_owner / replace / remove;
+    create parses through P-026 and
+    persists the native export, the
+    import report riding with the
+    record), src/runmal/scenarios/
+    router.py (five CRUD roads appended
+    on the existing /scenarios prefix -
+    POST 201 / GET list / GET one /
+    PUT / DELETE, owner-scoped, 404 for
+    unknown and foreign alike, 422 for
+    parse and store refusals; the P-026
+    import/export roads byte-untouched),
+    src/runmal/scenarios/__init__.py
+    (exports + subsystem-map line),
+    tests/test_p131_scenario_definitions.py
+    (new, 29 tests),
+    docs/SCENARIO_DEFINITIONS_2026-11-08.md
+    (new), clean-room log append (+1).
+    6 files, +1030/-2.
+    Migration: NONE (head stays 0041;
+    no migration was added by this
+    slice; the battery pins the head at
+    0041).
+    Merge: CLEAN - no conflicts at
+    all, not even the clean-room log;
+    the merged diff vs the forge head
+    is exactly the team slice
+    (+1030/-2). No banking heal needed.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-132
+    (Part IX, in roadmap order).
+P-132 BANKED - Scenario-to-Chat Binding (Part IX)
+    Part IX's second slice.
+    - team-02 commit 7397c2c merged
+    (no-ff) into yrsa/two-mirrors-build
+    as beefd17 (parents 1341c1d +
+    7397c2c); merge pushed and
+    ls-remote verified at beefd17
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only
+    its part line (P-131..P-154), no
+    per-slice entries; the slice scope
+    is derived from Runmal's own
+    in-tree record (P-131's slice doc
+    naming instantiation / seeding as
+    the next slice's seam via the
+    P-093 seed_variables contract),
+    stated plainly as derived in the
+    slice doc and the evidence.
+    The binding rides that contract:
+    a definition's initial flags and
+    variables seed through P-093's
+    seed_variables under writer kind
+    "scenario" (MISSING keys only -
+    live state is never overwritten),
+    its bootstrap lines land as the
+    chat's opening messages through
+    the chat service with P-075
+    provenance, and the binding
+    record is written last from what
+    actually landed. Unbind removes
+    only the record; seeded messages
+    and variables are the chat's own
+    truth and stay, and the DELETE
+    answer says so.
+    Evidence (team-02 worktree
+    hidden_files/P132_EVIDENCE.md):
+    battery 18 passed / 0 failed;
+    neighbours combined run 203
+    passed / 0 failed (the battery +
+    P-131's battery + P-026 + P-075 +
+    P-079 + P-093 + P-012); team full
+    suite 4625 passed / 5 skipped /
+    0 failed on its base be86774
+    (P-130 banking record; P-131 is
+    NOT in its base). Arithmetic:
+    4607 (P-130 forge confirmation)
+    + 18 battery = 4625 - exact.
+    Reconciliation (verified at
+    banking): the team worktree
+    carried P-131's
+    src/runmal/scenarios/store.py
+    byte-identical to the banked
+    version (sha256 e5b15a85...,
+    landed by on-device copy, no
+    tool re-emission), and its
+    router / __init__ changes are
+    the ground P-132's hunks append
+    to - most of the apparent delta
+    vs be86774 is P-131 itself. The
+    merged tree's store.py was
+    verified byte-identical to
+    P-131's banked version (same
+    sha256). The true P-132 delta
+    over P-131: 7 files, +1324/-4.
+    Combined batteries on the merged
+    tree: P-131 battery + P-132
+    battery 47 passed / 0 failed
+    (29 + 18 - exact match); the
+    P-132 neighbour fence (both
+    batteries + P-026 + P-075 +
+    P-079 + P-093 + P-012) 203
+    passed / 0 failed.
+    Forge confirmation suite on the
+    merged tree: 4654 passed /
+    5 skipped / 0 failed - a clean
+    run in 263.85s with no contention
+    re-runs needed (no s503 STT timing
+    contract or P-077 tripwire failure
+    occurred). Expectation check:
+    4636 (P-131 banking confirmation)
+    + 18 = 4654 - exact match, as
+    counted from the log. Log
+    hidden_files/P132_FORGE_CONFIRM.log
+    on purplelongship.
+    No in-slice engine defect found.
+    The team's only corrections were
+    battery-vs-contract (seeded
+    messages carry position None -
+    the append road's legacy-ordering
+    law; seeded-key order follows
+    the stored definition's key
+    order, P-131's store writing
+    sort_keys), pinned as such in
+    the battery; no engine change.
+    Slice scope: src/runmal/scenarios/
+    binding.py (new - versioned
+    scenario_bindings.json store,
+    materialisation plan, bind
+    service), src/runmal/scenarios/
+    router.py (three binding roads
+    appended - POST
+    /scenarios/{definition_id}/bind
+    201/404/409/422, GET + DELETE
+    /scenarios/bindings/{chat_id}),
+    src/runmal/scenarios/__init__.py
+    (binding exports),
+    pyproject.toml (one B008
+    per-file-ignore line for
+    scenarios/router.py),
+    tests/test_p132_scenario_binding.py
+    (new, 18 tests),
+    docs/SCENARIO_BINDING_2026-11-08.md
+    (new), clean-room log append (+1).
+    Migration: NONE (head stays 0041;
+    the binding rides the house JSON
+    pattern - scenario_bindings.json;
+    provisional 0042 NOT taken).
+    Merge: conflicts in 3 files,
+    all resolved as additive unions
+    keeping BOTH slices' work exactly
+    once - CLEAN_ROOM_LOG
+    (append-vs-append; the P-131 and
+    P-132 entries each kept exactly
+    once), scenarios/router.py and
+    scenarios/__init__.py (the team
+    versions verified as supersets:
+    P-131's five CRUD roads and
+    exports verbatim, plus P-132's
+    binding roads and exports).
+    Merged router grep-verified
+    carrying BOTH P-131's CRUD roads
+    AND P-132's binding roads;
+    py_compile clean on all touched
+    modules. No banking heal needed.
+    Declined candidates (recorded in
+    the slice doc): store-to-file
+    export by id - the one missing
+    leg of import / export parity -
+    named the natural P-133
+    candidate; scenario library
+    organisation (the P-073 SQL
+    pattern does not transfer to a
+    JSON store; organisation follows
+    consumption); playback / runtime
+    / condition evaluation (no
+    machinery exists); executing
+    stored scripting (refused
+    absolutely under P-027).
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-133
+    (Part IX, in roadmap order).
+
+P-133 BANKED - Stored-Definition File Export (Part IX)
+    Part IX third slice.
+    - team-03 commit dfddf84 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 1559902 (parents d11ee6b +
+    dfddf84); merge pushed and
+    ls-remote verified at 1559902
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only
+    its part line (P-131..P-154), no
+    per-slice entries; the slice scope
+    is derived from Runmal's own
+    in-tree record (P-132 declined
+    candidate naming store-to-file
+    export by id as the natural P-133
+    candidate), stated plainly as
+    derived in the slice doc and
+    the evidence.
+    Evidence (team-03 worktree
+    hidden_files/P133_EVIDENCE.md):
+    battery 24 passed / 0 failed;
+    neighbours 109 passed / 0 failed
+    (P-026 + P-131 + P-132 batteries);
+    team full suite 4678 passed /
+    5 skipped / 0 failed. Arithmetic:
+    4654 (P-132 forge confirmation)
+    + 24 battery = 4678 - exact.
+    Forge confirmation suite on the
+    merged tree: 4678 passed /
+    5 skipped / 0 failed - a clean
+    run in 258.23s with no contention
+    re-runs needed. Expectation check:
+    4654 + 24 = 4678 - exact match,
+    as counted from the log. Log
+    hidden_files/P133_FORGE_CONFIRM.log
+    on purplelongship.
+    Finisher fixes (both in-slice):
+    carried_shadowed naming in the
+    export report; ?format= empty
+    answers 422.
+    Honest limitations: F1 carried
+    (P-026 raw-overlay leak, not
+    inherited); element-raw fields
+    outside the record.
+    Slice scope: src/runmal/scenarios/
+    storedexport.py (new - stored
+    export service), src/runmal/
+    scenarios/router.py (GET export
+    road appended), src/runmal/
+    scenarios/__init__.py (exports),
+    tests/test_p133_stored_export.py
+    (new, 24 tests),
+    docs/SCENARIO_STORED_EXPORT_2026-11-08.md
+    (new), clean-room log append (+1).
+    Migration: NONE (head stays 0041).
+    Merge: clean, no conflicts;
+    merged router grep-verified
+    carrying P-131 CRUD + P-132
+    binding + P-133 export roads;
+    py_compile clean.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-134
+    (Part IX, in roadmap order).
+P-134 BANKED - Scenario Library Organisation (Part IX)
+    Part IX fourth slice.
+    - team-01 commit 377f0e9 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 8296639 (parents cc9bcee +
+    377f0e9); merge pushed and
+    ls-remote verified at 8296639
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only
+    its part line (P-131..P-154), no
+    per-slice entries; the slice scope
+    is derived from the in-tree record
+    (P-131 declined organisation;
+    P-132 declined it behind
+    consumption, P-133 behind export
+    parity), stated plainly as derived
+    in the slice doc and the evidence.
+    Evidence (team-01 worktree
+    hidden_files/P134_EVIDENCE.md):
+    battery 12 passed / 0 failed;
+    neighbours 121 passed / 0 failed
+    (battery + P-131 + P-132 + P-026
+    batteries); team full suite
+    4666 passed / 5 skipped / 0 failed.
+    Arithmetic: 4654 (base) + 12
+    = 4666 - exact.
+    Combined batteries on the merged
+    tree: 145 passed / 0 failed
+    (P-131 29 + P-132 18 + P-133 24
+    + P-134 12 + P-026 62).
+    Forge confirmation suite on the
+    merged tree: 4690 passed /
+    5 skipped / 0 failed - a clean
+    run in 272.87s with no contention
+    re-runs needed. Expectation check:
+    4678 + 12 = 4690 - exact match,
+    as counted from the log. Log
+    hidden_files/P134_FORGE_CONFIRM.log
+    on purplelongship.
+    In-slice fix: repeatable tag
+    query parameter bound via
+    Query(default=None).
+    Slice scope: organisation lives
+    in its own scenario_organisation.json
+    (P-131 definitions document
+    byte-untouched); P-024 tag law
+    imported; scenarios/organisation.py
+    (new), scenarios/router.py and
+    scenarios/__init__.py (additive),
+    tests/test_p134_scenario_organisation.py
+    (new), docs/SCENARIO_ORGANISATION_2026-11-08.md
+    (new), clean-room log append (+1).
+    Honest limitations: orphan
+    organisation rows filtered at read
+    on definition delete, search covers
+    name/description/scenario_text only,
+    no collections/UI.
+    Migration: NONE (head stays 0041).
+    Merge: conflicts in router.py,
+    __init__.py and CLEAN_ROOM_LOG
+    resolved as pure additive unions
+    keeping both slices; clean-room
+    entries exactly once each; merged
+    router grep-verified carrying
+    P-131 CRUD + P-132 binding +
+    P-133 export + P-134 organisation
+    roads (GET /scenarios/library/tags
+    before the {definition_id} roads);
+    py_compile clean.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-135
+    (Part IX, in roadmap order).
+P-135 BANKED - Binding Lifecycle Read Surface (Part IX)
+    Part IX fifth slice.
+    - team-02 commit 752482b merged
+    (no-ff) into yrsa/two-mirrors-build
+    as aa3e500 (parents 589065a +
+    752482b); merge pushed and
+    ls-remote verified at aa3e500
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only
+    its part line (P-131..P-154), no
+    per-slice entries; the slice scope
+    is derived from the in-tree record
+    (P-132 pinned the binding store
+    list verbs with no HTTP road;
+    P-134 named this read surface a
+    future candidate), stated plainly
+    as derived in the slice doc and
+    the evidence.
+    Evidence (team-02 worktree
+    hidden_files/P135_EVIDENCE.md):
+    battery 16 passed / 0 failed;
+    neighbours 145 passed / 0 failed
+    (P-131 + P-132 + P-133 + P-134
+    + P-026 batteries); team full suite
+    4706 passed / 5 skipped / 0 failed.
+    Arithmetic: 4690 (base) + 16
+    = 4706 - exact.
+    Combined batteries on the merged
+    tree: 161 passed / 0 failed
+    (P-131 29 + P-132 18 + P-133 24
+    + P-134 12 + P-135 16 + P-026 62).
+    Forge confirmation suite on the
+    merged tree: 4706 passed /
+    5 skipped / 0 failed - a clean
+    run in 268.19s with no contention
+    re-runs needed. Expectation check:
+    4690 + 16 = 4706 - exact match,
+    as counted from the log. Log
+    hidden_files/P135_FORGE_CONFIRM.log
+    on purplelongship.
+    Slice scope: owner-scoped binding
+    list/inspect roads over the P-132
+    store verbs; scenarios/binding.py
+    summary() plus list services
+    (additive), scenarios/router.py
+    GET /scenarios/bindings and GET
+    /scenarios/{definition_id}/bindings
+    (additive), scenarios/__init__.py
+    (additive),
+    tests/test_p135_binding_read_surface.py
+    (new),
+    docs/SCENARIO_BINDING_READ_SURFACE_2026-11-08.md
+    (new), clean-room log append (+1).
+    Summaries name definition_exists
+    honestly.
+    Honest limitations: summaries carry
+    counts not seeded content, orphan
+    bindings stay listed with
+    definition_exists false until
+    unbound, no filters/sorts/paging.
+    Migration: NONE (head stays 0041).
+    Merge: clean, no conflicts;
+    merged router grep-verified
+    carrying P-131 CRUD + P-132 binding
+    + P-133 export + P-134 organisation
+    + P-135 binding-read roads
+    (GET /scenarios/bindings before
+    the {definition_id} roads);
+    py_compile clean; merged diff
+    exactly the team slice.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-136
+    (Part IX, in roadmap order).
+P-136 BANKED - Binding Plan Preview (Part IX)
+    Part IX sixth slice.
+    - team-03 commit 9f7f1f4 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 48d298d (parents 5a210f6 +
+    9f7f1f4); merge pushed and
+    ls-remote verified at 48d298d
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only
+    its part line (P-131..P-154), no
+    per-slice entries; the slice scope
+    is derived from the in-tree record
+    (P-132 pinned plan_materialisation
+    with no definition-side preview
+    road), stated plainly as derived
+    in the slice doc and the evidence.
+    Evidence (team-03 worktree
+    hidden_files/P136_EVIDENCE.md):
+    battery 11 passed / 0 failed;
+    neighbours 145 passed / 0 failed
+    (P-131 + P-132 + P-133 + P-134
+    + P-026 batteries; P-135 battery
+    absent from the team base and
+    honestly not run there); team
+    full suite 4700 passed / 5 skipped
+    / 1 failed in 397.95s - the one
+    failure the P-077 longchat timing
+    tripwire under shared-machine
+    contention, solo re-run of the
+    P-077 file 17 passed, classified
+    contention not a defect.
+    Arithmetic: 4690 (base) + 11
+    = 4701 = 4700 passed + the 1
+    contention failure - exact.
+    Combined batteries on the merged
+    tree: 172 passed / 0 failed
+    (P-131 29 + P-132 18 + P-133 24
+    + P-134 12 + P-135 16 + P-136 11
+    + P-026 62).
+    Forge confirmation suite on the
+    merged tree: 4717 passed /
+    5 skipped / 0 failed - a clean
+    run in 268.12s with no contention
+    re-runs needed. Expectation check:
+    4706 + 11 = 4717 - exact match,
+    as counted from the log. Log
+    hidden_files/P136_FORGE_CONFIRM.log
+    on purplelongship.
+    Slice scope: owner-scoped read road
+    GET /scenarios/{definition_id}/bind-plan
+    returning P-132 plan_materialisation
+    in an envelope naming the current
+    revision, counts read from the plan,
+    and four standing honesty notes;
+    scenarios/bindpreview.py (new),
+    scenarios/router.py (additive),
+    scenarios/__init__.py (additive),
+    tests/test_p136_bind_plan_preview.py
+    (new),
+    docs/SCENARIO_BIND_PLAN_PREVIEW_2026-11-08.md
+    (new), clean-room log append (+1).
+    Routing: P-135's GET
+    /scenarios/bindings roads and
+    P-136's bind-plan road are distinct
+    literals; "bindings" keeps P-135
+    precedence; harmless, recorded in
+    the evidence.
+    Honest limitations: the plan is
+    definition-side only, bind-time
+    refusals are not judged here,
+    seedable is not landed (P-093
+    missing-keys-only at bind), the
+    plan names the definition's
+    CURRENT revision only.
+    Migration: NONE (head stays 0041).
+    Merge: conflicts in
+    scenarios/router.py +
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    resolved as pure additive unions
+    keeping BOTH P-135 and P-136 work
+    exactly once each (scenarios/
+    __init__.py auto-merged clean);
+    merged router grep-verified
+    carrying P-131 CRUD + P-132 binding
+    + P-133 export + P-134 organisation
+    + P-135 binding-read + P-136
+    bind-plan roads (GET
+    /scenarios/bindings before the
+    {definition_id} roads);
+    py_compile clean; merged diff
+    exactly the team slice.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-137
+    (Part IX, in roadmap order).
+P-137 BANKED - Scenario Definition Duplication (Part IX)
+    Part IX seventh slice.
+    - team-01 commit 8ea0afb merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 6f4d679 (parents d93521f +
+    8ea0afb); merge pushed and
+    ls-remote verified at 6f4d679
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only
+    its part line (P-131..P-154), no
+    per-slice entries; the slice scope
+    is derived from the in-tree record
+    (P-136 weighed duplication and
+    declined it only for want of a
+    naming law; the characters S303
+    " (copy)" law answers that in-tree),
+    stated plainly as derived in the
+    slice doc and the evidence.
+    Evidence (team-01 worktree
+    hidden_files/P137_EVIDENCE.md):
+    battery 12 passed / 0 failed;
+    neighbours 161 passed / 0 failed
+    (P-131 + P-132 + P-133 + P-134
+    + P-135 + P-026 batteries; P-136
+    battery absent from the team base
+    and honestly not run there); team
+    full suite 4718 passed / 5 skipped
+    / 0 failed = 4706 banked base + 12
+    battery - exact.
+    Combined batteries on the merged
+    tree: 184 passed / 0 failed
+    (P-131 29 + P-132 18 + P-133 24
+    + P-134 12 + P-135 16 + P-136 11
+    + P-137 12 + P-026 62).
+    Forge confirmation suite on the
+    merged tree: 4729 passed /
+    5 skipped / 0 failed - a clean
+    run in 285.19s with no contention
+    re-runs needed. Expectation check:
+    4717 + 12 = 4729 - exact match,
+    as counted from the log. Log
+    hidden_files/P137_FORGE_CONFIRM.log
+    on purplelongship.
+    Slice scope: owner-scoped
+    duplication of one stored
+    definition - ScenarioStore.duplicate
+    + POST /scenarios/{definition_id}/duplicate
+    (201 full record, 404 unknown or
+    foreign); the clone is faithful
+    (definition + P-131 import report
+    + source_format preserved exactly),
+    fresh id, revision restarts at 1,
+    name gains " (copy)" per the S303
+    law on record and definition name;
+    scenarios/store.py (additive verb),
+    scenarios/router.py (additive road),
+    scenarios/__init__.py (additive map
+    line), tests/test_p137_definition_duplication.py
+    (new), docs/SCENARIO_DUPLICATION_2026-11-08.md
+    (new), clean-room log append (+1).
+    Honest limitations: no organisation
+    carry (clone reads with the computed
+    unorganised default; organisation
+    document byte-untouched), no binding
+    carry (the source's chats stay bound
+    to the source), revision restarts
+    at 1 by design, and duplicating a
+    copy appends " (copy)" again.
+    Migration: NONE (head stays 0041).
+    Merge: conflicts in
+    scenarios/router.py +
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    resolved as pure additive unions
+    keeping BOTH P-136 and P-137 work
+    exactly once each (scenarios/
+    __init__.py and scenarios/store.py
+    merged clean); merged router
+    grep-verified carrying P-131 CRUD
+    + P-132 binding + P-133 export
+    + P-134 organisation + P-135
+    binding-read + P-136 bind-plan
+    + P-137 duplicate roads (GET
+    /scenarios/bindings before the
+    {definition_id} roads);
+    py_compile clean.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-138
+    (Part IX, in roadmap order).
+P-138 BANKED - Chat-Scoped Bind Preview (Part IX)
+    Part IX eighth slice.
+    - team-02 commit 1e8327c merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 2383807 (parents 3f66b48 +
+    1e8327c); merge pushed and
+    ls-remote verified at 2383807
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only
+    its part line (P-131..P-154), no
+    per-slice entries; the slice scope
+    is derived from the in-tree record
+    (P-136's own standing notes name
+    bind-time refusals and already-
+    present skips as knowable only
+    against a specific chat; P-137's
+    scout weighed this exact candidate
+    and named it a future candidate),
+    stated plainly as derived in the
+    slice doc and the evidence.
+    Evidence (team-02 worktree
+    hidden_files/P138_EVIDENCE.md):
+    battery 16 passed / 0 failed;
+    neighbours 196 passed / 0 failed;
+    team full suite 4732 passed /
+    5 skipped / 1 failed, the single
+    failure being the p077 longchat
+    timing tripwire on code the slice
+    does not touch (solo re-run of
+    the p077 file 4/4 green -
+    classified shared-machine
+    contention, not a defect).
+    Combined batteries on the merged
+    tree: 200 passed / 0 failed
+    (P-131 29 + P-132 18 + P-133 24
+    + P-134 12 + P-135 16 + P-136 11
+    + P-137 12 + P-138 16 + P-026 62).
+    Forge confirmation suite on the
+    merged tree: 4745 passed /
+    5 skipped / 0 failed - a clean
+    run in 283.86s with no contention
+    re-runs needed. Expectation check:
+    4729 + 16 = 4745 - exact match,
+    as counted from the log. Log
+    hidden_files/P138_FORGE_CONFIRM.log
+    on purplelongship.
+    Slice scope: owner-scoped
+    chat-scoped bind preview -
+    GET /scenarios/{definition_id}/bind-plan/{chat_id}
+    returning P-136's bind-plan
+    envelope judged against one named
+    chat (blockers as data in bind's
+    decision order; seedable keys
+    split would_seed / already_present
+    by P-093's own presence law);
+    scenarios/chatpreview.py (new),
+    scenarios/router.py (additive road),
+    scenarios/__init__.py (additive),
+    tests/test_p138_chat_scoped_bind_preview.py
+    (new),
+    docs/SCENARIO_BIND_PLAN_CHAT_PREVIEW_2026-11-08.md
+    (new), clean-room log append (+1).
+    Honest limitations: would_bind
+    judges the chat as it stands at
+    preview time, never a promise
+    (bind re-decides every fact when
+    it runs); the preview reports
+    every applicable blocker while
+    bind's first-refusal order stays
+    its writing law; already-present
+    is judged under the scenario
+    writer by P-093's own presence
+    law; playback / runtime /
+    condition evaluation remain
+    declined absolutely (P-027 law).
+    Migration: NONE (head stays 0041).
+    Merge: conflicts in
+    scenarios/router.py +
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    resolved as pure additive unions
+    keeping BOTH P-137 and P-138 work
+    exactly once each (scenarios/
+    __init__.py merged clean as an
+    additive union); merged router
+    grep-verified carrying P-131 CRUD
+    + P-132 binding + P-133 export
+    + P-134 organisation + P-135
+    bindings list/inspect + P-136
+    bind-plan + P-137 duplicate
+    + P-138 bind-plan/{chat_id} roads
+    (GET /scenarios/bindings before
+    the {definition_id} roads);
+    py_compile clean.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-139
+    (Part IX, in roadmap order).
+P-139 BANKED - Definition Delete-Impact Preview (Part IX)
+    Part IX ninth slice.
+    - team-03 commit a86485d merged
+    (no-ff) into yrsa/two-mirrors-build
+    as f44ae79 (parents 74a0c17 +
+    a86485d); merge pushed and
+    ls-remote verified at f44ae79
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only
+    its part line (P-131..P-154), no
+    per-slice entries; the slice scope
+    is derived from the in-tree record
+    (deletion cascading nowhere by
+    design, its consequences named
+    only after the fact at the
+    surfaces that suffer them -
+    P-135's definition_exists
+    staleness, P-134's orphan
+    filtering, the P-131 import
+    report going with the record;
+    P-138's scout weighed this exact
+    candidate and named it a future
+    candidate), stated plainly as
+    derived in the slice doc and
+    the evidence.
+    Evidence (team-03 worktree
+    hidden_files/P139_EVIDENCE.md):
+    battery 11 passed / 0 failed;
+    neighbours 184 passed / 0 failed;
+    team full suite 4740 passed /
+    5 skipped / 0 failed - a clean
+    run, reconciling exactly with
+    the base (4729 + 11 = 4740);
+    no contention failure occurred,
+    so no solo re-run was needed.
+    Combined batteries on the merged
+    tree: 211 passed / 0 failed
+    (P-131 29 + P-132 18 + P-133 24
+    + P-134 12 + P-135 16 + P-136 11
+    + P-137 12 + P-138 16 + P-139 11
+    + P-026 62).
+    Forge confirmation suite on the
+    merged tree: 4756 passed /
+    5 skipped / 0 failed - a clean
+    run in 274.63s with no contention
+    re-runs needed. Expectation check:
+    4745 + 11 = 4756 - exact match,
+    as counted from the log. Log
+    hidden_files/P139_FORGE_CONFIRM.log
+    on purplelongship.
+    Slice scope: owner-scoped
+    definition delete-impact preview -
+    GET /scenarios/{definition_id}/delete-impact
+    naming, before any deletion, what
+    deleting one stored definition
+    would orphan (bindings going
+    stale per P-135's
+    definition_exists, the P-134
+    organisation row becoming a
+    filtered orphan, and the P-131
+    import report going with the
+    record), every fact read through
+    the owning slice's own verb,
+    with five standing honesty notes
+    in every answer;
+    scenarios/deletepreview.py (new),
+    scenarios/router.py (additive road),
+    scenarios/__init__.py (additive),
+    tests/test_p139_delete_impact_preview.py
+    (new),
+    docs/SCENARIO_DELETE_IMPACT_2026-11-08.md
+    (new), clean-room log append (+1).
+    Honest limitations: the preview
+    is a statement about the world
+    as it stands when read, never a
+    promise about delete time (a
+    binding created between preview
+    and delete is deleted-around
+    exactly as the standing
+    no-cascade law provides); the
+    preview performs no cleanup and
+    no cascade (stale bindings remain
+    removable per chat by unbinding,
+    P-132; the orphan organisation
+    row remains filtered at every
+    read, P-134); deletion stays
+    permanent - no undelete, no
+    history, the import report goes
+    with the record, and P-133's
+    stored-export road is the way
+    to keep a file copy first, under
+    its own stated limits; playback /
+    runtime / condition evaluation
+    remain declined absolutely
+    (P-027 law).
+    Migration: NONE (head stays 0041).
+    Merge: conflicts in
+    scenarios/router.py +
+    scenarios/__init__.py +
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    resolved as pure additive unions
+    keeping BOTH P-138 and P-139 work
+    exactly once each; merged router
+    grep-verified carrying P-131 CRUD
+    + P-132 binding + P-133 export
+    + P-134 organisation + P-135
+    bindings list/inspect + P-136
+    bind-plan + P-137 duplicate
+    + P-138 bind-plan/{chat_id}
+    + P-139 delete-impact roads
+    (GET /scenarios/bindings before
+    the {definition_id} roads);
+    py_compile clean.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-140
+    (Part IX, in roadmap order).
+P-140 BANKED - Definition Replace-Impact Preview (Part IX)
+    Part IX tenth slice.
+    - team-01 commit 552cab7 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as d2ac829 (parents ed0ed34 +
+    552cab7); merge pushed and
+    ls-remote verified at d2ac829
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only
+    its part line (P-131..P-154), no
+    per-slice entries; the slice scope
+    is derived from the in-tree record
+    (replace as Part IX's remaining
+    consequential definition act with
+    no inspect-before-commit surface -
+    bindings pin their revision at
+    bind time and are not
+    re-materialised, so a replace
+    leaves bindings pinning a
+    superseded revision while the
+    organisation row stays live
+    against the same id; P-139's
+    concurrent delete-impact preview
+    read read-only so this slice
+    neither duplicates nor contradicts
+    it), stated plainly as derived in
+    the slice doc.
+    Evidence (team-01 worktree
+    hidden_files/ logs - NOTE:
+    P140_EVIDENCE.md transfer was
+    interrupted and no evidence file
+    sits in the worktree; the
+    substance is carried by the
+    finisher's report and the complete
+    logs P140_BATTERY.log,
+    P140_NEIGHBOURS.log and
+    P140_FULLSUITE.log):
+    battery 12 passed / 0 failed;
+    neighbours 212 passed / 0 failed;
+    team full suite 4757 passed /
+    5 skipped / 0 failed - a clean
+    run, reconciling exactly with
+    its base (4745 + 12 = 4757);
+    no contention failure occurred,
+    so no solo re-run was needed.
+    Combined batteries on the merged
+    tree: 223 passed / 0 failed
+    (P-131 29 + P-132 18 + P-133 24
+    + P-134 12 + P-135 16 + P-136 11
+    + P-137 12 + P-138 16 + P-139 11
+    + P-140 12 + P-026 62).
+    Forge confirmation suite on the
+    merged tree: 4768 passed /
+    5 skipped / 0 failed - a clean
+    run in 271.10s with no contention
+    re-runs needed. Expectation check:
+    4756 + 12 = 4768 - exact match,
+    as counted from the log. Log
+    hidden_files/P140_FORGE_CONFIRM.log
+    on purplelongship.
+    Slice scope: owner-scoped
+    definition replace-impact preview -
+    GET /scenarios/{definition_id}/replace-impact
+    naming, before any replace, the
+    bindings a PUT replace would leave
+    pinning a superseded revision
+    (split by pinned revision against
+    the current one), the organisation
+    row that stays live, and the next
+    revision, every fact read through
+    the owning slice's own verb, with
+    five standing honesty notes in
+    every answer;
+    scenarios/replacepreview.py (new),
+    scenarios/router.py (additive road),
+    scenarios/__init__.py (additive),
+    tests/test_p140_replace_impact_preview.py
+    (new),
+    docs/SCENARIO_REPLACE_IMPACT_2026-11-08.md
+    (new), clean-room log append (+1).
+    Honest limitations: the preview
+    is a statement about the world
+    as it stands when read, never a
+    promise about replace time; PUT
+    remains the only replacer - the
+    preview replaces nothing and
+    writes nothing; no candidate
+    body is judged here (the preview
+    takes no body and passes no
+    verdict on any future body);
+    bindings are not re-materialised
+    and seeded chat content stays
+    the chats' own truth; replace
+    stays permanent for the current
+    body - no un-replace, no history,
+    and P-133's stored-export road is
+    the way to keep a file copy first,
+    under its own stated limits;
+    playback / runtime / condition
+    evaluation remain declined
+    absolutely (P-027 law).
+    Migration: NONE (head stays 0041).
+    Merge: conflicts in
+    scenarios/router.py +
+    scenarios/__init__.py +
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    resolved as pure additive unions
+    keeping BOTH P-139 and P-140 work
+    exactly once each; merged router
+    grep-verified carrying P-131 CRUD
+    + P-132 binding + P-133 export
+    + P-134 organisation + P-135
+    bindings list/inspect + P-136
+    bind-plan + P-137 duplicate
+    + P-138 bind-plan/{chat_id}
+    + P-139 delete-impact
+    + P-140 replace-impact roads
+    (GET /scenarios/bindings before
+    the {definition_id} roads);
+    py_compile clean.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-141
+    (Part IX, in roadmap order).
+P-141 BANKED - Scenario Definition Sharing Packs (Part IX)
+    Part IX eleventh slice.
+    - team-02 commit 2e4b5f7 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 783cb98 (parents f9b52ac +
+    2e4b5f7); merge pushed and
+    ls-remote verified at 783cb98
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only
+    its part line (P-131..P-154), no
+    per-slice entries; the slice scope
+    is derived from the in-tree record
+    (lorebooks P-045 and prompt
+    artefacts P-063 travel as sealed
+    packs - manifest, SHA-256 checksum,
+    provenance, inspect-before-import,
+    never-overwrite - and the census
+    names scenarios as pack content
+    VX-59/VX-60, while scenarios had
+    only P-133 bare export and P-131
+    blind create; and P-137 proved a
+    record's import report cannot
+    survive export->create, so the
+    pack carries it verbatim as data
+    under the P-045 carrier law),
+    stated plainly as derived in the
+    slice doc.
+    Evidence (team-02 worktree
+    hidden_files/ P141_EVIDENCE.md +
+    logs P141_BATTERY.log,
+    P141_NEIGHBOURS.log,
+    P141_FULLSUITE.log):
+    battery 34 passed / 0 failed;
+    neighbours 211 passed / 0 failed
+    (Part IX fence P-026 + P-131..P-139);
+    team full suite 4790 passed /
+    5 skipped / 0 failed - a clean
+    run, reconciling exactly with
+    its base (4756 + 34 = 4790);
+    no contention failure occurred,
+    so no solo re-run was needed.
+    One battery-expectation defect
+    was found and fixed in-slice:
+    the collision test expected
+    on_conflict=reject to refuse a
+    pack already imported create_new,
+    but duplicate detection correctly
+    precedes reject per the P-045
+    order (nothing would be created,
+    so nothing is refused); the
+    battery was re-pinned to that
+    order and reject exercised against
+    a fresh same-name different-content
+    pack - implementation unchanged.
+    Combined batteries on the merged
+    tree: 257 passed / 0 failed
+    (P-131 29 + P-132 18 + P-133 24
+    + P-134 12 + P-135 16 + P-136 11
+    + P-137 12 + P-138 16 + P-139 11
+    + P-140 12 + P-141 34 + P-026 62).
+    Forge confirmation suite on the
+    merged tree: 4802 passed /
+    5 skipped / 0 failed - a clean
+    run in 335.41s with no contention
+    re-runs needed. Expectation check:
+    4768 + 34 = 4802 - exact match,
+    as counted from the log. Log
+    hidden_files/P141_FORGE_CONFIRM.log
+    on purplelongship.
+    Slice scope: sealed scenario
+    definition sharing packs closing
+    the P-137 import-report loss -
+    scenarios/packs.py (new: build /
+    parse / inspect / import,
+    checksum over the canonical JSON
+    of the definition dict, import
+    writes only through
+    ScenarioStore.create, duplicate
+    scan owner-scoped), three additive
+    roads (POST /scenarios/import-pack
+    201 created / 200 duplicate,
+    POST /scenarios/pack/inspect -
+    inspect-before-import, writes
+    nothing, GET
+    /scenarios/{definition_id}/pack),
+    scenarios/router.py (additive),
+    scenarios/__init__.py (additive),
+    tests/test_p141_scenario_packs.py
+    (new), docs/SCENARIO_PACKS_2026-11-08.md
+    (new), clean-room log append (+1).
+    Pack discipline is P-045/P-063's:
+    manifest + SHA-256 checksum +
+    provenance, inspect before import,
+    and never-overwrite - an exact
+    duplicate returns the existing
+    record unwritten, a same-name
+    collision creates fresh or refuses
+    under on_conflict=reject. No
+    organisation row and no binding
+    travels in a pack.
+    Honest limitations: identity is
+    the definition payload only -
+    dict-identical definitions are
+    exact duplicates even if their
+    records' own reports differ; the
+    carried source_report is data in
+    the pack and the import report,
+    never installed as the new
+    record's report (P-133 one-way
+    law - the new record's own report
+    is its fresh native parse's);
+    the duplicate scan is O(owned
+    definitions) and check-then-create
+    is not transactional across
+    concurrent imports (no unique
+    constraint without a migration),
+    so two racing imports can both
+    create; the checksum proves the
+    contents match the carried
+    manifest, not authorship -
+    provenance is the pack's own
+    statement, unverified; playback /
+    runtime / condition evaluation
+    remain declined absolutely
+    (P-027 law).
+    Migration: NONE (head stays 0041).
+    Merge: conflicts in
+    scenarios/router.py +
+    scenarios/__init__.py +
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    resolved as pure additive unions
+    keeping BOTH P-140 (replace-impact)
+    and P-141 (packs) work exactly
+    once each; merged router
+    grep-verified carrying P-131 CRUD
+    + P-132 binding + P-133 export
+    + P-134 organisation + P-135
+    bindings list/inspect + P-136
+    bind-plan + P-137 duplicate
+    + P-138 bind-plan/{chat_id}
+    + P-139 delete-impact
+    + P-140 replace-impact
+    + P-141 pack roads (POST
+    /scenarios/import-pack and POST
+    /scenarios/pack/inspect declared
+    before the {definition_id} roads,
+    so the literal pack segments are
+    never read as a definition id);
+    py_compile clean.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-142
+    (Part IX, in roadmap order).
+P-142 BANKED - Stateless Native-to-Voxta Export, F1 Leak Closed (Part IX)
+    Part IX twelfth slice.
+    - team-03 commit 7cff079 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 1a24acb (parents cefe709 +
+    7cff079); merge pushed and
+    ls-remote verified at 1a24acb
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only
+    its part line (P-131..P-154), no
+    per-slice entries; the slice scope
+    is derived from the in-tree record
+    (P-133's carried finding F1: the
+    P-026 stateless native-to-Voxta
+    raw-overlay leak, declined by
+    every Part IX weighing since as
+    a future P-026-hardening slice
+    no queue ever commissioned, and
+    re-probed on this base as worse
+    than its record - the overlay
+    (INV-009) starts from the parse's
+    raw, a native parse's raw IS the
+    whole native dict, so the
+    stateless export carried every
+    native key verbatim beside its
+    Voxta spelling (inside the role
+    objects too) and the hybrid
+    re-parsed as NATIVE, while
+    P-133's stored export produced
+    the clean typed-fields conversion
+    for the same content - the two
+    export roads disagreed, the
+    record's one open definition
+    interop parity gap with a proven
+    defect at its centre), stated
+    plainly as derived in the
+    slice doc.
+    Evidence (team-03 worktree
+    hidden_files/ P142_EVIDENCE.md +
+    logs P142_BATTERY.log,
+    P142_NEIGHBOURS.log,
+    P142_FULLSUITE.log):
+    battery 16 passed / 0 failed;
+    neighbours 223 passed / 0 failed
+    (Part IX fence P-026 +
+    P-131..P-140, reconciling exactly
+    with the P-140 banking record's
+    combined count); team full suite
+    4784 passed / 5 skipped /
+    0 failed - a clean run,
+    reconciling exactly with its
+    base (4768 + 16 = 4784); no
+    contention failure occurred, so
+    no solo re-run was needed.
+    The defect fixed in-slice is F1
+    itself: on the unpatched base a
+    stateless native-to-Voxta export
+    of a full native fixture carried
+    BOTH spellings at the top level
+    and inside the role objects, and
+    the hybrid re-parsed as native;
+    post-fix the export carries clean
+    Voxta keys only (role objects
+    exactly the Voxta fields), the
+    export re-parses as voxta, the
+    Voxta fixed point holds, the
+    native round trip is exact, and
+    the original parse is unmutated.
+    No other defect was discovered;
+    the neighbours fence and the
+    full suite both closed green
+    without amendment, and no banked
+    test pinned the leaked shape.
+    Forge confirmation suite on the
+    merged tree: 4818 passed /
+    5 skipped / 0 failed - a clean
+    run in 278.34s with no contention
+    re-runs needed. Expectation check:
+    4802 + 16 = 4818 - exact match,
+    as counted from the log. Log
+    hidden_files/P142_FORGE_CONFIRM.log
+    on purplelongship.
+    Slice scope: the carried P-133
+    finding F1 closed at the exporter
+    itself - scenarios/fileexport.py
+    (a parse whose source_format is
+    native has no Voxta raw to
+    overlay, so export_voxta starts
+    from an empty object and passes
+    every element through the new
+    _rawless copy with raw cleared -
+    the identical construction
+    P-133's scenario_file_from_stored
+    performs externally; the module
+    and function docstrings state
+    the amended law; the parser is
+    untouched, the parse is never
+    mutated, and the Voxta-origin
+    overlay is unchanged byte for
+    byte), tests/test_p142_native_voxta_export.py
+    (new, 16 tests),
+    docs/SCENARIO_NATIVE_VOXTA_EXPORT_2026-11-08.md
+    (new), clean-room log append (+1).
+    No new module, no new road, no
+    __init__ change, no router
+    change, no storage-shape change:
+    the stateless and stored export
+    roads now answer the same file
+    for the same content,
+    battery-pinned as equality.
+    Honest limitations: the fix is
+    origin-scoped by the parse's own
+    source_format - a file the
+    importer classifies as Voxta
+    keeps the full INV-009 overlay,
+    including any native-spelled keys
+    its raw carries as unknowns (that
+    file's own carriage under the
+    standing raw law); inside
+    elements, a native file's unknown
+    keys do not survive a Voxta
+    export (the native parser never
+    typed them; the stored truth
+    drops them the same way, so the
+    roads agree), while top-level
+    unknowns ride as extra on both
+    roads and still ride verbatim;
+    a carried extra key spelled like
+    a Voxta typed field still loses
+    to the typed value under the
+    standing setdefault law on the
+    stateless road. Playback /
+    runtime / condition evaluation
+    with executing stored scripting
+    remain declined absolutely
+    (P-027 law: content is data,
+    never code; export remains a
+    pure function of the parse).
+    The next honest Part IX candidate
+    named by this slice's weighing
+    is a global stale/superseded
+    binding census - named as a
+    future candidate, not built here.
+    Migration: NONE (head stays 0041).
+    Merge: conflict in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    only, resolved as a pure additive
+    union keeping BOTH P-141 and
+    P-142 entries exactly once each;
+    no other file conflicted, and
+    the merged diff against cefe709
+    is exactly the four slice files
+    (+516/-7); merged fileexport.py
+    py_compile clean.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-143
+    (Part IX, in roadmap order).
+
+P-143 BANKED - Library-Scoped Pack Import Preview (Part IX)
+    Part IX thirteenth slice.
+    - team-01 commit 9fe9d49 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as d644335 (parents bbdd8cc +
+    9fe9d49); merge pushed and
+    ls-remote verified at d644335
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Cross-base banking: team-01 built
+    on cefe709 (the P-141 banking
+    record); P-142 is NOT in its base
+    by design and this slice touches
+    no line of scenarios/fileexport.py
+    (P-142 disjoint), so reconciliation
+    at banking was light.
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only
+    its part line (P-131..P-154), no
+    per-slice entries; the slice scope
+    is derived from Runmal's own
+    in-tree record (P-141's
+    import_pack verdicts -
+    duplicate_exact, name_collision,
+    the on_conflict=reject refusal -
+    computed only inside the importing
+    act itself, while inspect_pack
+    judges a pack alone and touches
+    no store; the P-136 -> P-138
+    preview progression transposed to
+    the pack surface: judge the
+    verdicts AS DATA against the
+    caller's own library BEFORE
+    importing), stated plainly as
+    derived in the slice doc.
+    Evidence (team-01 worktree
+    hidden_files/ P143_EVIDENCE.md +
+    logs P143_BATTERY.log,
+    P143_NEIGHBOURS.log,
+    P143_FULL_SUITE.log):
+    battery 13 passed / 0 failed;
+    neighbours 257 passed / 0 failed
+    (Part IX fence P-026 +
+    P-131..P-141; the P-142 battery
+    is absent from this base by
+    design and is therefore honestly
+    not in the fence - the keeper
+    runs it at banking reconciliation,
+    below); team full suite
+    4815 passed / 5 skipped /
+    0 failed - a clean run,
+    reconciling exactly with its
+    base (4802 + 13 = 4815); no
+    contention failure occurred, so
+    no solo re-run was needed.
+    One defect in the battery itself
+    (not in the service) was found
+    and fixed in-slice: the first
+    HTTP byte-untouched test built
+    its foreign clash pack AFTER
+    snapshotting the store bytes;
+    fixed by building the clash pack
+    before the snapshot; battery
+    then 13/13. No service defect
+    was found.
+    Combined batteries on the merged
+    tree: 286 passed / 0 failed
+    (P-131 29 + P-132 18 + P-133 24
+    + P-134 12 + P-135 16 + P-136 11
+    + P-137 12 + P-138 16 + P-139 11
+    + P-140 12 + P-141 34 + P-142 16
+    + P-143 13 + P-026 62).
+    Forge confirmation suite on the
+    merged tree: 4831 passed /
+    5 skipped / 0 failed - a clean
+    run in 274.06s with no contention
+    re-runs needed. Expectation check:
+    4818 + 13 = 4831 - exact match,
+    as counted from the log. Log
+    hidden_files/P143_FORGE_CONFIRM.log
+    on purplelongship.
+    Slice scope: P-141's import
+    verdicts judged as data against
+    the caller's own library before
+    importing -
+    scenarios/packpreview.py (new:
+    preview_pack_import validates
+    the mode first with import's own
+    PackError, then judges the pack
+    through inspect_pack verbatim -
+    its report rides in the envelope
+    whole, so a malformed pack
+    refuses before any library fact
+    is read - and scans the caller's
+    library by import's own law read
+    not run: list_for_owner only,
+    identity by packs.content_checksum
+    over stored definitions, name
+    collision against the manifest's
+    definition_name; envelope =
+    inspect fields verbatim +
+    on_conflict + library section
+    (duplicate named by P-131's
+    summary() verbatim, non-duplicate
+    same-name summaries in store
+    order) + exactly one outcome in
+    import's own decision order +
+    would_create / would_refuse +
+    import's own refusal sentence
+    verbatim or None + four standing
+    honesty notes in fixed order;
+    pure read), one additive road
+    (POST /scenarios/pack/import-preview
+    200 envelope - a reject-mode
+    would_refuse is data at 200,
+    never the road's own answer -
+    422 malformed pack / unknown
+    mode, declared with the literal
+    pack roads before the
+    {definition_id} roads),
+    scenarios/router.py (additive,
+    +43), scenarios/__init__.py
+    (additive, preview_pack_import
+    export + one subsystem-map
+    bullet),
+    tests/test_p143_pack_import_preview.py
+    (new, 13 tests),
+    docs/SCENARIO_PACK_IMPORT_PREVIEW_2026-11-08.md
+    (new), clean-room log append (+1).
+    No change to packs.py or any
+    P-141 answer, no new store, no
+    storage-shape change.
+    Honest limitations: the verdict
+    judges the library as it stands;
+    import re-decides every fact
+    when it runs and the
+    check-then-create is not
+    transactional (P-141) - stated
+    in the envelope's standing notes
+    and the slice doc. Team counts
+    exclude P-142 (absent from this
+    base by design); reconciliation
+    is the keeper's at banking
+    (combined batteries + forge
+    confirmation above).
+    Migration: NONE (head stays 0041).
+    Merge: conflict in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    only, resolved as a pure additive
+    union keeping BOTH P-142 and
+    P-143 entries exactly once each;
+    no other file conflicted, and
+    the merged diff against bbdd8cc
+    is exactly the six slice files
+    (+818/-0); merged
+    scenarios/router.py grep-verified
+    carrying BOTH the P-141 literal
+    pack roads AND the new POST
+    /scenarios/pack/import-preview
+    road before the {definition_id}
+    roads; merged scenarios modules
+    py_compile clean.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-144
+    (Part IX, in roadmap order).
+P-144 BANKED - Global Binding Census (Part IX)
+    Part IX fourteenth slice.
+    - team-02 commit 55f2969 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as aed1809 (parents 336b204 +
+    55f2969); merge pushed and
+    ls-remote verified at aed1809
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Cross-base banking: team-02 built
+    on bbdd8cc (the P-142 banking
+    record); P-143 is NOT in its base
+    by design, so reconciliation at
+    banking was the keeper's (below).
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only
+    its part line (P-131..P-154), no
+    per-slice entries; the slice scope
+    is derived from Runmal's own
+    in-tree record (the candidate
+    P-142 named in its weighing and
+    its banking record - a global
+    stale/superseded binding census -
+    deferred there only because the
+    proven F1 defect outranked it;
+    F1 closed by P-142 and no
+    F-finding remains open), stated
+    plainly as derived in the slice
+    doc.
+    Evidence (team-02 worktree
+    hidden_files/ P144_EVIDENCE.md +
+    logs P144_BATTERY.log,
+    P144_NEIGHBOURS.log,
+    P144_FULL_SUITE.log):
+    battery 18 passed / 0 failed;
+    neighbours 273 passed / 0 failed
+    (Part IX fence P-026 +
+    P-131..P-142; the P-143 battery
+    is absent from this base by
+    design and is therefore honestly
+    not in the fence - the keeper
+    runs it at banking reconciliation,
+    below); team full suite
+    4836 passed / 5 skipped /
+    0 failed - a clean run,
+    reconciling exactly with its
+    base (4818 + 18 = 4836); no
+    contention failure occurred, so
+    no solo re-run was needed.
+    One defect of the team's own
+    making (an unused json import,
+    F401, in the battery) was found
+    by ruff and fixed in-slice; the
+    battery re-ran green after the
+    fix. Ruff's remaining 4 errors
+    on the touched files are
+    pre-existing baseline, verified
+    by stash comparison. No banked
+    defect was discovered.
+    Combined batteries on the merged
+    tree: 304 passed / 0 failed
+    (P-131 29 + P-132 18 + P-133 24
+    + P-134 12 + P-135 16 + P-136 11
+    + P-137 12 + P-138 16 + P-139 11
+    + P-140 12 + P-141 34 + P-142 16
+    + P-143 13 + P-144 18 + P-026 62;
+    = 286 counted at the P-143
+    banking + 18).
+    Forge confirmation suite on the
+    merged tree: 4849 passed /
+    5 skipped / 0 failed - a clean
+    run in 277.21s with no contention
+    re-runs needed. Expectation check:
+    4831 + 18 = 4849 - exact match,
+    as counted from the log. Log
+    hidden_files/P144_FORGE_CONFIRM.log
+    on purplelongship.
+    Slice scope: the global
+    stale/superseded binding census -
+    scenarios/bindingcensus.py (new:
+    census_bindings reads every row
+    through P-135's list_bindings
+    verb, so each row is a P-135
+    summary verbatim, enriched only
+    with the live record's
+    current_revision and
+    current_name (None when the
+    definition is gone) and a state
+    under a four-state law -
+    current / superseded / ahead /
+    stale - ahead impossible by
+    construction and counted anyway
+    so a hand-damaged store is
+    named, never hidden, the P-140
+    pinned_newer precedent;
+    by_definition rollups in
+    first-binding order and every
+    count summed from the rows and
+    groups themselves; five standing
+    honesty notes in fixed order;
+    pure read), one additive road
+    (GET /scenarios/bindings/census,
+    declared after the bindings list
+    road and before the {chat_id}
+    binding read so the literal is
+    never read as a chat id; no 404
+    case - an owner with no bindings
+    answers the honest zero census),
+    scenarios/router.py (additive),
+    scenarios/__init__.py (additive,
+    BINDING_STATES + census_bindings
+    exports + one subsystem-map
+    bullet),
+    tests/test_p144_binding_census.py
+    (new, 18 tests),
+    docs/SCENARIO_BINDING_CENSUS_2026-11-08.md
+    (new), clean-room log append (+1).
+    Team delta 6 files (+856/-1);
+    the merged diff against 336b204
+    is exactly the six slice files
+    (+855/-0) - the team's one
+    deletion was a docstring
+    punctuation variant of the
+    P-141 header line, not taken;
+    the union kept the banked line.
+    Honest limitations: a census,
+    not a cleanup - stale and ahead
+    rows are named, never unbound,
+    deleted or repaired; the census
+    judges the definition store
+    only and no chat liveness (the
+    binding store carries no such
+    fact and none is fabricated);
+    summaries remain counts, not
+    content; no filters, sorts or
+    paging. Team counts exclude
+    P-143 (absent from this base by
+    design); reconciliation is the
+    keeper's at banking (combined
+    batteries + forge confirmation
+    above).
+    Migration: NONE (head stays 0041).
+    Merge: conflicts in
+    scenarios/router.py,
+    scenarios/__init__.py and
+    docs/CLEAN_ROOM_LOG_2026-10-30.md,
+    resolved as pure additive unions
+    keeping BOTH P-143 and P-144
+    work exactly once each; merged
+    scenarios/router.py grep-verified
+    carrying BOTH the P-143 POST
+    /scenarios/pack/import-preview
+    road AND the P-144 GET
+    /scenarios/bindings/census road,
+    literal roads before the
+    parameterised ones; the merged
+    clean-room log holds the P-143
+    and P-144 entries exactly once
+    each; merged scenarios modules
+    py_compile clean.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-145
+    (Part IX, in roadmap order).
+P-145 BANKED - Library Unmappable-Content Census (Part IX)
+    Part IX fifteenth slice.
+    - team-03 commit ceb4c6a merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 49407cb (parents 1499ca8 +
+    ceb4c6a); merge pushed and
+    ls-remote verified at 49407cb
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Cross-base banking: team-03 built
+    on 336b204 (the P-143 banking
+    record); P-144 is NOT in its base
+    by design, so reconciliation at
+    banking was the keeper's (below).
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only
+    its part line (P-131..P-154), no
+    per-slice entries; the slice scope
+    is derived from Runmal's own
+    in-tree record (every P-131 record
+    carries its P-026 import report as
+    data, and the report's unmappable
+    list is the one naming of the
+    machinery a file carried that
+    Runmal cannot map - recorded,
+    never executed (P-027); P-139 calls
+    that report "the only naming" of a
+    definition's unmappable elements
+    and warns that deleting the record
+    loses it; yet the naming was
+    reachable only one record at a
+    time - the P-131 single read,
+    P-133's per-definition
+    not_restored, P-141's
+    per-definition provenance - while
+    the library list shape reduces the
+    whole list to one bool,
+    has_unmappable, with kinds, counts,
+    paths and reasons in no list or
+    aggregate surface; this slice
+    joins every stored report across
+    the caller's library in one pure
+    read - the same shape of gap
+    P-144 closed for bindings,
+    transposed to the definition
+    reports P-144 never reads), stated
+    plainly as derived in the slice
+    doc.
+    Evidence (team-03 worktree
+    hidden_files/ P145_EVIDENCE.md +
+    logs P145_BATTERY.log,
+    P145_NEIGHBOURS.log,
+    P145_FULLSUITE.log):
+    battery 15 passed / 0 failed;
+    neighbours 301 passed / 0 failed
+    (Part IX fence on this base:
+    P-026 + P-131..P-143 = 286 banked,
+    + 15 P-145 = 301 exact; the P-144
+    battery is absent from this base
+    by design and is therefore honestly
+    not in the fence - the keeper
+    runs it at banking reconciliation,
+    below); team full suite
+    4846 passed / 5 skipped /
+    0 failed - a clean run in
+    420.49s, reconciling exactly with
+    its base (4831 + 15 = 4846); no
+    contention failure occurred, so
+    no solo re-run was needed.
+    One defect in the battery itself
+    (not in the service) was found by
+    ruff and fixed in-slice: B905 -
+    zip() without strict= in one test;
+    fixed with strict=True; battery
+    re-ran 15/15 and ruff check on
+    both new files clean. No service
+    defect was found. Ruff check on
+    scenarios/router.py and
+    scenarios/__init__.py shows 4
+    pre-existing errors (E501 x2 on
+    banked P-140-era lines, I001 x2
+    import-block order), verified
+    identical on the untouched base
+    via git stash (base 4, with this
+    slice still 4; the slice adds
+    none) and deliberately NOT
+    rewritten here: rewriting banked
+    import blocks would break the
+    additive-delta discipline.
+    Recorded honestly as a standing
+    remainder; no banked defect was
+    introduced by this slice.
+    Combined batteries on the merged
+    tree: 319 passed / 0 failed
+    (P-131 29 + P-132 18 + P-133 24
+    + P-134 12 + P-135 16 + P-136 11
+    + P-137 12 + P-138 16 + P-139 11
+    + P-140 12 + P-141 34 + P-142 16
+    + P-143 13 + P-144 18 + P-145 15
+    + P-026 62;
+    = 304 counted at the P-144
+    banking + 15). Log
+    hidden_files/P145_COMBINED.log
+    on purplelongship.
+    Forge confirmation suite on the
+    merged tree: 4864 passed /
+    5 skipped / 0 failed - a clean
+    run in 276.29s with no contention
+    re-runs needed. Expectation check:
+    4849 + 15 = 4864 - exact match,
+    as counted from the log (also
+    4846 + 18 = 4864 across the
+    cross-base reconciliation). Log
+    hidden_files/P145_FORGE_CONFIRM.log
+    on purplelongship.
+    Slice scope: the library
+    unmappable-content census -
+    scenarios/reportcensus.py (new:
+    census_unmappable takes the
+    caller's own records (the store's
+    list_for_owner answer) and answers
+    rows in store order for only the
+    definitions whose stored report
+    names at least one unmappable
+    element; each row names its
+    definition by P-131's summary()
+    verbatim and carries the report's
+    elements verbatim, in report
+    order, with the kinds listed per
+    element so they sum to the row's
+    count; elements are read through
+    P-133's exact reading law
+    (missing/malformed report = no
+    elements; non-dict rows skipped;
+    fields str-coerced) - no second
+    report law; by_kind rolls the
+    same elements up per kind in
+    first-appearance order across
+    the rows, and every count
+    (definitions_total,
+    definitions_with_unmappable,
+    definitions_clean,
+    unmappable_total,
+    kinds_represented) is summed from
+    the rows themselves, so the census
+    cannot drift from its own
+    evidence (the P-144 construction);
+    five standing honesty notes in
+    fixed order; pure read), one
+    additive road
+    (GET /scenarios/library/unmappable,
+    declared in the library block
+    after GET /scenarios/library/tags
+    and before the bindings block, so
+    the literal "library" is never
+    read as a definition id (the
+    P-134 declaration-order precedent,
+    battery-pinned by contrast with
+    the per-definition read and the
+    tags road); no 404 case - an
+    owner with no definitions, or
+    none with unmappable elements,
+    answers the honest zero census),
+    scenarios/router.py (additive),
+    scenarios/__init__.py (additive,
+    one subsystem-map bullet +
+    census_unmappable export),
+    tests/test_p145_unmappable_census.py
+    (new, 15 tests),
+    docs/SCENARIO_UNMAPPABLE_CENSUS_2026-11-08.md
+    (new), clean-room log append (+1).
+    Team delta 6 files (+771/-1);
+    the merged diff against 1499ca8
+    is exactly the six slice files
+    (+770/-0) - the team's one
+    deletion was a router header
+    punctuation variant of the banked
+    header line, not taken; the union
+    kept the banked line.
+    Honest limitations: a census,
+    not a cleanup - nothing is
+    removed, converted or repaired;
+    unmappable elements stay recorded
+    on their definitions until those
+    records are themselves replaced
+    or deleted under their own roads;
+    the report is the record - the
+    census claims only what the
+    stored reports name, as they
+    stand now: a missing or malformed
+    report reads as clean here,
+    exactly as P-133's export reads
+    it; a replace re-parses and
+    replaces the report, so the
+    census judges the current report
+    of the current revision and keeps
+    no history; kinds are whatever
+    the reports name, counted as
+    named (the parser's kind strings
+    - scripting, action, hud_widget,
+    and kin - are data here, never a
+    closed enum the census enforces);
+    the census carries the reports'
+    unmappable rows themselves - that
+    is its purpose - but no definition
+    content: no scenario text, roles
+    or bootstrap bodies; the full
+    record stays on the P-131
+    single-read road; it judges
+    reports only: nothing about
+    bindings (P-144), filing (P-134),
+    chats or liveness; no filters,
+    sorts or paging: store order, the
+    whole owner set (the P-135 /
+    P-144 bounded-surface precedent).
+    Team counts exclude P-144 (absent
+    from this base by design);
+    reconciliation is the keeper's
+    at banking (combined batteries +
+    forge confirmation above).
+    Migration: NONE (head stays 0041).
+    Merge: additive union with
+    P-144's banked work; merged
+    scenarios/router.py grep-verified
+    carrying BOTH the P-145 GET
+    /scenarios/library/unmappable road
+    (library block, before the
+    bindings block) AND the P-144 GET
+    /scenarios/bindings/census road;
+    the merged clean-room log holds
+    the P-144 and P-145 entries
+    exactly once each; merged
+    scenarios modules py_compile
+    clean.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-146
+    (Part IX, in roadmap order).
+P-146 BANKED - Candidate Replace Preview (Part IX)
+    Part IX sixteenth slice.
+    - team-01 commit 73373ce merged (no-
+    ff) into yrsa/two-mirrors-build as
+    3dc3430 (parents 0de6465 + 73373ce);
+    merge pushed and ls-remote verified
+    at 3dc3430 before this record;
+    banking record commit follows this
+    entry and is pushed after it.
+    Cross-base banking: team-01 built on
+    1499ca8 (the P-144 banking record);
+    P-145 is NOT in its base by design,
+    so reconciliation at banking was the
+    keeper's (below).
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only its
+    part line (P-131..P-154), no per-
+    slice entries; the slice scope is
+    derived from Runmal's own in-tree
+    record (P-140's replace-impact
+    preview judges the current world and
+    states in its standing notes that it
+    judges no candidate body - what a
+    successful new body would plant was
+    knowable only once it was stored;
+    yet a successful replace is
+    permanent for the current body (the
+    stored definition and its import
+    report are overwritten, there is no
+    un-replace and no definition
+    history), so before the act an owner
+    could not learn whether the store
+    door would accept a given body at
+    all, what native shape and import
+    report it would persist, what it
+    would plant, or how it differs from
+    the body it would supersede - except
+    by committing the replace; every
+    ingredient already existed as an
+    owning slice's own verb: the store
+    door's parser (P-026, applied
+    exactly as replace applies it),
+    P-132's plan_materialisation,
+    P-136's plan-count law, P-131's
+    summary count law, and P-140's
+    impact envelope; this slice is the
+    join, as a pure read, changing no
+    replace semantics: the PUT road
+    remains the only replacer), stated
+    plainly as derived in the slice doc.
+    Evidence (team-01 worktree
+    hidden_files/ P146_EVIDENCE.md +
+    logs P146_BATTERY.log,
+    P146_NEIGHBOURS.log,
+    P146_FULL_SUITE.log): battery 15
+    passed / 0 failed; neighbours 304
+    passed / 0 failed (Part IX fence on
+    this base: P-026 + P-131..P-144
+    scenario batteries; the P-145
+    battery is absent from this base by
+    design and is therefore honestly not
+    in the fence - the keeper runs it at
+    banking reconciliation, below); team
+    full suite 4864 passed / 5 skipped /
+    0 failed, reconciling exactly with
+    its base (4849 + 15 = 4864); no
+    failure occurred, so no timing-
+    failure classification or solo re-
+    run was needed.
+    One battery-authoring correction
+    during the build (not a product
+    defect): the first unmappable test
+    used a native-shaped body, under
+    which P-026's own law carries an
+    unknown top-level key as extra
+    rather than reporting it unmappable;
+    the test was corrected to the Voxta
+    shape P-026's own battery uses for
+    unmappable machinery. No product
+    defect was found; the slice inherits
+    the parser's law exactly, as replace
+    does.
+    Combined batteries on the merged
+    tree: 334 passed / 0 failed (P-131
+    29 + P-132 18 + P-133 24 + P-134 12
+    + P-135 16 + P-136 11 + P-137 12 +
+    P-138 16 + P-139 11 + P-140 12 +
+    P-141 34 + P-142 16 + P-143 13 +
+    P-144 18 + P-145 15 + P-146 15 +
+    P-026 62; = 319 counted at the P-145
+    banking + 15). Log
+    hidden_files/P146_COMBINED.log on
+    purplelongship.
+    Forge confirmation suite on the
+    merged tree: 4879 passed / 5 skipped
+    / 0 failed - a clean run in 287.04s
+    with no contention re-runs needed.
+    Expectation check: 4864 + 15 = 4879
+    - exact match, as counted from the
+    log. Log
+    hidden_files/P146_FORGE_CONFIRM.log
+    on purplelongship.
+    Slice scope: the candidate replace
+    preview -
+    scenarios/candidatepreview.py (new:
+    preview_candidate_replace(record,
+    bindings, organisation,
+    live_definition_ids, body) judges
+    the candidate body through the store
+    door exactly as
+    ScenarioStore.replace applies it (a
+    non-dict body raises
+    ScenarioStoreError; otherwise
+    P-026's parse_scenario_file alone,
+    ScenarioParseError on refusal,
+    before any envelope exists) and
+    answers the envelope: the P-136
+    identity four + next_revision +
+    current {the record's P-131
+    summary() verbatim, P-132's plan
+    over the stored definition, P-136
+    counts} + candidate {parsed name /
+    source_format, the would-be stored
+    native shape - export_native of the
+    parse - and its import report,
+    exactly the pair a successful
+    replace would persist, P-131-law
+    counts, P-132's plan over the would-
+    be shape + counts} + comparison
+    (name / source-format changed flags,
+    identical_body - the would-be shape
+    deep-equals the stored definition -
+    role / bootstrap / plan count
+    triples, flag and variable key added
+    / removed read from the two plans
+    themselves) + replace_impact
+    (P-140's preview_replace_impact
+    envelope whole, verbatim) + six
+    standing honesty notes in fixed
+    order; pure read, stores nothing),
+    one additive road (POST
+    /scenarios/{definition_id}/replace-
+    preview, declared in its own section
+    after P-140's replace-impact
+    section; the record is fetched
+    owner-scoped first - unknown or
+    foreign answers 404 before any body
+    verdict, even a malformed one, so no
+    parse verdict ever leaks about
+    someone else's definition;
+    (ScenarioParseError,
+    ScenarioStoreError) answers 422 with
+    the store door's own refusal),
+    scenarios/router.py (additive,
+    insertions only),
+    scenarios/__init__.py (additive,
+    insertions only,
+    preview_candidate_replace export +
+    one subsystem-map bullet),
+    tests/test_p146_candidate_replace_preview.py
+    (new, 15 tests),
+    docs/SCENARIO_CANDIDATE_REPLACE_PREVIEW_2026-11-08.md
+    (new), clean-room log append (+1).
+    Team delta 6 files (+942/-0); the
+    merged diff against 0de6465 is
+    exactly the six slice files
+    (+942/-0).
+    Honest limitations: the preview is a
+    statement about the candidate and
+    the world as they stand when read,
+    never a promise about replace time -
+    a replace committed with a different
+    body, or after the world changes, is
+    judged by the PUT road when it runs,
+    which re-parses and re-reads
+    everything; the candidate is stored
+    nowhere - if it is not then PUT, it
+    exists only in this answer; judged
+    exactly as stored cuts both ways:
+    the would-be shape named here is the
+    native shape only - a Voxta
+    candidate's unmappable raw values
+    are not part of it and would not
+    persist (P-131); the candidate
+    report carried in the envelope names
+    every one of them, and the stateless
+    P-026 roads remain the lossless
+    hand-back road for raw files; both
+    plans are definition-side (P-136's
+    bounds): no chat is consulted, bind-
+    time refusals are not judged, and
+    seedable keys are not landed keys -
+    a chat that already holds a key
+    seeds nothing for it at bind time,
+    knowable only against that chat
+    (P-138 judges the stored body that
+    way; it does not judge candidates);
+    identical_body is a statement about
+    the would-be native shape only:
+    replacing with an identical body
+    still moves the revision by one and
+    overwrites the record's import
+    report with the candidate's (P-131
+    replace law) - the preview names
+    next_revision either way and claims
+    no no-op; the candidate changes none
+    of P-140's facts (bindings pin the
+    revision of the body actually stored
+    when they bound, and the
+    organisation row keys on the
+    definition's id), so the impact
+    section is P-140's envelope
+    verbatim, not a candidate-adjusted
+    variant; there is no playback in
+    this slice, and none is claimed
+    (P-027 law: content is data, never
+    code; the candidate is parsed and
+    planned as data, nothing it carries
+    is evaluated or run).
+    Team counts exclude P-145 (absent
+    from this base by design);
+    reconciliation is the keeper's at
+    banking (combined batteries + forge
+    confirmation above).
+    Migration: NONE (head stays 0041).
+    Merge: additive union with P-145's
+    banked work; merge conflicts in
+    scenarios/router.py +
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    resolved as pure additive unions
+    (P-145 and P-146 work kept exactly
+    once each; scenarios/__init__.py
+    merged clean as an additive union);
+    merged scenarios/router.py grep-
+    verified carrying BOTH the P-145 GET
+    /scenarios/library/unmappable road
+    AND the P-146 POST
+    /scenarios/{definition_id}/replace-
+    preview road; the merged clean-room
+    log holds the P-145 and P-146
+    entries exactly once each; merged
+    scenarios modules py_compile clean.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-147 (Part
+    IX, in roadmap order).
+
+P-147 BANKED - Chat-Scoped Candidate Bind Preview (Part IX)
+    Part IX seventeenth slice.
+    - team-02 commit b8d72c0 merged (no-
+    ff) into yrsa/two-mirrors-build as
+    e3dc1d4 (parents 3ff4555 + b8d72c0);
+    merge pushed and ls-remote verified
+    at e3dc1d4 before this record;
+    banking record commit follows this
+    entry and is pushed after it.
+    Cross-base banking: team-02 built on
+    0de6465 (the P-145 banking record);
+    P-146 is NOT in its base by design,
+    so reconciliation at banking was the
+    keeper's (below).
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only its
+    part line (P-131..P-154), no per-
+    slice entries; the slice scope is
+    derived from Runmal's own in-tree
+    record (the Part IX preview matrix
+    had exactly one empty cell - stored
+    x definition-side = P-136, stored x
+    chat = P-138, candidate x
+    definition-side = P-146, candidate x
+    chat = nothing; P-147 lands that
+    cell: the candidate is judged
+    through the store door exactly as
+    replace applies it, and the chat
+    judgement is P-138's own calls,
+    never re-implemented - group check,
+    get_for_chat, chat history, P-093
+    resolve_key + get_entry under the
+    scenario writer, the identical
+    already-present reason string and
+    door refusal message), stated
+    plainly as derived in the slice doc.
+    Evidence (team-02 worktree
+    hidden_files/ P147_EVIDENCE.md +
+    logs P147_BATTERY.log,
+    P147_FENCE.log, P147_FULL.log):
+    battery 15 passed / 0 failed - the
+    design header and the slice doc as
+    staged claimed 16; the battery as
+    authored collects 15 test functions
+    and every case the design enumerates
+    is present (9 service + 6 HTTP incl.
+    the 0041 migration pin); the slip
+    was the count, not a missing case,
+    and the slice doc line was corrected
+    to 15 in-slice; neighbour fence 319
+    passed / 0 failed (P-026 +
+    P-131..P-145 scenario batteries; the
+    P-146 battery is absent from this
+    base by design and is therefore
+    honestly not in the fence - the
+    keeper runs it at banking
+    reconciliation, below); team full
+    suite 4879 passed / 5 skipped / 0
+    failed, reconciling exactly with
+    its base (4864 + 15 = 4879); no
+    failure occurred, so no timing-
+    failure classification or solo re-
+    run was needed.
+    Combined batteries on the merged
+    tree: 349 passed / 0 failed (the
+    fence through P-146 counted 334 at
+    the P-146 banking + 15 = 349; P-026
+    + P-131..P-147 scenario batteries).
+    Log /tmp/p147_combined.log on
+    purplelongship.
+    Forge confirmation suite on the
+    merged tree: 4894 passed / 5 skipped
+    / 0 failed - a clean run in 367.91s
+    with no contention re-runs needed.
+    Expectation check: 4879 + 15 = 4894
+    - exact match, as counted from the
+    log. Log /tmp/p147_forge_full.log
+    on purplelongship.
+    Slice scope: the chat-scoped
+    candidate bind preview -
+    scenarios/candidatechatpreview.py
+    (new: preview_candidate_for_chat
+    judges the candidate body through
+    the store door exactly as
+    ScenarioStore.replace applies it -
+    the store door's _parse_body law,
+    stated in full without importing
+    P-146, which is absent from this
+    base - and answers the chat-scoped
+    envelope: the candidate as if stored
+    at next_revision and then bound,
+    judged with P-138's own calls;
+    pure read: replaces, binds, seeds
+    and writes nothing), one additive
+    road (POST
+    /scenarios/{definition_id}/replace-
+    preview/{chat_id}, declared in its
+    own section after the sharing-pack
+    section at the router tail),
+    scenarios/router.py (additive,
+    insertions only),
+    scenarios/__init__.py (additive,
+    insertions only,
+    preview_candidate_for_chat export +
+    one subsystem-map bullet),
+    tests/test_p147_candidate_chat_preview.py
+    (new, 15 tests),
+    docs/SCENARIO_CANDIDATE_CHAT_PREVIEW_2026-11-08.md
+    (new), clean-room log append (+1).
+    Team delta 6 files (+1167/-0),
+    purely additive, no hidden_files
+    paths in the slice commit.
+    Honest limitations: as-if-stored -
+    would_bind and the splits judge the
+    candidate as if stored at
+    next_revision and then bound; either
+    act re-decides every fact when it
+    runs; the P-146 union was NOT
+    verified in the team worktree (it
+    cannot be: P-146 is absent from that
+    base by design) - it is verified
+    here at banking by the combined
+    batteries and the forge confirmation
+    above; no pre-slice full-suite run
+    was taken in the team session, so
+    the team's no-regression claim rests
+    on its full suite's zero failures
+    plus the 319-test neighbour fence,
+    and the keeper's merged-tree runs
+    above close the question; there is
+    no playback in this slice, and none
+    is claimed (P-027 law: content is
+    data, never code; the candidate is
+    parsed and planned as data only).
+    Team counts exclude P-146 (absent
+    from this base by design);
+    reconciliation is the keeper's at
+    banking (combined batteries + forge
+    confirmation above).
+    Migration: NONE (head stays 0041).
+    Merge: additive union with P-146's
+    banked work; merge conflicts in
+    scenarios/router.py +
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    resolved as pure additive unions
+    (P-146 and P-147 work kept exactly
+    once each; scenarios/__init__.py
+    merged clean as an additive union);
+    merged scenarios/router.py grep-
+    verified carrying BOTH the P-146
+    POST /scenarios/{definition_id}/
+    replace-preview road AND the P-147
+    POST /scenarios/{definition_id}/
+    replace-preview/{chat_id} road; the
+    merged clean-room log holds the
+    P-146 and P-147 entries exactly once
+    each; merged scenarios modules
+    py_compile clean.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-148 (Part
+    IX, in roadmap order).
+P-148 BANKED - Binding Chat-Custody Census (Part IX)
+    Part IX eighteenth slice.
+    - team-03 commit 59fcc0b merged (no-
+    ff) into yrsa/two-mirrors-build as
+    e939b76 (parents c66c5bf + 59fcc0b);
+    merge pushed and ls-remote verified
+    at e939b76 before this record;
+    banking record commit follows this
+    entry and is pushed after it.
+    Cross-base banking: team-03 built on
+    3ff4555 (the P-146 banking record);
+    P-147 is NOT in its base by design,
+    so reconciliation at banking was the
+    keeper's (below).
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only its
+    part line (P-131..P-154), no per-
+    slice entries; the slice scope is
+    derived from Runmal's own in-tree
+    record (a binding's definition axis
+    is fully judged - P-139 preview,
+    P-144 census - but its chat axis was
+    judged nowhere: chats.service.
+    delete_chat cleans checkpoints /
+    databank / undo / vision links /
+    attachments / watcher registrations
+    but never the binding store, P-144's
+    fifth note disclaims chat liveness
+    expressly, and the P-132 per-chat
+    read still answers a deleted chat's
+    record as if live; P-148 joins every
+    binding to the live Chat table in
+    one pure read), stated plainly as
+    derived in the slice doc.
+    Evidence (team-03 worktree
+    hidden_files/ P148_EVIDENCE.md +
+    logs P148_BATTERY.log,
+    P148_NEIGHBOURS.log,
+    P148_FULLSUITE.log): battery 17
+    passed / 0 failed; neighbour fence
+    351 passed / 0 failed (P-026 +
+    P-131..P-146 scenario batteries =
+    334 per the P-146 banking record's
+    combined count, + 17 P-148 = 351,
+    exact; the P-147 battery is absent
+    from this base by design and is
+    therefore honestly not in the fence
+    - the keeper runs it at banking
+    reconciliation, below); team full
+    suite 4896 passed / 5 skipped / 0
+    failed, reconciling exactly with
+    the P-146 banking forge confirmation
+    on the merged tree (4879 + 17 =
+    4896); no failure occurred, so no
+    timing-failure classification or
+    solo re-run was needed.
+    Combined batteries on the merged
+    tree: 366 passed / 0 failed (the
+    fence through P-147 counted 349 at
+    the P-147 banking + 17 = 366; P-026
+    + P-131..P-148 scenario batteries).
+    Log hidden_files/P148_COMBINED.log
+    in ~/runmal-forge on purplelongship.
+    Forge confirmation suite on the
+    merged tree: 4911 passed / 5 skipped
+    / 0 failed - a clean run in 300.64s
+    with no contention re-runs needed.
+    Expectation check: 4894 + 17 = 4911
+    - exact match, as counted from the
+    log. Log hidden_files/
+    P148_FORGE_SUITE.log in
+    ~/runmal-forge on purplelongship.
+    Slice scope: the binding chat-
+    custody census -
+    scenarios/chatcensus.py (new:
+    census_binding_chats, async;
+    CHAT_CUSTODY_STATES = live /
+    orphaned; joins every binding to
+    the live Chat table; pure read:
+    binds, unbinds, deletes and writes
+    nothing), one additive road (GET
+    /scenarios/bindings/chat-census, in
+    the bindings block after the P-144
+    census road and before the
+    {chat_id} read),
+    scenarios/router.py (additive, +42),
+    scenarios/__init__.py (additive,
+    +14, CHAT_CUSTODY_STATES /
+    census_binding_chats exports + one
+    subsystem-map bullet),
+    tests/test_p148_chat_custody_census.py
+    (new, 17 tests),
+    docs/SCENARIO_CHAT_CUSTODY_CENSUS_2026-11-08.md
+    (new), clean-room log append (+1).
+    Team delta 6 files (+955/-0),
+    purely additive, no hidden_files
+    paths in the slice commit.
+    Honest limitations: the census is a
+    pure read and judges custody only;
+    it changes no write behaviour. The
+    named open question - whether
+    delete_chat should cascade into the
+    binding store - is DECLINED in this
+    slice as a write-behaviour change,
+    outside a pure-read census's scope;
+    it stands open for a future slice
+    to take deliberately. The P-147
+    union was NOT verified in the team
+    worktree (it cannot be: P-147 is
+    absent from that base by design) -
+    it is verified here at banking by
+    the combined batteries and the forge
+    confirmation above.
+    Migration: NONE (head stays 0041).
+    Merge: additive union with P-147's
+    banked work; merge conflicts in
+    scenarios/router.py +
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    resolved as pure additive unions
+    (P-147 and P-148 work kept exactly
+    once each; scenarios/__init__.py
+    merged clean as an additive union);
+    merged scenarios/router.py grep-
+    verified carrying BOTH the P-147
+    POST /scenarios/{definition_id}/
+    replace-preview/{chat_id} road AND
+    the P-148 GET /scenarios/bindings/
+    chat-census road, with chat-census
+    declared before the {chat_id} read;
+    the merged clean-room log holds the
+    P-147 and P-148 entries exactly once
+    each; merged scenarios modules
+    py_compile clean.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-149 (Part
+    IX, in roadmap order).
+P-149 BANKED - Chat Delete-Impact Preview (Part IX)
+    Part IX nineteenth slice.
+    - team-01 commit 17eeac3 merged (no-
+    ff) into yrsa/two-mirrors-build as
+    7ab4d22 (parents 0dde71b + 17eeac3);
+    merge pushed and ls-remote verified
+    at 7ab4d22 before this record;
+    banking record commit follows this
+    entry and is pushed after it.
+    Cross-base banking: team-01 built on
+    c66c5bf (the P-147 banking record);
+    P-148 is NOT in its base by design,
+    so reconciliation at banking was the
+    keeper's (below).
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only its
+    part line (P-131..P-154), no per-
+    slice entries; the slice scope is
+    derived from Runmal's own in-tree
+    record (Part IX's irreversible acts
+    each had a pre-commit preview except
+    chat deletion - P-139 previews
+    definition deletion, P-140 / P-146 /
+    P-147 the replacement and candidate
+    previews, P-136 / P-138 the binding -
+    while chats.service.delete_chat
+    cleans checkpoints / databank / undo
+    / vision links / image attachments
+    / folder-watch registrations but
+    never the scenario binding store, so
+    a deleted bound chat's binding
+    record stands forever; P-148's
+    census names such orphans only after
+    the fact, across the whole store,
+    never before one named chat's
+    deletion; P-149 names, before the
+    act, exactly what one named chat's
+    deletion would orphan), stated
+    plainly as derived in the slice doc.
+    Evidence (team-01 worktree
+    hidden_files/ P149_EVIDENCE.md +
+    logs P149_BATTERY.log,
+    P149_NEIGHBOURS.log,
+    P149_FULL_SUITE.log): battery 18
+    passed / 0 failed; neighbour fence
+    367 passed / 0 failed; team full
+    suite 4912 passed / 5 skipped / 0
+    failed, reconciling exactly with
+    the count expected on that base
+    (4894 + 18 = 4912). The team's first
+    detached full-suite run HUNG on the
+    pre-existing manual PortAudio test
+    tests/test_s501_audio.py::
+    test_sounddevice_provider_manual
+    (host audio-stack hang enumerating
+    PortAudio devices; not a slice
+    defect) - the run was killed, that
+    file solo re-run 12 passed / 1
+    skipped, and a fresh full suite ran
+    clean; the incident is recorded in
+    full in P149_EVIDENCE.md.
+    Combined batteries on the merged
+    tree: 384 passed / 0 failed (the
+    fence through P-148 counted 366 at
+    the P-148 banking + 18 = 384; P-026
+    + P-131..P-149 scenario batteries).
+    Log hidden_files/P149_COMBINED.log
+    in ~/runmal-forge on purplelongship.
+    Forge confirmation suite on the
+    merged tree: 4929 passed / 5 skipped
+    / 0 failed - a clean run in 298.24s
+    with no contention re-runs needed.
+    Expectation check: 4911 + 18 = 4929
+    - exact match, as counted from the
+    log. Log hidden_files/
+    P149_FORGE_SUITE.log in
+    ~/runmal-forge on purplelongship.
+    Slice scope: the chat delete-impact
+    preview -
+    scenarios/chatdeletepreview.py (new:
+    preview_chat_delete_impact, async
+    pure read; leak-free None law -
+    unknown, foreign and foreign-bound
+    chats answer alike, so existence
+    never leaks; owner-scoped Chat
+    existence, the P-132 binding record
+    verbatim, its definition-axis state
+    under P-144's state law via imported
+    STATE_* constants, impact counts
+    read from the record itself, five
+    standing honesty notes), one
+    additive road (GET
+    /scenarios/bindings/{chat_id}/
+    delete-impact, declared after the
+    per-chat binding roads; the
+    service's None maps to 404 "chat not
+    found"), scenarios/router.py
+    (additive, +47), scenarios/__init__.py
+    (additive, +14,
+    preview_chat_delete_impact export +
+    one subsystem-map bullet),
+    tests/test_p149_chat_delete_impact.py
+    (new, 18 tests),
+    docs/SCENARIO_CHAT_DELETE_IMPACT_2026-11-08.md
+    (new), clean-room log append (+1).
+    Team delta 6 files (+1031/-0),
+    purely additive, no hidden_files
+    paths in the slice commit.
+    Honest limitations: the preview is a
+    pure read; it changes no write
+    behaviour and deletes nothing. The
+    delete_chat cascade into the binding
+    store - P-148's named open question -
+    was weighed and NOT taken in this
+    slice, with the reasons recorded in
+    the slice doc (a write-behaviour
+    change inside the chats subsystem
+    that no in-tree record has decided;
+    chat deletion's custody blocks run
+    silently and best-effort and would
+    erase the binding record - the only
+    surviving account of what a binding
+    seeded - with no answer and no
+    undo); it stands open for a future
+    slice to take deliberately. The
+    P-148 union was NOT verified in the
+    team worktree (it cannot be: P-148
+    is absent from that base by design) -
+    it is verified here at banking by
+    the combined batteries and the forge
+    confirmation above.
+    Migration: NONE (head stays 0041).
+    Merge: additive union with P-148's
+    banked work; merge conflicts in
+    scenarios/router.py +
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    resolved as pure additive unions
+    (P-148 and P-149 work kept exactly
+    once each; scenarios/__init__.py
+    merged clean as an additive union);
+    merged scenarios/router.py grep-
+    verified carrying BOTH the P-148
+    GET /scenarios/bindings/chat-census
+    road AND the P-149 GET
+    /scenarios/bindings/{chat_id}/
+    delete-impact road; the merged
+    clean-room log holds the P-148 and
+    P-149 entries exactly once each;
+    merged scenarios modules py_compile
+    clean; merged diff vs 0dde71b is
+    exactly the 6 slice files
+    (+1031/-0). No heal was needed at
+    merge.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-150 (Part
+    IX, in roadmap order).
+P-150 BANKED - Binding Custody Census (Part IX)
+    Part IX twentieth slice.
+    - team-02 commit 03efe6c merged (no-
+    ff) into yrsa/two-mirrors-build as
+    7d36b4f (parents 991dcf4 + 03efe6c);
+    merge pushed and ls-remote verified
+    at 7d36b4f before this record;
+    banking record commit follows this
+    entry and is pushed after it.
+    Cross-base banking: team-02 built on
+    0dde71b (the P-148 banking record);
+    P-149 is NOT in its base by design,
+    so reconciliation at banking was the
+    keeper's (below).
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only its
+    part line (P-131..P-154), no per-
+    slice entries; the slice scope is
+    derived from Runmal's own in-tree
+    record (P-144 judges bindings
+    against definitions, P-148 against
+    chats, and P-148 itself names the
+    joint state - orphaned and stale at
+    once - but no surface joined the
+    verdicts row by row; P-150 composes
+    both owning services and classifies
+    each binding sound /
+    definition_drift / chat_orphaned /
+    doubly_broken in one pure read),
+    stated plainly as derived in the
+    slice doc.
+    Evidence (team-02 worktree
+    hidden_files/ P150_EVIDENCE.md +
+    logs P150_BATTERY.log,
+    P150_NEIGHBOURS.log,
+    P150_FULLSUITE.log): battery 20
+    passed / 0 failed; neighbour fence
+    386 passed / 0 failed (the P-026 +
+    P-131..P-148 fence was 366 per the
+    P-148 banking record; 366 + 20 =
+    386, exact; the P-149 battery is
+    absent from this base by design and
+    is therefore honestly not in the
+    fence - the keeper runs it at
+    banking reconciliation, below);
+    team full suite 4931 passed / 5
+    skipped / 0 failed in 344.71s,
+    reconciling exactly with its base
+    (4911 + 20 = 4931); no failure
+    occurred, so no timing-failure
+    classification or solo re-run was
+    needed.
+    Combined batteries on the merged
+    tree: 404 passed / 0 failed (the
+    fence through P-149 counted 384 at
+    the P-149 banking + 20 = 404; P-026
+    + P-131..P-150 scenario batteries).
+    Forge confirmation suite on the
+    merged tree: 4949 passed / 5 skipped
+    / 0 failed - a clean run in 307.50s
+    with no contention re-runs needed
+    (a P-151 team suite ran on the
+    shared machine concurrently;
+    memory was checked before launch).
+    Expectation check: 4929 + 20 = 4949
+    - exact match, as counted from the
+    log. Log /tmp/p150_forge_full.log
+    on purplelongship.
+    Slice scope: the binding custody
+    census, both axes joined -
+    scenarios/custodycensus.py (new:
+    census_binding_custody composes the
+    P-144 and P-148 censuses and
+    classifies every binding sound /
+    definition_drift / chat_orphaned /
+    doubly_broken; pure read: binds,
+    unbinds, deletes and writes
+    nothing), one additive road (GET
+    /scenarios/bindings/custody-census,
+    declared after the chat-census road
+    and before the {chat_id} read, so
+    the literal custody-census is never
+    read as a chat id),
+    scenarios/router.py (additive, +32),
+    scenarios/__init__.py (additive,
+    +13, census_binding_custody export +
+    one subsystem-map bullet),
+    tests/test_p150_custody_census.py
+    (new, 20 tests),
+    docs/SCENARIO_CUSTODY_CENSUS_2026-11-08.md
+    (new), clean-room log append (+1).
+    Team delta 6 files (+1036/-0),
+    purely additive, no hidden_files
+    paths in the slice commit.
+    Honest limitations: the census is a
+    pure read; it names custody, it
+    does not repair it, and it claims
+    nothing neither parent census
+    claims. The delete_chat cascade
+    into the binding store - P-148's
+    named open question, weighed and
+    NOT taken by P-149 and again NOT
+    taken here (a chats-subsystem write
+    change no in-tree record has
+    decided) - stands open for a future
+    slice to take deliberately. The
+    P-149 union was NOT verified in the
+    team worktree (it cannot be: P-149
+    is absent from that base by design)
+    - it is verified here at banking by
+    the combined batteries and the forge
+    confirmation above.
+    Migration: NONE (head stays 0041).
+    Merge: additive union with P-149's
+    banked work; merge conflicts in
+    scenarios/router.py +
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    resolved as pure additive unions
+    (P-149 and P-150 work kept exactly
+    once each; scenarios/__init__.py
+    merged clean as an additive union);
+    merged scenarios/router.py grep-
+    verified carrying BOTH the P-149
+    GET /scenarios/bindings/{chat_id}/
+    delete-impact road AND the P-150
+    GET /scenarios/bindings/custody-
+    census road, with custody-census
+    declared before the {chat_id} read;
+    the merged clean-room log holds the
+    P-149 and P-150 entries exactly once
+    each; merged scenarios modules
+    py_compile clean; merged diff vs
+    991dcf4 is exactly the 6 slice files
+    (+1036/-0). No heal was needed at
+    merge.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-151 (Part
+    IX, in roadmap order).
+P-151 BANKED - Library Definition Census (Part IX)
+    Part IX twenty-first slice.
+    - team-03 commit 190c34a merged (no-
+    ff) into yrsa/two-mirrors-build as
+    4b5acdd (parents effe800 + 190c34a);
+    merge pushed and ls-remote verified
+    at 4b5acdd before this record;
+    banking record commit follows this
+    entry and is pushed after it.
+    Banking completion note: the merge
+    and the forge confirmation were
+    completed by the previous banking
+    coordinator, whose run was then
+    interrupted by a cron timeout before
+    this record was written; a banking
+    finisher re-verified the merge from
+    git, ran the combined fence below,
+    and completed steps 5-6 (this record
+    + worktree resets). No full suite
+    was re-run: the forge confirmation
+    log already on disk governed.
+    Cross-base banking: team-03 built on
+    0dde71b (the P-148 banking record);
+    P-149 and P-150 are NOT in its base
+    by design, so reconciliation at
+    banking was the keeper's (below).
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only its
+    part line (P-131..P-154), no per-
+    slice entries; the slice scope is
+    derived from Runmal's own in-tree
+    record (every Part IX census rows
+    bindings - P-144, P-148, P-150 - or
+    report rows - P-145; the binding
+    censuses' groups are built from
+    binding rows, so a never-bound
+    definition appears in no census at
+    all and no road answered the per-
+    definition library custody question
+    except walking P-135's per-
+    definition list by hand - the by-
+    hand gap P-144's derivation named,
+    transposed; P-151 rows every
+    definition the caller holds and
+    classifies it by the custody of its
+    bindings, stated plainly as derived
+    in the slice doc.
+    Evidence (team-03 worktree
+    hidden_files/ P151_EVIDENCE.md +
+    logs P151_BATTERY.log,
+    P151_NEIGHBOURS.log,
+    P151_FULLSUITE.log): battery 20
+    passed / 0 failed; neighbour fence
+    386 passed / 0 failed (the P-148
+    banking record's combined fence
+    through P-148 counted 366; 366 + 20
+    = 386, exact; the P-149 and P-150
+    batteries are absent from this base
+    by design and are therefore honestly
+    not in the fence - the keeper runs
+    them at banking reconciliation,
+    below); team full suite 4931 passed
+    / 5 skipped / 0 failed in 293.51s,
+    reconciling exactly with its base
+    (4911 + 20 = 4931); no failure
+    occurred, so no timing-failure
+    classification or solo re-run was
+    needed.
+    Combined batteries on the merged
+    tree: 424 passed / 0 failed (the
+    fence through P-150 counted 404 at
+    the P-150 banking + 20 = 424; P-026
+    + P-131..P-151 scenario batteries),
+    run by the banking finisher with
+    PYTHONPATH=src on the merged tree.
+    Log hidden_files/P151_COMBINED.log
+    in the forge.
+    Forge confirmation suite on the
+    merged tree: 4969 passed / 5 skipped
+    / 0 failed in 297.98s, exit 0.
+    Expectation check: 4949 + 20 = 4969
+    - exact match, as counted from the
+    log. Log hidden_files/
+    P151_FORGE_CONFIRM.log in the forge.
+    Slice scope: the library definition
+    census - scenarios/
+    definitioncensus.py (new: every
+    definition the caller holds rowed
+    as the census subject, its P-131
+    summary verbatim, classified by the
+    custody of its bindings - P-144
+    definition verdicts and P-148 chat
+    verdicts composed per binding:
+    sound / definition_drift /
+    chat_orphaned / doubly_broken - the
+    definition's own state under a
+    stated precedence law, unbound when
+    it holds no bindings; stale
+    bindings counted in the totals and
+    rowing under no definition; pure
+    read: binds, unbinds, deletes and
+    writes nothing), one additive road
+    (GET /scenarios/library/census),
+    scenarios/router.py (additive, +39),
+    scenarios/__init__.py (additive,
+    +19), tests/
+    test_p151_definition_census.py
+    (new, 20 tests), docs/
+    SCENARIO_DEFINITION_CENSUS_2026-11-08.md
+    (new), clean-room log append (+1).
+    Team delta 6 files (+1168/-0),
+    purely additive, no hidden_files
+    paths in the slice commit.
+    Honest limitations: the census is a
+    pure read; it changes no write
+    behaviour. The delete_chat cascade
+    into the binding store remains OPEN
+    and deliberately untaken: P-149
+    reserved the decision expressly for
+    Volmarr and P-150 declined it again;
+    this slice records the same position
+    with the full argument in the slice
+    doc, rather than overriding two
+    fresh in-tree reservations. The
+    definition state is a precedence
+    summary; the row's per-state binding
+    counts are the full account and the
+    per-binding truth stays on P-144 /
+    P-148 / P-150, untouched beside it.
+    The P-149 and P-150 unions were NOT
+    verified in the team worktree (both
+    absent from that base by design) -
+    they are verified here at banking by
+    the combined batteries and the forge
+    confirmation above. No pre-slice
+    full-suite run was taken in the team
+    worktree; the no-regression claim
+    rests on the post-slice full suite's
+    zero failures plus the 386-test
+    neighbour fence, reconciling exactly
+    with the banked counts. No playback,
+    runtime or execution of any stored
+    content (P-027 law).
+    Migration: NONE (head stays 0041).
+    Merge: additive union with P-149's
+    and P-150's banked work; merged
+    scenarios/router.py grep-verified
+    carrying BOTH the P-150 GET
+    /scenarios/bindings/custody-census
+    road AND the P-151 GET /scenarios/
+    library/census road; merged
+    scenarios modules py_compile clean;
+    merged diff vs effe800 is exactly
+    the 6 slice files (+1168/-0). No
+    heal was needed at merge.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-152 (Part
+    IX, in roadmap order).
+P-152 BANKED - Chat Coverage Census (Part IX)
+    Part IX twenty-second slice.
+    - team-01 commit 2501dc6 merged (no-
+    ff) into yrsa/two-mirrors-build as
+    94e4661 (parents b5a8738 + 2501dc6);
+    merge pushed and ls-remote verified
+    at 94e4661 before this record;
+    banking record commit follows this
+    entry and is pushed after it.
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only its
+    part line (P-131..P-154), no per-
+    slice entries; the slice scope is
+    derived from Runmal's own in-tree
+    record (every Part IX census rows
+    bindings - P-144, P-148, P-150 -
+    definitions - P-151 - or report rows
+    - P-145; the binding censuses' rows
+    are binding rows, so a chat with no
+    binding appears in no census at all
+    and no road answered the chat-side
+    coverage question except walking
+    every chat by hand through the P-132
+    per-chat binding read - the by-hand
+    gap P-144's derivation named,
+    transposed to the chat axis, the
+    exact mirror of the gap P-151 closed
+    for definitions; P-152 rows every
+    chat the caller holds and classifies
+    it by the coverage of the binding it
+    carries, stated plainly as derived
+    in the slice doc.
+    Evidence (team-01 worktree
+    hidden_files/ P152_EVIDENCE.md +
+    logs P152_BATTERY.log,
+    P152_NEIGHBOURS.log,
+    P152_FULLSUITE.log): battery 21
+    passed / 0 failed; neighbour fence
+    445 passed / 0 failed (the P-151
+    banking record's combined fence
+    through P-151 counted 424; 424 + 21
+    = 445, exact); team full suite 4990
+    passed / 5 skipped / 0 failed in
+    303.18s, reconciling exactly with
+    its base (4969 + 21 = 4990); no
+    failure occurred, so no timing-
+    failure classification or solo re-
+    run was needed.
+    Combined batteries on the merged
+    tree: 445 passed / 0 failed (P-026 +
+    P-131..P-152 scenario batteries),
+    run by the banking coordinator with
+    PYTHONPATH=src on the merged tree.
+    Log hidden_files/P152_COMBINED.log
+    in the forge.
+    Forge confirmation suite on the
+    merged tree: 4990 passed / 5 skipped
+    / 0 failed in 297.29s, exit 0.
+    Expectation check: 4969 + 21 = 4990
+    - exact match, as counted from the
+    log. Log
+    hidden_files/P152_FORGE_CONFIRM.log
+    in the forge.
+    Slice scope: the chat coverage
+    census - scenarios/chatcoverage.py
+    (new: every chat the caller holds
+    rowed as the census subject -
+    identity facts only: chat_id, title,
+    is_group, created_at - classified by
+    the coverage of the binding it
+    carries, P-144 census_bindings
+    verdicts composed per chat: unbound
+    / sound / definition_drift /
+    definition_gone; orphaned bindings
+    counted in the totals, rowing under
+    no chat; pure read: binds, unbinds,
+    deletes and writes nothing), one
+    additive road (GET
+    /scenarios/chats/census, appended at
+    the router's end after the P-147
+    handler), scenarios/router.py
+    (additive, +44),
+    scenarios/__init__.py (additive,
+    +17),
+    tests/test_p152_chat_coverage_census.py
+    (new, 21 tests),
+    docs/SCENARIO_CHAT_COVERAGE_CENSUS_2026-11-08.md
+    (new), clean-room log append (+1).
+    Team delta 6 files (+1232/-0),
+    purely additive, no hidden_files
+    paths in the slice commit.
+    One test-only defect found and fixed
+    in-slice: the group-chat battery
+    test planted a Group and its Chat in
+    one flush and hit an FK
+    IntegrityError (flush ordering); the
+    plant now commits the Group first,
+    then the Chat. Test-only; no
+    production code was touched.
+    Honest limitations: the census is a
+    pure read; it changes no write
+    behaviour. The delete_chat cascade
+    into the binding store remains OPEN
+    and deliberately untaken: P-149
+    reserved the decision expressly for
+    Volmarr and P-150 and P-151 declined
+    it again; this slice records the
+    same position with the full argument
+    in the slice doc, rather than
+    overriding three fresh in-tree
+    reservations. The coverage state
+    reads the chat's first binding row
+    in binding order; a hand-damaged
+    second row for the same chat is
+    named by bindings_surplus_rows in
+    the totals, and the per-binding
+    truth stays on P-144 / P-148 /
+    P-150, untouched beside it. A group
+    room rows exactly as any standing
+    chat: custody judges existence, not
+    bindability (bind's refusal law is
+    bind's). No pre-slice full-suite run
+    was taken in the team worktree; the
+    no-regression claim rests on the
+    post-slice full suite's zero
+    failures plus the 445-test neighbour
+    fence, reconciling exactly with the
+    banked counts. No playback, runtime
+    or execution of any stored content
+    (P-027 law).
+    Migration: NONE (head stays 0041).
+    Merge: clean no-ff merge, no
+    conflicts; merged
+    scenarios/router.py grep-verified
+    carrying BOTH the P-151 GET
+    /scenarios/library/census road AND
+    the P-152 GET
+    /scenarios/chats/census road; merged
+    scenarios modules py_compile clean;
+    merged diff vs b5a8738 is exactly
+    the 6 slice files (+1232/-0). No
+    heal was needed at merge.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-153 (Part
+    IX, in roadmap order).
+P-153 BANKED - Library Bind-Plan Census (Part IX)
+    Part IX twenty-third slice.
+    - team-02 commit 4d35cff merged (no-
+    ff) into yrsa/two-mirrors-build as
+    62c6042 (parents 1e2b4de + 4d35cff);
+    merge pushed and ls-remote verified
+    at 62c6042 before this record;
+    banking record commit follows this
+    entry and is pushed after it.
+    Derived scope ACCEPTED as banked:
+    the roadmap gives Part IX only its
+    part line (P-131..P-154), no per-
+    slice entries; the slice scope is
+    derived from Runmal's own in-tree
+    record (every Part IX census joins
+    one computed judgement across its
+    library - bindings P-144 / P-148 /
+    P-150, definitions P-151, chats
+    P-152, reports P-145 - except the
+    bind plan: what a definition would
+    actually plant exists only inside
+    per-definition P-136 envelopes, so
+    an owner choosing which definition
+    to bind could learn each plan only
+    by walking every definition by hand
+    through the P-136 road - the by-
+    hand gap P-144's derivation named,
+    transposed to the plan axis; P-153
+    rows every definition the caller
+    holds by the state of its plan,
+    stated plainly as derived in the
+    slice doc.
+    Finisher provenance: the slice was
+    left part-built by a predecessor
+    run that timed out (plancensus.py,
+    the battery and the slice doc
+    landed intact); the finisher
+    reviewed that work line by line
+    against the design, found no
+    defect, changed nothing in it, and
+    completed the slice - router and
+    __init__ wiring plus the clean-room
+    entry - and committed it as
+    4d35cff. The slice doc's base note
+    (b5a8738, P-151 record) is the
+    design-time base; the finisher
+    re-verified and built on 1e2b4de
+    (P-152 banking record), so P-152 IS
+    in this slice's base and the merged
+    tree carries both censuses, proven
+    by the combined fence and the forge
+    confirmation below.
+    Evidence (team-02 worktree
+    hidden_files/ P153_EVIDENCE.md +
+    logs P153_BATTERY.log,
+    P153_NEIGHBOURS.log, P153_FULL.log):
+    battery 19 passed / 0 failed;
+    neighbour fence 445 passed / 0
+    failed (the P-152 banking record's
+    combined fence through P-152);
+    team full suite 5009 passed / 5
+    skipped / 0 failed in 300.78s,
+    reconciling exactly with its base
+    (4990 + 19 = 5009); no failure
+    occurred in the team run, so no
+    contention classification was
+    needed there.
+    Combined batteries on the merged
+    tree: 464 passed / 0 failed (P-026 +
+    P-131..P-153 scenario batteries;
+    445 + 19 = 464, exact), run by the
+    banking coordinator with
+    PYTHONPATH=src on the merged tree.
+    Log hidden_files/P153_COMBINED.log
+    in the forge. (The coordinator's
+    first combined launch used the
+    system python3, which has no
+    fastapi, and died at collection with
+    24 import errors - a coordinator
+    environment error, not a slice
+    defect; that log is preserved as
+    hidden_files/
+    P153_COMBINED_ATTEMPT1_ENVFAIL.log
+    and the fence was re-run green with
+    the campaign venv runmal-venv312.)
+    Forge confirmation suite on the
+    merged tree: 5008 passed / 1 failed
+    / 5 skipped in 439.57s, exit 1. The
+    lone failure is
+    tests/test_p077_longchat_performance.py
+    test_longchat_tripwires, a timing
+    tripwire (page under 1.0s, append
+    median under 0.2s), failed under
+    shared load (load 4.8-7.05 with
+    Mythic Coder and team suites
+    running concurrently on the shared
+    machine); its solo re-run by the
+    banking coordinator is green: 17
+    passed in 5.27s, exit 0 (log
+    hidden_files/P153_P077_SOLO.log in
+    the forge). This is the established
+    p077 contention class, classified
+    honestly with both figures: the
+    counts reconcile exactly
+    (5008 + 1 = 5009 = 4990 + 19). Log
+    hidden_files/P153_FORGE_CONFIRM.log
+    in the forge.
+    Slice scope: the library bind-plan
+    census - scenarios/plancensus.py
+    (new: census_bind_plans rows every
+    definition the caller holds, in
+    caller list order, judged by the
+    owning service preview_bind_plan
+    called verbatim per record; each
+    row carries the P-131 summary
+    verbatim, the envelope counts and
+    the plan's skipped rows verbatim,
+    and one plan state under the plan
+    law read from P-136's own counts -
+    clean / partial / skips_only /
+    empty, named by BIND_PLAN_STATES;
+    by_where rollup in first-appearance
+    order; every count summed from the
+    rows themselves; five standing
+    notes; pure read, stores nothing),
+    one additive road (GET
+    /scenarios/library/bind-plans,
+    declared in the library block after
+    the P-151 library census road and
+    before the bindings block, so the
+    literal library is never read as a
+    definition id; no 404 case),
+    scenarios/router.py (additive,
+    +28), scenarios/__init__.py
+    (additive, +18),
+    tests/test_p153_bind_plan_census.py
+    (new, 19 tests),
+    docs/SCENARIO_BIND_PLAN_CENSUS_2026-11-08.md
+    (new), clean-room log append (+1).
+    Team delta 6 files (+1050/-0),
+    purely additive, no hidden_files
+    paths in the slice commit. No
+    defect was found in review, so no
+    in-slice fix was needed.
+    Honest limitations: the census is a
+    pure read; it changes no write
+    behaviour. The delete_chat cascade
+    into the binding store remains OPEN
+    and deliberately untaken: P-149
+    reserved the decision expressly for
+    Volmarr and P-150, P-151 and P-152
+    declined it again; this slice
+    records the same position with the
+    full argument in the slice doc.
+    Definition-side only: no chat is
+    consulted, bind-time refusals are
+    not judged, and seedable is not
+    landed (keys a chat already holds
+    seed nothing at bind time, knowable
+    only at bind). The census carries
+    counts and skipped rows only - no
+    message text, no flag or variable
+    value, no seedable key. Each plan
+    is computed from its definition's
+    current revision; a replace re-
+    plans and no history is kept. No
+    playback, runtime or execution of
+    any stored content (P-027 law).
+    Migration: NONE (head stays 0041).
+    Merge: clean no-ff merge, no
+    conflicts; merged
+    scenarios/router.py grep-verified
+    carrying BOTH the P-151 GET
+    /scenarios/library/census road AND
+    the P-153 GET
+    /scenarios/library/bind-plans road,
+    bind-plans declared after census;
+    merged clean-room log holds the
+    P-153 entry exactly once; merged
+    scenarios modules py_compile clean;
+    merged diff vs 1e2b4de is exactly
+    the 6 slice files (+1050/-0). No
+    heal was needed at merge.
+    Derived scope ACCEPTED as banked.
+    PART IX OPEN (P-131..P-154).
+    Next in roadmap order: P-154 (Part
+    IX, in roadmap order).
+P-154 BANKED - Part IX Gate - Scenarios, the
+    Visual Novel Engine (Part IX)
+    PART IX COMPLETE (P-131..P-154) /
+    GATE PASSED.
+    - team-03 commit df87e64 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 2b82629 (parents 32a4cc2 +
+    df87e64); banking heal 56b89d8
+    followed the merge (see F2 below);
+    merge + heal pushed and ls-remote
+    verified at 56b89d8 before this
+    record; banking record commit
+    follows this entry and is pushed
+    after it.
+    Gate verdict: PASS in all four
+    areas - Census PASS, Together PASS,
+    Custody PASS, Accounting PASS. All
+    23 rows P-131..P-153 PASS (P-153
+    measured by overlay per the P-116
+    precedent, both shapes named in the
+    gate doc); P-154 is the gate
+    itself. Derived scope ACCEPTED as
+    banked: the roadmap gives Part IX
+    only its part line (P-131..P-154),
+    no per-slice entries; the gate
+    judged Part IX against the census
+    its own banked slice docs declare,
+    as the gate doc states plainly.
+    Evidence (team-03 worktree
+    hidden_files/ P154_EVIDENCE.md +
+    logs P154_BATTERY.log,
+    P154_NEIGHBOURS.log,
+    P154_FULLSUITE.log): gate battery
+    26 passed / 0 failed (Area A 4,
+    Area B 8, Area C 6, Area D 6,
+    hygiene 2); gate-record module 10
+    passed standalone; neighbours fence
+    (P-026 + P-131..P-152) 445 passed /
+    0 failed, exactly the P-152 banking
+    expectation; team full suite 5016
+    passed / 5 skipped / 0 failed in
+    302.52s on the gate's base,
+    reconciling exactly (4990 + 26 =
+    5016); committed team tree 5026 by
+    arithmetic (5016 + 10 gate-record).
+    Combined batteries on the merged
+    tree: 500 passed / 0 failed (P-026 +
+    P-131..P-154 scenario batteries
+    incl. both gate modules; 464 + 36 =
+    500, exact), run by the banking
+    coordinator with PYTHONPATH=src on
+    the campaign venv runmal-venv312.
+    Log hidden_files/P154_COMBINED.log
+    in the forge. First combined launch
+    read 499 passed / 1 failed: the
+    lone failure was the gate battery's
+    base-shape absence pin (see F2),
+    preserved as hidden_files/
+    P154_COMBINED_ATTEMPT1_BASESHAPE.log.
+    Forge confirmation suite on the
+    merged tree: 5045 passed / 5
+    skipped / 0 failed in 300.09s, exit
+    0, reconciling exactly (5009 + 36 =
+    5045). No failure occurred, so no
+    contention classification was
+    needed. Log hidden_files/
+    P154_FORGE_CONFIRM.log in the forge.
+    Findings: F1 - no new engine defect
+    was found by this gate; the gate's
+    only corrections during
+    construction were its own probe
+    errors, corrected to the banked
+    contracts in the gate's own file;
+    no banked code was touched. F2 -
+    P-153 banked in parallel; its shape
+    was named, not assumed, and the
+    keeper confirmed it at banking on
+    this merged tree: the P-153 road
+    GET /scenarios/library/bind-plans
+    is LIVE in-tree (present in the
+    merged scenarios router paths, not
+    absent), and the gate battery runs
+    green WITH P-153 in-tree. The one
+    gate pin that asserted the road's
+    absence was the base shape doing
+    its named job; it was healed at
+    banking to the merged truth as
+    commit 56b89d8 ("P-154 banking
+    heal", +5/-4 in the gate battery
+    file only, no assertion weakened -
+    the pin now asserts the road's
+    presence), the P-021/P-023
+    merged-truth heal precedent; the
+    re-run combined fence then read
+    500 passed exactly.
+    Carried items, named at the gate
+    (gate doc S4, carried K1-K8):
+    K1 - the delete_chat cascade into
+    the binding store stays OPEN and
+    RESERVED EXPRESSLY FOR VOLMARR:
+    P-149 reserved the decision, P-150,
+    P-151, P-152 and P-153 declined it
+    again, and this gate records it as
+    Volmarr's open decision and does
+    NOT take it. K2 - portable-archive
+    inclusion of the scenario stores
+    stays open (a portable-subsystem
+    contract, not a Part IX slice).
+    K3 - unmappable Voxta raw values
+    never persist (the bound, not a
+    gap). K4 - the P-133 finding F1 is
+    CLOSED on the stateless road by
+    P-142, its Voxta-origin bound
+    standing: P-142 amended the overlay
+    law for native-origin parses only,
+    and a file the importer classifies
+    as Voxta keeps the full INV-009
+    overlay including any native-
+    spelled keys its raw happens to
+    carry; regression-pinned by this
+    gate. K5 - playback / runtime /
+    condition evaluation stays absent,
+    absolutely (P-027 law). K6 -
+    definition history retention stays
+    open. K7 - organisation orphan rows
+    and cross-store cascade cleanup
+    stay open (censuses name, never
+    repair). K8 - bind-plan vs actual-
+    bind reconciliation beyond the
+    binding record stays open (the
+    record stands as the account).
+    Also carried without separate rows,
+    as the gate doc names: collections
+    / folders, candidate create
+    preview, unbind-impact preview,
+    within-library duplicate-content
+    census.
+    Slice scope: docs/
+    PART_IX_GATE_2026-11-08.md (new,
+    the gate record: verdict, per-row
+    table, S1 checklist, S2 area
+    meanings, S3 gate world, S4 carried
+    items, S5 findings, S6 evidence),
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    (+1 entry), tests/
+    test_p154_part_ix_gate.py (new, 26
+    tests), tests/
+    test_p154_gate_record.py (new, 10
+    tests). Team delta 4 files
+    (+1364/-0), purely additive, no
+    hidden_files paths in the slice
+    commit, no engine code.
+    Migration: NONE (head stays 0041).
+    Merge: no-ff merge; the only
+    conflict was the clean-room log
+    (append-vs-append, P-153 entry vs
+    gate entry), resolved as a pure
+    additive union, both entries
+    exactly once; merged diff vs
+    32a4cc2 is exactly the 4 gate files
+    (+1364/-0). One banking heal
+    (56b89d8, F2 above).
+    Derived scope ACCEPTED as banked.
+    PART IX COMPLETE (P-131..P-154).
+    Next in roadmap order: P-155 (Part
+    X - Faces That Speak, P-155..P-168,
+    in roadmap order).
+P-155 BANKED - Face Presentation
+    Foundation (Part X - Faces That
+    Speak, P-155..P-168) PART X OPENER.
+    - team-01 commit 25d7ef5 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 3c6b71a (parents 8824e95 +
+    25d7ef5); merge pushed and
+    ls-remote verified at 3c6b71a
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Derived scope ACCEPTED as banked
+    by the keeper: the roadmap gives
+    Part X only its part-table line
+    (P-155..P-168), no per-slice
+    entries; this slice is derived
+    from the P-092 / P-023 / P-087
+    record, as the slice doc states
+    plainly.
+    Scope: a pure-read resolution
+    service (src/runmal/faces/
+    presentation.py - resolve_
+    presentation composes P-092
+    inspect_state VERBATIM, its set /
+    bindings / current / counts riding
+    whole) plus one road (GET /faces/
+    presentation?chat_id= on the
+    /api/v1 mount, after the vision
+    router). Every declared entry
+    resolves to a renderable
+    descriptor (asset facts verbatim +
+    the P-023 content / thumbnail
+    roads as URL data, present only
+    when bound; renderable == bound);
+    the current face is classified
+    under the closed PRESENTATION_
+    STATES law (ready / current_
+    unbound - problem verbatim, or
+    not_declared / no_selection /
+    no_set / no_character); face is
+    the current descriptor only when
+    ready, NEVER substituted; the
+    declared default and the character
+    avatar ride as fallback DATA;
+    five standing honesty notes in
+    fixed order.
+    Evidence (team-01 worktree
+    hidden_files/ P155_EVIDENCE.md +
+    logs P155_BATTERY.log,
+    P155_NEIGHBOURS.log,
+    P155_FULLSUITE.log): battery 14
+    passed / 0 failed; neighbours
+    fence (P-092 expressions, P-023
+    assets, P-095 gallery, P-117
+    vision) 109 passed / 0 failed;
+    team full suite 5059 passed / 5
+    skipped / 0 failed, exit 0, run
+    TWICE with identical counts,
+    reconciling exactly (5045 base +
+    14 battery = 5059).
+    Combined batteries on the merged
+    tree: 123 passed / 0 failed
+    (14 + 109, exact), run by the
+    banking coordinator with
+    PYTHONPATH=src on the campaign
+    venv runmal-venv312.
+    Forge confirmation suite on the
+    merged tree: 5059 passed / 5
+    skipped / 0 failed in 435.28s,
+    exit 0, exact. No failure
+    occurred, so no contention
+    classification was needed.
+    Defects: one in-slice lint fix -
+    ruff E501 (line too long) at
+    presentation.py:138, wrapped in
+    parentheses across two lines, no
+    logic change; battery and full
+    suite re-run on the fixed tree
+    with identical counts. No other
+    defect found.
+    Slice scope: src/runmal/faces/
+    __init__.py (new), src/runmal/
+    faces/presentation.py (new),
+    src/runmal/faces/router.py (new),
+    src/runmal/app.py (+6),
+    tests/test_p155_face_
+    presentation.py (new, 14 tests),
+    docs/FACE_PRESENTATION_2026-11-08
+    .md (new), docs/CLEAN_ROOM_LOG_
+    2026-10-30.md (+1 entry, exactly
+    once in the merged tree). Team
+    delta 7 files (+822/-0), purely
+    additive, no hidden_files paths
+    in the slice commit.
+    Migration: NONE (head stays 0041,
+    no 0042, battery-pinned).
+    Merge: clean no-ff merge, no
+    conflicts; merged diff vs 8824e95
+    is exactly the 7 slice files
+    (+822/-0). No heal was needed.
+    Honest limitations: Runmal
+    renders, selects, animates,
+    stores and generates nothing in
+    this slice - the presentation
+    document is the contract a later
+    Part X slice builds a stage on;
+    nothing here fetches the named
+    URLs. No playback, runtime or
+    execution of any stored content
+    (P-027 law).
+    Derived scope ACCEPTED as banked.
+    PART X OPEN (P-155..P-168).
+    Next in roadmap order: P-156 (Part
+    X, in roadmap order).
+P-156 BANKED - Character Face Roster
+    (Part X - Faces That Speak,
+    P-155..P-168).
+    - team-02 commit ad63747 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 8c2c061 (parents cd740ee +
+    ad63747); merge pushed and
+    ls-remote verified at 8c2c061
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Derived scope ACCEPTED as banked
+    by the keeper: the roadmap gives
+    Part X only its part-table line
+    (P-155..P-168), no per-slice
+    entries; this slice is derived
+    from the P-092 / P-155 record, as
+    the slice doc states plainly
+    (P-155's design names this
+    per-character candidate open and
+    declined it as its opener).
+    Scope: a pure-read resolution
+    service (src/runmal/faces/
+    roster.py - resolve_character_
+    roster over P-092's character-
+    keyed binding_report, descriptors
+    in P-155's shape, the P-023
+    content / thumbnail roads as URL
+    data present only when bound)
+    plus one road (GET /faces/roster?
+    character_id= on the /api/v1
+    mount, after the vision router).
+    The roster is classified under
+    the closed ROSTER_STATES law
+    (ready / no_renderable /
+    empty_set / no_set); the declared
+    default and the character avatar
+    ride as fallback DATA, never
+    applied; the roster names NO
+    current face - selection is per
+    chat and always an explicit act
+    (P-092).
+    Evidence (team-02 worktree
+    hidden_files/ P156_EVIDENCE.md +
+    logs P156_BATTERY.log,
+    P156_NEIGHBOURS.log,
+    P156_FULL_SUITE.log): battery 12
+    passed / 0 failed; neighbours
+    fence (P-092 + P-095 + P-117: 66;
+    P-023: 43) 109 passed / 0 failed;
+    team full suite 5057 passed / 5
+    skipped / 0 failed, exit 0,
+    reconciling exactly (5045 on its
+    base 8824e95 + 12 battery = 5057;
+    P-155 was NOT in that base and is
+    reconciled at this merge).
+    Combined batteries on the merged
+    tree: 135 passed / 0 failed
+    (P-155 battery 14 + P-156 battery
+    12 + neighbours fence 109,
+    exact), run by the banking
+    coordinator with PYTHONPATH=src
+    on the campaign venv
+    runmal-venv312.
+    Forge confirmation suite on the
+    merged tree: 5071 passed / 5
+    skipped / 0 failed in 307.30s,
+    exit 0, exact (5059 + 12). The
+    first confirmation launch was
+    lost at 51% - its process group
+    died with no exit file under
+    shared-machine contention (no
+    result recorded from it); the
+    relaunched run above is the
+    counted one and needed no
+    contention classification.
+    Reconciliation (the overlap the
+    lead flagged): both P-155 and
+    P-156 created src/runmal/faces/
+    __init__.py and both appended a
+    router include in app.py after
+    the vision router; the merge
+    conflicted on exactly those two
+    files plus the clean-room log,
+    and all three were resolved as
+    pure additive unions. Merged
+    __init__.py carries both
+    docstring halves, the full
+    presentation exports, and the
+    roster exports (ROSTER_SCHEMA,
+    ROSTER_STATES, SELECTION_SCOPE,
+    STATE_EMPTY_SET,
+    STATE_NO_RENDERABLE,
+    resolve_character_roster); the
+    shared names STATE_READY and
+    STATE_NO_SET hold identical
+    values in both modules and are
+    carried once, and package-level
+    NOTES is the presentation tuple
+    (the roster's own NOTES remains
+    at runmal.faces.roster.NOTES).
+    Merged app.py imports both
+    faces_router and
+    faces_roster_router and includes
+    them as two separate blocks
+    after the vision router; both
+    roads grep-verified live in the
+    merged tree (GET
+    /faces/presentation and GET
+    /faces/roster). Clean-room log:
+    the P-155 and P-156 entries each
+    appear exactly once, P-155 first.
+    py_compile clean on all merged
+    surfaces.
+    Slice scope: src/runmal/faces/
+    __init__.py (new in the team's
+    tree), src/runmal/faces/
+    roster.py (new), src/runmal/
+    faces/roster_router.py (new),
+    src/runmal/app.py (+6),
+    tests/test_p156_character_face_
+    roster.py (new, 12 tests),
+    docs/CHARACTER_FACE_ROSTER_
+    2026-11-08.md (new),
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    (+1 entry, exactly once in the
+    merged tree). Team delta 7 files
+    (+699/-0); merged diff vs
+    cd740ee is exactly those 7 files
+    (+704/-0, the +5 net being the
+    __init__.py union), purely
+    additive, no hidden_files paths
+    in the slice commit.
+    Migration: NONE (head stays 0041,
+    no 0042, battery-pinned).
+    Defects: none discovered
+    in-slice and none found at
+    banking; no heal was needed
+    beyond the flagged union
+    reconciliation above.
+    Honest limitations: the roster
+    is data only - Runmal renders
+    nothing and no stage / renderer
+    is shipped (none exists in-tree
+    to extend; named open for a
+    later slice); the roster names
+    no current face, because
+    selection is per chat - a chat's
+    current face is P-155's
+    presentation document's to name.
+    No playback, runtime or
+    execution of any stored content
+    (P-027 law).
+    Derived scope ACCEPTED as banked.
+    PART X OPEN (P-155..P-168).
+    Next in roadmap order: P-157 (Part
+    X, in roadmap order).
+P-157 BANKED - Speaking Face
+    (Part X - Faces That Speak,
+    P-155..P-168).
+    - team-03 commit e2afb5b merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 4ffa80e (parents 01c48b2 +
+    e2afb5b); merge pushed and
+    ls-remote verified at 4ffa80e
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Derived scope ACCEPTED as banked
+    by the keeper: the roadmap gives
+    Part X only its part-table line
+    (P-155..P-168), no per-slice
+    entries; this slice is derived
+    from Runmal's own in-tree record
+    only (the part title itself -
+    the faces P-155 and P-156 resolve
+    are silent - plus S512
+    per-character voice profiles,
+    P-109 voice affects, P-092
+    expression inspection and P-023
+    asset roads), as the slice doc
+    states plainly.
+    Scope: a pure-read resolution
+    service (src/runmal/faces/
+    speaking.py -
+    resolve_speaking_face) pairing,
+    on the one shared key of the
+    chat's bound character, the face
+    half and the voice half for one
+    chat, plus one road (GET
+    /faces/speaking?chat_id= on the
+    /api/v1 mount, after the vision
+    router, with the local-auth
+    dependency; 404 for a missing or
+    foreign chat - existence never
+    leaks; every non-ready state is
+    data, never an error). The face
+    half is composed from P-092's
+    inspect_state and classified
+    under the same closed five-state
+    law P-155 uses (ready /
+    current_unbound / no_selection /
+    no_set / no_character, with
+    not_declared for a selection
+    outliving its set); current rides
+    verbatim with its provenance and
+    face names the current entry's
+    descriptor (the P-155 shape, with
+    the P-023 content / thumbnail
+    roads as URL data) only when the
+    state is ready, else None. The
+    voice half is composed from S512
+    verbatim (resolve_character_voice
+    for the resolved reference,
+    get_character_voice for the
+    stored row) and classified under
+    a closed voice-state law
+    (profile / profile_fallback /
+    default_voice); the row's named
+    backend rides as stored_backend
+    so a fallback is visible, never
+    silent. The P-109 affect view
+    rides whole (affect, source,
+    consumed: False and the
+    consumption truth). paired is
+    True exactly when the face state
+    is ready and a voice resolved;
+    the halves are independent
+    modalities and neither is ever
+    substituted for the other.
+    Evidence (team-03 worktree
+    hidden_files/ P157_EVIDENCE.md +
+    logs P157_BATTERY.log,
+    P157_NEIGHBOURS.log,
+    P157_FULLSUITE.log): battery 16
+    passed / 0 failed; neighbours
+    fence (P-092 + P-109 + S512 +
+    P-117) 58 passed / 0 failed;
+    team full suite 5061 passed / 5
+    skipped / 0 failed in 314.96s,
+    exit 0, reconciling exactly
+    (5045 on its base 8824e95 + 16
+    battery = 5061; P-155 and P-156
+    were NOT in that base and are
+    reconciled at this merge).
+    Combined batteries on the merged
+    tree: 100 passed / 0 failed
+    (P-155 battery 14 + P-156 battery
+    12 + P-157 battery 16 +
+    neighbours fence 58, exact), run
+    by the banking coordinator with
+    PYTHONPATH=src on the campaign
+    venv runmal-venv312.
+    Forge confirmation suite on the
+    merged tree: 5087 passed / 5
+    skipped / 0 failed in 299.95s,
+    exit 0, exact (5071 + 16).
+    Reconciliation: all three Part X
+    slices created src/runmal/faces/
+    __init__.py on the same base and
+    appended a router include in
+    app.py at the same anchor (after
+    the vision router); this merge
+    conflicted on the clean-room
+    log, app.py and faces/__init__.py
+    and all three were resolved as
+    pure additive unions by the
+    banking coordinator. The merged
+    tree carries all three faces
+    routers; the speaking road is
+    grep-verified live in app.py
+    (import + include). Clean-room
+    log: the P-157 entry appears
+    exactly once. py_compile clean
+    on all merged surfaces.
+    Slice scope: src/runmal/faces/
+    speaking.py (new), src/runmal/
+    faces/speaking_router.py (new),
+    src/runmal/faces/__init__.py
+    (union), src/runmal/app.py (+6),
+    tests/test_p157_speaking_face.py
+    (new, 16 tests),
+    docs/SPEAKING_FACE_2026-11-08.md
+    (new), docs/CLEAN_ROOM_LOG_
+    2026-10-30.md (+1 entry, exactly
+    once in the merged tree). Team
+    delta 7 files (+789/-0); merged
+    diff vs 01c48b2 is exactly those
+    7 files (+789/-0), purely
+    additive, no hidden_files paths
+    in the slice commit.
+    Migration: NONE (head stays 0041,
+    no 0042, battery-pinned).
+    Defects: none discovered
+    in-slice and none found at
+    banking; no heal was needed
+    beyond the flagged union
+    reconciliation above.
+    Honest limitations: pairing is
+    data only - no synthesis, no
+    rendering, no lip-sync or
+    animation (no timing contract
+    exists in-tree); the affect is
+    carried data with consumed:
+    False (no TTS backend renders an
+    affect yet); a character can
+    speak without a ready face, and
+    a voice resolving while the face
+    is unbound is stated, never
+    upgraded. No playback, runtime
+    or execution of any stored
+    content (P-027 law).
+    Banking note (honest): the
+    banking was interrupted by a
+    cron timeout after the merge and
+    the forge confirmation had
+    completed; the merge push, this
+    record and the team reset were
+    completed by the banking
+    finisher WITHOUT re-running the
+    full suite - the combined and
+    confirmation counts above are
+    read back from the coordinator's
+    logs on the merged tree
+    (hidden_files/P157_COMBINED.log
+    and P157_CONFIRM.log with its
+    exit file, 0).
+    Derived scope ACCEPTED as banked.
+    PART X OPEN (P-155..P-168).
+    Next in roadmap order: P-158 (Part
+    X, in roadmap order).
+P-158 BANKED - Face Selection
+    History (Part X - Faces That
+    Speak, P-155..P-168).
+    - team-01 commit 8e9287a merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 072f669 (parents d94e2a0 +
+    8e9287a); merge pushed and
+    ls-remote verified at 072f669
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Derived scope ACCEPTED as banked
+    by the keeper: the roadmap gives
+    Part X only its part-table line
+    (P-155..P-168), no per-slice
+    entries; this slice is derived
+    from the in-tree record of Runmal
+    only (the P-092 kept selection
+    history, the P-155 presentation
+    document and the P-023 asset
+    roads), as the slice doc states
+    plainly.
+    Scope: a pure-read resolution
+    service (src/runmal/faces/
+    history.py - resolve_face_history)
+    resolving, for one chat, the
+    P-092 kept selection history
+    against the binding truth of
+    today, plus one road (GET
+    /faces/history?chat_id= on the
+    /api/v1 mount, after the faces
+    router, with the local-auth
+    dependency; 404 for a missing or
+    foreign chat - existence never
+    leaks; every non-ready state is
+    data, never an error). The
+    service composes P-155
+    resolve_presentation VERBATIM and
+    P-092 list_history VERBATIM.
+    Every kept event rides whole,
+    provenance included, newest
+    first, classified under the
+    closed ENTRY_STATES law
+    (still_ready / declared_unbound -
+    problem verbatim /
+    no_longer_declared - the P-155
+    not_declared / cleared); the
+    still-declared entry descriptor
+    rides as data (the truth of
+    today, never a claim about the
+    past); counts (event / selection
+    / cleared / still_ready),
+    kept_limit == P-092
+    MAX_HISTORY_KEPT and at_kept_limit
+    name the kept window honestly;
+    five standing honesty notes in
+    fixed order. No store, no
+    migration.
+    Evidence (team-01 worktree
+    hidden_files/ P158_EVIDENCE.md +
+    logs P158_BATTERY.log,
+    P158_NEIGHBOURS.log,
+    P158_FULLSUITE.log): battery 18
+    passed / 0 failed; neighbours
+    fence (P-092 + P-155 + P-023 +
+    P-117) 96 passed / 0 failed;
+    team full suite 5077 passed / 5
+    skipped / 0 failed in 303.19s,
+    exit 0, reconciling exactly
+    (5059 on its base cd740ee + 18
+    battery = 5077; P-156 and P-157
+    were NOT in that base and are
+    reconciled at this merge).
+    Combined batteries on the merged
+    tree: 161 passed / 0 failed
+    (P-155 battery 14 + P-156 battery
+    12 + P-157 battery 16 + P-158
+    battery 18 + neighbour union
+    fence 101 (P-092 + P-023 + P-109
+    + P-117 + S512), exact), run by
+    the banking coordinator with
+    PYTHONPATH=src on the campaign
+    venv runmal-venv312.
+    Forge confirmation suite on the
+    merged tree: first run 5104
+    passed / 5 skipped / 1 failed in
+    490.96s - the single failure was
+    test_s503_stt
+    test_real_faster_whisper_meets_
+    predeclared_contract on its RTF
+    p50 timing leg only (the WER leg
+    passed; RTF p50 1.795 over
+    contract) under shared-machine
+    contention (the run took 490.96s
+    against a ~300s clean-run norm);
+    solo re-run of that one test 4/4
+    green (each ~25-28s, exit 0,
+    hidden_files/P158_S503_SOLO.log)
+    - the known contention
+    classification, so the
+    confirmation stands at 5105
+    passed / 5 skipped / 0 failed,
+    exact (5087 + 18).
+    Reconciliation: this slice was
+    built on the P-155 record base
+    cd740ee; the merge into the forge
+    (carrying P-156 and P-157)
+    conflicted on the clean-room log,
+    app.py and faces/__init__.py and
+    all three were resolved as pure
+    additive unions by the banking
+    coordinator. The merged tree
+    carries all four faces routers;
+    the history road is grep-verified
+    live in app.py (import +
+    include). Clean-room log: the
+    P-158 entry appears exactly once.
+    py_compile clean on all merged
+    surfaces.
+    Slice scope: src/runmal/faces/
+    history.py (new), src/runmal/
+    faces/history_router.py (new),
+    src/runmal/faces/__init__.py
+    (union), src/runmal/app.py (+6),
+    tests/test_p158_face_history.py
+    (new, 18 tests),
+    docs/FACE_HISTORY_2026-11-08.md
+    (new), docs/CLEAN_ROOM_LOG_
+    2026-10-30.md (+1 entry, exactly
+    once in the merged tree). Team
+    delta 7 files (+813/-0); merged
+    diff vs d94e2a0 is exactly those
+    7 files (+813/-0), purely
+    additive, no hidden_files paths
+    in the slice commit.
+    Migration: NONE (head stays 0041,
+    no 0042, battery-pinned).
+    Defects: the finisher fixed
+    in-slice a ruff I001 on
+    faces/__init__.py and a ruff B905
+    in the salvaged battery (zip
+    strict=True), and one salvaged-
+    battery defect (a test calling
+    P-092 update_set without
+    character_id in the body; the
+    production code was correct and
+    the battery went 17/18 to 18/18
+    after the test fix). No defect
+    was found at banking; no heal
+    was needed beyond the flagged
+    union reconciliation above.
+    Honest limitations: Runmal
+    renders nothing in this slice;
+    the history document is data a
+    client reads, carrying no image
+    bytes. entry_state judges the
+    truth of today; history itself
+    is never rewritten. The kept
+    window holds at most 100 events;
+    the document never claims a
+    complete record. No playback,
+    runtime or execution of any
+    stored content (P-027 law).
+    Derived scope ACCEPTED as banked.
+    PART X OPEN (P-155..P-168).
+    Next in roadmap order: P-159 (Part
+    X, in roadmap order).
+P-159 BANKED - Speaking Roster
+    (Part X - Faces That Speak,
+    P-155..P-168).
+    - team-02 commit caaef51 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as a4c9ca1 (parents 1975169 +
+    caaef51); merge pushed and
+    ls-remote verified at a4c9ca1
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Derived scope ACCEPTED as banked
+    by the keeper: the roadmap gives
+    Part X only its part-table line
+    (P-155..P-168), no per-slice
+    entries; this slice is derived
+    from the in-tree record of Runmal
+    only (the banked Part X grid -
+    per chat: P-155 faces, P-157
+    faces + voice; per character:
+    P-156 faces, nothing with voice -
+    and P-157's own design, which
+    weighed a per-character chat-less
+    speaking document and named it
+    open), as the slice doc states
+    plainly.
+    Scope: a pure-read resolution
+    service (src/runmal/faces/
+    speaking_roster.py -
+    resolve_character_speaking_roster)
+    resolving, for one character, the
+    speaking document: the roster half
+    composed from P-156
+    resolve_character_roster WHOLE
+    (character, set, every entry's
+    descriptor in the P-155 shape with
+    the P-023 roads as data present
+    only when bound, counts, the state
+    under the same closed ROSTER_STATES
+    law, selection_scope per_chat, the
+    declared default and the avatar as
+    fallback DATA never applied), plus
+    one road (GET
+    /faces/speaking-roster?character_id=
+    on the /api/v1 mount, after the
+    speaking router, with the
+    local-auth dependency; 404 for a
+    missing or foreign character -
+    existence never leaks; every
+    non-ready state is data, never an
+    error). The voice half is composed
+    from S512 verbatim in substance
+    exactly as P-157 composes it -
+    resolve_character_voice for the
+    resolved reference,
+    get_character_voice for the stored
+    row - classified under the same
+    closed VOICE_STATES law (profile /
+    profile_fallback with the row's
+    named backend carried as
+    stored_backend / default_voice),
+    the P-109 affect view carried
+    whole with consumed False; paired
+    true exactly when the roster is
+    ready and a voice resolved, the
+    halves independent and neither
+    ever substituted. NO current face
+    anywhere in the document - no
+    current, face or chat_id key -
+    because selection is per chat and
+    always an explicit act (P-092).
+    No store, no migration.
+    Evidence (team-02 worktree
+    hidden_files/ P159_EVIDENCE.md +
+    logs P159_BATTERY.log,
+    P159_NEIGHBOURS.log,
+    P159_FULL_SUITE.log): battery 17
+    passed / 0 failed; neighbours
+    fence (P-092 + P-109 + S512 +
+    P-155 + P-156 + P-157) 85 passed /
+    0 failed; team full suite 5104
+    passed / 5 skipped / 0 failed in
+    375.64s, exit 0, reconciling
+    exactly (5087 on its base d94e2a0
+    + 17 battery = 5104; P-158 was NOT
+    in that base and is reconciled at
+    this merge).
+    Combined batteries on the merged
+    tree: 178 passed / 0 failed
+    (P-155 battery 14 + P-156 battery
+    12 + P-157 battery 16 + P-158
+    battery 18 + P-159 battery 17 +
+    neighbour union fence 101 (P-092
+    + P-023 + P-109 + P-117 + S512),
+    exact), run by the banking
+    coordinator with PYTHONPATH=src
+    on the campaign venv
+    runmal-venv312.
+    Forge confirmation suite on the
+    merged tree: 5122 passed / 5
+    skipped / 0 failed in 310.36s,
+    exit 0 (hidden_files/
+    P159_CONFIRM.log with its exit
+    file, 0) - a clean run, no
+    contention re-runs needed,
+    reconciling exactly (5105 + 17).
+    Reconciliation: this slice was
+    built on the P-157 record base
+    d94e2a0; the merge into the forge
+    (carrying P-158) conflicted on the
+    clean-room log, app.py and
+    faces/__init__.py and all three
+    were resolved as pure additive
+    unions by the banking
+    coordinator. The merged tree
+    carries all five faces routers
+    (presentation, roster, speaking,
+    history, speaking-roster); the
+    speaking-roster road is
+    grep-verified live in app.py
+    (import + include). Clean-room
+    log: the P-159 entry appears
+    exactly once (and the P-158 entry
+    exactly once). py_compile clean
+    on all merged surfaces.
+    Slice scope: src/runmal/faces/
+    speaking_roster.py (new),
+    src/runmal/faces/
+    speaking_roster_router.py (new),
+    src/runmal/faces/__init__.py
+    (union), src/runmal/app.py (+6),
+    tests/test_p159_speaking_roster.py
+    (new, 17 tests),
+    docs/SPEAKING_ROSTER_2026-11-08.md
+    (new), docs/CLEAN_ROOM_LOG_
+    2026-10-30.md (+1 entry, exactly
+    once in the merged tree). Team
+    delta 7 files (+783/-0); merged
+    diff vs 1975169 is exactly those
+    7 files (+783/-0), purely
+    additive, no hidden_files paths
+    in the slice commit.
+    Migration: NONE (head stays 0041,
+    no 0042, battery-pinned).
+    Defects: the team fixed in-slice
+    a ruff I001 on faces/__init__.py
+    caused by its own added block
+    (blank-line shape matched to
+    siblings; one redundant alias
+    export dropped, the schema +
+    resolver re-verified importable
+    after the change). Pre-existing
+    app.py I001 and router B008 house
+    patterns were verified on the
+    banked tree as not introduced by
+    this slice. No defect was found
+    at banking; no heal was needed
+    beyond the flagged union
+    reconciliation above.
+    Honest limitations: Runmal
+    renders nothing in this slice;
+    the speaking-roster document is
+    data a client reads, carrying no
+    image bytes. The voice half is a
+    resolved reference, never
+    synthesized audio; nothing is
+    performed, animated or lip-synced.
+    The roster names what a character
+    CAN show; it names no current
+    face, because no explicit
+    per-chat selection stands behind
+    a chat-less document. No playback,
+    runtime or execution of any
+    stored content (P-027 law).
+    Derived scope ACCEPTED as banked.
+    PART X OPEN (P-155..P-168).
+    Next in roadmap order: P-160 (Part
+    X, in roadmap order).
+P-160 BANKED - Character Face Chats
+    (Part X - Faces That Speak,
+    P-155..P-168).
+    - team-03 commit 6895bf9 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as eae6409 (parents 2976b79 +
+    6895bf9); merge pushed and
+    ls-remote verified at eae6409
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Derived scope ACCEPTED as banked
+    by the keeper: the roadmap gives
+    Part X only its part-table line
+    (P-155..P-168), no per-slice
+    entries; this slice is derived
+    from the in-tree record of Runmal
+    only (the banked Part X grid -
+    P-155 one chat presentation,
+    P-156 one character roster,
+    P-157 one chat face and voice,
+    P-158 one chat history, P-159 the
+    per-character speaking roster -
+    left exactly one join unmade:
+    the character to its chats), as
+    the slice doc states plainly.
+    Scope: a pure-read resolution
+    service (src/runmal/faces/
+    chats.py -
+    resolve_character_face_chats)
+    resolving, for one character, the
+    face-chats board: None for a
+    missing, foreign or deleted
+    character (existence never
+    leaks); otherwise the v1 envelope
+    with the character verbatim and
+    one row per owned chat bound to
+    the character, in the order of
+    the chats service, carrying the
+    chat title and message count plus
+    the P-155 presentation truth
+    composed verbatim per chat (the
+    presentation state, the current
+    row, its problem, and the current
+    descriptor named as face only
+    when that chat is ready), the
+    board classified under the closed
+    BOARD_STATES law (no_chats /
+    none_ready / some_ready /
+    all_ready) with chat, ready,
+    selection and unbound counts and
+    five honesty notes, plus one road
+    (GET /faces/chats?character_id=
+    on the /api/v1 mount, after the
+    history router, with the
+    local-auth dependency; 404 on
+    None, every board state data at
+    200). No store, no migration.
+    Evidence (team-03 worktree
+    hidden_files/ P160_EVIDENCE.md +
+    logs P160_BATTERY.log,
+    P160_NEIGHBOURS.log,
+    P160_FULLSUITE.log): battery 17
+    passed / 0 failed; neighbours
+    fence (P-155 + P-156 + P-157 +
+    P-158 + P-092) 84 passed / 0
+    failed; team full suite 5122
+    passed / 5 skipped / 0 failed in
+    398.68s, exit 0 (P-159 was NOT in
+    that base 1975169 and is
+    reconciled at this merge).
+    Combined batteries on the merged
+    tree: 34 passed / 0 failed
+    (P-159 battery 17 + P-160 battery
+    17, exact), run by the banking
+    coordinator with PYTHONPATH=src
+    on the campaign venv
+    runmal-venv312.
+    Forge confirmation suite on the
+    merged tree: 5139 passed / 5
+    skipped / 0 failed in 307.09s,
+    exit 0 (hidden_files/
+    P160_FORGE_CONFIRM.log with its
+    exit file, 0) - a clean run, no
+    contention re-runs needed,
+    reconciling exactly (5122 + 17).
+    Reconciliation: this slice was
+    built on the P-158 record base
+    1975169; the merge into the forge
+    (carrying P-159) conflicted on
+    the clean-room log, app.py and
+    faces/__init__.py and all three
+    were resolved as pure additive
+    unions by the banking
+    coordinator. The merged tree
+    carries all six faces routers
+    (presentation, roster, speaking,
+    history, speaking-roster, chats);
+    the chats road is grep-verified
+    live in app.py (import + include,
+    after the speaking-roster road).
+    Clean-room log: the P-160 entry
+    appears exactly once (and the
+    P-159 entry exactly once).
+    py_compile clean on all merged
+    surfaces.
+    Slice scope: src/runmal/faces/
+    chats.py (new), src/runmal/
+    faces/chats_router.py (new),
+    src/runmal/faces/__init__.py
+    (union, +30), src/runmal/app.py
+    (+6), tests/
+    test_p160_character_face_chats.py
+    (new, 17 tests), docs/
+    CHARACTER_FACE_CHATS_2026-11-08.md
+    (new), docs/CLEAN_ROOM_LOG_
+    2026-10-30.md (+1 entry, exactly
+    once in the merged tree). Team
+    delta 7 files (+729/-0); merged
+    diff vs 2976b79 is exactly those
+    7 files (+729/-0), purely
+    additive, no hidden_files paths
+    in the slice commit.
+    Migration: NONE (head stays 0041,
+    no 0042, battery-pinned).
+    Defects: the finisher critical
+    review found no defect in the
+    slice and changed no code. No
+    defect was found at banking; no
+    heal was needed beyond the
+    flagged union reconciliation
+    above.
+    Honest limitations: Runmal
+    renders nothing in this slice;
+    the board is data a client
+    reads, carrying no image bytes.
+    A character has no single
+    current face: selection stays
+    per chat and always an explicit
+    act (P-092). No automatic
+    expression detection from
+    message text (P-092 law), no
+    playback, runtime or execution
+    of any stored content (P-027
+    law).
+    Derived scope ACCEPTED as banked.
+    PART X OPEN (P-155..P-168).
+    Next in roadmap order: P-161 (Part
+    X, in roadmap order).
+P-161 BANKED - Speaking History
+    (Part X - Faces That Speak,
+    P-155..P-168).
+    - team-01 commit 179f86b merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 40586e4 (parents d1fb610 +
+    179f86b); merge pushed and
+    ls-remote verified at 40586e4
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Derived scope ACCEPTED as banked
+    by the keeper: the roadmap gives
+    Part X only its part-table line
+    (P-155..P-168), no per-slice
+    entries; this slice is derived
+    from the in-tree record of Runmal
+    only (the banked Part X grid -
+    P-155 per-chat current face,
+    P-156 per-character roster,
+    P-157 per-chat speaking face,
+    P-158 per-chat face history,
+    P-159 per-character speaking
+    roster, P-160 the character to
+    its chats board), as the slice
+    doc states plainly.
+    Scope: a pure-read resolution
+    service (src/runmal/faces/
+    speaking_history.py -
+    resolve_speaking_history)
+    resolving, for one chat, its
+    speaking history: None for a
+    missing or foreign chat
+    (existence never leaks);
+    otherwise the history half
+    composed from P-158
+    resolve_face_history WHOLE -
+    every kept event verbatim with
+    provenance, entry states judged
+    against today, counts, the kept
+    window named honestly - paired
+    with the chat character CURRENT
+    voice resolution composed from
+    S512 verbatim in substance (the
+    closed VOICE_STATES law, the
+    stored backend visible on
+    fallback, the P-109 affect whole
+    with consumed False, voice None
+    exactly when the chat has no
+    bound character), voice_scope
+    current_only on every document
+    (S512 stores NO voice history,
+    so no kept event is ever claimed
+    to have been spoken in todays
+    voice and no event carries a
+    voice field), paired True exactly
+    when a voice resolved and the
+    kept history holds at least one
+    selection event, and five honesty
+    notes, plus one road
+    (GET /faces/speaking-history?chat_id=
+    on the /api/v1 mount, after the
+    speaking-roster router, with the
+    local-auth dependency; 404 on
+    None, every presentation state
+    data at 200). No store, no
+    migration.
+    Evidence (team-01 worktree
+    hidden_files/ P161_EVIDENCE.md +
+    logs P161_BATTERY.log,
+    P161_NEIGHBOURS.log,
+    P161_FULLSUITE.log): battery 17
+    passed / 0 failed; neighbours
+    fence (P-158 + P-159 + P-157 +
+    P-155 + P-092 + S512 + P-109) 108
+    passed / 0 failed; team full
+    suite 5139 passed / 5 skipped /
+    0 failed in 310.74s, exit 0.
+    Combined batteries on the merged
+    tree: 34 passed / 0 failed
+    (P-160 battery 17 + P-161 battery
+    17, exact), run by the banking
+    coordinator with PYTHONPATH=src
+    on the campaign venv
+    runmal-venv312.
+    Forge confirmation suite on the
+    merged tree: 5156 passed / 5
+    skipped / 0 failed in 430.91s,
+    exit 0 (/tmp/p161_forge_suite.log
+    with its done file, 0) - a clean
+    run, no contention re-runs
+    needed, reconciling exactly
+    (5139 + 17).
+    Reconciliation: this slice was
+    built on the P-159 record base
+    2976b79; the merge into the forge
+    (carrying P-160) conflicted on
+    the clean-room log, app.py and
+    faces/__init__.py and all three
+    were resolved as pure additive
+    unions by the banking
+    coordinator. The merged tree
+    carries all seven faces routers
+    (presentation, roster, speaking,
+    history, speaking-roster, chats,
+    speaking-history); the
+    speaking-history road is
+    grep-verified live in app.py
+    (import + include, after the
+    chats road). Clean-room log: the
+    P-161 entry appears exactly once
+    (and the P-160 entry exactly
+    once). py_compile clean on all
+    merged surfaces.
+    Slice scope: src/runmal/faces/
+    speaking_history.py (new),
+    src/runmal/faces/
+    speaking_history_router.py (new),
+    src/runmal/faces/__init__.py
+    (union, +26), src/runmal/app.py
+    (+6), tests/
+    test_p161_speaking_history.py
+    (new, 17 tests), docs/
+    SPEAKING_HISTORY_2026-11-08.md
+    (new), docs/CLEAN_ROOM_LOG_
+    2026-10-30.md (+1 entry, exactly
+    once in the merged tree). Team
+    delta 7 files (+816/-0); merged
+    diff vs d1fb610 is exactly those
+    7 files (+816/-0), purely
+    additive, no hidden_files paths
+    in the slice commit.
+    Migration: NONE (head stays 0041,
+    no 0042, battery-pinned).
+    Defects: the team fixed in-slice
+    a ruff I001 on faces/__init__.py
+    introduced by its own first
+    wiring pass (the NOTES-as import
+    line placement; battery re-run
+    green). Two findings stand at
+    exact parity with the banked
+    base and were NOT introduced by
+    this slice (app.py I001, router
+    B008 - the FastAPI idiom, at
+    parity with P-159 banked router),
+    recorded in the team evidence.
+    No defect was found at banking;
+    no heal was needed beyond the
+    flagged union reconciliation
+    above.
+    Honest limitations: Runmal
+    renders nothing in this slice;
+    the speaking-history document is
+    data a client reads, carrying no
+    image bytes and no audio. The
+    voice half is todays resolution
+    only - a resolved reference,
+    never synthesized audio; nothing
+    is performed, animated or
+    lip-synced. No automatic
+    expression detection from
+    message text (P-092 law), no
+    playback, runtime or execution
+    of any stored content (P-027
+    law).
+    Derived scope ACCEPTED as banked.
+    PART X OPEN (P-155..P-168).
+    Next in roadmap order: P-162 (Part
+    X, in roadmap order).
+P-162 BANKED - Character Face History
+    (Part X - Faces That Speak,
+    P-155..P-168).
+    - team-03 commit 5903592 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 13393d2 (parents 3bc712b +
+    5903592); merge pushed and
+    ls-remote verified at 13393d2
+    before this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Derived scope ACCEPTED as banked
+    by the keeper: the roadmap gives
+    Part X only its part-table line
+    (P-155..P-168), no per-slice
+    entries; this slice is derived
+    from the in-tree record of Runmal
+    only (the banked Part X grid -
+    per chat P-155 current face, P-157
+    current face + voice, P-158 kept
+    history, P-161 kept history +
+    todays voice; per character P-156
+    roster, P-159 speaking roster,
+    P-160 current-face chats board),
+    as the slice doc states plainly.
+    The one subject x time cell no
+    banked surface filled was
+    character x history.
+    Scope: a pure-read resolution
+    service (src/runmal/faces/
+    character_history.py -
+    resolve_character_face_history)
+    resolving, for one character, its
+    kept face history across all of
+    its chats: None for a missing,
+    foreign or deleted character
+    (existence never leaks); otherwise
+    the envelope (schema
+    runmal-p162-character-face-history-v1):
+    character_to_dict verbatim; one
+    row per owned chat bound to the
+    character in list_chats order
+    (chats bound to other characters
+    and unbound chats never appear),
+    each row carrying the chat facts
+    plus that chat P-158 history
+    document composed verbatim -
+    presentation_state, current, the
+    kept events whole with provenance
+    and entry states judged against
+    today, counts, kept window;
+    events never merged into one
+    cross-chat stream; the board
+    classified under the closed
+    HISTORY_BOARD_STATES law
+    (no_chats / no_history /
+    some_history / all_history) with
+    summed counts and the kept limit
+    named once; five standing honesty
+    notes; plus one road
+    (GET /faces/character-history?character_id=
+    on the /api/v1 mount, after the
+    chats router, with the local-auth
+    dependency; 404 on None, every
+    board state data at 200). No
+    store, no migration.
+    Evidence (team-03 worktree
+    hidden_files/ P162_EVIDENCE.md +
+    logs P162_BATTERY.log,
+    P162_NEIGHBOURS.log,
+    P162_FULLSUITE.log,
+    P162_P077_SOLO.log): battery 19
+    passed / 0 failed; neighbours
+    fence (P-092, P-155, P-156, P-157,
+    P-158, P-159, P-160 batteries +
+    the P-162 battery) 137 passed / 0
+    failed; team full suite 5157
+    passed / 5 skipped / 1 failed in
+    475.16s. The one failure is
+    tests/test_p077_longchat_performance.py::
+    test_longchat_tripwires, a
+    wall-clock tripwire in chat-history
+    paging code this slice never
+    touches, run on the shared laptop;
+    solo re-run 17 passed in 4.82s.
+    Verdict: contention, not a defect
+    in this slice (recorded honestly;
+    the forge confirmation below ran
+    the same test green in the full
+    merged suite).
+    Combined batteries on the merged
+    tree: 36 passed / 0 failed
+    (P-161 battery 17 + P-162 battery
+    19, exact), run by the banking
+    coordinator with PYTHONPATH=src
+    on the campaign venv
+    runmal-venv312.
+    Forge confirmation suite on the
+    merged tree: 5175 passed / 5
+    skipped / 0 failed in 318.57s,
+    exit 0 (/tmp/p162_forge_suite.log
+    with its done file, 0) - a clean
+    run, no contention re-runs
+    needed, reconciling exactly
+    (5156 + 19).
+    Reconciliation: this slice was
+    built on the P-160 record base
+    d1fb610; the merge into the forge
+    (carrying P-161) conflicted on
+    the clean-room log, app.py and
+    faces/__init__.py and all three
+    were resolved as pure additive
+    unions by the banking
+    coordinator. One heal inside that
+    union, named plainly: in app.py
+    the two branches router lines
+    first landed as two positional
+    arguments of a single
+    include_router call; the
+    coordinator restored two separate
+    include_router blocks (each
+    branch original shape, its own
+    prefix and auth dependency)
+    before committing - no assertion
+    weakened, no road lost. The
+    merged tree carries all eight
+    faces routers (presentation,
+    roster, speaking, history,
+    speaking-roster, chats,
+    speaking-history,
+    character-history); the
+    character-history road is
+    grep-verified live in app.py
+    (import + include, after the
+    speaking-history road).
+    Clean-room log: the P-162 entry
+    appears exactly once (and the
+    P-161 entry exactly once).
+    py_compile clean on all merged
+    surfaces, and create_app builds
+    on the merged tree.
+    Slice scope: src/runmal/faces/
+    character_history.py (new),
+    src/runmal/faces/
+    character_history_router.py (new),
+    src/runmal/faces/__init__.py
+    (union, +32), src/runmal/app.py
+    (+6), tests/
+    test_p162_character_face_history.py
+    (new, 19 tests), docs/
+    CHARACTER_FACE_HISTORY_2026-11-08.md
+    (new), docs/CLEAN_ROOM_LOG_
+    2026-10-30.md (+1 entry, exactly
+    once in the merged tree). Team
+    delta 7 files (+829/-0); merged
+    diff vs 3bc712b is exactly those
+    7 files (+829/-0), purely
+    additive, no hidden_files paths
+    in the slice commit.
+    Migration: NONE (head stays 0041,
+    no 0042, battery-pinned).
+    Defects: the team fixed in-slice
+    one defect in its own battery
+    (the other-character exclusion
+    test selected a face for a
+    character with no expression set;
+    ExpressionError is correct P-092
+    behaviour - the test now gives
+    that character its own set;
+    battery then 19/19). No production
+    defect was discovered. Two ruff
+    findings stand at parity with the
+    banked base (app.py I001, router
+    B008 - the codebase-wide FastAPI
+    idiom), recorded in the team
+    evidence. No defect was found at
+    banking beyond the app.py union
+    heal recorded above.
+    Honest limitations: Runmal
+    renders nothing in this slice;
+    the board is history data a client
+    reads, carrying no image bytes -
+    a still-declared entry descriptor
+    carries the P-023 content and
+    thumbnail URLs as data only.
+    Events stay grouped per chat and
+    the kept window applies per chat:
+    the board never claims a complete
+    record of a character faces. The
+    board is silent on voice by
+    design (the grid silent cell); any
+    speaking pairing stays open and
+    must carry P-161 current_only
+    honesty law. No automatic
+    expression detection from message
+    text (P-092 law), no playback,
+    runtime or execution of any stored
+    content (P-027 law).
+    Derived scope ACCEPTED as banked.
+    PART X OPEN (P-155..P-168).
+    Next in roadmap order: P-163 (Part
+    X, in roadmap order).
+
+    P-163 BANKED - Character Speaking
+    History (Part X - Faces That Speak,
+    P-155..P-168).
+    - team-01 commit ecaec27 merged (no-
+    ff) into yrsa/two-mirrors-build as
+    8a60b81 (parents 362f442 + ecaec27);
+    merge pushed and ls-remote verified at
+    8a60b81 before this record; banking
+    record commit follows this entry and
+    is pushed after it.
+    Derived scope ACCEPTED as banked by
+    the keeper: the roadmap gives Part X
+    only its part-table line
+    (P-155..P-168), no per-slice entries;
+    this slice is derived from the in-tree
+    record of Runmal only (the banked Part
+    X grid - per chat P-155 current face,
+    P-157 current face + voice, P-158 kept
+    history, P-161 kept history + todays
+    voice; per character P-156 roster,
+    P-159 speaking roster, P-160 current-
+    face chats board, P-162 kept-history
+    board), as the slice doc states
+    plainly. The one subject x time x
+    voice cell no banked surface filled
+    was character x history x speaking.
+    Scope: a pure-read resolution service
+    (src/runmal/faces/character_speaking_h
+    istory.py -
+    resolve_character_speaking_history)
+    resolving, for one character, its kept
+    face history across all of its chats
+    paired with the character's CURRENT
+    voice resolution: None for a missing,
+    foreign or deleted character
+    (existence never leaks); otherwise the
+    envelope (schema
+    runmal-p163-character-speaking-
+    history-v1): character_to_dict
+    verbatim; one row per owned chat bound
+    to the character in list_chats order,
+    each row carrying the chat facts plus
+    that chat's P-158 history document
+    composed verbatim in substance
+    (composed from P-158 directly because
+    P-162 is not on this slice's base,
+    exactly as P-162 composes its silent
+    board; the two slices' export names
+    are disjoint); events never merged
+    into one cross-chat stream; the board
+    classified under the closed
+    SPEAKING_BOARD_STATES law (no_chats /
+    no_history / some_history /
+    all_history) with summed counts and
+    the kept limit named once; the voice
+    half composed from S512 verbatim in
+    substance, stated ONCE at board level
+    only (voice_scope: current_only on
+    every document - S512 stores no voice
+    history, so no kept event in any chat
+    is ever claimed to have been spoken in
+    today's voice; no row or event carries
+    a voice field); paired true exactly
+    when a voice resolved and the board
+    holds at least one selection event;
+    five standing honesty notes; plus one
+    road (GET /faces/character-speaking-
+    history?character_id= on the /api/v1
+    mount, wired in app.py with the local-
+    auth dependency; every board state
+    data at 200). No store, no migration.
+    Evidence (team-01 worktree
+    hidden_files/ P163_EVIDENCE.md + logs
+    P163_BATTERY.log, P163_NEIGHBOURS.log,
+    P163_FULLSUITE.log): battery 25 passed
+    / 0 failed; neighbours fence (P-092 +
+    P-109 + S512 + P-155 + P-157 + P-158 +
+    P-159 + P-160 + P-161 batteries + the
+    P-163 battery) 167 passed / 0 failed;
+    team full suite 5181 passed / 5
+    skipped / 0 failed in 315.11s - a
+    clean run, no contention re-runs
+    needed, reconciling exactly (5156 on
+    the base line + 25).
+    Combined batteries on the merged tree:
+    155 passed / 0 failed (the P-155 +
+    P-156 + P-157 + P-158 + P-159 + P-160
+    + P-161 + P-162 + P-163 faces
+    batteries), run by the banking
+    coordinator with PYTHONPATH=src on the
+    campaign venv runmal-venv312 (hidden_f
+    iles/P163_BANK_BATTERIES.log).
+    Forge confirmation suite on the merged
+    tree: 5199 passed / 5 skipped / 1
+    failed in 450.32s
+    (hidden_files/P163_FORGE_CONFIRM.log).
+    The one failure is tests/test_p077_lon
+    gchat_performance.py::test_longchat_tr
+    ipwires, a wall-clock tripwire in
+    chat-history paging code this slice
+    never touches, run on the shared
+    laptop; solo re-run of the p077 file
+    17 passed in 4.62s
+    (hidden_files/P163_P077_SOLO.log).
+    Verdict: contention, not a defect in
+    this slice (recorded honestly); the
+    counted total reconciles exactly (5199
+    + 1 = 5200 = 5175 + 25).
+    Reconciliation: this slice was built
+    on the P-161 record base 3bc712b; the
+    merge into the forge (carrying P-162)
+    conflicted on the clean-room log,
+    app.py and faces/__init__.py and all
+    three were resolved as pure additive
+    unions by the banking coordinator. The
+    app.py union was built as two separate
+    include_router blocks from the start
+    (the known fused-call defect class was
+    checked for explicitly and never
+    landed); the merged tree carries all
+    nine faces routers and both the
+    character-history and character-
+    speaking-history roads are grep-
+    verified live in app.py (import +
+    include each). Clean-room log: the
+    P-163 entry appears exactly once (and
+    the P-162 entry exactly once).
+    py_compile clean on all merged
+    surfaces, and create_app builds on the
+    merged tree. No heal beyond the union
+    construction was needed at banking.
+    Slice scope: src/runmal/faces/characte
+    r_speaking_history.py (new), src/runma
+    l/faces/character_speaking_history_rou
+    ter.py (new),
+    src/runmal/faces/__init__.py (union),
+    src/runmal/app.py (union), tests/test_
+    p163_character_speaking_history.py
+    (new, 25 tests), docs/CHARACTER_SPEAKI
+    NG_HISTORY_2026-11-08.md (new),
+    docs/CLEAN_ROOM_LOG_2026-10-30.md (+1
+    entry, exactly once in the merged
+    tree). Merged diff vs 362f442 is
+    exactly those 7 files (+1107/-0),
+    purely additive, no hidden_files paths
+    in the slice commit.
+    Migration: NONE (head stays 0041, no
+    0042, battery-pinned).
+    Defects: the team fixed in-slice one
+    defect of its own first wiring pass
+    (the app.py router import exceeded the
+    100-column limit, ruff E501; fixed by
+    wrapping that one import; battery re-
+    run green). No production defect was
+    discovered. Two ruff findings stand at
+    parity with the banked base (app.py
+    I001, router B008 - the codebase-wide
+    FastAPI idiom), recorded in the team
+    evidence. No defect was found at
+    banking.
+    Honest limitations: Runmal renders
+    nothing in this slice; the board is
+    history data a client reads, carrying
+    no image bytes - a still-declared
+    entry descriptor carries the P-023
+    content and thumbnail URLs as data
+    only. Events stay grouped per chat and
+    the kept window applies per chat: the
+    board never claims a complete record
+    of a character's faces. The voice half
+    is today's resolution only, stated
+    once at board level; no per-event or
+    per-row voice claim is made anywhere.
+    No automatic expression detection from
+    message text (P-092 law), no playback,
+    runtime or execution of any stored
+    content (P-027 law).
+    Derived scope ACCEPTED as banked. PART
+    X OPEN (P-155..P-168). Next in roadmap
+    order: P-164 (Part X, in roadmap
+    order).
+
+    P-164 BANKED - Face Census (Part X -
+    Faces That Speak, P-155..P-168).
+    - team-02 commit 5b43f99 merged (no-
+    ff) into yrsa/two-mirrors-build as
+    8335736 (parents af1989b + 5b43f99);
+    merge pushed and ls-remote verified at
+    8335736 before this record; banking
+    record commit follows this entry and
+    is pushed after it.
+    Note on the first parent: af1989b is
+    the P-163 banking heal, committed and
+    pushed between the P-163 banking
+    record (e5fe920) and this merge, and
+    recorded in WAVE_PLAN.md on the P-163
+    line: the first P-163 additive-union
+    pass dropped the
+    character_speaking_history doc entry
+    and its NOTES import from
+    faces/__init__.py, leaving __all__
+    naming
+    CHARACTER_SPEAKING_HISTORY_NOTES
+    without importing it (no test caught
+    it - nothing imports that name from
+    the package root). The heal restored
+    both (+23 lines, purely additive),
+    __all__ completeness verified (no
+    missing names), P-162 + P-163
+    batteries re-run 44 passed / 0 failed.
+    No P-164 file was touched by the heal.
+    Derived scope ACCEPTED as banked by
+    the keeper: the roadmap gives Part X
+    only its part-table line
+    (P-155..P-168), no per-slice entries;
+    this slice is derived from the in-tree
+    record of Runmal only (the banked Part
+    X grid left the owner-wide aggregate
+    unmade - P-160 weighed an owner-wide
+    face census and named it open as a
+    gate companion), as the slice doc
+    states plainly.
+    Scope: a pure-read resolution service
+    (src/runmal/faces/census.py -
+    resolve_face_census) resolving, for
+    the owner, one row per owned character
+    in list_characters order, each row
+    composing that character's P-160 face-
+    chats board verbatim in substance
+    (character, board_state, the chats
+    rows whole, the chat / ready /
+    selection / unbound counts), the
+    census classified under the closed
+    CENSUS_STATES law (no_characters /
+    no_chats / none_ready / some_ready /
+    all_ready) with counts summed from the
+    boards' own arithmetic; no voice key,
+    no history key, no census-level face -
+    there is no owner-wide face, selection
+    stays per chat (P-092); five standing
+    honesty notes; plus one road (GET
+    /faces/census on the /api/v1 mount,
+    wired in app.py with the local-auth
+    dependency; no id parameter, the owner
+    comes from get_owner_id; every census
+    state data at 200). No store, no
+    migration.
+    Evidence (team-02 worktree
+    hidden_files/ P164_EVIDENCE.md + logs
+    P164_BATTERY.log, P164_NEIGHBOURS.log,
+    P164_FULL.log): battery 15 passed / 0
+    failed; neighbours fence (P-092 +
+    P-155 + P-156 + P-160 + P-162
+    batteries) 92 passed / 0 failed; team
+    full suite 5190 passed / 5 skipped / 0
+    failed in 390.18s - a clean run, the
+    known contention class did not appear,
+    no solo re-runs needed.
+    Combined batteries on the merged tree:
+    170 passed / 0 failed (the P-155 +
+    P-156 + P-157 + P-158 + P-159 + P-160
+    + P-161 + P-162 + P-163 faces
+    batteries 155 + the P-164 battery 15,
+    exact), run by the banking coordinator
+    with PYTHONPATH=src on the campaign
+    venv runmal-venv312 (hidden_files/P164
+    _BANK_BATTERIES.log).
+    Forge confirmation suite on the merged
+    tree: 5215 passed / 5 skipped / 0
+    failed in 315.63s
+    (hidden_files/P164_FORGE_CONFIRM.log)
+    - a clean run, no contention re-runs
+    needed, reconciling exactly (5200 +
+    15).
+    Reconciliation: this slice was built
+    on the P-162 record base 362f442; the
+    merge into the forge (carrying P-163
+    and its heal) conflicted on the clean-
+    room log, app.py and faces/__init__.py
+    and all three were resolved as pure
+    additive unions by the banking
+    coordinator. The app.py union was
+    built as two separate include_router
+    blocks from the start (the known
+    fused-call defect class was checked
+    for explicitly and never landed); the
+    merged tree carries all ten faces
+    routers and the census road is grep-
+    verified live in app.py (import +
+    include). Clean-room log: the P-164
+    entry appears exactly once (and the
+    P-162 and P-163 entries exactly once
+    each). py_compile clean on all merged
+    surfaces, create_app builds on the
+    merged tree, and
+    faces/__init__.__all__ is verified
+    complete (no missing names).
+    Slice scope:
+    src/runmal/faces/census.py (new),
+    src/runmal/faces/census_router.py
+    (new), src/runmal/faces/__init__.py
+    (union), src/runmal/app.py (union),
+    tests/test_p164_face_census.py (new,
+    15 tests),
+    docs/FACE_CENSUS_2026-11-08.md (new),
+    docs/CLEAN_ROOM_LOG_2026-10-30.md (+1
+    entry, exactly once in the merged
+    tree). Merged diff vs af1989b is
+    exactly those 7 files (+730/-0),
+    purely additive, no hidden_files paths
+    in the slice commit.
+    Migration: NONE (head stays 0041, no
+    0042, battery-pinned).
+    Defects: no defect was found in-slice
+    and no production defect was
+    discovered; no defect was found at
+    banking. (The one defect found during
+    this banking session was the P-163
+    union omission recorded above and in
+    the first-parent note; it was healed
+    before this merge began, never left
+    unfixed.)
+    Honest limitations: Runmal renders
+    nothing in this slice; the census is
+    current-faces data a client reads,
+    carrying no image bytes - descriptors
+    carry the P-023 content and thumbnail
+    URLs as data only. The census is
+    current only and silent by design: it
+    reads no kept history and names no
+    voice. No automatic expression
+    detection from message text (P-092
+    law), no playback, runtime or
+    execution of any stored content (P-027
+    law).
+    Derived scope ACCEPTED as banked. PART
+    X OPEN (P-155..P-168). Next in roadmap
+    order: P-165 (Part X, in roadmap
+    order).
+
+    P-165 BANKED - Face History Census
+    (Part X - Faces That Speak,
+    P-155..P-168).
+    - team-03 commit a5f27b4 merged (no-
+    ff) into yrsa/two-mirrors-build as
+    af973c6 (parents ceab179 + a5f27b4);
+    merge pushed and ls-remote verified
+    at af973c6 before this record;
+    banking record commit follows this
+    entry and is pushed after it.
+    Derived scope ACCEPTED as banked by
+    the keeper: the roadmap gives Part X
+    only its part-table line
+    (P-155..P-168), no per-slice entries;
+    this slice is derived from the
+    in-tree record of Runmal only (the
+    banked P-164 record named the owner
+    history census open: the cell taken
+    is OWNER x HISTORY x FACE), as the
+    slice doc states plainly.
+    Scope: a pure-read resolution
+    service (src/runmal/faces/
+    history_census.py -
+    resolve_face_history_census)
+    resolving, for the owner, one row
+    per owned character in
+    list_characters order, each row
+    composing that character's P-162
+    character face-history board
+    verbatim in substance (rows whole,
+    board_state under the P-162 closed
+    law, counts summed from the board's
+    own arithmetic), the census
+    classified under the closed
+    HISTORY_CENSUS law (no_characters /
+    no_chats / no_history / some_history
+    / all_history); no voice key
+    anywhere (P-157 / P-159 / P-161 /
+    P-163 own the pairings); no merged
+    owner-wide stream - events stay
+    grouped per chat inside their
+    character row; the kept window stays
+    the P-092 per-chat law (kept_limit
+    stated per chat row and once at
+    census level, never summed into an
+    owner window); five standing honesty
+    notes; plus one road (GET
+    /faces/history-census on the
+    /api/v1 mount, wired in app.py; no
+    id parameter, always 200 the
+    envelope, schema
+    runmal-p165-face-history-census-v1).
+    No store, no migration.
+    Evidence (team-03 worktree
+    hidden_files/ P165_EVIDENCE.md +
+    logs P165_BATTERY.log,
+    P165_NEIGHBOURS.log,
+    P165_FULLSUITE.log): battery 15
+    passed / 0 failed; neighbours fence
+    170 passed / 0 failed; team full
+    suite 5230 passed / 5 skipped / 0
+    failed in 318.39s, exit 0 - exact
+    arithmetic (5215 + 15).
+    Combined batteries on the merged
+    tree: 185 passed / 0 failed (the
+    P-155..P-164 faces batteries 170 +
+    the P-165 battery 15, exact), run by
+    the banking coordinator with
+    PYTHONPATH=src on the campaign venv
+    runmal-venv312 (hidden_files/
+    P165_COMBINED_FENCE.log); a wider
+    fence including P-092 also ran green
+    at 209 passed / 0 failed
+    (hidden_files/P165_COMBINED.log).
+    Forge confirmation suite on the
+    merged tree: 5230 passed / 5 skipped
+    / 0 failed in 355.31s, exit 0
+    (hidden_files/P165_FORGE_CONFIRM.log)
+    - a clean run, no contention re-runs
+    needed, reconciling exactly (5215 +
+    15).
+    Reconciliation: this slice was built
+    directly on the forge head ceab179
+    (the P-164 banking record), so the
+    merge was clean with no conflicts;
+    the merged diff is exactly the 7
+    slice files (+769/-0), purely
+    additive, no hidden_files paths in
+    the slice commit. py_compile clean
+    on all touched Python files, the
+    history-census road is grep-verified
+    live in the router and the app
+    wiring, faces/__init__.__all__
+    verified complete
+    (resolve_face_history_census
+    exported), and the clean-room log
+    P-165 entry appears exactly once.
+    Slice scope:
+    src/runmal/faces/history_census.py
+    (new),
+    src/runmal/faces/history_census_router.py
+    (new), src/runmal/faces/__init__.py
+    (additive), src/runmal/app.py
+    (additive),
+    tests/test_p165_face_history_census.py
+    (new, 15 tests),
+    docs/FACE_HISTORY_CENSUS_2026-11-08.md
+    (new),
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    (+1 entry, exactly once in the
+    merged tree).
+    Migration: NONE (head stays 0041, no
+    0042, battery-pinned).
+    Defects: no defect was found
+    in-slice and no production defect
+    was discovered; no defect was found
+    at banking. Nothing was left
+    unfixed.
+    Honest limitations: the kept window
+    is per chat under P-092 - the census
+    never claims a complete record of
+    the faces of an owner; events older
+    than kept_limit per chat are gone by
+    that law, and a cleared-only history
+    counts as history (battery-pinned).
+    Silent and past only: no voice
+    pairing is stated. The owner
+    speaking census and the owner
+    speaking-history census remain open
+    - the P-164 blur objection (voice is
+    per character under S512) stands
+    unanswered, and two joins at once
+    remain declined under the grid
+    one-join-at-a-time pattern. No
+    owner-wide merged stream: no
+    ordering across chats or characters
+    is ever claimed.
+    Derived scope ACCEPTED as banked.
+    PART X OPEN (P-155..P-168). Next in
+    roadmap order: P-166 (Part X, in
+    roadmap order).
+
+    P-166 BANKED - Character Speaking Chats
+    (Part X - Faces That Speak,
+    P-155..P-168). - team-01 commit 931e750
+    merged (no-ff) into
+    yrsa/two-mirrors-build as e4a824c
+    (parents 6cea187 + 931e750); merge
+    pushed and ls-remote verified at e4a824c
+    before this record; banking record
+    commit follows this entry and is pushed
+    after it. Derived scope ACCEPTED as
+    banked by the keeper: the roadmap gives
+    Part X only its part-table line
+    (P-155..P-168), no per-slice entries;
+    this slice is derived from the in-tree
+    record of Runmal only (P-160 weighed the
+    speaking board and declined it, and
+    P-162, P-163 and P-164 each named it
+    open; the cell taken is CHARACTER x
+    CURRENT x SPEAKING), as the slice doc
+    states plainly. Scope: a pure-read
+    resolution service
+    (src/runmal/faces/speaking_chats.py -
+    resolve_character_speaking_chats)
+    resolving, for one character, the P-160
+    character face-chats board composed
+    whole (rows whole, board state, counts
+    carried from the P-160 board's own
+    arithmetic) paired with the character's
+    CURRENT S512 voice resolution stated
+    once at board level; None exactly when
+    the P-160 board is None, so existence
+    never leaks; the board classified under
+    the closed SPEAKING_CHATS law (no_chats
+    / none_ready / some_ready / all_ready,
+    the same strings as the P-160
+    BOARD_STATES under distinct export
+    names); the voice half composed from
+    S512 verbatim in substance as P-157 /
+    P-159 / P-161 / P-163 compose it,
+    classified under the same closed
+    voice-state law, the P-109 affect view
+    carried whole with consumed False;
+    paired true exactly when a voice
+    resolved and at least one chat shows a
+    ready face; NO voice_scope field rides
+    on the document - both halves are
+    current and the board reads no kept
+    history, following the P-157 / P-159
+    precedent, while the current_only law
+    itself is untouched and binds wherever
+    history is involved; five standing
+    honesty notes; plus one road (GET
+    /faces/speaking-chats?character_id= on
+    the /api/v1 mount,
+    speaking_chats_router.py, wired in
+    app.py in its own include_router block;
+    every board state is data at 200, never
+    an error; schema
+    runmal-p166-character-speaking-chats-v1).
+    No store, no migration. Evidence
+    (team-01 worktree hidden_files/
+    P166_EVIDENCE.md + logs): battery 24
+    passed / 0 failed; neighbours fence 213
+    passed / 0 failed; team full suite 5239
+    passed / 5 skipped / 0 failed, exit 0 -
+    exact arithmetic on its base (5215 +
+    24). Combined batteries on the merged
+    tree: faces fence P-155..P-166 209
+    passed / 0 failed (the P-155..P-165
+    faces batteries 185 + the P-166 battery
+    24, exact; hidden_files/P166_FENCE.log);
+    a wider fence including P-092 also ran
+    green at 233 passed / 0 failed
+    (hidden_files/P166_COMBINED.log). Forge
+    confirmation suite on the merged tree:
+    5254 passed / 5 skipped / 0 failed in
+    318.73s, exit 0
+    (hidden_files/P166_FORGE_CONFIRM.log) -
+    a clean run, no contention re-runs
+    needed, reconciling exactly (5230 + 24).
+    Reconciliation: this slice was built on
+    ceab179 (the P-164 banking record), so
+    P-165 was NOT in its base; the merge
+    took conflicts only in the three
+    expected shared files
+    (src/runmal/faces/__init__.py,
+    src/runmal/app.py,
+    docs/CLEAN_ROOM_LOG_2026-10-30.md), each
+    resolved as a pure additive union
+    keeping BOTH the P-165 history-census
+    and the P-166 speaking-chats exports,
+    roads and log entries exactly once each,
+    with each router in its own
+    include_router block in app.py (the
+    fused-include_router defect class
+    avoided); the merged diff against the
+    forge head is exactly the 7 slice files
+    (+1027/-0), purely additive, no
+    hidden_files paths in the slice commit.
+    py_compile clean on all touched Python
+    files, faces/__init__.__all__ verified
+    complete (every name in __all__ is
+    imported,
+    resolve_character_speaking_chats
+    exported), create_app() builds, and BOTH
+    roads are verified live in the built app
+    exactly once each: GET
+    /faces/history-census and GET
+    /faces/speaking-chats; the clean-room
+    log P-165 and P-166 entries each appear
+    exactly once. Slice scope:
+    src/runmal/faces/speaking_chats.py
+    (new),
+    src/runmal/faces/speaking_chats_router.py
+    (new), src/runmal/faces/__init__.py
+    (additive), src/runmal/app.py
+    (additive),
+    tests/test_p166_character_speaking_chats.py
+    (new, 24 tests),
+    docs/CHARACTER_SPEAKING_CHATS_2026-11-08.md
+    (new), docs/CLEAN_ROOM_LOG_2026-10-30.md
+    (+1 entry, exactly once in the merged
+    tree). Migration: NONE (head stays 0041,
+    no 0042, battery-pinned). Defects: no
+    defect was found in-slice and no
+    production defect was discovered; no
+    defect was found at banking. Nothing was
+    left unfixed. Honest limitations: the
+    board is current only - it reads no kept
+    history and claims nothing about past
+    faces; the voice stated is today's
+    resolution only, and because both halves
+    are current no voice_scope rides here,
+    while no kept event anywhere is claimed
+    to have been spoken in today's voice
+    under the P-161 / P-163 law where
+    history is involved. A character has no
+    single current face: selection stays per
+    chat (P-092). The owner speaking census
+    and the owner speaking-history census
+    remain open (voice is per character
+    under S512, so no single owner-level
+    pairing exists; two joins at once remain
+    declined under the grid
+    one-join-at-a-time pattern). No stage or
+    renderer, no lip-sync, no TTS synthesis
+    on this road, no automatic expression
+    detection from message text (P-092 law),
+    no playback, runtime or execution of any
+    stored content (P-027 law). Derived
+    scope ACCEPTED as banked. PART X OPEN
+    (P-155..P-168). Next in roadmap order:
+    P-167 (Part X, in roadmap order).
+
+    P-167 BANKED - Face Speaking Census
+    (Part X - Faces That Speak,
+    P-155..P-168). - team-02 commit c18d1e3
+    merged (no-ff) into
+    yrsa/two-mirrors-build as 447564b
+    (parents 895b4c9 + c18d1e3); merge
+    pushed and ls-remote verified at 447564b
+    before this record; banking record
+    commit follows this entry and is pushed
+    after it. Derived scope ACCEPTED as
+    banked by the keeper: the roadmap gives
+    Part X only its part-table line
+    (P-155..P-168), no per-slice entries;
+    this slice is derived from the in-tree
+    record of Runmal only (P-164 weighed the
+    owner speaking census and left it
+    contested by the blur objection, and
+    P-165 restated that objection
+    unanswered; the cell taken is OWNER x
+    CURRENT x SPEAKING, the last pre-gate
+    slice before the P-168 gate), as the
+    slice doc states plainly. The blur
+    objection is answered BY CONSTRUCTION:
+    voice appears ONLY inside each
+    character row - that character's OWN
+    current S512 voice resolution, composed
+    verbatim in substance, plus that row's
+    OWN paired flag (true exactly when that
+    row's voice resolved and that row's
+    ready_count > 0) - and the census
+    envelope carries NO voice, NO paired,
+    NO voice_scope and NO face keys, so
+    there is no owner-level voice for any
+    row's voice to blur into;
+    paired_character_count is the ONLY
+    voice-derived number at owner level and
+    it carries no voice value. Scope: a
+    pure-read resolution service
+    (src/runmal/faces/speaking_census.py -
+    resolve_face_speaking_census) resolving,
+    for the calling owner, one row per owned
+    character in the characters service's
+    order, each row composing P-164's census
+    row verbatim in substance (the P-160
+    board whole: board state, chat rows
+    whole, counts carried from the board's
+    own arithmetic) PLUS that row's voice
+    and paired flag as above; it never
+    returns None - the subject is the caller
+    themselves, so no foreign existence can
+    leak, and an owner with nothing gets the
+    honest empty census; the census is
+    classified under the closed
+    SPEAKING_CENSUS law (no_characters /
+    no_chats / none_ready / some_ready /
+    all_ready), which is the FACE axis only,
+    judged exactly as P-164 judges; counts
+    (character_count,
+    characters_with_chats_count, chat_count,
+    ready_count, selection_count,
+    unbound_count) summed from the P-160
+    boards' own arithmetic, PLUS
+    paired_character_count; NO voice_scope
+    field rides on the document - both
+    halves are current and the census reads
+    no kept history, following the P-157 /
+    P-159 / P-166 precedent, while the
+    current_only law itself is untouched
+    and binds wherever history is involved;
+    five standing honesty notes; plus one
+    road (GET /faces/speaking-census on the
+    /api/v1 mount, speaking_census_router.py,
+    wired in app.py in its own
+    include_router block; every census state
+    is data at 200, never an error; schema
+    runmal-p167-face-speaking-census-v1).
+    No store, no migration. Evidence
+    (team-02 worktree hidden_files/
+    P167_EVIDENCE.md + logs): battery 19
+    passed / 0 failed; neighbours fence 228
+    passed / 0 failed; team full suite 5249
+    passed / 5 skipped / 0 failed, exit 0 -
+    exact arithmetic on its base (5230 +
+    19). Combined batteries on the merged
+    tree: faces fence P-155..P-167 228
+    passed / 0 failed (the P-155..P-166
+    faces batteries 209 + the P-167 battery
+    19, exact; hidden_files/
+    P167_COMBINED.log). Forge confirmation
+    suite on the merged tree: 5273 passed /
+    5 skipped / 0 failed in 326.33s, exit 0
+    (hidden_files/P167_FORGE_CONFIRM.log) -
+    a clean run, no contention re-runs
+    needed, reconciling exactly (5254 + 19).
+    Reconciliation: this slice was built on
+    6cea187 (the P-165 banking record), so
+    P-166 was NOT in its base; the merge
+    took conflicts only in the three
+    expected shared files
+    (src/runmal/faces/__init__.py,
+    src/runmal/app.py,
+    docs/CLEAN_ROOM_LOG_2026-10-30.md), each
+    resolved as a pure additive union
+    keeping BOTH the P-166 speaking-chats
+    and the P-167 speaking-census exports,
+    roads and log entries exactly once each,
+    with each router in its own
+    include_router block in app.py (the
+    fused-include_router defect class
+    avoided); the merged diff against the
+    forge head is exactly the 7 slice files
+    (+1020/-0), purely additive, no
+    hidden_files paths in the slice commit.
+    py_compile clean on all touched Python
+    files, faces/__init__.__all__ verified
+    complete (96 names, every name in
+    __all__ imported, no public speaking
+    name left unexported,
+    resolve_face_speaking_census exported),
+    create_app() builds, and BOTH roads are
+    verified live in the built app exactly
+    once each: GET /faces/speaking-chats and
+    GET /faces/speaking-census (13 faces
+    roads in the built app in all); the
+    clean-room log P-166 and P-167 entries
+    each appear exactly once. Slice scope:
+    src/runmal/faces/speaking_census.py
+    (new),
+    src/runmal/faces/speaking_census_router.py
+    (new), src/runmal/faces/__init__.py
+    (additive), src/runmal/app.py
+    (additive),
+    tests/test_p167_face_speaking_census.py
+    (new, 19 tests),
+    docs/FACE_SPEAKING_CENSUS_2026-11-08.md
+    (new), docs/CLEAN_ROOM_LOG_2026-10-30.md
+    (+1 entry, exactly once in the merged
+    tree). Migration: NONE (head stays 0041,
+    no 0042, battery-pinned). Defects: no
+    defect was found in-slice and no
+    production defect was discovered; no
+    defect was found at banking. Nothing was
+    left unfixed. Honest limitations: the
+    census is current only - it reads no
+    kept history and claims no earlier voice
+    for any character; there is no
+    owner-wide face and no owner-wide voice
+    (each chat's face is named only under
+    P-155's own law for that chat, inside
+    its character's row, and each voice only
+    inside its own character's row); no
+    per-chat voice fields (S512 keys voice
+    by character); no owner-wide merged
+    stream: no ordering across chats or
+    characters is ever claimed. CARRIED
+    ITEM, NAMED: the owner
+    speaking-HISTORY census (OWNER x
+    HISTORY x SPEAKING) remains OPEN -
+    declined for this slice (current
+    speaking lands before history speaking
+    in every grid row, and the history
+    pairing carries the current_only hazard
+    at owner scale) - and is carried
+    honestly for the P-168 gate record:
+    Part X closes with one owner speaking
+    cell unmade, and the gate must say so.
+    Also declined: an owner roster census,
+    an index-only slice, census-level
+    voice/paired keys, per-chat voice
+    fields, merged streams. No stage or
+    renderer, no lip-sync, no TTS synthesis
+    on this road, no automatic expression
+    detection from message text (P-092 law,
+    ABSOLUTE), no playback, runtime or
+    execution of any stored content (P-027
+    law, ABSOLUTE). Derived scope ACCEPTED
+    as banked. PART X OPEN (P-155..P-168).
+    Next in roadmap order: P-168 (Part X
+    gate, in roadmap order).
+
+    P-168 BANKED - Part X Gate: Faces That
+    Speak (Part X - P-155..P-168). PART X
+    COMPLETE. Gate verdict, exactly as
+    recorded in docs/PART_X_GATE_2026-11-08.md:
+    Part X is COMPLETE and the gate PASSES
+    with named carried items and two
+    findings. - team-03 commit 581c87f
+    merged (no-ff) into
+    yrsa/two-mirrors-build as 2b66ecf
+    (parents 229a09c + 581c87f); the only
+    merge conflict was the clean-room log
+    append-vs-append, resolved keeping BOTH
+    the P-167 and P-168 entries exactly once
+    each; merge pushed and ls-remote
+    verified at 2b66ecf before this record;
+    banking record commit follows this entry
+    and is pushed after it. Scope: the gate
+    builds no new behaviour; it judges the
+    banked Part X slices P-155..P-167 end to
+    end through their own public contracts
+    (docs/PART_X_GATE_2026-11-08.md,
+    tests/test_p168_part_x_gate.py 24 tests,
+    tests/test_p168_gate_record.py 10 tests,
+    clean-room log +1 entry). Evidence
+    (team-03 hidden_files/P168_EVIDENCE.md +
+    logs): gate battery + record 34 passed;
+    neighbours 233 passed; full suite on its
+    base 5288 passed / 5 skipped / 0 failed.
+    MERGED-TRUTH HEAL at banking (P-116 /
+    P-154 precedent, noted plainly): the gate
+    battery was written on a base WITHOUT
+    P-167 and honestly pinned that base shape
+    (the P-167 speaking-census road absent).
+    On the merged tree P-167 IS banked, so
+    the road is present; the keeper healed
+    exactly those base-shape pins in
+    tests/test_p168_part_x_gate.py to the
+    merged truth at EQUAL strength - the
+    speaking-census module, router and slice
+    doc asserted present, its schema
+    accounted exactly once in the faces
+    source, the HTTP roads asserted as the
+    13-road set including
+    /faces/speaking-census, the faces
+    __init__ map asserted to carry
+    resolve_face_speaking_census, the OpenAPI
+    document asserted to name the 13th road,
+    and the no-renderer file census asserted
+    as the exact 13-service / 13-router file
+    list. No assertion was deleted or
+    weakened. The gate-record module pins
+    only the gate doc's own base-shape text,
+    which stands as written, and was not
+    healed. The K1 owner speaking-HISTORY
+    census pins (a different cell) stay
+    absent and OPEN, untouched. Combined
+    batteries on the merged tree
+    (hidden_files/P168_COMBINED.log): gate
+    battery + gate record + P-167 battery 53
+    passed / 0 failed (34 + 19, exact).
+    Forge confirmation full suite on the
+    merged tree (hidden_files/
+    P168_CONFIRMATION.log): 5307 passed / 5
+    skipped / 0 failed, exact (5273 P-167
+    confirmation + 24 + 10). Migration:
+    NONE (head stays 0041, no 0042,
+    battery-pinned). Carried items, exactly
+    as the gate names them: K1 - The owner
+    speaking-history census stays OPEN - the
+    one unmade cell. Part X closes with that
+    one owner speaking cell unmade, and this
+    gate does NOT take it. K2 - No renderer,
+    stage or lip-sync exists anywhere in
+    Part X - data only, by design. K3 - The
+    P-109 affect is consumed:False everywhere
+    (eight voices measured at this gate).
+    K4 - The kept window is per chat and the
+    record is never complete (P-092
+    kept_limit 100 per chat, never summed
+    into an owner window). K5 - There is no
+    owner-wide face and no single current
+    face per character (selection stays per
+    chat, always an explicit act). K6 - No
+    voice history exists anywhere (S512
+    stores none, so voice_scope current_only
+    binds wherever history is involved).
+    K7 - Scenario VN stage integration stays
+    open (no in-tree record joins scenario
+    cast role names to characters or faces).
+    K8 - Generated expression sprites via
+    P-087 stay open (a landing-contract
+    change, not a faces read). Findings,
+    exactly as the gate names them: F1 - No
+    new engine defect was found by this gate.
+    The gate only correction during
+    construction was its own probe error (the
+    OpenAPI document is served at
+    /openapi.json, not under the /api/v1
+    mount); no engine code was touched and
+    nothing was left unfixed in this slice
+    own files. F2 - P-167 banks in parallel;
+    its shape is named, not assumed. On this
+    gate base its module is measured by
+    overlay only and its road is asserted
+    absent; the merged tree after it banks is
+    the additive union named in the gate
+    record, for the keeper banking
+    reconciliation. (Banking note: P-167 was
+    verified already banked at 229a09c, and
+    the merged-truth heal above is that
+    reconciliation.) No defect was found at
+    banking beyond the healed base-shape
+    pins. Nothing was left unfixed. PART X
+    COMPLETE (P-155..P-168). Next in roadmap
+    order: Part XI in roadmap order.
+    P-169 BANKED - Workspace Binding
+    foundation (Part XI opener, DERIVED).
+    Part XI OPEN. Scope is DERIVED, stated
+    plainly in the slice doc: the roadmap
+    gives Part XI only its part line (XI |
+    Workspaces - the Companion That Works |
+    P-169 - P-186) with no verbatim P-169
+    entry; the slice derives from the
+    in-tree census VX-54..VX-58 (all MISSING
+    in the P-004 delta table) - VX-54's first
+    clause, a chat bound to a real folder,
+    presupposes every other Part XI row, and
+    no binding record existed anywhere in
+    the tree. - team-01 commit 1730fe7
+    merged (no-ff) into
+    yrsa/two-mirrors-build as b2a814f
+    (parents 2bdaca6 + 1730fe7); the slice
+    was built directly on the forge head
+    2bdaca6, so the merge was clean with no
+    conflicts; merge pushed and ls-remote
+    verified at b2a814f before this record;
+    banking record commit follows this entry
+    and is pushed after it. Scope: new
+    package src/runmal/workspaces/ - one
+    folder binding per owned chat (chat +
+    operator folder path as data + optional
+    label) in a P-117-style JSON store
+    (workspaces.json, tolerant load), folder
+    state judged LIVE at read under the
+    closed law ready / missing /
+    not_a_directory / unreadable,
+    owner-scoped bind / read / list / unbind
+    roads on /api/v1/workspaces, and a
+    chat-deletion custody hunk in
+    delete_chat (P-121 pattern). Slice doc
+    docs/WORKSPACE_BINDING_2026-11-09.md,
+    tests/test_p169_workspace_binding.py
+    (15 tests), clean-room log +1 entry; 8
+    files, +1060/-0. Evidence (team-01
+    hidden_files/P169_EVIDENCE.md + logs):
+    battery 15 passed; neighbours 122
+    passed / 1 skipped; full suite on its
+    base 5322 passed / 5 skipped / 0 failed.
+    Combined batteries on the merged tree
+    (hidden_files/P169_COMBINED.log): gate
+    battery + neighbours 137 passed / 1
+    skipped / 0 failed (15 + 122/1, exact).
+    Forge confirmation full suite on the
+    merged tree (hidden_files/
+    P169_CONFIRMATION.log): 5322 passed / 5
+    skipped / 0 failed, exact. Migration:
+    NONE (head stays 0041, battery-pinned).
+    Carried limitations, exactly as the lead
+    named them: (1) the binding has no
+    consumer yet - no listing, file tool, or
+    backend composes it; a kept promise, not
+    a working surface, until a successor
+    lands (the folder listing/files browser
+    is the named natural next cell); (2)
+    folder_state is a point-in-time
+    judgement at read; (3) the whole-file
+    JSON store carries the single-process
+    assumption. No defect was found at
+    banking. Nothing was left unfixed. Next
+    in roadmap order: P-170 (Part XI in
+    roadmap order).
+    P-170 BANKED - Workspace Folder Listing
+    / Files Browser (Part XI, DERIVED).
+    Part XI continues. Scope is DERIVED,
+    stated plainly in the slice doc: the
+    roadmap gives Part XI only its part
+    line (XI | Workspaces - the Companion
+    That Works | P-169 - P-186) with no
+    verbatim P-170 entry; the slice derives
+    from P-169's banked limitation (1) -
+    the binding had no consumer yet - and
+    P-169's design/scout naming the folder
+    listing / files browser the named
+    natural next cell, over the census
+    VX-54 files-browser clause
+    (docs/VOXTA_CENSUS_2026-10-30.md
+    section H; delta table judges VX-54
+    MISSING, Part XI). - team-02 commit
+    df91fb0 merged (no-ff) into
+    yrsa/two-mirrors-build as 736e5eb
+    (parents d949e60 + df91fb0); the slice
+    was built directly on the forge head
+    d949e60, so the merge was clean with
+    no conflicts; merge pushed and
+    ls-remote verified at 736e5eb before
+    this record; banking record commit
+    follows this entry and is pushed
+    after it. Scope: the READ-ONLY
+    consumer of the P-169 binding -
+    src/runmal/workspaces/listing.py
+    (new), owner-scoped listing of the
+    bound folder's entries (names, kinds,
+    honest sizes), judged live at read
+    through P-169's own binding +
+    folder_state law, composed verbatim
+    (no second binding store, no second
+    folder-state law); ONE additive road
+    GET /workspaces/files in
+    src/runmal/workspaces/router.py (+28)
+    beside the P-169 roads, and one map
+    bullet in __init__.py (+6). Slice doc
+    docs/WORKSPACE_LISTING_2026-11-09.md,
+    tests/test_p170_workspace_listing.py
+    (13 tests), clean-room log +1 entry;
+    6 files, +729/-0. No app.py change
+    (router already wired under /api/v1
+    by P-169). Evidence (team-02
+    hidden_files/P170_EVIDENCE.md + logs):
+    battery 13 passed; neighbours 113
+    passed / 1 skipped; full suite on its
+    base 5335 passed / 5 skipped / 0
+    failed (5322 P-169 + 13, exact).
+    Combined batteries on the merged tree:
+    P-170 battery + P-169 battery 28
+    passed / 0 failed (13 + 15, exact).
+    Forge confirmation full suite on the
+    merged tree (hidden_files/
+    P170_FORGE_CONFIRM.log): 5335 passed
+    / 5 skipped / 0 failed, exact, exit
+    0; no test_s503 flake this run.
+    Migration: NONE (head stays 0041,
+    battery-pinned). Carried limitations,
+    exactly as the lead named them: (1)
+    A listing is a point-in-time
+    judgement; an entry vanishing
+    mid-scan is listed as kind other with
+    no size (battery-pinned), never a
+    crash. (2) Containment judgement and
+    scan are two filesystem moments - a
+    symlink swapped between them is a
+    race a read-only listing cannot
+    close; any future consumer that acts
+    on paths must re-judge at use (the
+    VX-57 guard's future work, named in
+    the slice doc). (3) escapes for a
+    broken symlink is judged on its
+    lexical realpath - where the link
+    would point. (4) Still no
+    file-content surface: reads/viewing,
+    writes and execution remain
+    named-open later Part XI cells, in
+    that order of presupposition. One
+    defect was found and fixed in-slice
+    before banking (the first __init__.py
+    map bullet was a single 268-char line,
+    ruff E501; wrapped to the house
+    column, ruff re-run clean, battery
+    re-run green). No defect was found at
+    banking. Nothing was left unfixed.
+    Next in roadmap order: P-171 (Part XI
+    in roadmap order).
+    P-171 BANKED - Workspace Census
+    (Part XI, DERIVED). Part XI
+    continues. Scope is DERIVED, stated
+    plainly in the slice doc: the
+    roadmap gives Part XI only its part
+    line (XI | Workspaces - the Companion
+    That Works | P-169 - P-186) with no
+    verbatim P-171 entry; the slice
+    derives as the disjoint next cell in
+    the house census pattern (P-164 /
+    P-148) over P-169's banked rows -
+    P-169 named its own limitation (no
+    consumer yet) and P-170, banked
+    ahead of this slice, took the
+    folder-listing consumer cell,
+    leaving the owner-scoped census of
+    the whole workspace estate unmade.
+    - team-03 commit cd032bb merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 6a028fa (parents 88738b8 +
+    cd032bb); both P-170 and P-171
+    branched from d949e60, so the merge
+    onto the P-170 head reconciled as
+    flagged: app.py and
+    workspaces/__init__.py took both
+    slices' additive wiring automatically
+    (no shared lines), and the one
+    conflict was the clean-room log,
+    append-vs-append, resolved keeping
+    both the P-170 and P-171 entries
+    exactly once; the merged
+    workspaces package was grep- and
+    compile-verified to carry the
+    P-169 bindings, the P-170 listing
+    and the P-171 census together, and
+    app.py to carry every router
+    including the new census router.
+    Merge pushed and ls-remote verified
+    at 6a028fa before this record;
+    banking record commit follows this
+    entry and is pushed after it.
+    Scope: an owner-scoped pure-read
+    inspection surface -
+    src/runmal/workspaces/census.py
+    (new) composing P-169's
+    list_owner_workspaces VERBATIM as
+    its rows (orphan_count carried,
+    never recomputed), the chat axis
+    via chats.service.list_chats (bound
+    vs unbound), per-folder-state
+    counts summed from the rows' own
+    folder_state values under P-169's
+    closed FOLDER_STATES law (no second
+    law), shared-folder facts named
+    (distinct / shared /
+    bindings-on-shared), and the estate
+    classified under the closed
+    CENSUS_STATES law (no_chats /
+    no_bindings / none_ready /
+    some_ready / all_ready), served by
+    src/runmal/workspaces/census_router.py
+    (new) on GET /workspaces/census;
+    app.py additive wiring (+6: import
+    + include) and one map bullet set
+    in workspaces/__init__.py (+10).
+    Slice doc
+    docs/WORKSPACE_CENSUS_2026-11-09.md,
+    tests/test_p171_workspace_census.py
+    (11 tests), clean-room log +1 entry;
+    7 files, +658/-0. Evidence (team-03
+    hidden_files/P171_EVIDENCE.md +
+    logs): battery 11 passed;
+    neighbours 100 passed / 1 skipped;
+    full suite on its base 5333 passed
+    / 5 skipped / 0 failed (5322 P-169
+    + 11, exact). Combined batteries on
+    the merged tree
+    (hidden_files/P171_COMBINED.log):
+    P-169 battery + P-170 battery +
+    P-171 battery 39 passed / 0 failed
+    (15 + 13 + 11, exact). Forge
+    confirmation full suite on the
+    merged tree (hidden_files/
+    P171_FORGE_CONFIRM.log): 5346
+    passed / 5 skipped / 0 failed,
+    exact, exit 0, in 320.33s
+    (5335 P-170 + 11); no test_s503
+    flake this run. Migration: NONE
+    (head stays 0041, battery-pinned).
+    Carried limitations, exactly as the
+    lead named them: (1) The census is
+    a point-in-time inspection: folder
+    states are P-169's live read-time
+    judgements at the census call. (2)
+    unbound_chat_count is the difference
+    between the owner's chat count and
+    the live binding count, floored at
+    0; orphans are excluded from rows
+    by P-169's own list law, so an
+    estate with orphans and no live
+    bindings reads no_bindings with
+    orphan_count carried plainly beside
+    it. (3) The census composes P-169's
+    whole-file JSON store read path,
+    carrying the house pattern's
+    single-process assumption.
+    Declined threads, named in the
+    slice doc: rebind history (a
+    foundation amendment to P-169's
+    store shape) stays named open;
+    folder listing / files browser was
+    P-170's cell; file writes / edits /
+    deletes wait for the VX-57 guard;
+    the file read tool, the VX-57 guard
+    itself, execution / launch /
+    backends (VX-55/56; P-027 absolute),
+    watching and VX-58 notifications
+    all remain later Part XI cells. No
+    defect was found at banking.
+    Nothing was left unfixed. Next in
+    roadmap order: P-172 (Part XI in
+    roadmap order).
+    P-172 BANKED - Workspace File
+    Content Read (Part XI, DERIVED).
+    Part XI continues. Scope is
+    DERIVED, stated plainly in the
+    slice doc: the roadmap gives Part
+    XI only its part line (XI |
+    Workspaces - the Companion That
+    Works | P-169 - P-186) with no
+    verbatim P-172 entry; the slice
+    derives from P-170's banked
+    limitation (4) - still no
+    file-content surface; reads /
+    viewing, writes and execution
+    remain named-open later Part XI
+    cells, in that order of
+    presupposition - taking the READ
+    cell first, and from its
+    limitation (2), ordering any
+    future consumer that acts on
+    paths to RE-JUDGE containment at
+    use, over the census VX-54
+    files-browser read clause.
+    - team-01 commit 47ed28c merged
+    (no-ff) into yrsa/two-mirrors-build
+    as eb591f5 (parents 204a0d0 +
+    47ed28c); P-172 branched from the
+    P-170 head while P-171 banked
+    ahead of it, so the merge onto
+    the P-171 head reconciled as
+    flagged: workspaces/__init__.py
+    took both slices' additive map
+    bullets automatically (P-171
+    census + P-172 content, kept
+    both), workspaces/router.py was
+    P-172-only and merged clean, and
+    the one conflict was the
+    clean-room log, append-vs-append,
+    resolved keeping both the P-171
+    and P-172 entries exactly once;
+    the merged workspaces package was
+    grep- and compile-verified to
+    carry the P-169 bindings, the
+    P-170 listing, the P-171 census
+    and the P-172 content read
+    together, and app.py to carry
+    every router including the census
+    router. Merge pushed and
+    ls-remote verified at eb591f5
+    before this record; banking
+    record commit follows this entry
+    and is pushed after it.
+    Scope: the read-only content
+    consumer of the P-169 binding -
+    src/runmal/workspaces/content.py
+    (new) composing the banked
+    bindings module VERBATIM (same
+    store, same folder_state() law,
+    the P-169 binding document
+    embedded unchanged) and adding
+    only the read law: containment
+    re-judged at the moment of use
+    (folder state, realpath
+    containment, lstat kind and size
+    all judged at the read; the file
+    opened O_NOFOLLOW and
+    fstat-verified before any byte is
+    read; the read bounded at cap+1);
+    a symlink never followed for
+    content, refused by name; paths
+    refused plainly on empty,
+    absolutes, NULs, any '..'
+    component, missing, directory or
+    non-regular targets; text strict
+    UTF-8 with no NUL under
+    MAX_CONTENT_BYTES = 262144
+    carried in the document, binary /
+    oversize / unreadable named
+    outcomes at 200 (bytes never
+    dumped as text, an oversize body
+    never read, content never
+    truncated or decoded with
+    replacements); one additive road
+    (GET /workspaces/content, +28) on
+    the existing router and one map
+    bullet in workspaces/__init__.py
+    (+7). Slice doc
+    docs/WORKSPACE_CONTENT_READ_2026-11-09.md,
+    tests/test_p172_workspace_content.py
+    (16 tests), clean-room log +1
+    entry; 6 files, +854/-0. Evidence
+    (team-01 hidden_files/
+    P172_EVIDENCE.md + logs): battery
+    16 passed; neighbours 44 passed
+    (P-169 + P-170 + P-172 batteries,
+    15 + 13 + 16, exact); full suite
+    on its base 5351 passed / 5
+    skipped / 0 failed (5335 P-170 +
+    16, exact). Combined batteries on
+    the merged tree: P-169 battery +
+    P-170 battery + P-171 battery +
+    P-172 battery 55 passed / 0
+    failed (15 + 13 + 11 + 16, exact).
+    Forge confirmation full suite on
+    the merged tree (run detached,
+    counts read back from the log):
+    5362 passed / 5 skipped / 0
+    failed, exact, exit 0, in 343.87s
+    (5346 P-171 + 16); no test_s503
+    flake this run. Migration: NONE
+    (head stays 0041, battery-pinned).
+    Two defects were found and fixed
+    in-slice by the lead before
+    banking: (1) the first build of
+    _read_bytes judged a
+    changed-but-under-cap file (fstat
+    size differing from the lstat
+    size) as oversize - a misnamed
+    outcome; corrected so the
+    descriptor is judged on the cap
+    alone and, on outcome ok,
+    size_bytes reports the bytes
+    actually read. (2) The battery's
+    binary test asserted size 4 for a
+    5-byte NUL file (test arithmetic,
+    not code); corrected per-file and
+    re-run green. No defect was found
+    at banking. Nothing was left
+    unfixed. Carried limitations,
+    exactly as the lead named them:
+    (1) A read is a point-in-time
+    judgement; the fstat +
+    bounded-read guard closes this
+    read's own window, not a later
+    consumer's. (2) A hostile process
+    racing the folder with write
+    access to it remains the VX-57
+    guard's future threat model -
+    this slice claims the read-only
+    guarantee, not a sandbox. (3)
+    Text is strict UTF-8 only by
+    design: any other encoding is
+    honestly binary to this surface,
+    never misdecoded. (4) Still no
+    write, execution or image-viewing
+    surface: those remain named-open
+    later Part XI cells. Declined
+    threads, named in the slice doc:
+    all writes / edits / deletes
+    (fenced until the VX-57 guard),
+    execution and agent backends
+    (VX-55/56; P-027 absolute),
+    watching, any image-byte surface
+    and recursive reads all remain
+    later Part XI cells. Next in
+    roadmap order: P-173 (Part XI in
+    roadmap order).
+    P-173 BANKED - Workspace Binding
+    History (Part XI, DERIVED).
+    Part XI continues. Scope is
+    DERIVED, stated plainly in the
+    slice doc: the roadmap gives Part
+    XI only its part line (XI |
+    Workspaces - the Companion That
+    Works | P-169 - P-186) with no
+    verbatim P-173 entry; the slice
+    derives from P-171 banked record
+    declining rebind history
+    expressly as a foundation
+    amendment to P-169 store shape
+    and leaving it NAMED OPEN, and
+    from P-169 unbind-then-bind law
+    destroying the superseded record
+    on both ending roads, leaving
+    nothing that remembered a chat
+    was ever bound. P-173 takes
+    exactly that cell: when a binding
+    ends, the superseded binding is
+    kept as history data inside the
+    SAME workspaces.json store,
+    served by an owner-scoped pure
+    read, GET /workspaces/history.
+    - team-02 commit 1f31ac1 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 50a44a8 (parents 8ace269 +
+    1f31ac1); CROSS-BASE: team-02
+    built on the P-171 record head
+    204a0d0 while P-172 banked ahead
+    in parallel on a disjoint slice,
+    so P-172 is NOT in this slice
+    base and the merge onto the
+    P-172 record head 8ace269
+    reconciled as flagged:
+    workspaces/__init__.py took both
+    slices additive map bullets
+    automatically (P-172 content +
+    P-173 history, kept both),
+    app.py and workspaces/bindings.py
+    were P-173-only and merged clean,
+    history.py and history_router.py
+    are new, and the one conflict was
+    the clean-room log,
+    append-vs-append, resolved
+    keeping both the P-172 and P-173
+    entries exactly once; the merged
+    tree was grep- and
+    compile-verified to carry the
+    P-169 bindings, the P-170
+    listing, the P-171 census, the
+    P-172 content read and the P-173
+    history read together. Merge
+    pushed and ls-remote verified at
+    50a44a8 before this record;
+    banking record commit follows
+    this entry and is pushed after
+    it.
+    Scope: the binding-history
+    amendment inside the workspaces
+    package own law -
+    workspaces/bindings.py gains a
+    WorkspaceHistoryEntry (the
+    superseded binding own fields
+    verbatim, plus the ending moment
+    and the cause under the closed
+    HISTORY_EVENTS law unbound /
+    chat_deleted; no actor invented,
+    no bound events, no successor
+    link), the SAME workspaces.json
+    index gains one top-level history
+    key beside bindings with the
+    version staying 1 under the house
+    tolerant load (a pre-P-173 file
+    and a corrupt file both read as
+    empty history; NO second store
+    file), every bindings-only save
+    preserves the on-disk history
+    (battery-pinned), remove_binding
+    archives on a hit and writes
+    nothing on a miss with its return
+    contract unchanged, and
+    purge_chat archives one
+    chat_deleted entry per dropped
+    binding with its count contract
+    unchanged, so the existing
+    delete_chat custody chain carries
+    history with no chats/service.py
+    change, proven end-to-end through
+    the real delete road; the read
+    surface is workspaces/history.py
+    plus workspaces/history_router.py
+    (new, disjoint) - GET
+    /workspaces/history, owner-scoped,
+    every outcome DATA at 200, no
+    chat-existence 404 by design (a
+    deleted chat entries are the
+    surface reason to exist), each
+    entry folder_state judged LIVE at
+    the history read and labelled
+    never the state at the ending;
+    additive app.py wiring (+6) and
+    additive workspaces/__init__.py
+    doc lines (+8). Slice doc
+    docs/WORKSPACE_BINDING_HISTORY_2026-11-09.md,
+    tests/test_p173_workspace_history.py
+    (16 tests), clean-room log +1
+    entry; 8 files, +923/-17.
+    Evidence (team-02 hidden_files/
+    P173_EVIDENCE.md + logs): the
+    finisher critical review was
+    CLEAN, line by line against the
+    design, and the finisher changed
+    no code, so the completed full
+    suite stands as this slice count
+    with no re-count owed on that
+    account; battery 16 passed
+    (fresh re-run by the finisher);
+    neighbours 55 passed (the P-169 +
+    P-170 + P-171 workspace
+    batteries); full suite on its
+    base 5362 passed / 5 skipped / 0
+    failed, exit 0 (5346 on its base
+    + 16, exact).
+    Combined batteries on the merged
+    tree: P-169 battery + P-170
+    battery + P-171 battery + P-172
+    battery + P-173 battery 71 passed
+    / 0 failed (15 + 13 + 11 + 16 +
+    16, exact); no merged-truth pin
+    heal was needed. Forge
+    confirmation full suite on the
+    merged tree (run detached, counts
+    read back from the log): 5378
+    passed / 5 skipped / 0 failed,
+    exact, exit 0, in 328.30s (5362
+    P-172 + 16); no test_s503 or
+    p077 flake this run. Migration:
+    NONE (head stays 0041,
+    battery-pinned). No defect was
+    found at banking. Nothing was
+    left unfixed. Carried items,
+    exactly as the lead named them:
+    (1) History is retained WITHOUT
+    bound and there is no
+    history-deletion or retention
+    road; history grows one entry per
+    ended binding - NAMED OPEN for a
+    future history-retention slice if
+    Volmarr rules otherwise. (2)
+    History entries are RETAINED at
+    chat deletion by a judged design
+    call, not oversight: purging them
+    there would destroy the
+    chat_deleted record in the moment
+    it is created. (3) Folder states
+    on entries are point-in-time
+    judgements at the history read,
+    never at the ending. (4) A store
+    file written by pre-P-173 code
+    after history exists would drop
+    the history key on its next save;
+    within any tree carrying this
+    slice the amended store is the
+    only writer. Declined threads,
+    named in the slice doc: a second
+    store file, a sibling unamended
+    store, bound events, a stored
+    successor link, purging history
+    at chat deletion, a
+    history-deletion / retention road
+    (no retention policy exists
+    in-tree), file writes / edits /
+    deletes (fenced until the VX-57
+    guard), execution / launch /
+    backends (VX-55/56; P-027
+    absolute), watching and any
+    migration all remain later Part
+    XI cells or named open. Next in
+    roadmap order: P-174 (Part XI in
+    roadmap order).
+    P-174 BANKED - Workspace Folder
+    Census (Part XI, DERIVED).
+    Part XI continues. Scope is
+    DERIVED, stated plainly in the
+    slice doc: the roadmap gives Part
+    XI only its part line (XI |
+    Workspaces - the Companion That
+    Works | P-169 - P-186) with no
+    verbatim P-174 entry; the slice
+    derives from the banked Part XI
+    grid - P-169 the binding, P-170
+    the read-only folder listing,
+    P-171 the census of the owner's
+    whole binding estate (which lists
+    no folder and reads no contents)
+    and P-172 the read of one named
+    file - the cell no surface took
+    being the aggregate of ONE chat's
+    bound folder at ONE level, taken
+    in the house census pattern.
+    - team-03 commit 469e06f merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 51bcf6f (parents 06cd7a5 +
+    469e06f); CROSS-BASE: team-03
+    built on the P-172 record head
+    8ace269 while P-173 banked ahead
+    in parallel on a disjoint slice,
+    so P-173 is NOT in this slice's
+    base and the merge onto the
+    P-173 record head 06cd7a5
+    reconciled as flagged: conflicts
+    in src/runmal/app.py (import +
+    include hunks) and in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    (append-vs-append), both resolved
+    as pure additive unions keeping
+    the P-173 history and P-174
+    folder-census entries, imports
+    and routers exactly once each;
+    workspaces/__init__.py auto-merged
+    keeping both slices' additive map
+    bullets; folder_census.py and
+    folder_census_router.py are new.
+    One banking heal was needed and
+    is recorded honestly: f21d593 -
+    the app.py union first placed
+    both routers as positional
+    arguments of ONE include_router
+    call, which FastAPI refuses
+    (TypeError at create_app, caught
+    by the combined batteries before
+    any push, never pushed broken);
+    the heal gives the folder-census
+    router its own include block,
+    exactly the shape its slice
+    authored, at equal strength - no
+    test or assertion was changed or
+    weakened anywhere. The merged
+    tree was grep- and
+    compile-verified to carry the
+    P-169 bindings, the P-170
+    listing, the P-171 census, the
+    P-172 content read, the P-173
+    history read and the P-174 folder
+    census together. Merge + heal
+    pushed and ls-remote verified at
+    f21d593 before this record;
+    banking record commit follows
+    this entry and is pushed after
+    it.
+    Scope: one new truth module
+    (workspaces/folder_census.py)
+    composing P-170's listing
+    VERBATIM - resolve_chat_listing
+    unchanged, its document embedded
+    whole - and adding only the
+    aggregate law: kind counts summed
+    from the returned entries' own
+    fields under P-170's closed
+    ENTRY_KINDS (directory / file /
+    symlink / other), total file
+    bytes from file entries' own
+    sizes only, extension counts from
+    file NAMES only (suffix after the
+    final dot, lowercased; no suffix
+    is the honest key "(none)"; no
+    file is opened), hidden and
+    escaping-symlink counts,
+    largest_file with first-wins ties
+    in the listing's own order, and
+    the level classified under the
+    closed FOLDER_CENSUS_STATES law
+    (folder_not_ready / empty /
+    no_files / has_files) with
+    non-ready folders as DATA (the
+    honest zero document, never an
+    error, never a scan), six
+    standing honesty notes, None
+    exactly when P-170's resolve is
+    None (missing / foreign / unbound
+    - existence never leaks); one new
+    disjoint router
+    (workspaces/folder_census_router.py)
+    - GET /workspaces/folder-census
+    keeping the two 404s apart,
+    refused subpath at 422, every
+    state DATA at 200; additive
+    app.py wiring and additive
+    workspaces/__init__.py doc lines.
+    Slice doc
+    docs/WORKSPACE_FOLDER_CENSUS_2026-11-09.md,
+    tests/test_p174_workspace_folder_census.py
+    (15 tests), clean-room log +1
+    entry; 7 files, +850/-0.
+    Evidence (team-03 hidden_files/
+    P174_EVIDENCE.md + logs): battery
+    15 passed; neighbours 70 passed
+    (the workspace fence on its base:
+    P-169 + P-170 + P-171 + P-172 +
+    P-174 batteries, 15 + 13 + 11 +
+    16 + 15, exact); full suite on
+    its base 5377 passed / 5 skipped
+    / 0 failed, exit 0 (5362 on its
+    P-172 base + 15, exact).
+    Combined batteries on the merged
+    tree: P-169 + P-170 + P-171 +
+    P-172 + P-173 + P-174 batteries
+    86 passed / 0 failed (15 + 13 +
+    11 + 16 + 16 + 15, exact), after
+    the banking heal above (the first
+    combined launch, 76 passed / 10
+    failed on the broken union, is
+    preserved in the keeper's run
+    note, not hidden). Forge
+    confirmation full suite on the
+    merged tree (run detached, counts
+    read back from the log): 5393
+    passed / 5 skipped / 0 failed,
+    exact, exit 0, in 325.78s (5378
+    P-173 + 15); no test_s503 or
+    p077 flake this run. Migration:
+    NONE (head stays 0041,
+    battery-pinned). One defect was
+    found and fixed in-slice by the
+    lead (an unused import re-export;
+    see evidence); the one defect
+    found at banking was the merge
+    union's own, healed above.
+    Nothing was left unfixed.
+    Honest limitations, exactly as
+    the lead named them: (1) counts
+    are point-in-time, from one
+    listing read; (2) a truncated
+    listing - P-170's 500-entry cap
+    at one level - bounds every count
+    to the returned entries only,
+    with total_count and truncated
+    carried verbatim and stated in
+    the document's notes, and no
+    second scan made; (3) extension
+    counts are name-deep only - no
+    file is opened, so a name never
+    claims what the bytes are; (4) no
+    write, execution, watching or
+    image surface landed. Declined
+    threads, named in the slice doc:
+    writes / edits under a VX-57-style
+    guard (the guard presupposes
+    workspace tool calls and none
+    exist), execution VX-55/56
+    (declined ABSOLUTELY, P-027),
+    watching (declined at P-169), any
+    image-byte surface, a recursive
+    or whole-tree census, content
+    classification by opening files,
+    an owner-wide folder census
+    (P-171's estate cell), and
+    P-173's named-open history
+    deletion / custody road - it
+    presupposed P-173's history
+    store, which was not in this
+    slice's base; it stays named open
+    behind banked P-173. Next in
+    roadmap order: P-175 (Part XI in
+    roadmap order).
+    P-175 BANKED - Workspace Binding-
+    History Deletion (Part XI,
+    DERIVED). Part XI continues.
+    Scope is DERIVED, stated plainly
+    in the slice doc: the roadmap
+    gives Part XI only its part line
+    (XI | Workspaces - the Companion
+    That Works | P-169 - P-186) with
+    no verbatim P-175 entry; the
+    slice derives from the banked
+    Part XI grid - P-173 the binding
+    history, kept as data in the same
+    bindings store by the bindings
+    amendment, its own document
+    naming a history-deletion /
+    retention road as named open -
+    the cell taken being that road in
+    its smallest owner-hand form: the
+    owner deletes ONE ended binding's
+    history entry, permanently, by
+    hand.
+    - team-01 commit 2031dd5 merged
+    (no-ff) into yrsa/two-mirrors-
+    build as 94cf1e9 (parents d3c5b35
+    + 2031dd5); CROSS-BASE: team-01
+    built on the P-173 record head
+    06cd7a5 while P-174 banked ahead
+    in parallel, so P-174 is NOT in
+    this slice's base and the merge
+    onto the P-174 record head
+    d3c5b35 reconciled as flagged:
+    one conflict in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    (append-vs-append), resolved as a
+    pure additive union keeping the
+    P-174 and P-175 entries exactly
+    once each; workspaces/__init__.py
+    auto-merged keeping both slices'
+    additive text (the P-174 folder-
+    census bullet, and the P-175
+    deletion sentences closing the
+    P-173 history bullet);
+    bindings.py, history.py and
+    history_router.py are P-175-side
+    and merged clean; app.py is
+    P-174-only and untouched by this
+    merge. No banking heal was
+    needed: the merged tree was grep-
+    and import-verified BEFORE any
+    suite ran - create_app builds
+    clean, each workspace router
+    (bindings, census, history,
+    folder-census) sits in its own
+    include_router block, and the
+    OpenAPI road list carries the
+    P-169 bindings, the P-170
+    listing, the P-171 census, the
+    P-172 content read, the P-173
+    history read, the P-174 folder
+    census and the new DELETE
+    /workspaces/history/{entry_id}
+    together. Merge pushed and ls-
+    remote verified at 94cf1e9 before
+    this record; banking record
+    commit follows this entry and is
+    pushed after it.
+    Scope: the bindings store gains
+    two primitives
+    (workspaces/bindings.py:
+    get_history_entry and
+    remove_history_entry - a hit
+    drops exactly one entry in one
+    _save_all carrying the live
+    bindings verbatim; a miss returns
+    None and writes nothing); the
+    history service gains the owner-
+    scoped delete
+    (workspaces/history.py:
+    delete_workspace_history_entry -
+    unknown OR foreign reads as None,
+    so existence never leaks; the
+    fifth HISTORY_NOTES honesty note
+    reworded; the history read stays
+    pure; purge_chat and
+    remove_binding contracts
+    untouched); the history router
+    gains one road
+    (workspaces/history_router.py:
+    DELETE
+    /workspaces/history/{entry_id} -
+    404 "workspace history entry not
+    found" on None, {"deleted": True,
+    "id"} at 200, the P-169 unbind
+    shape verbatim); additive
+    workspaces/__init__.py doc lines.
+    Slice doc docs/WORKSPACE_HISTORY_
+    DELETION_2026-11-09.md, tests/tes
+    t_p175_workspace_history_deletion
+    .py (15 tests), clean-room log +1
+    entry; 7 files, +550/-9.
+    Evidence (team-01
+    hidden_files/P175_EVIDENCE.md +
+    logs): battery 15 passed;
+    neighbours 86 passed (test_p169 +
+    test_p170 + test_p171 + test_p172
+    + test_p173 + test_p175 on its
+    base); full suite on its base
+    5393 passed / 5 skipped / 0
+    failed, exit 0 (5378 on its P-173
+    base + 15, exact). Its first
+    full-suite run's 23 failures were
+    an OSError [Errno 28] No space
+    left on device transient in
+    unrelated archive/restore/release
+    machinery - no workspace or P-175
+    test failed - superseded by the
+    clean re-run and recorded
+    honestly in the evidence, not
+    slice defects. Combined batteries
+    on the merged tree: P-169 + P-170
+    + P-171 + P-172 + P-173 + P-174 +
+    P-175 batteries 101 passed / 0
+    failed (86 at P-174 banking + 15,
+    exact). Forge confirmation full
+    suite on the merged tree (counts
+    read back from the log file):
+    5408 passed / 5 skipped / 0
+    failed, exact, in 330.91s (5393 +
+    15). Migration: NONE (head stays
+    0041). One defect was found and
+    fixed in-slice by the finisher (a
+    stray "+" in place of the second
+    "*" breaking the clean-room
+    entry's bold markup; docs-only,
+    diff stat unchanged, see
+    evidence); no defect was found at
+    banking. Nothing was left
+    unfixed.
+    Honest limitations and carried
+    items, exactly as the lead named
+    them: (1) deletion is permanent
+    and unaudited by design of the
+    smallest cell - no history-of-
+    deletions record is kept; (2) an
+    automatic retention policy (keep-
+    last-N, age cut-off, scheduled
+    prune) does NOT exist in-tree and
+    awaits Volmarr's ruling - no
+    policy exists to derive
+    thresholds from, and inventing
+    them would fabricate his ruling;
+    (3) a bulk clear-all / per-chat
+    clear road is named open behind
+    the same ruling. Next in roadmap
+    order: P-176 (Part XI in roadmap
+    order).
+    P-176 BANKED - Workspace Folder
+    Tree (Part XI, DERIVED). Part XI
+    continues.
+    Scope is DERIVED, stated plainly
+    in the slice doc: the roadmap
+    gives Part XI only its part line
+    (XI | Workspaces - the Companion
+    That Works | P-169 - P-186) with
+    no verbatim P-176 entry; the slice
+    derives from the banked Part XI
+    grid - every banked workspace
+    surface stops at one level or one
+    file (P-170 listing one level,
+    P-174 folder census one level
+    aggregate, P-172 content one named
+    file, P-171 census lists no
+    folder) - the cell taken being
+    navigation below the first level:
+    the depth-limited folder tree
+    composing P-170 verbatim per
+    level, expressly NOT the recursive
+    census P-174 declined (it
+    aggregates nothing and returns the
+    entries themselves).
+    - team-02 commit 895ee90 merged
+    (no-ff) into yrsa/two-mirrors-
+    build as 4865e60 (parents 1522811
+    + 895ee90); CROSS-BASE: team-02
+    built on the P-174 record head
+    d3c5b35 while P-175 banked ahead
+    in parallel, so P-175 is NOT in
+    this slice's base and the merge
+    onto the P-175 record head 1522811
+    reconciled as flagged: one
+    conflict in
+    docs/CLEAN_ROOM_LOG_2026-10-30.md
+    (append-vs-append), resolved as a
+    pure additive union keeping the
+    P-175 and P-176 entries exactly
+    once each; workspaces/__init__.py
+    auto-merged keeping both slices'
+    additive text (the P-176 tree
+    bullet, and the P-175 deletion
+    sentences closing the P-173
+    history bullet); app.py is
+    P-176-side additive only and
+    untouched by P-175. No banking
+    heal was needed: the merged tree
+    was grep- and import-verified
+    BEFORE any suite ran - create_app
+    builds clean, each workspace
+    router (bindings, census, history
+    incl. the DELETE road, folder-
+    census, content, listing, tree)
+    sits in its own include_router
+    block, and the OpenAPI road list
+    carries the P-169 bindings, the
+    P-170 listing, the P-171 census,
+    the P-172 content read, the P-173
+    history read, the P-174 folder
+    census, the P-175 DELETE
+    /workspaces/history/{entry_id} and
+    the new GET /workspaces/tree
+    together. Merge pushed and ls-
+    remote verified at 4865e60 before
+    this record; banking record commit
+    follows this entry and is pushed
+    after it.
+    Scope: one new truth module
+    (workspaces/tree.py: the depth-
+    limited tree - every level
+    composed verbatim from P-170's
+    listing, directories expanded to a
+    stated depth under a stated node
+    cap, symlinks never descended,
+    caps and mid-walk refusals carried
+    as data) and one new disjoint
+    router (workspaces/tree_router.py:
+    GET /workspaces/tree); additive
+    app.py wiring and
+    workspaces/__init__.py doc lines.
+    Slice doc
+    docs/WORKSPACE_FOLDER_TREE_2026-11-09.md,
+    tests/test_p176_workspace_tree.py
+    (17 tests), clean-room log +1
+    entry; 7 files, +934/-0.
+    Evidence (team-02
+    hidden_files/P176_EVIDENCE.md +
+    logs): battery 17 passed;
+    neighbours 103 passed (P-169 +
+    P-170 + P-171 + P-172 + P-173 +
+    P-174 + P-176 batteries on its
+    base); full suite on its base 5410
+    passed / 5 skipped / 0 failed,
+    exit 0 (5393 on its P-174 base +
+    17, exact). Combined batteries on
+    the merged tree: P-169 + P-170 +
+    P-171 + P-172 + P-173 + P-174 +
+    P-175 + P-176 batteries 118 passed
+    / 0 failed (101 at P-175 banking +
+    17, exact). Forge confirmation
+    full suite on the merged tree
+    (counts read back from the log
+    file): 5425 passed / 5 skipped / 0
+    failed, exact, in 329.63s (5408 +
+    17). Migration: NONE (head stays
+    0041). No defect was found in the
+    slice or at banking. Nothing was
+    left unfixed.
+    Honest limitations and carried
+    items, exactly as the lead named
+    them: (1) a history census over
+    P-173 is named as the first
+    post-P-175 candidate - it composes
+    the exact surface P-175 changed,
+    so it waited for P-175 to bank;
+    (2) content search / filename
+    search over the tree is named open
+    (a new walk law); (3) a binding
+    label update is named open
+    (post-P-175 store weighing).
+    Writes inside bound folders stay
+    fenced behind the VX-57 guard;
+    execution is declined ABSOLUTELY
+    (VX-55/56, P-027). Next in roadmap
+    order: P-177 (Part XI in roadmap
+    order).
+    P-177 BANKED - Workspace
+    Binding-History Census (Part XI,
+    DERIVED). Part XI continues.
+    Scope is DERIVED, stated plainly
+    in the slice doc: the roadmap
+    gives Part XI only its part line
+    (XI | Workspaces - the Companion
+    That Works | P-169 - P-186) with
+    no verbatim P-177 entry; the
+    slice derives from the banked
+    Part XI grid - P-173 banked the
+    binding history as a list read
+    with four counts and P-175
+    banked single-entry deletion,
+    but no surface aggregated the
+    history estate, and P-176's
+    banked record named a history
+    census over P-173 as the first
+    post-P-175 candidate - P-175
+    being banked in this slice's
+    base, the cell taken is exactly
+    that census: the owner-wide
+    aggregate over P-173's history,
+    composing the P-173 document
+    verbatim.
+    - team-03 commit 2e8a8e1 merged
+    (no-ff) into yrsa/two-mirrors-
+    build as 550dc49 (parents
+    f490afd + 2e8a8e1); CROSS-BASE:
+    team-03 built on the P-175
+    record head 1522811 while P-176
+    banked ahead in parallel, so
+    P-176 is NOT in this slice's
+    base and the merge onto the
+    P-176 record head f490afd
+    reconciled as flagged: conflicts
+    in src/runmal/app.py and docs/CL
+    EAN_ROOM_LOG_2026-10-30.md
+    (append-vs-append), both
+    resolved as pure additive unions
+    keeping the P-176 and P-177
+    entries and roads exactly once
+    each; workspaces/__init__.py
+    auto-merged keeping both slices'
+    additive text (the P-177
+    history-census bullet in the
+    history region, the P-176 tree
+    bullet in its own region). The
+    app.py union was built as two
+    separate include_router blocks,
+    one for the tree router and one
+    for the history-census router
+    (the P-174 fused-call defect
+    class checked explicitly and
+    never landed). No banking heal
+    was needed beyond the union
+    itself: the merged tree was
+    grep- and import-verified BEFORE
+    any suite ran - create_app
+    builds clean, each workspace
+    router (bindings, census,
+    history incl. the DELETE road,
+    history-census, folder-census,
+    content, listing, tree) sits in
+    its own include_router block,
+    and the OpenAPI road list
+    carries the new GET
+    /workspaces/history-census, GET
+    /workspaces/tree and DELETE
+    /workspaces/history/{entry_id}
+    together. Merged diff vs f490afd
+    is exactly the 7 slice files,
+    +792/-0, purely additive. Merge
+    pushed and ls-remote verified at
+    550dc49 before this record;
+    banking record commit follows
+    this entry and is pushed after
+    it.
+    Scope: two new modules
+    (workspaces/history_census.py:
+    the owner-wide history census -
+    build_history_census sums only
+    the P-173 history document's own
+    fields, the document composed
+    verbatim with no chat filter and
+    embedded whole, counts under the
+    event / folder-state / chat-
+    existence / folder-sharing /
+    label axes, the estate
+    classified under the closed
+    HISTORY_CENSUS_STATES law
+    no_history / no_live_chats /
+    all_live_chats /
+    some_live_chats; folder states
+    and chat existence are live
+    read-time judgements, never
+    claimed as at-ending - and works
+    paces/history_census_router.py:
+    GET /workspaces/history-census,
+    subject-is-caller, every state
+    DATA at 200); additive app.py
+    wiring (+6) and
+    workspaces/__init__.py doc lines
+    (+13). Slice doc docs/WORKSPACE_
+    HISTORY_CENSUS_2026-11-09.md, te
+    sts/test_p177_workspace_history_
+    census.py (16 tests), clean-room
+    log +1 entry; 7 files, +792/-0.
+    The census deletes nothing,
+    writes nothing, reads no
+    contents, lists no folder and
+    grants nothing.
+    Evidence (team-03
+    hidden_files/P177_EVIDENCE.md +
+    logs): battery 16 passed;
+    neighbours 117 passed (P-169 +
+    P-170 + P-171 + P-172 + P-173 +
+    P-174 + P-175 + P-177 batteries
+    on its base); full suite on its
+    base 5424 passed / 5 skipped / 0
+    failed, exit 0 (5408 on its
+    P-175 base + 16, exact).
+    Combined batteries on the merged
+    tree: P-169 + P-170 + P-171 +
+    P-172 + P-173 + P-174 + P-175 +
+    P-176 + P-177 batteries 134
+    passed / 0 failed (118 at P-176
+    banking + 16, exact). Forge
+    confirmation full suite on the
+    merged tree (counts read back
+    from the log file): 5441 passed
+    / 5 skipped / 0 failed, exact,
+    in 335.15s (5425 + 16).
+    Migration: NONE (head stays
+    0041). Two defects were found
+    and fixed in-slice by the team,
+    both in the slice's own test
+    expectations (a rebind-after-
+    unbind count; an HTTP owner
+    created by a pre-seed GET) - the
+    implementation was unchanged; no
+    defect was found at banking.
+    Nothing was left unfixed.
+    Honest limitations and carried
+    items, exactly as the lead named
+    them: (1) a binding label update
+    is named open (a write in the
+    P-175 bindings footprint; no in-
+    tree update law exists); (2)
+    content search / filename search
+    over the tree is named open (it
+    presupposes P-176's tree, now
+    banked, under a new walk law);
+    (3) an automatic retention
+    policy / bulk clear of history
+    awaits Volmarr's ruling -
+    thresholds are his to give (per
+    the P-175 record) and none were
+    invented. Writes inside bound
+    folders stay fenced behind the
+    VX-57 guard; execution is
+    declined ABSOLUTELY (VX-55/56,
+    P-027); watching stays declined
+    (P-169). Next in roadmap order:
+    P-178 (Part XI in roadmap
+    order).
+    P-178 BANKED - Workspace
+    Filename Search (Part XI,
+    DERIVED). Part XI continues.
+    Scope is DERIVED, stated plainly
+    in the slice doc: the roadmap
+    gives Part XI only its part line
+    (XI | Workspaces - the Companion
+    That Works | P-169 - P-186) with
+    no verbatim P-178 entry; the
+    slice derives from the banked
+    Part XI grid - P-169 banked the
+    binding, P-170 the one-level
+    listing, P-172 the read of one
+    named file whose path the caller
+    must already know, and P-176 the
+    depth-limited tree, whose own
+    record names filename search
+    over the tree as open twice -
+    the cell taken is finding a file
+    by name in a deep bound folder,
+    the filename half only: content
+    search, which would have to open
+    files under a new partial-read
+    honesty law, stays named open.
+    - team-01 commit e147e86 merged
+    (no-ff) into yrsa/two-mirrors-
+    build as 22e3c70 (parents
+    0e8b9c3 + e147e86); CROSS-BASE:
+    team-01 built on the P-176
+    record head f490afd while P-177
+    banked ahead in parallel, so
+    P-177 is NOT in this slice's
+    base and the merge onto the
+    P-177 record head 0e8b9c3
+    reconciled as flagged: conflicts
+    in src/runmal/app.py and docs/CL
+    EAN_ROOM_LOG_2026-10-30.md
+    (append-vs-append), both
+    resolved as pure additive unions
+    keeping the P-177 and P-178
+    entries and roads exactly once
+    each; workspaces/__init__.py
+    auto-merged keeping both slices'
+    additive text (the P-178 search
+    bullet after the P-176 tree
+    bullet, the P-177 history-census
+    bullet in the history region).
+    The app.py union was built as
+    two separate include_router
+    blocks, one for the history-
+    census router and one for the
+    search router (the P-174 fused-
+    call defect class checked
+    explicitly and never landed).
+    No banking heal was needed
+    beyond the union itself: the
+    merged tree was grep- and
+    compile-verified BEFORE any
+    suite ran - py_compile clean on
+    every touched module, and each
+    workspace router sits in its own
+    include_router block. Merged
+    diff vs 0e8b9c3 is exactly the
+    7 slice files, +717/-0, purely
+    additive. Merge pushed and
+    ls-remote verified at 22e3c70
+    before this record; banking
+    record commit follows this entry
+    and is pushed after it.
+    Scope: two new modules
+    (workspaces/search.py: the
+    filename search - P-176's tree
+    composed VERBATIM at its own
+    MAX_DEPTH ceiling, the tree
+    document embedded whole, no
+    second walk, listing law,
+    folder-state law or scan; the
+    query required and stripped,
+    empty or blank refused plainly
+    and never match-everything,
+    validated before the tree is
+    composed; a match is the
+    casefolded query as a substring
+    of the entry NAME only, never a
+    path component, never content;
+    coverage is expanded nodes only
+    in the tree's own depth-first
+    order, each match carrying the
+    node's fields verbatim plus its
+    folder-relative path, exactly
+    the input P-172's read consumes;
+    MAX_MATCHES 100 returned with
+    total_matches honest, truncated
+    set by the tree's own
+    truncation, by any unexpanded
+    directory node in the composed
+    document, or by the match cap;
+    None exactly when P-176's
+    resolve is None - and
+    workspaces/search_router.py:
+    GET /workspaces/search, the two
+    404s kept apart, refused subpath
+    and refused query at 422, every
+    state DATA at 200); additive
+    app.py wiring (+6) and
+    workspaces/__init__.py doc lines
+    (+10). Slice doc docs/WORKSPACE_
+    FILENAME_SEARCH_2026-11-09.md,
+    tests/test_p178_workspace_
+    search.py (13 tests), clean-room
+    log +1 entry; 7 files, +717/-0.
+    The search stores, binds,
+    unbinds, writes, edits, deletes,
+    runs, launches and watches
+    nothing, opens no file, and
+    grants nothing.
+    Evidence (team-01
+    hidden_files/P178_EVIDENCE.md +
+    logs): battery 13 passed;
+    neighbours 118 passed (P-169 +
+    P-170 + P-171 + P-172 + P-173 +
+    P-174 + P-175 + P-176 batteries
+    on its base); full suite on its
+    base 5438 passed / 5 skipped / 0
+    failed, exit 0 (5425 on its
+    P-176 base + 13, exact).
+    Combined batteries on the merged
+    tree: P-169 + P-170 + P-171 +
+    P-172 + P-173 + P-174 + P-175 +
+    P-176 + P-177 + P-178 batteries
+    147 passed / 0 failed (134 at
+    P-177 banking + 13, exact). Forge
+    confirmation full suite on the
+    merged tree (counts read back
+    from the log file): 5454 passed
+    / 5 skipped / 0 failed, exact,
+    in 332.68s (5441 + 13).
+    Migration: NONE (head stays
+    0041).
+    DISCOVERY recorded at banking,
+    NOT fixed in this slice: P-176's
+    tree document does not set
+    truncated for a directory left
+    unexpanded at the depth cap,
+    though P-176's notes claim
+    truncated names every partial
+    tree; P-178 compensated
+    composition-side for search
+    only (its build_search also sets
+    truncated when any directory
+    node in the composed document is
+    unexpanded). The fix to P-176's
+    tree itself is commissioned as
+    P-179 (team-02, in flight
+    separately); nothing in P-176
+    was touched here.
+    Honest limitations and carried
+    items, exactly as the lead named
+    them: (1) content search is
+    named open (it would open files
+    under a new partial-read honesty
+    law); (2) a binding label update
+    stays named open (bindings.py's
+    own law is unbind-then-bind,
+    never a silent in-place update);
+    (3) automatic retention / bulk
+    clear of history awaits
+    Volmarr's ruling. Writes inside
+    bound folders stay fenced behind
+    the VX-57 guard; execution is
+    declined ABSOLUTELY (VX-55/56,
+    P-027); watching stays declined
+    (P-169). Next in roadmap order:
+    P-179 (Part XI in roadmap
+    order).
+    P-179 BANKED - Workspace Tree
+    Truncated at the Depth Cap (Part
+    XI, COMMISSIONED FIX). Part XI
+    continues. This slice is not
+    derived scope: it is the fix
+    commissioned at P-178's banking
+    for the defect P-178 discovered
+    in banked P-176.
+    - team-02 commit 1616fb6 merged
+    (no-ff) into yrsa/two-mirrors-
+    build as 9df650d (parents
+    b6982a0 + 1616fb6); CROSS-BASE:
+    team-02 built on the P-177
+    record head 0e8b9c3 while P-178
+    banked ahead in parallel, so
+    P-178 is NOT in this slice's
+    base and the merge onto the
+    P-178 record head b6982a0
+    reconciled as flagged: the only
+    conflict was docs/CLEAN_ROOM_LOG
+    _2026-10-30.md (append-vs-
+    append), resolved as a pure
+    additive union keeping the P-178
+    and P-179 entries exactly once
+    each, in roadmap order, byte-
+    identical to their source
+    versions. No other file
+    conflicted: tree.py, the slice
+    doc and the battery landed
+    clean. Merged diff vs b6982a0 is
+    exactly the 4 slice files,
+    +403/-0. The merged tree was
+    verified BEFORE any suite ran:
+    py_compile clean on tree.py, and
+    tree.py, the battery and the
+    slice doc sha256-identical to
+    team-02's committed versions.
+    Merge pushed and ls-remote
+    verified at 9df650d before this
+    record; banking record commit
+    follows this entry and is pushed
+    after it.
+    Scope: ONE hunk in
+    workspaces/tree.py (build_tree's
+    fill, at the existing depth-cap
+    return, +11): if any of the
+    capped level's just-composed
+    children is a directory (P-170's
+    KIND_DIRECTORY law verbatim),
+    truncated is set before
+    returning - P-178's document-
+    side rule applied at the source
+    instead of in one consumer.
+    Files and symlinks at the cap
+    are leaves and never make a tree
+    partial; an empty or file-only
+    cap level stays truncated False;
+    a non-ready root never reaches
+    fill and stays False. No depth
+    law, entry law, path law,
+    router, store or note changed -
+    the module's notes already
+    stated the true law and the code
+    now keeps their promise. Slice
+    doc docs/WORKSPACE_TREE_TRUNCATE
+    D_FIX_2026-11-09.md, tests/test_
+    p179_workspace_tree_truncated.py
+    (9 tests), clean-room log +1
+    entry; 4 files, +403/-0. The
+    tree still stores, binds,
+    unbinds, writes, edits, deletes,
+    runs, launches and watches
+    nothing, opens no file, and
+    grants nothing.
+    Evidence (team-02
+    hidden_files/P179_EVIDENCE.md +
+    logs): battery 9 passed; the
+    P-176 battery alongside it 17
+    passed (combined invocation 26
+    passed); neighbours 134 passed
+    (P-169..P-177 workspace
+    batteries on its base; P-178 not
+    in this base); full suite on its
+    base 5450 passed / 5 skipped / 0
+    failed, exit 0 (5441 on its
+    P-177 base + 9, exact). Combined
+    batteries on the merged tree:
+    P-169 + P-170 + P-171 + P-172 +
+    P-173 + P-174 + P-175 + P-176 +
+    P-177 + P-178 + P-179 batteries
+    156 passed / 0 failed (147 at
+    P-178 banking + 9, exact) - the
+    P-176 battery (17) and the P-178
+    battery (13) both pass on the
+    merged tree, so P-178's search
+    against the fixed tree is
+    verified, not just reasoned.
+    Forge confirmation full suite on
+    the merged tree (counts read
+    back from the log file): 5463
+    passed / 5 skipped / 0 failed,
+    exact, in 333.93s (5454 + 9).
+    Migration: NONE (head stays
+    0041).
+    DISCOVERY CLOSED: the defect
+    recorded at P-178's banking -
+    P-176's tree document did not
+    set truncated for a directory
+    left unexpanded at the depth
+    cap, though P-176's notes claim
+    truncated names every partial
+    tree, so the tree road dressed a
+    capped partial tree as whole -
+    is FIXED at its source by this
+    slice. P-178's composition-side
+    compensation (build_search also
+    setting truncated when any
+    directory node in the composed
+    document is unexpanded) becomes
+    a correct no-op for depth caps
+    against the fixed tree and stays
+    load-bearing for refused
+    expansions, which the tree names
+    by expand_refused alone
+    (unchanged, out of this slice's
+    scope). Nothing was left
+    unfixed.
+    P-176 expectation audit (the
+    accomplice question), as the
+    slice doc names it: P-176's
+    battery asserts truncated False
+    only for the empty folder and
+    the missing folder - neither is
+    a depth cap, and both stay False
+    under this fix (both batteries
+    green together). No P-176
+    expectation encoded the defect,
+    so none was corrected: the
+    accomplice was an absence -
+    P-176's depth tests asserted
+    expanded / children / node_count
+    on capped trees but never
+    asserted truncated there. This
+    slice's battery is that missing
+    assertion, at full strength.
+    Honest limitations and carried
+    items, exactly as the lead named
+    them: (1) truncated at the depth
+    cap names partiality, not size:
+    a directory at the cap might in
+    fact be empty - the tree did not
+    look, so it does not claim
+    wholeness; (2) refused
+    expansions keep their own truth
+    (expand_refused on the node) and
+    do not by themselves set the
+    tree's truncated; (3) content
+    search over the tree stays named
+    open (it would open files under
+    a new partial-read honesty law);
+    (4) a binding label update stays
+    named open (bindings.py's own
+    law is unbind-then-bind, never a
+    silent in-place update); (5)
+    automatic retention / bulk clear
+    of history awaits Volmarr's
+    ruling. Writes inside bound
+    folders stay fenced behind the
+    VX-57 guard; execution is
+    declined ABSOLUTELY (VX-55/56,
+    P-027); watching stays declined
+    (P-169). Next in roadmap order:
+    P-180 (Part XI in roadmap
+    order).
+    P-180 BANKED - Workspace
+    Content Search (Part XI,
+    DERIVED). Part XI continues.
+    - team-03 commit d04d333
+    merged (no-ff) into yrsa/two-
+    mirrors-build as 3a0237e
+    (parents a3ddcca + d04d333);
+    CROSS-BASE: team-03 built on
+    the P-178 record head b6982a0
+    while P-179 banked ahead in
+    parallel, so P-179 is NOT in
+    this slice's base and the
+    merge onto the P-179 record
+    head a3ddcca reconciled as
+    flagged in the evidence: the
+    only conflict was docs/CLEAN_R
+    OOM_LOG_2026-10-30.md (append-
+    vs-append), resolved as a pure
+    additive union keeping the
+    P-179 and P-180 entries
+    exactly once each, in roadmap
+    order, byte-identical to their
+    source versions (line
+    sha256-verified). app.py and
+    workspaces/__init__.py merged
+    clean as pure additive hunks;
+    the content-search router
+    lands in its OWN
+    include_router block in
+    app.py, verified in the merged
+    tree - the P-174 fused-call
+    defect class does not land.
+    Merged diff vs a3ddcca is
+    exactly the 7 slice files,
+    +915/-0; the four new files
+    are sha256-identical to
+    team-03's committed versions;
+    py_compile clean on all
+    touched modules. Merge pushed
+    and ls-remote verified at
+    3a0237e before this record;
+    banking record commit follows
+    this entry and is pushed after
+    it.
+    Scope:
+    workspaces/content_search.py +
+    content_search_router.py (GET
+    /workspaces/content-search)
+    composing P-176's tree
+    verbatim and reading every
+    candidate through P-172's
+    build_content_read under its
+    stated cap; NO tree, listing,
+    content, search or bindings
+    file modified. Slice doc docs/
+    WORKSPACE_CONTENT_SEARCH_2026-
+    11-09.md, tests/test_p180_work
+    space_content_search.py (16
+    tests), clean-room log +1
+    entry; 7 files, +915/-0.
+    Evidence (team-03
+    hidden_files/P180_EVIDENCE.md
+    + logs): battery 16 passed;
+    neighbours 147 passed
+    (P-169..P-178 workspace
+    batteries on its base); full
+    suite on its base 5470 passed
+    / 5 skipped / 0 failed, exit 0
+    (5454 on its base + 16,
+    exact). Combined batteries on
+    the merged tree: P-169..P-180
+    workspace fence 172 passed / 0
+    failed (156 at P-179 banking +
+    16, exact) - the P-179 battery
+    (9) passes on the merged tree,
+    so content search composing
+    the FIXED tree is verified,
+    not just reasoned. Forge
+    confirmation full suite on the
+    merged tree (counts read back
+    from the log file): 5479
+    passed / 5 skipped / 0 failed,
+    exit 0, in 334.28s (5463 + 16,
+    exact). Migration: NONE (head
+    stays 0041).
+    Honesty law, as the slice
+    states it: coverage is the
+    expanded tree only; the P-172
+    read cap is carried as data,
+    never silently widened; no
+    silent omission -
+    files_considered ==
+    files_searched + skipped,
+    always; truncated and
+    coverage_complete name every
+    partial answer, so a partial
+    search is never dressed as
+    whole.
+    Defects: none found by the
+    slice; nothing left unfixed.
+    Carried items, exactly as
+    named open: (1) a binding
+    label update stays named open
+    (bindings.py's own unbind-
+    then-bind law); (2) automatic
+    retention / bulk clear of
+    history awaits Volmarr's
+    ruling - none invented. Writes
+    inside bound folders stay
+    fenced behind the VX-57 guard;
+    execution is declined
+    ABSOLUTELY (VX-55/56, P-027);
+    watching stays declined
+    (P-169). team-03 reset to the
+    record head after banking.
+    Banked now P-001..P-180. PART
+    XI OPEN (P-169..P-186). Next
+    in roadmap order: P-181 (Part
+    XI in roadmap order).
+    P-181 BANKED - Workspace
+    Tree Census (Part XI,
+    DERIVED). Part XI continues.
+    - team-01 commit 10b0322
+    merged (no-ff) into yrsa/two-
+    mirrors-build as 61b03f2
+    (parents 9300cd5 + 10b0322).
+    BANKING NOTE, recorded
+    honestly: the first banking
+    of this slice was cut
+    mid-merge by a cron timeout -
+    the merge stood unresolved
+    (3 conflicted files), nothing
+    pushed, no record written.
+    This record is written by
+    the finisher run that
+    completed that same merge:
+    the 3 conflicts (docs/CLEAN_R
+    OOM_LOG_2026-10-30.md
+    append-vs-append; src/runmal/
+    app.py, 2 conflicts; src/
+    runmal/workspaces/__init__.py,
+    1 conflict) were resolved as
+    pure additive unions keeping
+    the P-180 content-search and
+    P-181 tree-census roads
+    exactly once each; the
+    tree-census router lands in
+    its OWN include_router block
+    in app.py, verified in the
+    merged tree - the P-174
+    fused-call defect class does
+    not land. Merged diff vs
+    9300cd5 is exactly the 7
+    slice files, +1099/-0;
+    py_compile clean on all
+    resolved and touched modules.
+    Merge pushed and ls-remote
+    verified at 61b03f2 before
+    this record; banking record
+    commit follows this entry and
+    is pushed after it.
+    Scope: workspaces/tree_
+    census.py + tree_census_
+    router.py (GET /workspaces/
+    tree-census) composing
+    P-176's tree verbatim at
+    MAX_DEPTH through resolve_
+    chat_tree and summing only
+    the composed document's own
+    node fields; NO tree,
+    listing, content, search,
+    content-search or bindings
+    file modified. Slice doc
+    docs/WORKSPACE_TREE_CENSUS_
+    2026-11-09.md, tests/test_
+    p181_workspace_tree_census.py
+    (18 tests), clean-room log
+    +1 entry; 7 files, +1099/-0.
+    Evidence (team-01
+    hidden_files/P181_EVIDENCE.md
+    + logs): battery 18 passed;
+    neighbours 156 passed
+    (P-169..P-179 workspace
+    batteries on its base);
+    full suite on its base 5481
+    passed / 5 skipped / 0
+    failed, exit 0 (5463 + 18,
+    exact). Combined batteries on
+    the merged tree (run by the
+    finisher): P-169..P-181
+    workspace fence 190 passed /
+    0 failed (172 at P-180
+    banking + 18, exact). Forge
+    confirmation full suite on
+    the merged tree (counts read
+    back from the log file):
+    5497 passed / 5 skipped / 0
+    failed, exit 0, in 337.74s
+    (5479 + 18, exact).
+    Migration: NONE (head stays
+    0041).
+    Defects: none in the banked
+    surfaces; nothing left
+    unfixed (one miscount in the
+    slice's own battery draft was
+    caught and corrected before
+    its first run).
+    Carried items, exactly as
+    named open: (1) a binding
+    label update stays named open
+    (unbind-then-bind law); (2)
+    automatic retention / bulk
+    clear of history awaits the
+    ruling of Volmarr - none
+    invented. Writes inside bound
+    folders stay fenced behind
+    the VX-57 guard; execution is
+    declined ABSOLUTELY (VX-55/56,
+    P-027); watching stays
+    declined (P-169). Part XI gate
+    is P-186; P-182..P-185 remain.
+    team-01 reset to the record
+    head after banking. Banked
+    now P-001..P-181. PART XI
+    OPEN (P-169..P-186). Next in
+    roadmap order: P-182 (Part
+    XI in roadmap order).
+    P-182 BANKED - Workspace
+    Unified Search (Part XI,
+    DERIVED). Part XI continues.
+    - team-02 commit e1c3957
+    merged (no-ff) into
+    yrsa/two-mirrors-build as
+    19651b1 (parents 0f1181e +
+    e1c3957). Merge conflicts in
+    exactly the 3 expected
+    shared files (docs/CLEAN_ROO
+    M_LOG_2026-10-30.md append-
+    vs-append;
+    src/runmal/app.py; src/runma
+    l/workspaces/__init__.py)
+    resolved as pure additive
+    unions keeping the P-181
+    tree-census and P-182
+    unified-search roads exactly
+    once each; the unified-
+    search router lands in its
+    OWN include_router block in
+    app.py, split out of the one
+    call both slices had edited
+    - the P-174 fused-call
+    defect class does not land.
+    Merged diff vs 0f1181e is
+    exactly the 7 slice files,
+    +1054/-0; new files
+    sha256-identical to
+    team-02's committed
+    versions; py_compile clean
+    on all resolved and touched
+    modules; create_app builds
+    clean and the OpenAPI road
+    list carries GET
+    /workspaces/tree-census and
+    GET /workspaces/unified-
+    search together, each
+    exactly once. Merge pushed
+    and ls-remote verified at
+    19651b1 before this record;
+    banking record commit
+    follows this entry and is
+    pushed after it.
+    Scope:
+    workspaces/unified_search.py
+    + unified_search_router.py
+    (GET /workspaces/unified-
+    search) composing P-178's
+    filename search and P-180's
+    content search over ONE
+    P-176 tree composed once
+    verbatim at MAX_DEPTH - both
+    banked searches built from
+    that same tree document and
+    embedded whole, returned
+    matches merged by folder-
+    relative path with
+    matched_by (name / content /
+    both) named, both source
+    totals and P-180's file
+    honesty carried verbatim,
+    cap partiality named by
+    truncated /
+    coverage_complete; NO tree,
+    listing, content, search,
+    content-search or bindings
+    file modified. Slice doc doc
+    s/WORKSPACE_UNIFIED_SEARCH_2
+    026-11-09.md, tests/test_p18
+    2_workspace_unified_search.p
+    y (17 tests), clean-room log
+    +1 entry; 7 files, +1054/-0.
+    Evidence (team-02 hidden_fil
+    es/P182_EVIDENCE.md + logs):
+    battery 17 passed;
+    neighbours 189 passed (the
+    workspace fence on its
+    base); full suite on its
+    base 5496 passed / 5 skipped
+    / 0 failed, exit 0 (5479 +
+    17, exact). Combined
+    batteries on the merged
+    tree: P-169..P-182 workspace
+    fence 207 passed / 0 failed
+    (190 at P-181 banking + 17,
+    exact). Forge confirmation
+    full suite on the merged
+    tree (counts read back from
+    the log file): 5514 passed /
+    5 skipped / 0 failed, exit
+    0, in 341.17s (5497 + 17,
+    exact).
+    Migration: NONE (head stays
+    0041).
+    Defects: none in the slice's
+    scope or at banking; nothing
+    left unfixed.
+    Carried items, exactly as
+    named open: (1) a binding
+    label update stays named
+    open (unbind-then-bind law);
+    (2) automatic retention /
+    bulk clear of history awaits
+    the ruling of Volmarr - none
+    invented. Writes inside
+    bound folders stay fenced
+    behind the VX-57 guard;
+    execution is declined
+    ABSOLUTELY (VX-55/56,
+    P-027); watching stays
+    declined (P-169). Part XI
+    gate is P-186; P-183..P-185
+    remain. team-02 reset to the
+    record head after banking.
+    Banked now P-001..P-182.
+    PART XI OPEN (P-169..P-186).
+    Next in roadmap order: P-183
+    (Part XI in roadmap order).
+    P-183 BANKED - Workspace
+    Content Census (Part XI,
+    DERIVED). Part XI continues.
+    - team-03 commit e9aefae
+    merged (no-ff) into
+    yrsa/two-mirrors-build as
+    c5f125d (parents c74678b +
+    e9aefae). Merge conflicts
+    in exactly the 3 expected
+    shared files (docs/CLEAN_
+    ROOM_LOG_2026-10-30.md
+    append-vs-append;
+    src/runmal/app.py; src/
+    runmal/workspaces/__init__.py)
+    resolved as pure additive
+    unions keeping the P-182
+    unified-search and P-183
+    content-census roads
+    exactly once each; the
+    content-census router lands
+    in its OWN include_router
+    block in app.py, split out
+    of the one call both slices
+    had edited - the P-174
+    fused-call defect class
+    does not land. Merged diff
+    vs c74678b is exactly the
+    7 slice files, +1174/-0;
+    new files sha256-identical
+    to team-03's committed
+    versions; py_compile clean
+    on all resolved and touched
+    modules; create_app builds
+    clean and the OpenAPI road
+    list carries GET
+    /workspaces/unified-search
+    and GET /workspaces/
+    content-census together,
+    each exactly once. Merge
+    pushed and ls-remote
+    verified at c5f125d before
+    this record; banking record
+    commit follows this entry
+    and is pushed after it.
+    Scope: workspaces/
+    content_census.py +
+    content_census_router.py
+    (GET /workspaces/content-
+    census) composing P-176's
+    tree verbatim at MAX_DEPTH
+    (resolve_chat_tree at its
+    ceiling, the tree document
+    embedded whole) and judging
+    every candidate file only
+    through P-172's read under
+    its stated cap, counted
+    under its outcome (readable
+    / binary / oversize /
+    unreadable / refused),
+    every non-readable file
+    named, no content retained
+    or returned, partial named
+    partial by truncated /
+    coverage_complete; NO tree,
+    listing, content, search,
+    content-search, unified-
+    search or bindings file
+    modified. Slice doc docs/
+    WORKSPACE_CONTENT_CENSUS_
+    2026-11-09.md, tests/test_
+    p183_workspace_content_
+    census.py (21 tests),
+    clean-room log +1 entry;
+    7 files, +1174/-0.
+    Evidence (team-03
+    hidden_files/P183_EVIDENCE.md
+    + logs): battery 21 passed;
+    neighbours 211 passed (the
+    workspace fence on its
+    base); full suite on its
+    base 5518 passed / 5
+    skipped / 0 failed, exit 0
+    (5497 + 21, exact).
+    Combined batteries on the
+    merged tree: P-169..P-183
+    workspace fence 228 passed
+    / 0 failed (207 at P-182
+    banking + 21, exact). Forge
+    confirmation full suite on
+    the merged tree (counts
+    read back from the log
+    file): 5535 passed / 5
+    skipped / 0 failed, exit 0,
+    in 342.04s (5514 + 21,
+    exact).
+    Migration: NONE (head stays
+    0041).
+    Defects: none in the slice's
+    scope or at banking; nothing
+    left unfixed.
+    Carried items, exactly as
+    named open: (1) a binding
+    label update stays named
+    open (unbind-then-bind law);
+    (2) automatic retention /
+    bulk clear of history awaits
+    the ruling of Volmarr - none
+    invented. Writes inside
+    bound folders stay fenced
+    behind the VX-57 guard;
+    execution is declined
+    ABSOLUTELY (VX-55/56,
+    P-027); watching stays
+    declined (P-169). Part XI
+    gate is P-186; P-184..P-185
+    remain. team-03 reset to the
+    record head after banking.
+    Banked now P-001..P-183.
+    PART XI OPEN (P-169..P-186).
+    Next in roadmap order: P-184
+    (Part XI in roadmap order).
+    P-184 BANKED - Workspace
+    Unified Search Census
+    (Part XI, DERIVED). Part
+    XI continues.
+    - team-01 commit aa25fce
+    merged (no-ff) into
+    yrsa/two-mirrors-build
+    as 8bddc92 (parents
+    b749c73 + aa25fce).
+    Cross-base banking: the
+    team built on c74678b
+    (P-182 banking record);
+    P-183 was NOT in its
+    base. Merge conflicts in
+    exactly the 3 expected
+    shared files (docs/CLEAN
+    _ROOM_LOG_2026-10-30.md
+    append-vs-append;
+    src/runmal/app.py; src/r
+    unmal/workspaces/__init_
+    _.py) resolved as pure
+    additive unions keeping
+    the P-183 content-census
+    and P-184 unified-
+    search-census roads
+    exactly once each; the
+    unified-search-census
+    router lands in its OWN
+    include_router block in
+    app.py. Merged diff vs
+    b749c73 exactly the 7
+    slice files (+1196/-0),
+    purely additive; new
+    files sha256-identical
+    to team-01's committed
+    versions.
+    Slice doc docs/WORKSPACE
+    _UNIFIED_SEARCH_CENSUS_2
+    026-11-09.md, tests/test
+    _p184_workspace_unified_
+    search_census.py (20
+    tests), clean-room log
+    +1 entry; 7 files,
+    +1196/-0.
+    Evidence (team-01 hidden
+    _files/P184_EVIDENCE.md
+    + logs): battery 20
+    passed; neighbours 227
+    passed / 0 failed (the
+    workspace fence on its
+    base, 207 at P-182
+    banking + 20, exact);
+    full suite on its base
+    5534 passed / 5 skipped
+    / 0 failed, exit 0 (5514
+    + 20, exact).
+    Combined batteries on
+    the merged tree:
+    P-169..P-184 workspace
+    fence 248 passed / 0
+    failed (228 at P-183
+    banking + 20, exact).
+    Forge confirmation full
+    suite on the merged tree
+    (counts read back from
+    the log file): 5555
+    passed / 5 skipped / 0
+    failed, exit 0, in
+    344.34s (5535 + 20,
+    exact).
+    Migration: NONE (head
+    stays 0041).
+    Defects: none in the
+    slice's scope or at
+    banking; nothing left
+    unfixed. Banking note:
+    the merge was committed
+    and pushed by the
+    previous tick's banking
+    coordinator, whose run
+    was cut by cron timeout
+    during the resolve
+    phase; this keeper tick
+    counted the detached
+    confirmation suite from
+    its log and completed
+    the banking (record,
+    resets, next muster).
+    Carried items, exactly
+    as named open: (1) a
+    binding label update
+    stays named open
+    (unbind-then-bind law);
+    (2) automatic retention
+    / bulk clear of history
+    awaits the ruling of
+    Volmarr - none invented.
+    Writes inside bound
+    folders stay fenced
+    behind the VX-57 guard;
+    execution is declined
+    ABSOLUTELY (VX-55/56,
+    P-027); watching stays
+    declined (P-169). Part
+    XI gate is P-186; P-185
+    remains. team-01 reset
+    to the record head after
+    banking.
+    Banked now P-001..P-184.
+    PART XI OPEN
+    (P-169..P-186). Next in
+    roadmap order: P-185
+    (Part XI in roadmap
+    order).
+    P-185 BANKED - Workspace
+    Reconciliation Battery
+    (Part XI, DERIVED). Part
+    XI continues.
+    - team-02 commit 7ccee1c
+    merged (no-ff) into
+    yrsa/two-mirrors-build
+    as 4c395e2 (parents
+    7c7717a + 7ccee1c).
+    Same-base merge, CLEAN,
+    no conflicts, no heal;
+    merged diff exactly the
+    4 slice files (+929/-0).
+    Derivation: the team-02
+    scout proved no lawful
+    pure-read composition
+    remains in Part XI -
+    every composable surface
+    is already composed and
+    every aggregate axis
+    taken - so the slice
+    built the assignment's
+    named fallback: a pre-
+    gate reconciliation
+    battery over
+    P-169..P-185 as one
+    system. Slice files: tes
+    ts/test_p185_workspace_r
+    econciliation.py (24
+    tests), docs/WORKSPACE_R
+    ECONCILIATION_2026-11-
+    09.md, clean-room log +1
+    entry, src/runmal/worksp
+    aces/__init__.py (one
+    additive doc bullet); NO
+    new surface, service
+    module or router, by
+    design; 4 files,
+    +929/-0.
+    Evidence (team-02 hidden
+    _files/P185_EVIDENCE.md
+    + logs): battery 24
+    passed (Areas A census-
+    of-estate 7, B together
+    10, C custody/honesty 5,
+    D accounting 2);
+    neighbours 272 passed /
+    0 failed (the workspace
+    fence on its base, 248
+    at P-184 banking + 24,
+    exact); full suite on
+    its base 5579 passed / 5
+    skipped / 0 failed, exit
+    0 (5555 + 24, exact;
+    s503 did not fire).
+    Combined batteries on
+    the merged tree:
+    P-169..P-185 workspace
+    fence 272 passed / 0
+    failed. Forge
+    confirmation full suite
+    on the merged tree
+    (counts read back from
+    the log file): 5579
+    passed / 5 skipped / 0
+    failed, exit 0, in
+    343.50s (5555 + 24,
+    exact).
+    Migration: NONE (head
+    stays 0041).
+    Defects: none in the
+    banked estate
+    (P-169..P-184 code
+    unchanged). Two defects
+    in the battery's own
+    first-run expectations,
+    fixed in-slice and
+    pinned by the corrected
+    tests: (1) a subpath
+    filename search expected
+    a content match - the
+    filename road matches
+    names only, and the
+    corrected test pins that
+    law; (2) a chatless
+    owner's estate census
+    state is no_chats under
+    P-171's closed law, not
+    no_bindings. Nothing
+    left unfixed.
+    Carried items, exactly
+    as named open: (1) a
+    binding label update
+    stays named open
+    (unbind-then-bind law);
+    (2) automatic retention
+    / bulk clear of history
+    awaits the ruling of
+    Volmarr - none invented;
+    (3) unified-search
+    history - named open,
+    presupposes a recording
+    write + store, not a
+    pure-read composition.
+    Writes inside bound
+    folders stay fenced
+    behind the VX-57 guard;
+    execution is declined
+    ABSOLUTELY (VX-55/56,
+    P-027); watching stays
+    declined (P-169). Part
+    XI gate is P-186 - the
+    only slice left in Part
+    XI. team-02 reset to the
+    record head after
+    banking.
+    Banked now P-001..P-185.
+    PART XI OPEN
+    (P-169..P-186). Next in
+    roadmap order: P-186
+    (Part XI gate).
+    P-186 BANKED - Part
+    XI GATE: Workspaces
+    PASSES, PART XI
+    COMPLETE
+    (P-169..P-186).
+    - team-03 commit
+    80438b5 merged
+    (no-ff) into yrsa/tw
+    o-mirrors-build as
+    884b2c4 (parents
+    bb8b2b2 + 80438b5).
+    Same-base merge,
+    CLEAN, no conflicts,
+    no heal; merged diff
+    exactly the 4 slice
+    files (+1097/-0).
+    Gate verdict: PASSES
+    in every area -
+    Census PASS /
+    Together PASS /
+    Custody PASS /
+    Accounting PASS.
+    Every row
+    P-169..P-185 PASS;
+    P-186 is the gate
+    itself. Slice files:
+    docs/PART_XI_GATE_20
+    26-11-09.md (new), t
+    ests/test_p186_part_
+    xi_gate.py (new, 25
+    tests), tests/test_p
+    186_gate_record.py
+    (new, 10 tests), doc
+    s/CLEAN_ROOM_LOG_202
+    6-10-30.md (+1
+    entry). NO new
+    product surface, NO
+    migration (head
+    stays 0041), no
+    README touched, 0
+    hidden_files paths.
+    Evidence (team-03 hi
+    dden_files/P186_EVID
+    ENCE.md + logs):
+    gate battery 25
+    passed (A census 8,
+    B together 7, C
+    custody 5, D
+    accounting 3,
+    hygiene 2); gate
+    record 10 passed;
+    neighbours 272
+    passed / 0 failed
+    (the full
+    P-169..P-185
+    workspace fence,
+    exact); team full
+    suite verification
+    run 5614 passed / 5
+    skipped / 0 failed,
+    exit 0, in 340.94s
+    (5579 + 25 + 10,
+    exact). First
+    full-suite run
+    honestly recorded:
+    5612 passed / 2
+    failed - (1) the
+    gate-record
+    placeholder before
+    its S6 line was
+    filled, (2)
+    test_p099
+    sandbox-bridge count
+    under shared-machine
+    contention; solo
+    re-run of the whole
+    P-099 module 24
+    passed - classified
+    CONTENTION, not a
+    banked defect (gate
+    finding F2).
+    test_s503 did not
+    fire in either run.
+    Combined batteries
+    on the merged tree
+    (forge hidden_files/
+    P186_COMBINED.log):
+    307 passed / 0
+    failed (272 fence +
+    25 gate + 10 record,
+    exact). Forge
+    confirmation full
+    suite on the merged
+    tree (forge hidden_f
+    iles/P186_FORGE_FULL
+    .log): 5614 passed /
+    5 skipped / 0
+    failed, exit 0, in
+    346.68s (exact).
+    Findings: F1 - no
+    new engine defect;
+    the gate's only
+    correction was its
+    own P-185 census
+    counting sync
+    functions only (9)
+    where the battery
+    holds 24 (9 sync +
+    15 async) - fixed
+    in-slice, pinned by
+    Area A; no banked
+    code touched. F2 -
+    the P-099 contention
+    flake above.
+    Carried items,
+    exactly as named
+    open: (1) binding
+    label update stays
+    named open
+    (unbind-then-bind
+    law); (2) automatic
+    retention / bulk
+    clear of history
+    awaits the ruling of
+    Volmarr - none
+    invented; (3)
+    unified-search
+    history presupposes
+    a recording write +
+    store. Writes inside
+    bound folders stay
+    fenced behind the
+    VX-57 guard;
+    execution is
+    declined ABSOLUTELY
+    (VX-55/56, P-027);
+    watching stays
+    declined (P-169).
+    Banking note: the
+    merge + combined
+    fence + forge
+    confirmation were
+    completed by the
+    previous keeper
+    tick; the push, this
+    record, and the team
+    resets were
+    completed by the
+    2026-11-09 07:48 EST
+    keeper tick after
+    verifying every
+    count from the
+    on-device logs.
+    Banked now
+    P-001..P-186 + the
+    commissioned binding
+    depth/role slice.
+    PART XI COMPLETE
+    (P-169..P-186). Next
+    in roadmap order:
+    P-187 (Part XII
+    opener - The Hub,
+    Sovereign Shape,
+    P-187..P-202).
+    P-187 BANKED - Hub
+    registry foundation
+    (Part XII OPENER,
+    DERIVED). Part XII
+    OPEN (P-187..P-202).
+    - team-01 commit
+    e1e3266 merged
+    (no-ff) into yrsa/tw
+    o-mirrors-build as
+    ae5b51e (parents
+    30c2e0c + e1e3266).
+    Same-base merge,
+    CLEAN, no conflicts,
+    no heal; merged diff
+    exactly the 7 slice
+    files (+917/-0).
+    Derived scope
+    ACCEPTED: the Part
+    XII opener. The
+    team-01 scout
+    censused the banked
+    sharing surfaces
+    (P-045 lorebook
+    packs runmal-loreboo
+    k-pack, P-063 prompt
+    packs
+    runmal-prompt-pack,
+    P-054 preset bundle
+    shares runmal-preset
+    -bundle, P-141
+    scenario packs runma
+    l-scenario-pack, the
+    S801 .runmal
+    archive) and the
+    VX-59
+    sovereign-shape
+    ruling, and built
+    the keeper-expected
+    foundation cell the
+    census supported: a
+    hub registry/index
+    in the P-117/P-169
+    JSON-store pattern -
+    src/runmal/hub/regis
+    try.py (HubStore
+    over versioned
+    hub.json, tolerant
+    load; HubEntry with
+    kind under closed
+    HUB_KINDS mapped by
+    KIND_FORMATS to the
+    four sealed pack
+    formats, title,
+    locator stored
+    verbatim as data,
+    optional
+    caller-claimed
+    checksum
+    shape-checked as
+    64-hex and never
+    presented as
+    verified, note;
+    register refusals
+    plain and total;
+    exact removal, a
+    miss writes nothing;
+    locator state judged
+    LIVE at read under
+    closed
+    LOCATOR_STATES ready
+    /missing/not_a_file/
+    unreadable, never
+    stored; list counts
+    computed from the
+    entries) +
+    hub/router.py (POST
+    /hub/entries 201,
+    GET
+    /hub/entries/{id},
+    GET /hub with
+    optional kind
+    filter, DELETE
+    /hub/entries/{id};
+    owner-scoped,
+    foreign == unknown
+    -> 404; data-only, o
+    pens/imports/fetches
+    /executes nothing) +
+    app.py wiring +
+    slice doc docs/HUB_R
+    EGISTRY_2026-11-09.m
+    d + clean-room log
+    +1. Declined with
+    reasons in the
+    scout: central
+    catalogue/creator
+    profiles (ruled out
+    by VX-59), signing
+    (no key machinery;
+    would fake trust),
+    network exchange (no
+    transport; index
+    precedes exchange),
+    hub-side import
+    (each pack layer
+    already owns
+    verified
+    inspect+import),
+    .runmal archive as a
+    hub kind
+    (whole-estate
+    backup, not
+    sharing), DB
+    table/migration
+    (JSON store is the
+    house pattern).
+    Evidence (team-01 hi
+    dden_files/P187_EVID
+    ENCE.md + logs):
+    battery 16 passed;
+    neighbours 130
+    passed (P-045 +
+    P-063 + P-054 +
+    P-141 + P-169); team
+    full suite 5630
+    passed / 5 skipped /
+    0 failed (= 5614 +
+    16, exact, in
+    437.02s; the launch
+    invoke hit the node
+    timeout, the pytest
+    process survived
+    on-device and its
+    completed log was
+    read back - no
+    re-run, no zombie;
+    s503 did not fire).
+    Combined batteries
+    on the merged tree:
+    146 passed / 0
+    failed (16 + 130,
+    exact). Forge
+    confirmation full
+    suite on the merged
+    tree (counts read
+    back from forge hidd
+    en_files/P187_FORGE_
+    FULL.log): 5630
+    passed / 5 skipped /
+    0 failed, exit 0, in
+    346.08s (exact).
+    Migration: NONE
+    (head stays 0041,
+    pinned by the
+    battery).
+    Findings: F1 - no
+    banked-code defect
+    discovered;
+    KIND_FORMATS proven
+    equal to the four
+    pack layers' own
+    format constants by
+    a battery test
+    reading the
+    constants from the
+    pack modules - no
+    drift.
+    Carried items
+    untouched, exactly
+    as recorded at
+    P-186: (1) binding
+    label update stays
+    named open
+    (unbind-then-bind
+    law); (2) automatic
+    retention / bulk
+    clear of history
+    awaits the ruling of
+    Volmarr - none
+    invented; (3)
+    unified-search
+    history stays named
+    open. Named open for
+    later Part XII:
+    signing/attestation,
+    friend-instance
+    exchange transport,
+    hub-side browse over
+    entry contents.
+    VX-59's ruled-out
+    forms (central
+    store, catalogue,
+    creator profiles)
+    are NOT named open -
+    declined by ruling.
+    Banked now
+    P-001..P-187 + the
+    commissioned binding
+    depth/role slice.
+    PART XII OPEN
+    (P-187..P-202). Next
+    in roadmap order:
+    P-188 (Part XII,
+    DERIVED).
+    P-188 BANKED -
+    Hub-side browse over
+    entry contents (Part
+    XII, DERIVED). Part
+    XII continues.
+    - team-02 commit
+    eb83d93 merged
+    (no-ff) into yrsa/tw
+    o-mirrors-build as
+    df15933 (parents
+    8557b44 + eb83d93).
+    Same-base merge,
+    CLEAN, no conflicts,
+    no heal; merged diff
+    exactly the 5 slice
+    files (+671/-0).
+    Derived scope
+    ACCEPTED: hub-side
+    browse - the P-187
+    record's named-open
+    cell. The team-02
+    scout censused the
+    banked P-187 hub
+    registry plus all
+    four pack layers it
+    indexes and built
+    browse as pure
+    composition: src/run
+    mal/hub/browse.py (b
+    rowse_document(entry
+    ), schema runmal-p18
+    8-hub-browse-v1,
+    closed BROWSE_STATES
+    inspected/unavailabl
+    e/invalid - all data
+    at 200, 16 MiB
+    bound, locator
+    judged live)
+    dispatching per kind
+    to the owning
+    layer's OWN verified
+    inspect road
+    verbatim (lorebook
+    -> lorebooks.packs.i
+    nspect_pack, prompt
+    -> presets.packs.ins
+    pect_pack, scenario
+    -> scenarios.packs.i
+    nspect_pack,
+    preset_bundle -> pre
+    sets.bundles.parse_s
+    hare - that layer
+    owns no
+    inspect_pack;
+    parse_share is its
+    verified road, the
+    function its import
+    uses first).
+    Checksum law kept
+    honest: the entry's
+    claimed checksum
+    stays a claim; the
+    road's verified
+    checksum rides
+    beside it with
+    checksum_match
+    true/false/null
+    (null for a bare
+    bundle, whose road
+    verifies none).
+    Browse writes
+    nothing. One new
+    road: GET /hub/entri
+    es/{entry_id}/browse
+    , owner-scoped
+    exactly like the
+    P-187 read road
+    (unknown/foreign ->
+    404). Slice doc docs
+    /HUB_BROWSE_2026-11-
+    09.md + clean-room
+    log +1. Declined
+    with reasons in the
+    scout:
+    signing/attestation
+    (no key machinery
+    banked in-tree -
+    never fake trust),
+    friend-instance
+    exchange transport
+    (no banked pack
+    transport;
+    runmal.connections
+    probes model
+    backends, not
+    peers), hub-side
+    import (would fork
+    four import laws),
+    VX-59 ruled-out
+    forms.
+    Evidence (team-02 hi
+    dden_files/P188_EVID
+    ENCE.md + logs in
+    /tmp on the laptop):
+    battery 18 passed;
+    neighbours 131
+    passed (P-187
+    battery + the P-045/
+    P-054/P-063/P-141
+    pack batteries);
+    team full suite 5648
+    passed / 5 skipped /
+    0 failed (= 5630 +
+    18, exact, in
+    349.49s, shared with
+    a Mythic Coder
+    suite, no failure
+    resulted; s503 did
+    not fire). Combined
+    batteries on the
+    merged tree: 149
+    passed / 0 failed
+    (18 + 131, exact).
+    Forge confirmation
+    full suite on the
+    merged tree (counts
+    read back from forge
+    hidden_files/P188_FO
+    RGE_FULL.log): 5648
+    passed / 5 skipped /
+    0 failed, exit 0, in
+    352.34s (exact).
+    Migration: NONE
+    (head stays 0041).
+    Defects: none
+    discovered; no
+    in-slice fix was
+    needed.
+    Carried items
+    untouched, exactly
+    as recorded at
+    P-186/P-187: (1)
+    binding label update
+    stays named open
+    (unbind-then-bind
+    law); (2) automatic
+    retention / bulk
+    clear of history
+    awaits the ruling of
+    Volmarr - none
+    invented; (3)
+    unified-search
+    history stays named
+    open. Named open for
+    later Part XII:
+    signing/attestation
+    (declined until real
+    key machinery
+    exists),
+    friend-instance
+    exchange transport
+    (declined until a
+    banked transport
+    exists). Hub-side
+    browse is now
+    BANKED, no longer
+    named open.
+    Banked now
+    P-001..P-188 + the
+    commissioned binding
+    depth/role slice.
+    PART XII OPEN
+    (P-187..P-202). Next
+    in roadmap order:
+    P-189 (Part XII,
+    DERIVED).
+    P-189 BANKED - Hub
+    census over the
+    registry estate
+    (Part XII, DERIVED).
+    Part XII continues.
+    - team-03 commit
+    3df8131 merged (no-
+    ff) into yrsa/two-
+    mirrors-build as
+    a3ffc51 (parents
+    d0f6622 + 3df8131).
+    Same-base merge,
+    CLEAN, no conflicts,
+    no heal; merged diff
+    exactly the 5 slice
+    files (+636/-1).
+    Derived scope
+    ACCEPTED: hub census
+    over the registry
+    estate - the house-
+    order next cell
+    after P-187's per-
+    list primitive and
+    P-188's per-entry
+    browse (foundation
+    -> per-item surface
+    -> estate census:
+    P-169/P-170/P-171,
+    the scenario census
+    family). src/runmal/
+    hub/census.py (censu
+    s_document(entries),
+    schema
+    runmal-p189-hub-
+    census-v1) composes
+    P-187's
+    list_document
+    VERBATIM and
+    embedded whole; one
+    row per entry in
+    store order carrying
+    that entry's P-188
+    browse verdict
+    verbatim
+    (locator_state,
+    browse_state, verifi
+    ed_content_sha256,
+    checksum_match,
+    error; the
+    inspection document
+    itself is NOT
+    embedded - it stays
+    on P-188's per-entry
+    browse road);
+    by_browse_state
+    zero-filled under
+    P-188's closed
+    BROWSE_STATES;
+    by_checksum_match
+    under the closed
+    keys match/mismatch/
+    undetermined (null
+    is undetermined,
+    never separated by
+    guessing why);
+    census_state under
+    the closed
+    CENSUS_STATES law (n
+    o_entries/none_inspe
+    cted/some_inspected/
+    all_inspected)
+    judged on the browse
+    axis. The entry's
+    claimed checksum
+    stays a claim
+    throughout. Census
+    writes nothing
+    (hub.json and pack
+    bytes unchanged,
+    pinned); a corrupt,
+    oversize or wrong-
+    kind pack is an
+    invalid row, never a
+    census failure;
+    every ready entry is
+    browsed through
+    P-188's own law
+    under its 16 MiB
+    bound. One new road:
+    GET /hub/census,
+    bearer-gated and
+    owner-scoped exactly
+    like the list road;
+    foreign entries
+    never censused (unit
+    + HTTP pinned).
+    Slice doc docs/HUB_C
+    ENSUS_2026-11-09.md
+    + clean-room log +1.
+    Judged and not taken
+    in the scout: hub
+    search over entries
+    (real but smaller;
+    census precedes
+    search in the house
+    order, P-171 before
+    P-178 - named open
+    for a later Part XII
+    slice); entry
+    lifecycle depth (no
+    banked record names
+    an edit road open;
+    P-187 remove-then-
+    register stands);
+    signing/attestation
+    and friend-instance
+    exchange stay
+    DECLINED until real
+    machinery exists.
+    VX-59's ruled-out
+    forms (central
+    store, catalogue,
+    creator profiles)
+    are NOT named open -
+    declined by ruling.
+    Evidence (team-03 hi
+    dden_files/P189_EVID
+    ENCE.md + logs):
+    battery 12 passed;
+    neighbours 149
+    passed (P-187 +
+    P-188 batteries +
+    the P-045/P-054/P-
+    063/P-141 pack
+    batteries); team
+    full suite 5660
+    passed / 5 skipped /
+    0 failed (= 5648 +
+    12, exact, in
+    347.69s). Combined
+    fence on the merged
+    tree: 161 passed / 0
+    failed (149 + 12,
+    exact). Forge
+    confirmation full
+    suite on the merged
+    tree (counts read
+    back from /tmp/p189_
+    forge_full.log):
+    5660 passed / 5
+    skipped / 0 failed,
+    exit 0, in 353.42s
+    (exact).
+    Migration: NONE
+    (head stays 0041).
+    Defects: none
+    discovered; no in-
+    slice fix was
+    needed. Ruff on the
+    touched files
+    reports only the
+    pre-existing B008
+    (Depends in argument
+    defaults) in
+    hub/router.py,
+    identical on the
+    HEAD version of that
+    file - the house
+    pattern, not a new
+    defect.
+    Carried items
+    untouched, exactly
+    as recorded at
+    P-186/P-187/P-188:
+    (1) binding label
+    update stays named
+    open (unbind-then-
+    bind law); (2)
+    automatic retention
+    / bulk clear of
+    history awaits the
+    ruling of Volmarr -
+    none invented; (3)
+    unified-search
+    history stays named
+    open. Named open for
+    later Part XII: hub
+    search over entries.
+    Signing/attestation
+    (declined until real
+    key machinery
+    exists); friend-
+    instance exchange
+    (declined until a
+    banked transport
+    exists). Hub census
+    is now BANKED, no
+    longer named open.
+    Banked now
+    P-001..P-189 + the
+    commissioned binding
+    depth/role slice.
+    PART XII OPEN
+    (P-187..P-202). Next
+    in roadmap order:
+    P-190 (Part XII,
+    DERIVED).
+    P-190 BANKED - Hub
+    search over entries
+    (Part XII, DERIVED).
+    Part XII continues.
+    - team-01 commit
+    e18d571 merged (no-
+    ff) into yrsa/two-
+    mirrors-build as
+    bd9ce09 (parents
+    e269eb3 + e18d571).
+    Same-base merge,
+    CLEAN, no conflicts,
+    no heal; merged diff
+    exactly the 5 slice
+    files (+702/-0).
+    Derived scope
+    ACCEPTED: hub search
+    over entries - the
+    exact cell P-189's
+    banking record names
+    open for a later
+    Part XII slice, in
+    the house order it
+    fixes (census before
+    search, P-171 before
+    P-178). src/runmal/h
+    ub/search.py (search
+    _document(entries,
+    query, kind=None),
+    schema
+    runmal-p190-hub-
+    search-v1) is a
+    LITERAL search only:
+    the query casefolded
+    as a substring of a
+    searched field's
+    casefolded value
+    (the P-178 match
+    law) over the closed
+    SEARCH_FIELDS title,
+    locator, note, kind,
+    format; every row
+    carries
+    matched_fields in
+    that law's order.
+    The capped matched
+    entries are handed
+    to P-187's
+    list_document and
+    that document is
+    embedded whole as
+    list, so list.count
+    always equals
+    match_count;
+    MAX_MATCHES is 100,
+    total_matches
+    carries the true
+    total and truncated
+    names a capped
+    answer, never
+    dressed as complete;
+    by_matched_field
+    zero-filled under
+    SEARCH_FIELDS;
+    search_state under
+    the closed
+    SEARCH_STATES law
+    (no_matches /
+    matches /
+    matches_truncated).
+    Pack CONTENTS are
+    never searched - the
+    search opens no pack
+    and reads no file at
+    any locator; the
+    claimed
+    content_sha256 is
+    never searched (it
+    is the caller's
+    claim, not search
+    text), and neither
+    are id, owner_id or
+    created_at. No
+    fuzzy, semantic,
+    ranked or scored
+    matching is claimed:
+    no such machinery is
+    banked, and none is
+    faked. The query is
+    required and
+    stripped; a blank or
+    missing query and an
+    unknown kind answer
+    422. Search writes
+    nothing (registry
+    file byte-unchanged,
+    pinned). One new
+    road: GET /hub/searc
+    h?q=&kind=, bearer-
+    gated and owner-
+    scoped exactly like
+    the list road;
+    foreign entries
+    never searched,
+    never counted. Slice
+    doc docs/HUB_SEARCH_
+    2026-11-09.md +
+    clean-room log +1.
+    Judged and not taken
+    in the scout: pack-
+    content search
+    (needs its own slice
+    and cost law; the
+    registry cannot
+    support it - named
+    open for later Part
+    XII);
+    semantic/ranked
+    search (no
+    machinery); entry
+    lifecycle depth
+    (P-187 remove-then-
+    register stands);
+    signing/attestation
+    and friend-instance
+    exchange stay
+    DECLINED until real
+    machinery exists.
+    VX-59's ruled-out
+    forms are NOT named
+    open - declined by
+    ruling. Evidence
+    (team-01 hidden_file
+    s/P190_EVIDENCE.md +
+    logs): battery 18
+    passed; neighbours
+    161 passed (P-187 +
+    P-188 + P-189
+    batteries + the P-
+    045/P-054/P-063/P-
+    141 pack batteries);
+    combined fence 179
+    passed / 0 failed
+    (161 + 18, exact);
+    team full suite 5678
+    passed / 5 skipped /
+    0 failed (= 5660 +
+    18, exact, in
+    352.55s). Combined
+    fence on the merged
+    tree (finisher run,
+    forge hidden_files/P
+    190_COMBINED_FENCE.l
+    og): 179 passed / 0
+    failed, exit 0.
+    Forge confirmation
+    full suite on the
+    merged tree (counts
+    read back from forge
+    hidden_files/P190_FO
+    RGE_FULL.log): 5678
+    passed / 5 skipped /
+    0 failed, exit 0, in
+    350.39s (exact).
+    Migration: NONE
+    (head stays 0041).
+    Defects: none
+    discovered; no in-
+    slice fix was
+    needed. Ruff on the
+    touched files
+    reports only the
+    pre-existing B008
+    (Depends in argument
+    defaults) in
+    hub/router.py,
+    identical on the
+    HEAD version of that
+    file - the house
+    pattern, not a new
+    defect. Carried
+    items untouched,
+    exactly as recorded
+    at P-186/P-187/P-
+    188/P-189: (1)
+    binding label update
+    stays named open
+    (unbind-then-bind
+    law); (2) automatic
+    retention / bulk
+    clear of history
+    awaits the ruling of
+    Volmarr - none
+    invented; (3)
+    unified-search
+    history stays named
+    open. Named open for
+    later Part XII:
+    pack-content search;
+    signing/attestation
+    (declined until real
+    key machinery
+    exists); friend-
+    instance exchange
+    (declined until a
+    banked transport
+    exists). Hub search
+    over entries is now
+    BANKED, no longer
+    named open. Banking
+    note (honest): the
+    first banking of
+    this slice was
+    interrupted at cron
+    timeout after the
+    merge push and the
+    forge confirmation
+    full suite had
+    completed; this
+    finisher completed
+    the remaining record
+    steps (merged-tree
+    combined fence, this
+    record, WAVE_PLAN
+    line, team resets)
+    without re-running
+    the full suite.
+    Banked now
+    P-001..P-190 + the
+    commissioned binding
+    depth/role slice.
+    PART XII OPEN
+    (P-187..P-202). Next
+    in roadmap order:
+    P-191 (Part XII,
+    DERIVED).
+    P-191 BANKED - Hub
+    pack-content search
+    (Part XII, DERIVED).
+    Part XII continues. -
+    team-02 commit
+    3e44786 merged (no-
+    ff) into yrsa/two-
+    mirrors-build as
+    52b7c3a (parents
+    2e18058 + 3e44786).
+    Clean merge, no
+    conflicts, no heal;
+    merged diff exactly
+    the 5 slice files
+    (+1088/-0). Derived
+    scope ACCEPTED: hub
+    pack-content search -
+    the exact cell
+    P-190's banking
+    record names open for
+    a later Part XII
+    slice. src/runmal/hub
+    /content_search.py (c
+    ontent_search_documen
+    t(entries, query,
+    kind=None), schema
+    runmal-p191-hub-
+    content-search-v1)
+    composes each pack
+    layer's own verified
+    parse road
+    (parse_pack for
+    lorebook, prompt and
+    scenario packs +
+    parse_share for
+    preset bundles) under
+    P-188's locator law
+    and its 16 MiB bound;
+    the search is a
+    LITERAL casefolded
+    substring over the
+    string values of the
+    verified payload
+    only. The pack
+    envelope,
+    content_sha256
+    values, dict keys and
+    registry metadata are
+    never searched.
+    Skipped entries are
+    named in
+    skipped_entries with
+    the owning road's
+    refusal verbatim,
+    coverage_complete is
+    carried as data, and
+    entries_considered =
+    entries_searched +
+    skipped holds.
+    MAX_MATCHES is 100,
+    the cap law carried
+    from P-190; total
+    carries the true
+    total and truncated
+    names a capped
+    answer. Cost law
+    stated in the slice
+    doc: the search reads
+    and verifies every
+    ready pack. One new
+    road: GET
+    /hub/content-
+    search?q=&kind=,
+    bearer-gated and
+    owner-scoped like the
+    other hub roads;
+    search writes
+    nothing. Slice doc do
+    cs/HUB_CONTENT_SEARCH
+    _2026-11-09.md +
+    clean-room log +1.
+    Judged and not taken:
+    entry lifecycle depth
+    (P-187's remove
+    stands banked; an
+    update road
+    contradicts the
+    remove-then-register
+    law);
+    signing/attestation
+    and friend-instance
+    exchange stay
+    DECLINED until real
+    machinery exists in-
+    tree - none exists
+    and none is faked.
+    Evidence (team-02 hid
+    den_files/P191_EVIDEN
+    CE.md + logs):
+    battery 28 passed;
+    neighbours 179 passed
+    (P-187 + P-188 +
+    P-189 + P-190
+    batteries + the P-
+    045/P-054/P-063/P-141
+    pack batteries); team
+    full suite 5706
+    passed / 5 skipped /
+    0 failed, exit 0 (=
+    5678 banked at P-190
+    + 28, exact).
+    Combined fence on the
+    merged tree (forge hi
+    dden_files/p191_fence
+    .log): 207 passed / 0
+    failed, exit 0 (179 +
+    28, exact). Forge
+    confirmation full
+    suite on the merged
+    tree (counts read
+    back from forge hidde
+    n_files/p191_full.log
+    ): 5706 passed / 5
+    skipped / 0 failed,
+    exit 0, in 351.43s
+    (exact). Migration:
+    NONE (head stays
+    0041). Defects: none
+    discovered in banked
+    code; no in-slice fix
+    was needed. Carried
+    items untouched,
+    exactly as recorded
+    at P-186/P-187/P-
+    188/P-189/P-190: (1)
+    binding label update
+    stays named open
+    (unbind-then-bind
+    law); (2) automatic
+    retention / bulk
+    clear of history
+    awaits the ruling of
+    Volmarr - none
+    invented; (3)
+    unified-search
+    history stays named
+    open. Named open for
+    later Part XII:
+    unified hub search;
+    hub content census.
+    Hub pack-content
+    search is now BANKED,
+    no longer named open.
+    Banked now
+    P-001..P-191 + the
+    commissioned binding
+    depth/role slice.
+    PART XII OPEN
+    (P-187..P-202). Next
+    in roadmap order:
+    P-192 (Part XII,
+    DERIVED).
+    P-192 BANKED - Hub un
+    ified search (Part XI
+    I, DERIVED). Part XII
+     continues. - team-03
+     commit 3387f14 merge
+    d (no-ff) into yrsa/t
+    wo-mirrors-build as 0
+    39f386 (parents ebcc3
+    c8 + 3387f14); the me
+    rge commit was amende
+    d in place before pus
+    h to heal a merge def
+    ect (see Defects belo
+    w), so the pushed mer
+    ge is the amended 039
+    f386, not the first-s
+    truck 0784758. Merged
+     diff exactly the 5 s
+    lice files (+1032/-0)
+    . Derived scope ACCEP
+    TED: hub unified sear
+    ch - the exact cell t
+    he P-191 banking reco
+    rd names open for a l
+    ater Part XII slice. 
+    src/runmal/hub/unifie
+    d_search.py (unified_
+    search_document(entri
+    es, query, kind=None)
+    , schema runmal-p192-
+    hub-unified-search-v1
+    ) composes the P-190 
+    metadata search and t
+    he P-191 content sear
+    ch verbatim over the 
+    same entry list, clea
+    ned query and kind, e
+    mbeds both banked doc
+    uments whole, and uni
+    ons their matches by 
+    entry id in store ord
+    er. Each union row ca
+    rries matched_by unde
+    r the closed MATCHED_
+    BY law (metadata / co
+    ntent / both), the me
+    tadata side matched_f
+    ields verbatim (empty
+     for a content-only m
+    atch) and the content
+     side occurrences, ex
+    cerpt and verified_co
+    ntent_sha256 verbatim
+     (null for all three 
+    on a metadata-only ma
+    tch - no content fact
+     is invented). Cap ho
+    nesty composed: total
+    _matches is the union
+     true size before the
+     cap; truncated is tr
+    ue when either source
+     truncated or the uni
+    on runs past MAX_MATC
+    HES (100, the P-190 c
+    ap both sources carry
+    ). Coverage honesty i
+    s P-191 law carried v
+    erbatim: coverage_com
+    plete is false whenev
+    er the answer was tru
+    ncated or the content
+     search skipped any e
+    ntry. The query and k
+    ind are validated fir
+    st under this module 
+    own law (HubUnifiedSe
+    archError) so the roa
+    d answers one refusal
+     shape. One new road:
+     GET /hub/unified-sea
+    rch?q=&kind=, bearer-
+    gated and owner-scope
+    d like the other hub 
+    roads; search writes 
+    nothing. Slice doc do
+    cs/HUB_UNIFIED_SEARCH
+    _2026-11-09.md + clea
+    n-room log +1. Judged
+     and not taken: signi
+    ng/attestation and fr
+    iend-instance exchang
+    e stay DECLINED until
+     real machinery exist
+    s in-tree - none exis
+    ts and none is faked.
+     Evidence (team-03 hi
+    dden_files/P192_EVIDE
+    NCE.md + logs): batte
+    ry 24 passed (one fir
+    st-run battery failur
+    e was a test fixture 
+    slip - three entries 
+    registered at the sam
+    e locator under the s
+    ame kind, which P-187
+     law rightly refuses;
+     the fixture was corr
+    ected to distinct loc
+    ators and the battery
+     re-ran green; no pro
+    duction code was touc
+    hed). Neighbours on t
+    he team tree 204 pass
+    ed / 3 failed: the 3 
+    failures are all P-19
+    1 HTTP tests answerin
+    g 404, expected paral
+    lel-banking disjointn
+    ess (the content-sear
+    ch road lives in the 
+    P-191 router delta, a
+    bsent from this slice
+     base), NOT a defect;
+     on the merged tree t
+    hose tests pass (fenc
+    e below). Team full s
+    uite 5701 passed / 5 
+    skipped / 1 failed in
+     532.19s - the single
+     failure the named P-
+    077 longchat timing t
+    ripwire under content
+    ion; solo re-run of t
+    he P-077 file green, 
+    17 passed in 4.31s; c
+    lassified CONTENTION 
+    per the standing rule
+    , both figures record
+    ed. Combined fence on
+     the merged tree (for
+    ge hidden_files/p192_
+    fence_healed.log): 23
+    1 passed / 0 failed, 
+    exit 0 (207 + 24, exa
+    ct). Forge confirmati
+    on full suite on the 
+    merged tree (counts r
+    ead back from forge h
+    idden_files/p192_conf
+    irm.log): 5730 passed
+     / 5 skipped / 0 fail
+    ed, exit 0, in 371.99
+    s (exact; 5706 banked
+     at P-191 + 24). Migr
+    ation: NONE (head sta
+    ys 0041). Defects: on
+    e real merge defect w
+    as found at banking a
+    nd healed before push
+    . The first-struck me
+    rge dropped the impor
+    t line (from runmal.h
+    ub import unified_sea
+    rch as hub_unified_se
+    arch) from src/runmal
+    /hub/router.py - a sa
+    me-region collision w
+    ith the P-191 content
+    _search import at mer
+    ge - while the unifie
+    d-search endpoint bod
+    y survived, so the co
+    mbined fence on the f
+    irst-struck merged tr
+    ee ran 229 passed / 2
+     failed (both failure
+    s P-192 HTTP tests, N
+    ameError: hub_unified
+    _search is not define
+    d, at router.py lines
+     124 and 126; forge h
+    idden_files/p192_fenc
+    e.log; the 3 P-191 HT
+    TP tests passed on th
+    at tree). The import 
+    was restored exactly 
+    where the slice commi
+    t carries it, the sti
+    ll-local unpushed mer
+    ge commit was amended
+     in place (0784758 be
+    came 039f386, parents
+     unchanged), py_compi
+    le clean, and the fen
+    ce re-ran 231 passed 
+    / 0 failed before any
+     push. Nothing reache
+    d the remote unhealed
+    : the remote stood at
+     ebcc3c8 throughout; 
+    the amended merge was
+     pushed with an expli
+    cit refspec and ls-re
+    mote verified at 039f
+    386 before this recor
+    d. Carried items unto
+    uched, exactly as rec
+    orded at P-186 throug
+    h P-191: (1) binding 
+    label update stays na
+    med open (unbind-then
+    -bind law); (2) autom
+    atic retention / bulk
+     clear of history awa
+    its the ruling of Vol
+    marr - none invented;
+     (3) unified-search h
+    istory stays named op
+    en. Named open for la
+    ter Part XII: hub con
+    tent census. Unified 
+    hub search is now BAN
+    KED, no longer named 
+    open. Banked now P-00
+    1..P-192 + the commis
+    sioned binding depth/
+    role slice. PART XII 
+    OPEN (P-187..P-202). 
+    Next in roadmap order
+    : P-193 (Part XII, DE
+    RIVED).
+    P-193 BANKED - Hub content census (Part XII, DERIVED).
+    Part XII continues. - team-01 commit 76a3168 merged
+    (no-ff) into yrsa/two-mirrors-build as 29e3d04
+    (parents 70c8de9 + 76a3168). Merge conflicts in 2
+    files (src/runmal/hub/router.py, docstring region
+    only, and docs/CLEAN_ROOM_LOG_2026-10-30.md) resolved
+    as additive unions keeping the P-192 and P-193 work
+    exactly once each; merged diff vs 70c8de9 exactly the
+    5 slice files (+994/-1, the single deletion being the
+    router docstring line the P-193 sentence extends).
+    Router verification per the P-192 banking lesson: the
+    merged router was diffed against BOTH parents' router
+    deltas and grep-verified - the hub_content_census,
+    hub_content_search and hub_unified_search imports are
+    all present and the GET /hub/content-census, GET
+    /hub/content-search and GET /hub/unified-search roads
+    are all present, py_compile clean. NO merge defect was
+    found this time and no heal was needed; nothing
+    reached the remote unverified. Derived scope ACCEPTED:
+    hub content census over CONTENT COVERAGE - the exact
+    cell the P-191 banking record names open, in the
+    honest shape the P-192 scout's warning fixes (a query-
+    free parse-outcome census would merely recount P-189,
+    since every pack layer's inspect road stands on its
+    parse road). src/runmal/hub/content_census.py
+    (content_census_document(entries), schema
+    runmal-p193-hub-content-census-v1) composes P-191's
+    own verified parse roads verbatim - parse_pack for the
+    three pack kinds and parse_share for the preset bundle
+    - under P-188's locator law and its imported 16 MiB
+    bound, with no pack parser of its own, and measures
+    under P-191's string walk law: every string value in
+    the verified payload counts once toward
+    string_value_count and its length toward
+    string_char_count, per row, per kind (by_kind_content,
+    zero-filled, always summing to the totals) and in
+    total, with the estate's largest content holder named
+    (first in store order on a tie). Never counted: dict
+    keys, non-string values, the pack envelope, registry
+    metadata, and any value under a content_sha256 key. No
+    silent omission: every entry ends parsed or named
+    under the closed OUTCOMES law (parsed / unavailable /
+    invalid, the owning road's refusal carried verbatim),
+    coverage_complete carries the truth as data, count
+    always equals parsed plus unavailable plus invalid,
+    and the estate is classified under the closed
+    CONTENT_CENSUS_STATES law (no_entries / no_content /
+    some_content / all_content). No content is retained or
+    returned: counts, entry data and verified checksums
+    only, never an excerpt and never a payload field. One
+    new road: GET /hub/content-census, bearer-gated and
+    owner-scoped like the census road; the census writes
+    nothing. Slice doc
+    docs/HUB_CONTENT_CENSUS_2026-11-09.md + clean-room log
+    +1. Judged and not taken: a query-free parse-outcome
+    census (REJECTED as a mere recount of P-189);
+    signing/attestation and friend-instance exchange stay
+    DECLINED until real machinery exists in-tree - none
+    exists and none is faked. Evidence (team-01
+    hidden_files/P193_EVIDENCE.md + logs): battery 16
+    passed (first run 13 passed / 3 failed, all three this
+    battery's own test defects - a walker arithmetic
+    assertion, a no-content check corrected to assert no
+    excerpt/payload FIELD, and an HTTP fixture corrected
+    to register through the POST road - no production code
+    touched; battery re-ran green). Neighbours on the team
+    tree 223 passed / 0 failed. Team full suite 5722
+    passed / 5 skipped / 0 failed (= 5706 banked at P-191
+    + 16, exact). Combined fence on the merged tree
+    (P-187..P-193 hub batteries + P-045 / P-054 / P-063 /
+    P-141 pack batteries): 247 passed / 0 failed (231 at
+    P-192's fence + 16, exact). Forge confirmation full
+    suite on the merged tree (counts read back from forge
+    hidden_files/P193_FORGE_CONFIRM.log): 5746 passed / 5
+    skipped / 0 failed, exit 0, in 354.17s (= 5730 banked
+    at P-192 + 16, exact), clean run, no contention re-
+    runs. Migration: NONE (head stays 0041). Defects: none
+    discovered in banked code and none at banking; no bug
+    left unfixed. Carried items untouched, exactly as
+    recorded at P-186 through P-192: (1) binding label
+    update stays named open (unbind-then-bind law); (2)
+    automatic retention / bulk clear of history awaits the
+    ruling of Volmarr - none invented; (3) unified-search
+    history stays named open. Named open for later Part
+    XII: a unified-search census in the P-184 shape, now
+    lawful since P-192 is banked in the merged tree. Hub
+    content census is now BANKED, no longer named open.
+    Banked now P-001..P-193 + the commissioned binding
+    depth/role slice. PART XII OPEN (P-187..P-202). Next
+    in roadmap order: P-194 (Part XII, DERIVED).
+    P-194 BANKED - Hub unified-search census (Part XII, DERIVED).
+    Part XII continues. - team-02 commit 38cd5bd merged
+    (no-ff) into yrsa/two-mirrors-build as fee9d87
+    (parents 90089a8 + 38cd5bd). Merge conflicts in 2
+    files (src/runmal/hub/router.py, docstring region
+    only, and docs/CLEAN_ROOM_LOG_2026-10-30.md) resolved
+    as additive unions keeping the P-193 and P-194 work
+    exactly once each; merged diff vs 90089a8 exactly the
+    5 slice files (+1016/-0). Router verification per the
+    P-192 banking lesson: the merged router was diffed
+    against BOTH parents' router deltas and grep-verified
+    - the hub_content_census and
+    hub_unified_search_census imports are both present
+    and the GET /hub/content-census and GET
+    /hub/unified-search-census roads are both present
+    (with the earlier content-search and unified-search
+    roads), py_compile clean. The pre-existing ruff I001
+    on hub/router.py at HEAD is not a defect and was not
+    touched. NO merge defect was found and no heal was
+    needed. Derived scope ACCEPTED: hub unified-search
+    census - the exact cell P-193's scout names lawful
+    once P-192 is banked in the merged tree, in the P-184
+    shape. src/runmal/hub/unified_search_census.py
+    (build_unified_search_census(unified_document) and
+    unified_search_census_document(entries, query,
+    kind=None), schema
+    runmal-p194-hub-unified-search-census-v1) composes
+    P-192's unified_search_document verbatim - the same
+    entries, query and kind handed over, P-192 validating
+    first under its own law (blank / non-string query and
+    unknown kind raise HubUnifiedSearchError unchanged) -
+    the P-192 document embedded whole, and the aggregator
+    sums only that document's own returned-match and
+    skipped-entry fields: returned axis by_matched_by
+    zero-filled under MATCHED_BY summing exactly to
+    match_count, by_kind under HUB_KINDS, by_matched_field
+    under SEARCH_FIELDS, total_occurrences and
+    most_occurrences (first in returned order on a tie,
+    null when no returned row carries occurrences - no
+    content fact invented); source axis carrying P-192's
+    full-union counts verbatim beside the returned sums
+    so a capped census is never dressed as complete;
+    coverage axis with entries considered / searched,
+    skipped counted by_skip_outcome under P-191's
+    outcomes, truncated / coverage_complete verbatim;
+    census_state under the closed CENSUS_STATES law
+    (no_matches / metadata_only / content_only / mixed)
+    judged on the RETURNED matches. Distinctness pinned:
+    no string-value / string-char / excerpt field - that
+    is P-193's census, never recounted here. One new
+    road: GET /hub/unified-search-census, bearer-gated
+    and owner-scoped like the unified-search road; the
+    census writes nothing and records no history. Slice
+    doc docs/HUB_UNIFIED_SEARCH_CENSUS_2026-11-09.md +
+    clean-room log +1.
+    Evidence (team-02 hidden_files/P194_EVIDENCE.md +
+    logs): battery 19 passed (first run 18 passed / 1
+    failed, the battery's own test arithmetic slip - the
+    scenario payload carries 3 occurrences, not 2 -
+    corrected and re-ran green; no production code
+    touched). Neighbours on the team tree 250 passed / 0
+    failed. Team full suite 5749 passed / 5 skipped / 0
+    failed (= 5730 banked at P-192 + 19, exact). Combined
+    fence on the merged tree (P-187..P-194 hub batteries
+    + P-045 / P-054 / P-063 / P-141 pack batteries): 266
+    passed / 0 failed (247 at P-193's fence + 19, exact).
+    Forge confirmation full suite on the merged tree
+    (counts read back from forge
+    hidden_files/P194_FORGE_CONFIRM.log): 5764 passed / 5
+    skipped / 1 failed in 432.78s - the single failure
+    the P-077 longchat tripwire alone, re-run solo at 17
+    passed / 0 failed (hidden_files/P194_P077_SOLO.log),
+    classified CONTENTION (wall well above the 354s
+    uncontended baseline), so the merged expectation
+    5765 passed / 5 skipped / 0 failed (= 5746 banked at
+    P-193 + 19, exact) stands by the solo re-run.
+    Migration: NONE (head stays 0041). Defects: none
+    discovered in banked code and none at banking; no bug
+    left unfixed. Carried items untouched, exactly as
+    recorded at P-186 through P-193: (1) binding label
+    update stays named open (unbind-then-bind law); (2)
+    automatic retention / bulk clear of history awaits
+    the ruling of Volmarr - none invented; (3)
+    unified-search history stays named open (this census
+    records nothing). Hub unified-search census is now
+    BANKED, no longer named open. Banked now
+    P-001..P-194 + the commissioned binding depth/role
+    slice. PART XII OPEN (P-187..P-202). Next in roadmap
+    order: P-195 (Part XII, DERIVED).
+    P-195 BANKED - Hub duplicate-content census (Part
+    XII, DERIVED). Part XII continues. - team-03 commit
+    f27501d merged (no-ff) into yrsa/two-mirrors-build
+    as 5db919d (parents 401b8b5 + f27501d). The team-03
+    base predated P-194 (parent 90089a8, the P-193
+    record), so the merge reconciled P-194's hub delta
+    (unified_search_census) with P-195's
+    (duplicate_census). Merge conflicts in 2 files
+    (src/runmal/hub/router.py, docstring region only,
+    and docs/CLEAN_ROOM_LOG_2026-10-30.md) resolved as
+    additive unions keeping the P-194 and P-195 work
+    exactly once each; merged diff vs 401b8b5 exactly
+    the 5 slice files (+1032/-0). Router verification
+    per the P-192 banking lesson: the merged router was
+    diffed against BOTH parents' router deltas and grep-
+    verified - the hub_content_census,
+    hub_content_search, hub_unified_search,
+    hub_unified_search_census and hub_duplicate_census
+    imports are all present and every GET road survives
+    (census, content-census, duplicate-census, search,
+    content-search, unified-search, unified-search-
+    census, entry read, browse, list, delete),
+    py_compile clean. NO merge defect was found and no
+    heal was needed.
+    Derived scope ACCEPTED: hub duplicate-content census
+    - the estate cell no banked hub document takes, in
+    the house census shape.
+    src/runmal/hub/duplicate_census.py
+    (build_duplicate_census(content_census_document) and
+    duplicate_census_document(entries), schema
+    runmal-p195-hub-duplicate-census-v1) composes
+    P-193's content_census_document verbatim over the
+    same entry list and embeds the document whole as
+    content_census; the aggregator sums only that
+    document's own rows. No silent drops: every row is
+    partitioned exactly once - duplicate / unique /
+    unidentified (non-parsed outcome or empty verified
+    checksum) - and the three counts sum to count in
+    every estate. Identity is the verified CONTENT
+    checksum only, exactly as the pack layers define it;
+    a bare preset bundle verifies no checksum on any
+    banked road, so bare bundles are always unidentified
+    here, stated on every document. One new road: GET
+    /hub/duplicate-census, bearer-gated and owner-scoped
+    like the content-census road; the census writes
+    nothing and records no history. Slice doc
+    docs/HUB_DUPLICATE_CENSUS_2026-11-09.md + clean-room
+    log +1.
+    Evidence (team-03 hidden_files/P195_EVIDENCE.md +
+    logs): battery 19 passed (finisher re-run also 19
+    passed). Neighbours on the team tree 266 passed / 0
+    failed. Team full suite 5764 passed / 5 skipped / 1
+    failed - the single failure tests/test_p099_failure_
+    manners.py::test_sandbox_bridge_partial_then_more
+    (banked P-099 sandbox code, untouched by this hub-
+    only slice), re-run solo by the finisher at whole-
+    file 24 passed / 0 failed and the single node alone
+    1 passed, classified CONTENTION, so the adjusted
+    team expectation 5765 passed / 5 skipped / 0 failed
+    (= 5746 banked at P-193 + 19, exact) stands by the
+    solo re-runs. Combined fence on the merged tree
+    (P-187..P-195 hub batteries + P-045 / P-054 / P-063
+    / P-141 pack batteries, forge
+    hidden_files/P195_FENCE.log): 285 passed / 0 failed
+    (266 at P-194's fence + 19, exact). Forge
+    confirmation full suite on the merged tree (counts
+    read back from forge
+    hidden_files/P195_FORGE_CONFIRM.log): 5784 passed /
+    5 skipped / 0 failed in 359.26s, exit 0 - clean at
+    first run, no contention failure and no solo re-run
+    needed; merged expectation 5784 (= 5765 adjusted at
+    P-194 + 19, exact). Migration: NONE (head stays
+    0041). Defects: none discovered in banked code and
+    none at banking; no bug left unfixed.
+    Carried items untouched, exactly as recorded at
+    P-186 through P-194: (1) binding label update stays
+    named open (unbind-then-bind law); (2) automatic
+    retention / bulk clear of history awaits the ruling
+    of Volmarr - none invented; (3) unified-search
+    history stays named open (this census records
+    nothing). Hub duplicate-content census is now
+    BANKED. Banked now P-001..P-195 + the commissioned
+    binding depth/role slice. PART XII OPEN
+    (P-187..P-202). Next in roadmap order: P-196 (Part
+    XII, DERIVED).
+    P-196 BANKED - Hub content-shape census (Part
+    XII, DERIVED). Part XII continues. - team-01 commit
+    eda2f9f merged (no-ff) into yrsa/two-mirrors-build
+    as 55d9ec9 (parents ff191c1 + eda2f9f). The team-01
+    base predated P-195 (parent 401b8b5, the P-194
+    record), so the merge reconciled P-195's hub delta
+    (duplicate_census) with P-196's
+    (content_shape_census). Merge conflicts in 2 files
+    (src/runmal/hub/router.py - docstring and road
+    regions only - and docs/CLEAN_ROOM_LOG_2026-10-30.md)
+    resolved as additive unions keeping the P-195 and
+    P-196 work exactly once each; merged diff vs
+    ff191c1 exactly the 5 slice files (+1209/-0).
+    Router verification per the P-192 banking lesson:
+    the merged router was diffed against BOTH parents'
+    router deltas and grep-verified - the
+    hub_content_census, hub_content_search,
+    hub_unified_search, hub_unified_search_census,
+    hub_duplicate_census and hub_content_shape_census
+    imports are all present and every GET road survives
+    (census, content-census, duplicate-census,
+    content-shape-census, search, content-search,
+    unified-search, unified-search-census, entry read,
+    browse, list, delete), py_compile clean. NO import
+    or road was dropped and no heal was needed; the
+    union resolution's two blank separator lines before
+    the new road were restored so the merged router
+    delta is the slice's +13 exactly.
+    Derived scope ACCEPTED: hub content-shape census -
+    the estate cell no banked hub document takes, in
+    the house census shape.
+    src/runmal/hub/content_shape_census.py
+    (content_shape_census_document(entries), schema
+    runmal-p196-hub-content-shape-census-v1) measures
+    the STRUCTURE of the verified payloads - node
+    types, keys, containers and depth - where every
+    banked hub surface that opens a pack measured its
+    payload as TEXT only (P-191 searches string values,
+    P-193 counts string values and characters, both
+    under a walk law excluding dict keys and non-string
+    values by name). The document embeds P-187's list
+    document whole and verbatim; each entry is judged
+    under P-188's locator law and its imported 16 MiB
+    bound, then parsed through the owning layer's OWN
+    verified parse road, dispatched exactly as P-193
+    dispatches; the module contains no pack parser of
+    its own. Rows carry the shape counts (objects,
+    arrays, strings, numbers, booleans, nulls, nodes,
+    keys, max_depth) under P-193's imported OUTCOMES
+    law; no key name, no value and no payload appear
+    anywhere in the document. One new road: GET
+    /hub/content-shape-census, bearer-gated and
+    owner-scoped like the content-census road; the
+    census writes nothing and records no history.
+    Slice doc docs/HUB_CONTENT_SHAPE_CENSUS_2026-11-09.md
+    + clean-room log +1.
+    Evidence (team-01 hidden_files/P196_EVIDENCE.md +
+    logs): battery 16 passed. Neighbours on the team
+    tree 282 passed / 0 failed (= 250 P-194 fence + 16
+    P-193 + 16 P-196, exact). Team full suite 5781
+    passed / 5 skipped / 0 failed (= 5765 adjusted at
+    P-194 + 16, exact), clean, no contention
+    classification needed. Two in-slice findings were
+    fixed in-slice: a battery arithmetic slip in the
+    test itself (estate max_depth accumulated by SUM
+    where the census law takes the estate MAX) and
+    ruff F841 x3; no banked-code defect. Combined
+    fence on the merged tree (P-187..P-196 hub
+    batteries + P-045 / P-054 / P-063 / P-141 pack
+    batteries, forge hidden_files/P196_FENCE.log):
+    301 passed / 0 failed (285 at P-195's fence + 16,
+    exact). Forge confirmation full suite on the
+    merged tree (counts read back from forge
+    hidden_files/P196_FORGE_CONFIRM.log): 5800 passed /
+    5 skipped / 0 failed in 352.73s, exit 0 - clean at
+    first run, no contention failure and no solo re-run
+    needed; merged expectation 5800 (= 5784 banked at
+    P-195 + 16, exact). Migration: NONE (head stays
+    0041). Defects: none discovered in banked code and
+    none at banking; no bug left unfixed.
+    Carried items untouched, exactly as recorded at
+    P-186 through P-195: (1) binding label update stays
+    named open (unbind-then-bind law); (2) automatic
+    retention / bulk clear of history awaits the ruling
+    of Volmarr - none invented; (3) unified-search
+    history stays named open (this census records
+    nothing). Hub content-shape census is now
+    BANKED. Banked now P-001..P-196 + the commissioned
+    binding depth/role slice. PART XII OPEN
+    (P-187..P-202). Next in roadmap order: P-197 (Part
+    XII, DERIVED).
+    P-197 BANKED - Hub byte-size census (Part
+    XII, DERIVED). Part XII continues. - team-02 commit
+    c7a5720 merged (no-ff) into yrsa/two-mirrors-build
+    as 938c68e (parents 2275c1f + c7a5720). The team-02
+    base predated P-196 (parent ff191c1, the P-195
+    record), so the merge reconciled P-196's hub delta
+    (content_shape_census) with P-197's
+    (size_census). Merge conflicts in 2 files
+    (src/runmal/hub/router.py - docstring and road
+    regions only - and docs/CLEAN_ROOM_LOG_2026-10-30.md)
+    resolved as additive unions keeping the P-196 and
+    P-197 work exactly once each; merged diff vs
+    2275c1f exactly the 5 slice files (+1101/-0).
+    Router verification per the P-192 banking lesson:
+    the merged router was diffed against BOTH parents'
+    router deltas and grep-verified - the
+    hub_content_census, hub_content_search,
+    hub_unified_search, hub_unified_search_census,
+    hub_duplicate_census, hub_content_shape_census and
+    hub_size_census imports are all present and every
+    GET road survives (census, content-census,
+    duplicate-census, content-shape-census,
+    size-census, search, content-search,
+    unified-search, unified-search-census, entry read,
+    browse, list, delete), py_compile clean. NO import
+    or road was dropped and no heal was needed.
+    Derived scope ACCEPTED: hub byte-size census -
+    the estate cell no banked hub document takes, in
+    the house census shape.
+    src/runmal/hub/size_census.py
+    (size_census_document(entries), schema
+    runmal-p197-hub-size-census-v1) measures the FILE
+    each verified pack came from - no banked hub
+    document carries any file-size field; every hub
+    surface stats each ready pack file only to enforce
+    the 16 MiB bound and discards the size, and a
+    locator is not a size. The document embeds
+    P-187's list document whole and verbatim; each
+    entry is judged under P-188's locator law and its
+    imported 16 MiB bound, then parsed through the
+    owning layer's OWN verified parse road, dispatched
+    exactly as P-193 dispatches; the module contains
+    no pack parser of its own. The byte law is split
+    in two: file_bytes is a filesystem fact carried
+    for every ready row whether or not its pack
+    verifies (null when the locator is not ready or
+    the stat fails), and the verified axes
+    (total_verified_bytes, per-kind verified bytes,
+    the closed SIZE_BUCKETS buckets, largest and
+    smallest) sum parsed rows only, so verified never
+    exceeds total; bytes are per FILE and never
+    deduplicated - byte-equal copies count twice.
+    Rows carry outcomes under P-193's imported
+    OUTCOMES law; no file content, excerpt or payload
+    appears anywhere in the document. One new road:
+    GET /hub/size-census, bearer-gated and
+    owner-scoped like the content-census road; the
+    census writes nothing and records no history.
+    Slice doc docs/HUB_SIZE_CENSUS_2026-11-09.md
+    + clean-room log +1.
+    Evidence (team-02 hidden_files/P197_EVIDENCE.md +
+    logs): battery 20 passed. Neighbours on the team
+    tree 305 passed / 0 failed (= 282 P-196
+    neighbours - 16 P-196 battery + 19 P-195 battery
+    + 20 P-197, exact). Team full suite 5804 passed /
+    5 skipped / 0 failed (= 5784 banked at P-195 +
+    20, exact), clean, no contention classification
+    needed. One in-slice finding was fixed in-slice:
+    ruff B905 on a zip without strict= (fixed with
+    strict=True); no banked-code defect. Combined
+    fence on the merged tree (P-187..P-197 hub
+    batteries + P-045 / P-054 / P-063 / P-141 pack
+    batteries, forge hidden_files/P197_FENCE.log):
+    321 passed / 0 failed (301 at P-196's fence + 20,
+    exact). Forge confirmation full suite on the
+    merged tree (counts read back from forge
+    hidden_files/P197_FORGE_CONFIRM.log): 5819 passed /
+    5 skipped / 1 failed in 501.45s - the single
+    failure the P-077 longchat tripwire alone
+    (tests/test_p077_longchat_performance.py::
+    test_longchat_tripwires, a timing tripwire on a
+    machine shared with the other campaigns), solo
+    re-run 17 passed / 0 failed (forge
+    hidden_files/P197_P077_SOLO.log), CONTENTION
+    class, both figures recorded; merged expectation
+    5820 passed / 5 skipped / 0 failed (= 5800 banked
+    at P-196 + 20, exact) stands by the solo re-run.
+    Migration: NONE (head stays 0041). Defects: none
+    discovered in banked code and none at banking; no
+    bug left unfixed.
+    Carried items untouched, exactly as recorded at
+    P-186 through P-196: (1) binding label update stays
+    named open (unbind-then-bind law); (2) automatic
+    retention / bulk clear of history awaits the ruling
+    of Volmarr - none invented; (3) unified-search
+    history stays named open (this census records
+    nothing). Hub byte-size census is now
+    BANKED. Banked now P-001..P-197 + the commissioned
+    binding depth/role slice. PART XII OPEN
+    (P-187..P-202). Next in roadmap order: P-198 (Part
+    XII, DERIVED).
+    P-198 BANKED - Hub breadth census (Part
+    XII, DERIVED). Part XII continues. - team-03 commit
+    824d316 merged (no-ff) into yrsa/two-mirrors-build
+    as 546027b (parents 1c18009 + 824d316). The team-03
+    base IS the forge HEAD (parent 1c18009, the P-197
+    banking record), so the merge was clean with NO
+    conflicts; merged diff vs 1c18009 exactly the 5
+    slice files (+1195/-0). Router verification per
+    the P-192 banking lesson: the merged router was
+    diffed against BOTH parents' router deltas and
+    grep-verified - the hub_content_census,
+    hub_content_search, hub_unified_search,
+    hub_unified_search_census, hub_duplicate_census,
+    hub_content_shape_census, hub_size_census and
+    hub_breadth_census imports are all present (eight
+    hub census/search modules) and every GET road
+    survives (census, content-census,
+    duplicate-census, content-shape-census,
+    size-census, breadth-census, search,
+    content-search, unified-search,
+    unified-search-census, entry read, browse, list,
+    delete), py_compile clean; the merged router is
+    byte-identical to the team commit's router. NO
+    import or road was dropped and no heal was needed.
+    Derived scope ACCEPTED: hub breadth census -
+    the estate cell no banked hub document takes, in
+    the house census shape.
+    src/runmal/hub/breadth_census.py
+    (breadth_census_document(entries), schema
+    runmal-p198-hub-breadth-census-v1) measures the
+    WIDTH of the verified payloads - P-196's
+    content-shape census measures the DEPTH axis and
+    discards how wide any single container spreads;
+    no banked hub document carries a single
+    container-size field. Every container (dict or
+    list) in a verified payload has a width, its
+    immediate child count; a member under a
+    content_sha256 key is excluded WHOLE, exactly as
+    P-196 excludes it. Breadth is measured over
+    PARSED rows only, through the owning layer's OWN
+    verified parse road, dispatched exactly as P-193
+    dispatches; the module contains no pack parser of
+    its own. Per payload: container count, summed
+    breadth, widest container / object / array width;
+    the bucket law is closed (BREADTH_BUCKETS: empty
+    0, narrow 1-2, medium 3-5, wide 6-10, vast 11+)
+    over the containers of parsed rows. Rows carry
+    outcomes under P-193's imported OUTCOMES law;
+    census_state under the closed
+    BREADTH_CENSUS_STATES law (no_entries /
+    no_breadth / some_breadth / all_breadth); no key
+    name, value, excerpt or payload appears anywhere
+    in the document. One new road:
+    GET /hub/breadth-census, bearer-gated and
+    owner-scoped like the content-census road; the
+    census writes nothing and records no history.
+    Slice doc docs/HUB_BREADTH_CENSUS_2026-11-09.md
+    + clean-room log +1.
+    Evidence (team-03 hidden_files/P198_EVIDENCE.md +
+    logs): battery 20 passed. Neighbours on the team
+    tree 156 passed / 0 failed (P-187..P-198 hub
+    batteries). Team full suite 5840 passed /
+    5 skipped / 0 failed (= 5820 banked at P-197 +
+    20, exact), clean, no contention classification
+    needed. Combined fence on the merged tree
+    (P-187..P-198 hub batteries + P-045 / P-054 /
+    P-063 / P-141 pack batteries, forge
+    hidden_files/P198_FENCE.log): 341 passed /
+    0 failed (321 at P-197's fence + 20, exact).
+    Forge confirmation full suite on the merged
+    tree (counts read back from forge
+    hidden_files/P198_FORGE_CONFIRM.log): 5840 passed /
+    5 skipped / 0 failed in 357.34s, exit 0 - clean at
+    first run, no contention failure and no solo
+    re-run needed; merged expectation 5840
+    (= 5820 banked at P-197 + 20, exact). Migration:
+    NONE (head stays 0041). Defects: none discovered
+    in banked code and none at banking; no bug left
+    unfixed.
+    Carried items untouched, exactly as recorded at
+    P-186 through P-197: (1) binding label update stays
+    named open (unbind-then-bind law); (2) automatic
+    retention / bulk clear of history awaits the ruling
+    of Volmarr - none invented; (3) unified-search
+    history stays named open (this census records
+    nothing). Hub breadth census is now
+    BANKED. Banked now P-001..P-198 + the commissioned
+    binding depth/role slice. PART XII OPEN
+    (P-187..P-202). Next in roadmap order: P-199 (Part
+    XII, DERIVED).
+    P-199 BANKED - Hub distinct-content census (Part
+    XII, DERIVED). Part XII continues. - team-01
+    commit e2073ea merged (no-ff) into
+    yrsa/two-mirrors-build as 17524d1 (parents
+    fd86f65 + e2073ea). The team-01 base PREDATES
+    P-198 (parent 1c18009, the P-197 banking
+    record), so the merge met the expected conflicts
+    in src/runmal/hub/router.py and
+    docs/CLEAN_ROOM_LOG_2026-10-30.md ONLY - the two
+    files both slices touch, each delta additive
+    there - resolved as additive unions keeping BOTH
+    slices' work exactly once; merged diff vs
+    fd86f65 exactly the 5 slice files (+1320/-0).
+    Router verification per the P-192 banking
+    lesson: the merged router was diffed against
+    BOTH parents' router deltas and grep-verified -
+    the hub_content_census, hub_content_search,
+    hub_unified_search, hub_unified_search_census,
+    hub_duplicate_census, hub_content_shape_census,
+    hub_size_census, hub_breadth_census and
+    hub_distinct_census imports are all present
+    (nine hub census/search modules) and every GET
+    road survives (census, content-census,
+    duplicate-census, content-shape-census,
+    size-census, breadth-census, distinct-census,
+    search, content-search, unified-search,
+    unified-search-census, entry read, browse, list,
+    delete), py_compile clean. ONE heal, recorded
+    honestly: the first union pass dropped the two
+    blank separator lines between the breadth-census
+    and distinct-census roads (shared context in
+    both parents' deltas); they were restored before
+    any suite ran, after which the merged router
+    carries each slice's delta exactly as authored
+    and the merged diff stands at the slice's own
+    +1320. NO import or road was dropped. Derived
+    scope ACCEPTED: hub distinct-content census -
+    the value-identity grain no banked hub document
+    states, in the house census shape.
+    src/runmal/hub/distinct_census.py
+    (distinct_census_document(entries), schema
+    runmal-p199-hub-distinct-content-census-v1)
+    counts DISTINCT string values in the verified
+    payloads - P-195 groups entries by whole-pack
+    verified checksum, so two versions of one pack
+    differing in a single entry read as simply
+    unique and their overlap is nowhere stated, and
+    P-193 counts string-value occurrences and their
+    characters, so repetition is invisible by
+    construction; the grain between them is
+    derivable from no banked document, because no
+    banked document carries values. Values are
+    compared for exact identity by sha256 digest of
+    the value's UTF-8 encoding, computed in memory
+    only: neither a value nor a digest ever enters
+    the document, because a digest of a short string
+    is a dictionary target. Per parsed row:
+    string_value_count (necessarily equal to P-193's
+    count on the same payload - the stated expected
+    agreement), distinct_value_count,
+    repeated_value_count, extra_copy_count and
+    shared_value_count (the row's distinct values
+    also occurring in at least one other parsed
+    entry, filled in a second pass over parsed
+    entries only); estate axes pool distinct counts
+    per kind, with total distinct / repeated /
+    shared / extra copies and the largest distinct
+    entry (first in store order on a tie). Rows
+    carry outcomes under P-193's imported OUTCOMES
+    law; census_state under the closed
+    DISTINCT_CENSUS_STATES law (no_entries /
+    no_distinct / some_distinct / all_distinct);
+    counts only - no value, digest, key name,
+    excerpt or payload field anywhere in the
+    document (the P-183 law, extended to digests).
+    One new road: GET /hub/distinct-census,
+    bearer-gated and owner-scoped like the
+    content-census road; the census writes nothing
+    and records no history. Slice doc
+    docs/HUB_DISTINCT_CONTENT_CENSUS_2026-11-09.md +
+    clean-room log +1. Evidence (team-01
+    hidden_files/P199_EVIDENCE.md + logs): battery
+    19 passed. Neighbours on the team tree 340
+    passed / 0 failed (P-187..P-197 hub batteries +
+    the P-199 battery + P-045 / P-054 / P-063 /
+    P-141 pack batteries; 305 at P-197 + P-196's 16
+    + 19, exact). Team full suite 5839 passed / 5
+    skipped / 0 failed on its P-197 base (= 5820
+    banked at P-197 + 19, exact), clean at first
+    run. Combined fence on the merged tree
+    (P-187..P-199 hub batteries + P-045 / P-054 /
+    P-063 / P-141 pack batteries, forge
+    hidden_files/P199_FENCE.log): 360 passed / 0
+    failed (341 at P-198's fence + 19, exact). Forge
+    confirmation full suite on the merged tree
+    (counts read back from forge
+    hidden_files/P199_FORGE_CONFIRM.log): 5859
+    passed / 5 skipped / 0 failed in 355.52s, exit 0
+    - clean at first run, no contention failure and
+    no solo re-run needed; merged expectation 5859
+    (= 5840 banked at P-198 + 19, exact). Migration:
+    NONE (head stays 0041). Defects: none discovered
+    in banked code and none at banking; one in-slice
+    finding in the slice's own new battery (ruff 2 x
+    F841, an unused entries binding in two tests)
+    was fixed in-slice by team-01 before banking and
+    the battery re-ran 19 passed after the fix; no
+    bug left unfixed. Carried items untouched,
+    exactly as recorded at P-186 through P-198: (1)
+    binding label update stays named open
+    (unbind-then-bind law); (2) automatic retention
+    / bulk clear of history awaits the ruling of
+    Volmarr - none invented; (3) unified-search
+    history stays named open (this census records
+    nothing). Hub distinct-content census is now
+    BANKED. Banked now P-001..P-199 + the
+    commissioned binding depth/role slice. PART XII
+    OPEN (P-187..P-202). Next in roadmap order:
+    P-200 (Part XII, DERIVED).
+    P-200 BANKED - Hub schema census (Part
+    XII, DERIVED). Part XII continues. - team-02
+    commit 894ffbe merged (no-ff) into
+    yrsa/two-mirrors-build as f868089 (parents
+    63605b5 + 894ffbe). The team-02 base PREDATES
+    P-199 (parent fd86f65, the P-198 banking
+    record), so the merge met the expected
+    conflicts in src/runmal/hub/router.py and
+    docs/CLEAN_ROOM_LOG_2026-10-30.md ONLY - the
+    two files both slices touch, each delta
+    additive there - resolved as additive unions
+    keeping BOTH slices' work exactly once;
+    merged diff vs fd86f65 exactly the union of
+    the two slices (9 files, +2789/-0, the P-199
+    banking record's own CAMPAIGN_STATE.md entry
+    included). Router verification per the P-192
+    banking lesson: the merged router was diffed
+    against BOTH parents' router deltas and
+    grep-verified - the hub_content_census,
+    hub_content_search, hub_unified_search,
+    hub_unified_search_census,
+    hub_duplicate_census, hub_content_shape_census,
+    hub_size_census, hub_breadth_census,
+    hub_distinct_census and hub_schema_census
+    imports are all present (ten hub census/search
+    modules) and every GET road survives (census,
+    content-census, duplicate-census,
+    content-shape-census, size-census,
+    breadth-census, distinct-census,
+    schema-census, search, content-search,
+    unified-search, unified-search-census, entry
+    read, browse, list, delete), py_compile clean.
+    NO heal was needed beyond the union itself:
+    the resolution kept each side's lines exactly
+    as authored, no blank separator was dropped,
+    and no import or road was lost. Derived
+    scope ACCEPTED: hub schema census - the
+    object-shape identity grain no banked hub
+    document states, in the house census shape.
+    src/runmal/hub/schema_census.py
+    (schema_census_document(entries), schema
+    runmal-p200-hub-schema-census-v1) counts
+    DISTINCT object shapes (key-sets) in the
+    verified payloads - P-196 counts every
+    payload node and dict key and P-198 measures
+    every container width, but both discard which
+    keys any one object holds together, and
+    P-199 compares string values, so how many
+    distinct shapes an estate uses, how many
+    repeat inside one pack or across packs, and
+    how many are shared between entries is
+    derivable from no banked document, because
+    no banked document carries a key name or a
+    key-set. Shapes are compared for exact
+    identity in memory only: neither a key name,
+    a signature digest, a value nor an excerpt
+    ever enters the document (the P-183 law,
+    extended to key-sets). Rows carry outcomes
+    under P-193's imported OUTCOMES law;
+    shared counts are computed over parsed
+    entries only; census_state under the closed
+    SCHEMA_CENSUS_STATES law (no_entries /
+    no_schema / some_schema / all_schema);
+    counts only - no key name, digest, value,
+    excerpt or payload field anywhere in the
+    document. One new road: GET
+    /hub/schema-census, bearer-gated and
+    owner-scoped like the distinct-census road;
+    the census writes nothing and records no
+    history. Slice doc
+    docs/HUB_SCHEMA_CENSUS_2026-11-09.md +
+    clean-room log +1. Evidence (team-02
+    hidden_files/P200_EVIDENCE.md + logs):
+    battery 19 passed. Neighbours on the team
+    tree 245 passed / 0 failed. Team full suite
+    5859 passed / 5 skipped / 0 failed on its
+    P-198 base (= 5840 banked at P-198 + 19,
+    exact), clean at first run. Combined fence
+    on the merged tree (P-187..P-200 hub
+    batteries + P-045 / P-054 / P-063 / P-141
+    pack batteries, run at banking in the forge
+    tree): 379 passed / 0 failed (360 at P-199's
+    fence + 19, exact). Forge confirmation full
+    suite on the merged tree (counts read back
+    from forge hidden_files/P200_FORGE_CONFIRM.log):
+    5878 passed / 5 skipped / 0 failed in
+    368.26s, exit 0 - clean at first run, no
+    contention failure and no solo re-run needed;
+    merged expectation 5878 (= 5859 banked at
+    P-199 + 19, exact). Migration: NONE (head
+    stays 0041). Defects: none discovered in
+    banked code and none at banking; no bug left
+    unfixed. Carried items untouched, exactly as
+    recorded at P-186 through P-199: (1) binding
+    label update stays named open
+    (unbind-then-bind law); (2) automatic
+    retention / bulk clear of history awaits the
+    ruling of Volmarr - none invented; (3)
+    unified-search history stays named open (this
+    census records nothing). Hub schema census
+    is now BANKED. Banked now P-001..P-200 + the
+    commissioned binding depth/role slice. PART
+    XII OPEN (P-187..P-202). Next in roadmap
+    order: P-201 (Part XII, DERIVED).
+    P-201 BANKED - Hub reconciliation
+    battery (Part XII, DERIVED). Part XII
+    continues. - team-03 commit 671d031
+    merged (no-ff) into yrsa/two-mirrors-
+    build as 1a85e3a (parents 6d69720 +
+    671d031). The team-03 base IS the forge
+    HEAD (parent 6d69720, the P-200 banking
+    record), so the merge was CLEAN - no
+    conflicts in any file; merged diff vs
+    6d69720 exactly the 3 slice files
+    (+1457/-0):
+    tests/test_p201_hub_reconciliation.py,
+    docs/HUB_RECONCILIATION_2026-11-09.md,
+    clean-room log +1. NO src change, no new
+    road. Derived scope ACCEPTED: hub
+    reconciliation battery - the durable
+    whole-estate agreement probe no banked
+    slice had done: 26 tests in four
+    sections (A presence/shape x7, B cross-
+    surface agreement x12, C fences x5, D
+    carried items / orphan closure x2)
+    judging that the banked hub documents
+    (P-187..P-200: one registry, one browse
+    road, nine censuses, three searches plus
+    their census) agree with each other and
+    with independently computed fixture
+    truth, not merely with their own
+    batteries. F-1 union verified sound
+    BEFORE fixtures and re-pinned by the
+    battery (test A4): the merged
+    src/runmal/hub/router.py carries ALL hub
+    roads - 17 operations on 16 paths,
+    distinct-census and schema-census both
+    present, declaration order breadth ->
+    distinct -> schema -> search. F-2
+    respected: P-189 / P-190 documents
+    mapped by their own pre-coverage shapes,
+    the P-193 shape never asserted against
+    them. Slice doc
+    docs/HUB_RECONCILIATION_2026-11-09.md +
+    clean-room log +1. Evidence (team-03
+    hidden_files/P201_EVIDENCE.md + logs):
+    battery 26 passed. Neighbours on the
+    team tree 405 passed / 0 failed (hub
+    batteries P-187..P-200 + pack batteries
+    P-045 / P-054 / P-063 / P-141 + this
+    battery; 379 on the merged tree at P-200
+    + 26, exact). Team full suite 5904
+    passed / 5 skipped / 0 failed, exit 0 (=
+    5878 banked at P-200 + 26, exact), clean
+    at first run; the s503 STT timing
+    contract did NOT fire, no contention
+    classification needed. Combined fence on
+    the merged tree (P-187..P-201 hub
+    batteries + P-045 / P-054 / P-063 /
+    P-141 pack batteries, run at banking in
+    the forge tree): 405 passed / 0 failed
+    (379 at P-200's fence + 26, exact).
+    Forge confirmation full suite on the
+    merged tree (counts read back from forge
+    hidden_files/P201_FORGE_CONFIRM.log):
+    5904 passed / 5 skipped / 0 failed in
+    359.51s, exit 0 - clean at first run, no
+    contention failure and no solo re-run
+    needed; merged expectation 5904 (= 5878
+    + 26, exact). Migration: NONE (head
+    stays 0041; battery test A6 pins
+    MIGRATIONS[-1] == current_revision ==
+    "0041" and the absence of any m0042
+    file). Defects: no disagreement found
+    anywhere in the banked hub surface -
+    every reconciliation claim B1..B12 held;
+    no banked-code bug discovered and none
+    at banking; no bug left unfixed. One
+    defect in the battery's OWN first-run
+    expectation was fixed in-slice (D2's
+    known-handler-calls list omitted the
+    registry store verbs get_entry /
+    remove_entry the DELETE handler lawfully
+    calls; first run 25 passed / 1 failed,
+    after correction 26 passed). One design-
+    text correction recorded in the slice
+    doc: P201_DESIGN.md section A3 says "16
+    schema tags"; the enumerated truth is 15
+    (P-187 entry + list, one per slice
+    P-188..P-200), which the battery pins -
+    not a code defect. Carried items
+    untouched, exactly as recorded at P-186
+    through P-200: (1) binding label update
+    stays named open (unbind-then-bind law);
+    (2) automatic retention / bulk clear of
+    history awaits the ruling of Volmarr -
+    none invented; (3) unified-search
+    history stays named open (this battery
+    records nothing). Hub reconciliation
+    battery is now BANKED. Banked now
+    P-001..P-201 + the commissioned binding
+    depth/role slice. PART XII OPEN
+    (P-187..P-202). Next in roadmap order:
+    P-202 (Part XII, DERIVED).
+    P-202 BANKED - Part XII gate
+    (Part XII, DERIVED). GATE PASSES -
+    Part XII COMPLETE. - team-01 commit
+    2be6354 merged (no-ff) into
+    yrsa/two-mirrors-build as 1474390
+    (parents c0366f2 + 2be6354). The
+    team-01 base IS the forge HEAD
+    (parent c0366f2, the P-201 banking
+    record), so the merge was CLEAN -
+    no conflicts in any file; merged
+    diff vs c0366f2 exactly the 4 slice
+    files (+1805/-0):
+    tests/test_p202_part_xii_gate.py,
+    tests/test_p202_gate_record.py,
+    docs/PART_XII_GATE_2026-11-09.md,
+    clean-room log +1. NO src change,
+    no new road, NO migration. Derived
+    scope ACCEPTED: the Part XII gate -
+    34 gate tests in four areas (A
+    census x9, B together x12, C
+    custody x5, D accounting x6, plus
+    hygiene x2) and a 10-test gate-
+    record module, judging the whole
+    banked Part XII hub surface
+    (P-187..P-201: 15 slice docs, 15
+    hub modules, 17 operations on 16
+    paths) as one estate. Gate verdict
+    per area: Census PASS, Together
+    PASS, Custody PASS, Accounting
+    PASS - Part XII COMPLETE / gate
+    PASSES. Slice doc
+    docs/PART_XII_GATE_2026-11-09.md +
+    clean-room log +1 (entry count
+    161 -> 162). Evidence (team-01
+    hidden_files/P202_EVIDENCE.md +
+    logs): gate battery 34 passed;
+    neighbours on the team tree 405
+    passed / 0 failed (hub batteries
+    P-187..P-201 + pack batteries
+    P-045 / P-054 / P-063 / P-141; the
+    gate battery NOT in that batch, per
+    design); gate-record module 10
+    passed; final combined re-run on
+    the committed tree 44 passed (34 +
+    10). Team full suite raw 5947
+    passed / 5 skipped / 1 failed in
+    592.52s - the sole failure the
+    s503 STT timing contract case,
+    solo re-run 4 passed, classified
+    CONTENTION (a Mythic Coder full
+    suite ran concurrently; 592.52s
+    against the 359.51s P-201 baseline
+    is the same signature); adjusted
+    expectation 5948 / 5 / 0 (= 5904
+    banked at P-201 + 34 + 10, exact)
+    stands by the solo re-run.
+    Combined fence on the merged tree
+    (P-187..P-202 hub batteries +
+    P-045 / P-054 / P-063 / P-141 pack
+    batteries + both P-202 test files,
+    run at banking in the forge tree):
+    449 passed / 0 failed (405 at
+    P-201's fence + 34 + 10, exact).
+    Forge confirmation full suite on
+    the merged tree (counts read back
+    from forge
+    hidden_files/P202_FORGE_CONFIRM.log):
+    5948 passed / 5 skipped / 0 failed
+    in 417.60s, exit 0 - clean at
+    first run, no contention failure
+    and no solo re-run needed; merged
+    expectation 5948 (= 5904 + 34 +
+    10, exact). Migration: NONE (head
+    stays 0041; no 0042 anywhere).
+    Defects: NO defect found in banked
+    code (P-187..P-201 surface);
+    nothing in banked code was
+    touched; no bug left unfixed. One
+    design-text discrepancy handled
+    per instructions - tree followed,
+    discrepancy noted: the design's
+    L-2 wording called an oversize
+    payload UNAVAILABLE; the banked
+    tree and its batteries pin INVALID
+    on browse, all six parse censuses
+    and content search, and the gate
+    battery and gate doc (finding F1)
+    pin the tree's verdict. The old
+    P-116 F2 openapi candidate does
+    NOT reproduce on this tree and is
+    NOT carried. In-slice defects in
+    the gate material's first draft
+    (ruff I001 import order + two B007
+    unused loop variables) were fixed
+    in-slice before banking; ruff
+    clean. Carried items named
+    plainly, exactly as recorded at
+    P-186 through P-201: STILL OPEN -
+    K-A binding label update stays
+    named open (no entry-update road
+    exists; remove-then-register,
+    never a silent in-place update);
+    K-B automatic retention / bulk
+    clear of history awaits the ruling
+    of Volmarr - none invented; K-C
+    unified-search history stays named
+    open (every Part XII census/search
+    records NO history). DECLINED for
+    Part XII (named declines, NOT
+    shipped and NOT gaps): K-D signing
+    / attestation; K-E friend-instance
+    exchange transport; K-F hub-side
+    import / install; K-G entry
+    lifecycle depth beyond
+    register/remove; K-H central store
+    / catalogue / creator profiles
+    (ruled out by VX-59). Part XII
+    gate is now BANKED. Banked now
+    P-001..P-202 + the commissioned
+    binding depth/role slice. PART XII
+    CLOSED (P-187..P-202). Next in
+    roadmap order: P-203 (opening
+    Part XIII).
+    P-203 BANKED - composed Inspector
+    overview (Part XIII, DERIVED).
+    PART XIII OPENED at P-203. -
+    team-02 commit a0288af merged
+    (no-ff) into yrsa/two-mirrors-build
+    as 8ade4b1 (parents 6e287d8 +
+    a0288af). The team-02 base IS the
+    forge HEAD (parent 6e287d8, the
+    P-202 banking record), so the
+    merge was CLEAN - no conflicts in
+    any file; merged diff vs 6e287d8
+    exactly the 7 slice files
+    (+745/-0): src/runmal/inspector/
+    __init__.py, overview.py,
+    router.py, src/runmal/app.py (one
+    import + one include_router
+    block), docs/INSPECTOR_OVERVIEW_
+    2026-11-09.md, clean-room log +1,
+    tests/test_p203_inspector_
+    overview.py. Derived scope
+    ACCEPTED: one read-only
+    schema-versioned document
+    (runmal-p203-inspector-overview-
+    v1) per owned chat on GET
+    /inspector/chats/{chat_id},
+    joining the three roadmap-named
+    banked sources plus scenario-
+    binding state: the P-075
+    provenance summary carried
+    verbatim from list_chat_
+    provenance; the P-059 prompt
+    section as availability plus
+    pointers to the banked POST
+    roads, never composed inside the
+    GET (a read must not consume
+    activation rolls); the P-043
+    bound lorebooks resolved via the
+    banked P-040 resolve_scoped_books
+    with per-book inspect pointers;
+    scenario state via the banked
+    binding store summary (identity
+    and counts only). Every section
+    carries an honest closed-
+    vocabulary status (available /
+    empty / not_applicable /
+    unavailable) with a reason when
+    not available. Calls the banked
+    surfaces only, re-implements
+    none, persists nothing. NO
+    migration, head stays 0041.
+    Evidence (team-02 hidden_files/
+    P203_EVIDENCE.md + logs): battery
+    11 passed; neighbours 276 passed
+    / 0 failed; team full suite 5959
+    passed / 5 skipped / 0 failed.
+    Banking: combined fence in the
+    forge 287 passed / 0 failed;
+    forge confirmation 5959 passed /
+    5 skipped / 0 failed in 399.46s,
+    exit 0 (= 5948 banked at P-202 +
+    11 exact), clean at first run, no
+    solo re-run needed. Defects: none
+    in banked code; the one failure
+    seen was in the battery itself
+    (a MIGRATIONS pin unpacking 2
+    fields from 3-tuples), fixed in
+    the battery and re-run green
+    before banking. Ruff: clean on
+    the new package and battery;
+    router.py carries only B008, the
+    house idiom of every banked
+    router. Declined with reasons in
+    the design: Assistant View /
+    reasoning display (no reasoning
+    content exists in-tree), bot
+    runtime (no substrate), live
+    composition inside the overview
+    GET, persisted event/flag log
+    (named as the natural P-204+
+    question). Carried items K-A /
+    K-B / K-C stay untouched. Banked
+    now P-001..P-203 + the
+    commissioned binding depth/role
+    slice. PART XIII OPEN
+    (P-203..P-218). Next in roadmap
+    order: P-204 (Part XIII, DERIVED).
+    P-204 BANKED - Inspector events
+    document (Part XIII, DERIVED). -
+    team-03 commit bb3ccff merged
+    (no-ff) into yrsa/two-mirrors-build
+    as dfbf64f (parents da2f187 +
+    bb3ccff). The team-03 base IS the
+    forge HEAD (parent da2f187, the
+    P-203 banking record), so the
+    merge was CLEAN - no conflicts in
+    any file; merged diff vs da2f187
+    exactly the 6 slice files
+    (+993/-15): src/runmal/inspector/
+    events.py (new), router.py (one
+    new road), __init__.py
+    (EVENTS_SCHEMA), docs/
+    INSPECTOR_EVENTS_2026-11-09.md,
+    clean-room log +1, tests/
+    test_p204_inspector_events.py.
+    Derived scope ACCEPTED: one
+    read-only schema-versioned
+    document (runmal-p204-inspector-
+    events-v1) per owned chat on GET
+    /inspector/chats/{chat_id}/events,
+    built by calling the banked
+    runmal.chats.service.list_events
+    read - no second query path, no
+    data payloads, no message
+    content. Sections: events
+    (available/empty/unavailable +
+    total + by_kind verbatim +
+    first_at/last_at + latest +
+    raw_road pointer), actions (five
+    action kinds counted from the
+    same census + m0038 pointer),
+    flags (not_applicable + bind-time
+    bool-seed reason + pointers),
+    not_recorded (exactly three
+    families: generation events,
+    plugin dispatches, chat.deleted -
+    each not_applicable + reason).
+    The P-203 scout correction is
+    restated plainly in the slice
+    doc: the persisted S107
+    chat_events log already existed;
+    the P-203 statement that no
+    persisted event log exists held
+    only for plugin events. NO
+    migration, head stays 0041.
+    Evidence (team-03 hidden_files/
+    P204_EVIDENCE.md + logs): battery
+    15 passed; neighbours 182 passed
+    / 0 failed; team full suite 5974
+    passed / 5 skipped / 0 failed
+    (= 5959 banked at P-203 + 15
+    exact). Banking: combined fence
+    in the forge 197 passed / 0
+    failed (= 182 neighbours + 15
+    battery exact); forge
+    confirmation 5973 passed / 5
+    skipped / 1 failed in 563.60s at
+    first run, the sole failure the
+    known s503 STT timing case (RTF
+    p50 1.513 over contract) under a
+    concurrent Mythic Coder full
+    suite on the shared machine;
+    solo re-run green (1 passed in
+    37.64s), classified contention,
+    so the confirmation stands at
+    5974 passed / 5 skipped / 0
+    failed. Defects: none in banked
+    or neighbour code; two battery-
+    side corrections were fixed in
+    the battery before banking (see
+    evidence). Ruff: clean on all
+    touched files except router B008
+    x2 (one per road) - the house
+    FastAPI Depends idiom, exactly as
+    the banked P-203 router; with
+    --ignore B008 all checks passed.
+    Carried items K-A / K-B / K-C
+    stay untouched. Banked now
+    P-001..P-204 + the commissioned
+    binding depth/role slice. PART
+    XIII OPEN (P-203..P-218). Next in
+    roadmap order: P-205 (Part XIII,
+    DERIVED).
+    P-205 BANKED - Reasoning-content
+    record (Part XIII, DERIVED). -
+    team-01 commit f2413a3 merged
+    (no-ff) into yrsa/two-mirrors-build
+    as ddc07e8 (parents 148acbe +
+    f2413a3). Merge CLEAN - no
+    conflicts in any file. Scope:
+    reasoning-content record founded -
+    ReasoningDelta wire capture in
+    all four adapters (openai_compat /
+    openrouter reasoning_content +
+    reasoning spellings, ollama
+    thinking, aesir) + SSE bridging
+    via the generation bridge_event
+    reasoning dict, and a durable
+    per-message / per-swipe record
+    schema runmal-p205-message-
+    reasoning-v1 (strict builders /
+    tolerant readers; recorded /
+    not_present / not_recorded /
+    unknown) stored under migration
+    0042 (messages.reasoning_json +
+    runmal.chats.reasoning, GET
+    reasoning road, swipe lifecycle +
+    branch copy mirrors). Migration
+    PROVISIONAL 0042 STANDS as
+    designed, not renumbered; head
+    moves 0041 -> 0042. The head-pin
+    heals rode in the team commit
+    e3bb604 (182 test files, head pins
+    0041 -> 0042 at equal strength,
+    no assertion weakened), so the
+    merged tree needed NO further pin
+    heals. Evidence (team-01
+    hidden_files/P205_EVIDENCE.md +
+    logs): battery 23 passed;
+    neighbours fence 261 passed / 2
+    skipped / 0 failed; team full
+    suite 5997 passed / 5 skipped / 0
+    failed (= 5974 banked at P-204 +
+    23 exact). Banking: battery +
+    combined fence re-run in the
+    forge 23 passed and 261 passed /
+    2 skipped / 0 failed exact; forge
+    confirmation full suite 5997
+    passed / 5 skipped / 0 failed,
+    exit 0, in 434.96s - exact, no
+    contention failure fired (the
+    P-099 sandbox test that failed
+    once under load in the team's
+    first run passed solo 3/3 and in
+    both final runs; classified
+    contention, not a defect; s503
+    did not fire). Defects: none in
+    banked or neighbour code. Carried
+    items: Assistant View rendering
+    is P-206's thread; the other
+    producing roads (continue /
+    impersonate, groupchat, swipe
+    regeneration, /generate web road)
+    record not_recorded honestly
+    until wired; K-A / K-B / K-C stay
+    untouched. Banked now P-001..P-205
+    + the commissioned binding
+    depth/role slice. PART XIII OPEN
+    (P-203..P-218). Next in roadmap
+    order: P-206 (Part XIII, DERIVED).
+    P-206 BANKED - Assistant View
+    (Part XIII, DERIVED). -
+    team-02 commit 9b38e4e merged
+    (no-ff) into yrsa/two-mirrors-build
+    as a790bde (parents 1fcc1da +
+    9b38e4e). Merge CLEAN - no
+    conflicts in any file. Scope:
+    the P-205 reasoning record is
+    now rendered in the chat web
+    surface, UI-only: pure
+    reasoningView view-model in
+    renderer.js (recorded +
+    non-empty text -> recorded model;
+    not_present / not_recorded /
+    unknown -> three distinct honest
+    status lines, no text; anything
+    unrecognised -> the unknown
+    model; never throws) and
+    reasoningPanel in app.js
+    (recorded: native details
+    element, collapsed by default,
+    summary Thinking, text via
+    textContent ONLY; status lines
+    via textContent), appendMessage
+    gains one trailing reasoning
+    parameter, renderThread passes
+    m.reasoning || null.
+    streamGeneration byte-untouched.
+    Keeper ruling baked into the
+    slice: STORED-ONLY rendering -
+    the view renders the stored
+    record at thread read time only,
+    does NOT render or claim live
+    thinking, and does NOT buffer
+    SSE reasoning. NO migration;
+    head stays 0042. Evidence
+    (team-02 hidden_files/
+    P206_EVIDENCE.md + logs): battery
+    18 passed; neighbours fence 63
+    passed / 0 failed; team full
+    suite 6015 passed / 5 skipped /
+    0 failed (= 5997 banked at P-205
+    + 18 exact). Banking: forge
+    confirmation full suite 6015
+    passed / 5 skipped / 0 failed,
+    exit 0, in 399.44s - exact, no
+    contention failure fired, no
+    test_s503 solo re-run needed.
+    One in-slice battery defect (pin
+    15 tripping on words in the
+    reasoningPanel comment) was fixed
+    in-slice by rewording the comment;
+    the pin was NOT weakened.
+    Defects in banked code: none.
+    Honest limitation: replies from
+    the web /generate road show
+    Thinking was not recorded on
+    re-read, as that road does not
+    store reasoning; live wiring is
+    a later slice of its own if
+    Volmarr wants it. Banked now
+    P-001..P-206 + the commissioned
+    binding depth/role slice. PART
+    XIII OPEN (P-203..P-218). Next in
+    roadmap order: P-207 (Part XIII,
+    DERIVED).
+    P-207 BANKED - Reasoning wiring
+    for continue / impersonate
+    (Part XIII, DERIVED). -
+    team-03 commit 1ffe5eb merged
+    (no-ff) into yrsa/two-mirrors-build
+    as e46cedd (parents ee09ce3 +
+    1ffe5eb). Merge CLEAN - no
+    conflicts in any file. Scope:
+    the P-205 reasoning record is
+    now wired into the P-069
+    continue / impersonate pair
+    through its shared generation
+    seam in continue_impersonate.py:
+    _generate_text collects the
+    bridge reasoning dicts in
+    arrival order and returns them
+    beside the text; continue NEXT
+    stores the record beside
+    provenance on append_message;
+    continue EXTEND reads the active
+    view before the deck grows and
+    combines per the design table
+    (recorded+recorded concatenates
+    in production order,
+    not_present+recorded becomes
+    recorded, recorded+not_present
+    keeps the existing text,
+    not_present+not_present stays
+    not_present, not_recorded or
+    unknown leaves reasoning_json
+    byte-untouched); impersonate
+    returns the record transiently
+    on the draft document only.
+    One heal rode in the team
+    commit: tests/test_p205
+    test_e3 continue half restated
+    to the new wired truth (recorded,
+    scripted thought verbatim), one
+    assertion ADDED, none weakened,
+    group-manual half byte-identical.
+    NO migration; head stays 0042.
+    Evidence (team-03 hidden_files/
+    P207_EVIDENCE.md + logs): battery
+    16 passed; neighbours fence 185
+    passed / 0 failed; team full
+    suite 6031 passed / 5 skipped /
+    0 failed (= 6015 banked at P-206
+    + 16 exact). Banking: combined
+    batteries re-run in the forge
+    (test_p207 + test_p205) 39
+    passed; forge confirmation
+    full suite 6031 passed / 5
+    skipped / 0 failed, exit 0,
+    in 403.01s - exact, no
+    contention failure fired, no
+    test_s503 solo re-run needed.
+    Defects in banked code: none.
+    Carried limitations: extend
+    onto a legacy / manual /
+    imported swipe drops the
+    extension generation thinking
+    on the floor BY DESIGN (those
+    swipes keep reading not_recorded
+    until re-generated whole);
+    impersonate reasoning is
+    draft-only - it lives only in
+    the draft document and nothing
+    persists it once the draft is
+    accepted or dropped; groupchat
+    generations, manual swipes and
+    web /generate replies still
+    read not_recorded. Banked now
+    P-001..P-207 + the commissioned
+    binding depth/role slice. PART
+    XIII OPEN (P-203..P-218). Next in
+    roadmap order: P-208 (Part XIII,
+    DERIVED) - candidate groupchat
+    reasoning wiring.
+    P-208 BANKED - Groupchat
+    reasoning wiring (Part XIII,
+    DERIVED). - team-01 commit
+    460fcc1 merged (no-ff) into
+    yrsa/two-mirrors-build as
+    02fa411 (parents 986a94c +
+    460fcc1). Merge CLEAN - no
+    conflicts in any file. Scope:
+    the P-205 reasoning record is
+    now wired into both groupchat
+    roads: the persistent road
+    (P-070 deepening) lands the
+    record in the groupchat store
+    beside the message, and the
+    stateless road forwards the
+    record live on the SSE stream.
+    D2, the persistent road
+    failure-contract gap, is FIXED
+    in this slice - a failed
+    generation now surfaces under
+    the adopted failure contract
+    instead of landing silently.
+    D1, the stateless road
+    error-swallowing, is FENCED
+    unchanged - named here and
+    awaiting a keeper / Volmarr
+    ruling; it is NOT fixed by
+    this slice. NO migration;
+    head stays 0042. Evidence
+    (team-01 hidden_files/
+    P208_EVIDENCE.md + logs):
+    battery 18 passed; neighbours
+    fence 166 passed / 0 failed;
+    team full suite raw 6047
+    passed / 5 skipped / 2 failed,
+    both failures contention-class
+    and solo-green on re-run
+    (test_s503 solo 4 passed,
+    test_p099 module solo 24
+    passed), effective 6049
+    passed / 5 skipped / 0 failed
+    (= 6031 banked at P-207 + 18
+    exact). Banking: combined
+    batteries re-run in the forge
+    (test_p208 + test_p205) 184
+    passed; forge confirmation
+    full suite 6049 passed / 5
+    skipped / 0 failed, in 428.85s
+    - exact. Defects in banked
+    code: none known. Carried
+    limitations: manual swipes and
+    web /generate replies still
+    read not_recorded; the P-207
+    carried items stand unchanged
+    (extend onto a legacy / manual
+    / imported swipe drops the
+    extension generation thinking
+    BY DESIGN; impersonate
+    reasoning stays draft-only);
+    D1 fenced as above. Banked now
+    P-001..P-208 + the commissioned
+    binding depth/role slice. PART
+    XIII OPEN (P-203..P-218). Next in
+    roadmap order: P-209 (Part XIII,
+    DERIVED) - scout to derive its
+    exact scope from the roadmap
+    and the reasoning-debt trail.
+    P-209 BANKED - Swipe and web
+    /generate reasoning wiring
+    (Part XIII, DERIVED). - team-02
+    commit bd45a35 merged (no-ff)
+    into yrsa/two-mirrors-build as
+    572129e (parents e90f4f2 +
+    bd45a35). Merge CLEAN - no
+    conflicts in any file. Scope:
+    the last two reasoning debts
+    from the P-205 trail are now
+    wired. Swipes: add_swipe gains
+    a reasoning= param, strict-
+    validated by build_document
+    before any store write, so a
+    generated alternate lands its
+    record instead of the
+    unconditional not_recorded
+    stamp (the stamp stays
+    byte-identical when no record
+    is supplied); ReasoningIn
+    rides on both REST bodies
+    (MessageCreate and
+    SwipeCreate), strict-built
+    server-side by build_record.
+    Web /generate: streamGeneration
+    collects the reasoning events
+    in arrival order and attaches
+    the record to its existing
+    single append POST - collection
+    for storage only, under the
+    keeper ruling that the P-206
+    stored-only rule governs
+    rendering: nothing renders
+    live, and the Assistant View
+    panel reads only the stored
+    record. One heal rode in the
+    team commit: P-206 test_16
+    restated at equal-or-greater
+    strength (collector present
+    AND no live rendering in the
+    stream path). NO migration;
+    head stays 0042. Route census
+    unchanged 354 paths / 437
+    operations. D1, the stateless
+    groupchat road error-
+    swallowing, stays FENCED
+    unchanged - NOT fixed by this
+    slice. Evidence (team-02
+    hidden_files/ P209_EVIDENCE.md
+    + logs): battery 16 passed;
+    neighbours fence 163 passed /
+    0 failed; team full suite
+    6065 passed / 5 skipped /
+    0 failed, exit 0 (= 6049
+    banked at P-208 + 16 exact,
+    no contention failure fired).
+    Banking: combined batteries
+    re-run in the forge (test_p209
+    + test_p206) 34 passed; forge
+    confirmation full suite 6065
+    passed / 5 skipped / 0 failed,
+    in 409.55s - exact. Defects in
+    banked code: none (the one
+    defect found during the build
+    was a spelling flaw in the
+    slice's own new test pin,
+    fixed in-slice before
+    banking). Carried limitations:
+    the P-207 carried items stand
+    unchanged (extend onto a
+    legacy / manual / imported
+    swipe drops the extension
+    generation thinking BY DESIGN;
+    impersonate reasoning stays
+    draft-only); D1 fenced as
+    above; the reasoning trail
+    named at P-205 is now fully
+    wired. Banked now
+    P-001..P-209 + the commissioned
+    binding depth/role slice. PART
+    XIII OPEN (P-203..P-218, gate
+    P-218). Next in roadmap order:
+    P-210 (Part XIII, DERIVED) -
+    scout to derive from the
+    roadmap part text and what
+    Part XIII still owes (Inspector
+    & Bots territory beyond the
+    reasoning trail).
+    P-210 BANKED - Inspector
+    reasoning join (Part XIII,
+    DERIVED). - team-03 commit
+    3e07379 merged (no-ff) into
+    yrsa/two-mirrors-build as
+    8a0c9a5 (parents f225c01 +
+    3e07379). Merge CLEAN - no
+    conflicts in any file. Scope:
+    the P-205 reasoning record is
+    now joined into the Inspector
+    as a read-only census document
+    (runmal-p210-inspector-
+    reasoning-v1 on GET
+    /inspector/chats/{chat_id}/
+    reasoning), built from the new
+    list_chat_reasoning chats-
+    service read mirroring
+    list_chat_provenance:
+    per-message active status and
+    recorded swipe indexes with a
+    raw-road pointer, per-status
+    counts over active views and
+    over all swipe documents, and
+    no thinking text anywhere.
+    Six banked census pins were
+    restated in the team commit at
+    the merged 355 paths / 438
+    operations truth, each with a
+    P-210 heal comment (the new
+    road adds one path and one
+    operation). NO migration;
+    head stays 0042. D1, the
+    stateless groupchat road
+    error-swallowing, stays FENCED
+    unchanged - NOT fixed by this
+    slice. Evidence (team-03
+    hidden_files/ P210_EVIDENCE.md
+    + logs): battery 14 passed;
+    neighbours fence 139 passed /
+    0 failed; team full suite
+    6079 passed / 5 skipped /
+    0 failed (= 6065 banked at
+    P-209 + 14 exact). Banking:
+    combined fence re-run in the
+    forge (test_p210 + the nine
+    neighbour files) 153 passed;
+    forge confirmation full suite
+    6079 passed / 5 skipped /
+    0 failed, in 393.88s - exact,
+    no contention failure fired,
+    no solo re-run needed. Defects
+    in banked code: none found at
+    banking. Banked now
+    P-001..P-210 + the commissioned
+    binding depth/role slice. PART
+    XIII OPEN (P-203..P-218, gate
+    P-218). Next in roadmap order:
+    P-211 (Part XIII, DERIVED) -
+    scout to derive from the
+    roadmap part text and what
+    Part XIII still owes.
+    P-211 BANKED - Inspector
+    group reasoning census
+    (Part XIII, DERIVED). -
+    team-01 commit 8b654fa
+    merged (no-ff) into
+    yrsa/two-mirrors-build as
+    9e66e27 (parents 9d2fce7 +
+    8b654fa). Merge CLEAN - no
+    conflicts in any file. Scope:
+    the Inspector reasoning
+    coverage is completed with
+    the group-transcript join
+    named by P-210 as its own
+    document
+    (runmal-p211-inspector-
+    group-reasoning-v1 on GET
+    /inspector/groups/{group_id}/
+    reasoning), built from the
+    new list_group_reasoning
+    groupchat-store read whose
+    owned fence is banked
+    list_messages itself,
+    aggregating through banked
+    summarise_reasoning
+    unchanged, with a per-speaker
+    roll-up and per-message
+    entries carrying speaker
+    identity, one document-level
+    raw_road at the banked
+    transcript road, and no
+    thinking text and no message
+    content anywhere. Banked
+    census pins were restated in
+    the team commit at the merged
+    356 paths / 439 operations
+    truth, each with a P-211 heal
+    comment, including the two
+    structural road-set carriers
+    in p204/p205. NO migration;
+    head stays 0042. D1, the
+    stateless groupchat road
+    error-swallowing, stays FENCED
+    unchanged - NOT fixed by this
+    slice. Evidence (team-01
+    hidden_files/ P211_EVIDENCE.md
+    + logs): battery 15 passed;
+    neighbours fence 184 passed /
+    0 failed; team full suite
+    effective 6094 passed / 5
+    skipped / 0 failed (= 6079
+    banked at P-210 + 15 exact;
+    raw run 1 failed = the
+    test_s503_stt timing failure
+    under load, solo re-run of
+    the whole file 4 passed).
+    Banking: combined fence
+    re-run in the forge
+    (test_p211 + the thirteen
+    neighbour files) 199 passed;
+    forge confirmation full suite
+    6094 passed / 5 skipped /
+    0 failed, in 398.15s, exit 0 -
+    exact. Defects in banked
+    code: none found at banking.
+    Banked now P-001..P-211 + the
+    commissioned binding
+    depth/role slice. PART XIII
+    OPEN (P-203..P-218, gate
+    P-218). Next in roadmap order:
+    P-212 (Part XIII, DERIVED) -
+    scout to derive from the
+    roadmap part text and what
+    Part XIII still owes.
+    P-212 BANKED - Group
+    Assistant-View rendering
+    (Part XIII, DERIVED). -
+    team-02 commit d0d8c27
+    merged (no-ff) into
+    yrsa/two-mirrors-build as
+    aa8fc37 (parents 5ac6993 +
+    d0d8c27). Merge CLEAN - no
+    conflicts in any file.
+    Scope: Group Assistant-View
+    rendering - the stateless
+    group reasoning stream
+    rendered via the banked
+    reasoningView model, called
+    unchanged, through a group-
+    local panel, transient by
+    design (reasoning never
+    written into history, never
+    sent back, never persisted
+    client-side). The S311 group
+    golden was regenerated
+    deliberately by its own
+    prescribed road for exactly
+    the one added script line
+    (renderer.js on the group
+    page), no other golden
+    moving - a by-design pin
+    movement of the slice's own
+    change, not a defect. NO
+    migration; head stays 0042.
+    Route census stays 356 paths
+    / 439 operations with ZERO
+    census heals in this slice.
+    D1, the stateless groupchat
+    road error-swallowing, stays
+    FENCED unchanged - NOT fixed
+    by this slice. Evidence
+    (team-02 hidden_files/
+    P212_EVIDENCE.md + logs):
+    battery 14 passed;
+    neighbours fence 109 passed
+    / 0 failed; team full suite
+    6108 passed / 5 skipped / 0
+    failed in 404.18s, exit 0 (=
+    6094 banked at P-211 + 14
+    exact). Banking: combined
+    fence re-run in the forge
+    (test_p212 + the seven
+    neighbour files) 123 passed;
+    forge confirmation full
+    suite 6108 passed / 5
+    skipped / 0 failed, in
+    407.75s, exit 0 - exact.
+    Defects in banked code: none
+    found at banking. Banked now
+    P-001..P-212 + the
+    commissioned binding
+    depth/role slice. PART XIII
+    OPEN (P-203..P-218, gate
+    P-218). Next in roadmap
+    order: P-213 (Part XIII,
+    DERIVED) - scout to derive
+    from the roadmap part text
+    and what Part XIII still
+    owes.
+    P-213 BANKED - Persistent-
+    group transcript loader
+    (Part XIII, DERIVED). -
+    team-03 commit f4e3527
+    merged (no-ff) into
+    yrsa/two-mirrors-build as
+    b133d31 (parents ef2a396 +
+    f4e3527). Merge CLEAN - no
+    conflicts in any file.
+    Scope: Persistent-group
+    transcript loader - the
+    group page gains a Saved
+    groups picker (select#
+    saved-group plus button#
+    open-group) fed by the
+    banked GET /groups list
+    road, and openSavedGroup
+    loads the banked GET
+    /groups/{id}/messages
+    transcript road and renders
+    each stored message via the
+    existing addBubble, with
+    the group-local
+    reasoningPanel built from
+    the banked reasoningView
+    model, called unchanged,
+    over the stored active
+    reasoning view - textContent
+    only, collapsed details.
+    DISPLAY-ONLY by design:
+    fetched messages never
+    enter the stateless history
+    state, never join
+    sentHistory, are never sent
+    back, and nothing is
+    persisted client-side. The
+    S311 group golden was
+    regenerated deliberately
+    by its own prescribed road
+    for exactly the picker's
+    two added signature lines,
+    no other golden moving - a
+    by-design pin movement of
+    the slice's own change, not
+    a defect. NO migration;
+    head stays 0042. Route
+    census stays 356 paths /
+    439 operations with ZERO
+    census heals in this slice.
+    D1, the stateless groupchat
+    road error-swallowing,
+    stays FENCED unchanged -
+    NOT fixed by this slice.
+    Evidence (team-03
+    hidden_files/P213_EVIDENCE
+    .md + logs): battery 14
+    passed; neighbours fence
+    123 passed / 0 failed;
+    S311 golden watch 3 passed;
+    team full suite 6122
+    passed / 5 skipped / 0
+    failed in 429.88s, exit 0
+    (= 6108 banked at P-212 +
+    14 exact). Banking:
+    combined fence re-run in
+    the forge (test_p213 + the
+    eight neighbour files +
+    the S311 file) 140 passed;
+    forge confirmation full
+    suite 6122 passed / 5
+    skipped / 0 failed, in
+    406.68s, exit 0 - exact.
+    Defects in banked code:
+    none found at banking.
+    Banked now P-001..P-213 +
+    the commissioned binding
+    depth/role slice. PART
+    XIII OPEN (P-203..P-218,
+    gate P-218). Next in
+    roadmap order: P-214 (Part
+    XIII, DERIVED) - scout to
+    derive from the roadmap
+    part text and what Part
+    XIII still owes.
+    P-214 BANKED - Persistent-
+    group composer wiring
+    (Part XIII, DERIVED). -
+    team-01 commit 5ac4d4e
+    merged (no-ff) into
+    yrsa/two-mirrors-build as
+    5fae786 (parents 87d1bbc +
+    5ac4d4e). Merge CLEAN - no
+    conflicts in any file.
+    Scope: persistent-group
+    composer wiring - group.js
+    alone gains openGroupId
+    page state, set by
+    openSavedGroup on success
+    only; the group-form
+    handler branches on it
+    BEFORE any sentHistory or
+    history touch and awaits
+    the new
+    sendPersistent(text),
+    which POSTs via api() to
+    the banked
+    /api/v1/groups/{id}/next
+    road with user_text and
+    generate true, and renders
+    result.message via
+    addBubble plus the group-
+    local reasoningPanel over
+    the banked reasoningView
+    model, a null message
+    rendering nothing further,
+    errors via showError under
+    the banked P-207/D2
+    failure contract; the
+    stateless body runs byte-
+    unchanged when no group is
+    open. The P-213 loader
+    fence stands restated:
+    fetched messages never
+    enter the stateless
+    history state, are never
+    sent back, no storage
+    write, the loader issues
+    no POST. NO migration;
+    head stays 0042. Route
+    census stays 356 paths /
+    439 operations with ZERO
+    census heals in this
+    slice. The S311 group
+    golden UNMOVED - no golden
+    regenerated, no golden
+    file changed. D1 stays
+    FENCED unchanged - NOT
+    fixed by this slice.
+    Evidence (team-01 hidden_f
+    iles/P214_EVIDENCE.md +
+    logs): battery 14 passed;
+    neighbours fence 137
+    passed / 0 failed; S311
+    golden watch 3 passed,
+    group golden unmoved; team
+    full suite 6136 passed / 5
+    skipped / 0 failed in
+    497.10s, exit 0 (= 6122
+    banked at P-213 + 14
+    exact). Banking: combined
+    fence re-run in the forge
+    (test_p214 + the neighbour
+    files + the S311 file) 154
+    passed / 0 failed, the
+    eight-file core fence 140
+    exact plus test_p213 14;
+    forge confirmation full
+    suite 6136 passed / 5
+    skipped / 0 failed, in
+    415.68s, exit 0 - exact.
+    Zero banked pins healed by
+    the build. Defects in
+    banked code: none found at
+    banking. Banked now
+    P-001..P-214 + the
+    commissioned binding
+    depth/role slice. PART
+    XIII OPEN (P-203..P-218,
+    gate P-218). Next in
+    roadmap order: P-215 (Part
+    XIII, DERIVED) - explicit
+    composer mode toggle /
+    close-group control, per
+    team-02 hidden_files/P215_
+    DESIGN.md.
+    P-215 BANKED - Explicit
+    composer mode toggle (Part
+    XIII, DERIVED). - team-02
+    commit d970d66 merged (no-
+    ff) into yrsa/two-mirrors-
+    build as 4a803d9 (parents
+    1994b62 + d970d66). Merge
+    CLEAN - no conflicts in
+    any file. Scope: explicit
+    composer mode toggle -
+    group.html gains
+    button#close-group
+    (disabled) and p#group-
+    mode reading Stateless
+    room, directly after open-
+    group in the Saved groups
+    block; group.js restates
+    the mode on the
+    openSavedGroup success
+    path and gains
+    closeSavedGroup() directly
+    after it, guard-first, a
+    reload-equivalent reset
+    that leaves persistent
+    mode in-page with no
+    fetch, no storage and no
+    delete, wired on
+    DOMContentLoaded beside
+    the open wiring. NO
+    migration; head stays
+    0042. Route census stays
+    356 paths / 439
+    operations. Heals, all at
+    equal-or-greater strength:
+    (1) S311 group golden
+    healed ONLY via
+    RUNMAL_UPDATE_GOLDENS -
+    only tests/fixtures/ui/gro
+    up.golden.txt moved,
+    exactly +button#close-
+    group and +p#group-mode,
+    every other golden byte-
+    unmoved; (2) P-214 pin 14
+    census restated - every
+    prior id PLUS close-group
+    and group-mode; (3) P-213
+    test_05 loader segment
+    restated over the loader
+    block proper
+    (loadSavedGroups through
+    openSavedGroup, to the
+    closeSavedGroup()
+    boundary), same
+    assertions. D1 stays
+    FENCED unchanged - NOT
+    fixed by this slice.
+    Evidence (team-02 hidden_f
+    iles/P215_EVIDENCE.md +
+    logs): battery 14 passed;
+    neighbours fence 151
+    passed / 0 failed; S311
+    golden watch 3 passed
+    post-heal; team full suite
+    6150 passed / 5 skipped /
+    0 failed, exit 0 (= 6136
+    banked at P-214 + 14
+    exact). Banking: combined
+    fence on the merged tree
+    (test_p215 + the neighbour
+    files + the S311 file) 168
+    passed / 0 failed (=
+    battery 14 + neighbours
+    151 + S311 3 exact); forge
+    confirmation full suite
+    6150 passed / 5 skipped /
+    0 failed, in 411.28s, exit
+    0 - exact (log hidden_file
+    s/P215_FORGE_FULL.log).
+    Defects in banked code:
+    none found at banking.
+    Banked now P-001..P-215 +
+    the commissioned binding
+    depth/role slice. PART
+    XIII OPEN (P-203..P-218,
+    gate P-218). Next in
+    roadmap order: P-216 (Part
+    XIII, DERIVED) - saved-
+    group creation, per
+    team-03 hidden_files/P216_
+    DESIGN.md.
+    P-216 BANKED - Saved-group
+    creation on the group page
+    (Part XIII, DERIVED). -
+    team-03 commit 8deeee3
+    merged (no-ff) into
+    yrsa/two-mirrors-build as
+    6a97f3f (parents 33dc1c5
+    + 8deeee3). Merge CLEAN -
+    no conflicts in any file.
+    Scope: saved-group
+    creation on the group
+    page - group.html gains
+    input#new-group-name and
+    button#create-group,
+    directly after the P-215
+    group-mode line inside the
+    aside Saved groups block;
+    group.js gains
+    createGroup() POSTing via
+    api() to the banked POST
+    /api/v1/groups road with
+    the trimmed name and
+    member_character_ids from
+    selectedIds(), selected-
+    never-opened on success
+    (name input cleared,
+    loadSavedGroups() re-run,
+    select#saved-group set to
+    the returned group.id; no
+    openSavedGroup call, no
+    openGroupId reference, no
+    /messages fetch), empty
+    name showErrors with no
+    POST, failure via
+    showError with no picker
+    rebuild and no input
+    clear, wired on
+    DOMContentLoaded beside
+    the open-group and
+    close-group wiring. NO
+    migration; head stays
+    0042. Route census stays
+    356 paths / 439
+    operations. Heals, all at
+    equal-or-greater strength:
+    (1) S311 group golden
+    healed ONLY via
+    RUNMAL_UPDATE_GOLDENS -
+    only tests/fixtures/ui/gro
+    up.golden.txt moved,
+    exactly +button#create-
+    group and +input#new-
+    group-name, every other
+    golden byte-unmoved; (2)
+    P-215 battery pin 14
+    census restated - every
+    prior id PLUS
+    new-group-name and
+    create-group; (3) P-214
+    battery pin 14 census
+    restated the same way,
+    appended to its P-215 heal
+    comment. Segment-placement
+    contingency applied
+    (design section 5):
+    createGroup sits directly
+    after selectedIds() and
+    before sendPersistent in
+    group.js, and NO banked pin
+    was edited for placement -
+    the slice one POST lives
+    only inside createGroup
+    block. D1 stays FENCED
+    unchanged - NOT fixed by
+    this slice. Evidence
+    (team-03 hidden_f
+    iles/P216_EVIDENCE.md +
+    logs): battery 14 passed;
+    neighbours fence 168
+    passed / 0 failed (= 165
+    banked + S311 watch 3);
+    S311 golden watch 3
+    passed post-heal; team
+    full suite 6164 passed /
+    5 skipped / 0 failed, exit
+    0 in 489.48s (= 6150
+    banked at P-215 + 14
+    exact). Banking: combined
+    fence on the merged tree
+    (test_p216 + the neighbour
+    files + the S311 file) 182
+    passed / 0 failed (=
+    battery 14 + neighbours
+    168 exact); forge
+    confirmation full suite
+    6164 passed / 5 skipped / 0
+    failed, in 409.31s, exit 0
+    - exact (log hidden_f
+    iles/P216_FORGE_
+    CONFIRM.log). Defects in
+    banked code: none found at
+    banking. Banked now
+    P-001..P-216 + the
+    commissioned binding
+    depth/role slice. PART
+    XIII OPEN (P-203..P-218,
+    gate P-218). Next in
+    roadmap order: P-217 (Part
+    XIII, DERIVED) - the two
+    group-page refinements
+    (roster/strategy disable
+    in persistent mode and
+    picker-count refresh after
+    a persistent send), per
+    team-01 hidden_files/P217_
+    DESIGN.md.
+    P-217 BANKED - Persistent-
+    mode refinements on the
+    group page (Part XIII,
+    DERIVED). - team-01 commit
+    a5fc6a7 merged (no-ff)
+    into yrsa/two-mirrors-
+    build as 91879f1 (parents
+    2b92450 + a5fc6a7). Merge
+    CLEAN - no conflicts in
+    any file. Scope:
+    persistent-mode
+    refinements on the group
+    page - group.js ONLY:
+    openSavedGroup success
+    path, after the P-215 mode
+    restatement, disables the
+    strategy control and every
+    roster checkbox
+    (roster/strategy govern
+    only the stateless room;
+    the group's own stored
+    policy governs speaker
+    choice here);
+    closeSavedGroup re-enables
+    both after its null guard
+    among its restatements;
+    sendPersistent replaces
+    the P-214 early return
+    with a guarded render so
+    the refresh tail runs on
+    null sends, then after the
+    render, still inside the
+    try, awaits
+    loadSavedGroups() and
+    restores the saved-group
+    select to openGroupId;
+    catch unchanged (showError
+    only). NO markup, backend,
+    road, stylesheet or
+    migration change; head
+    stays 0042. Route census
+    stays 356 paths / 439
+    operations. Heals: (1)
+    DESIGNED heal - P-214
+    battery pin 8 (test_08_nul
+    l_message_renders_nothing)
+    restated at equal-or-
+    greater strength in its
+    true P-217 form, named in
+    advance in P217_DESIGN.md
+    section 5: no early return
+    remains, the guarded
+    render precedes await
+    loadSavedGroups(), a null
+    message renders nothing
+    AND reaches the refresh.
+    The healed pin's wrapped
+    continuation line was re-
+    wrapped to the banked two-
+    line form after a ruff
+    E501 trip - a formatting
+    repair of the heal itself,
+    no strength change. (2) NO
+    other heal fired: no other
+    banked battery asserts the
+    early-return form (grep-
+    verified at the build
+    base), the exact-census
+    contingency did not fire,
+    no census heal, no
+    placement move, no other
+    pin touched. S311 group
+    golden UNMOVED - byte-
+    identical to base
+    (tests/fixtures/ verified
+    empty diff), no
+    RUNMAL_UPDATE_GOLDENS run,
+    no golden heal, as
+    expected for a slice with
+    no markup change. D1 stays
+    FENCED unchanged - NOT
+    fixed by this slice.
+    Evidence (team-01 hidden_f
+    iles/P217_EVIDENCE.md +
+    logs): battery 14 passed;
+    neighbours fence 179
+    passed / 0 failed (the
+    twelve banked files:
+    test_s305_group_ui 5,
+    test_p205_reasoning_record
+    23,
+    test_p206_assistant_view
+    18, test_p208_groupchat_re
+    asoning 18, test_p209_swip
+    e_generate_reasoning 16, t
+    est_p210_inspector_reasoni
+    ng 14, test_p211_inspector
+    _group_reasoning 15, test_
+    p212_group_assistant_view
+    14, test_p213_group_transc
+    ript_loader 14, test_p214_
+    group_composer_wiring 14, 
+    test_p215_group_mode_toggl
+    e 14,
+    test_p216_group_creation
+    14); S311 golden watch 3
+    passed; team full suite
+    6178 passed / 5 skipped /
+    0 failed, exit 0 in
+    407.25s (= 6164 banked at
+    P-216 + 14 exact).
+    Banking: combined fence on
+    the merged tree (test_p217
+    + the neighbour files +
+    the S311 file) 196 passed
+    / 0 failed (= battery 14 +
+    neighbours 179 + S311 3
+    exact); forge confirmation
+    full suite 6178 passed / 5
+    skipped / 0 failed, in
+    419.62s, exit 0 - exact
+    (log
+    /tmp/p217_forge_full.log).
+    Defects in banked code:
+    none found at banking.
+    Banked now P-001..P-217 +
+    the commissioned binding
+    depth/role slice. PART
+    XIII OPEN (P-203..P-218,
+    gate P-218). Next in
+    roadmap order: P-218 (Part
+    XIII gate) - Assistant
+    View, Inspector & Bots
+    gate, per team-01 hidden_f
+    iles/P218_DESIGN.md.
+    P-218 BANKED - Part XIII
+    gate (Assistant View,
+    Inspector & Bots) - GATE
+    PASSED. Part XIII COMPLETE
+    (P-203..P-218). - team-01
+    commit a548d33 merged (no-
+    ff) into yrsa/two-mirrors-
+    build as 3cda2c603e777496597
+    801189031c49489ea5fd7
+    (parents 35be28d + a548d33).
+    Merge CLEAN - no conflicts
+    in any file (the only
+    possible overlap, docs/CLEAN
+    _ROOM_LOG_2026-10-30.md,
+    merged as a pure additive
+    union with the P-218 entry
+    exactly once). Scope: the
+    gate judged Part XIII whole
+    on the fresh ZqxGate218
+    world - gate battery G=35
+    passed, gate-record battery
+    R=10 passed, docs/PART_XIII_
+    GATE_2026-11-10.md filed,
+    clean-room log +3. NO src
+    change, NO web change, NO
+    fixture change, NO
+    migration; head stays 0042.
+    Route census stays 356 paths
+    / 439 operations. S311 group
+    golden UNMOVED - all eight
+    UI goldens hash-identical
+    (group golden sha256 bef5447
+    cce4839b434ddcc00e8ff6808738
+    975a8e8f4676371c63ac8a8108c3
+    c), tests/fixtures/ diff
+    empty, no
+    RUNMAL_UPDATE_GOLDENS run.
+    Evidence (team-01 hidden_fil
+    es/P218_EVIDENCE.md + logs):
+    gate battery 35 passed;
+    gate-record 10 passed;
+    neighbours fence 238 passed
+    / 0 failed (230 Part XIII
+    citizen tests P-203..P-217 +
+    S305 stateless 5 + S311
+    golden watch 3); team full
+    suite 6223 passed / 5
+    skipped / 0 failed in
+    428.68s (= 6178 banked at
+    P-217 + 35 + 10 exact).
+    Banking: combined fence on
+    the merged tree (the two
+    P-218 batteries + the
+    neighbour files + the S311
+    file) 283 passed / 0 failed
+    (= 35 + 10 + 238 exact);
+    forge confirmation full
+    suite 6223 passed / 5
+    skipped / 0 failed, exit 0,
+    in 442.22s - exact (log
+    /tmp/p218_forge_full.log;
+    the confirmation ran
+    detached via nohup with an
+    exit file, as its 442s
+    outlasts a single device
+    invoke). Carried items: all
+    17 accounted in the gate
+    record - D1 stateless SSE
+    error-swallowing FENCED,
+    ruling outstanding; per-
+    swipe thinking browsing
+    DECLINED-PENDING-WORD; K-A
+    binding label update, K-B
+    retention / bulk clear and
+    K-C unified-search history
+    NAMED OPEN; the remaining
+    standing declines, by-design
+    limitations and the P-208 /
+    P-209 record facts stand as
+    pinned in docs/PART_XIII_GAT
+    E_2026-11-10.md. Defects in
+    banked code: none found at
+    banking. Banked now
+    P-001..P-218 + the
+    commissioned binding
+    depth/role slice. PART XIII
+    COMPLETE. Next in roadmap
+    order: Part XIV opens in
+    roadmap order (P-219..P-232,
+    The Proof Spine - the parity
+    matrix, published).
+    P-219 BANKED - The parity
+    matrix, founded (Part XIV,
+    The Proof Spine, opening
+    slice; scope DERIVED - the
+    roadmap gives Part XIV only
+    its part-table line,
+    P-219..P-232, plus founding
+    principle 4). - team-01
+    commit 214a402 merged (no-
+    ff) into yrsa/two-mirrors-
+    build as c588c9ba5015966e23c
+    00c92317d624ae940b169
+    (parents c8a054d + 214a402).
+    Merge CLEAN - 3 files,
+    +471/-0: docs/PARITY_MATRIX_
+    2026-11-10.md founded, tests
+    /test_p219_parity_matrix.py
+    (16 tests), docs/CLEAN_ROOM_
+    LOG_2026-10-30.md +1 headed
+    P-219 entry exactly once.
+    Scope: the published parity
+    matrix founded - the full
+    141-row universe from the
+    P-004 Delta Table
+    (ST-01..ST-74, VX-01..VX-67)
+    with opening verdicts and
+    road homes verbatim; closing
+    judgements for tranche 1
+    only (the twelve rows whose
+    road home was Part II): HAVE
+    2 / HAVE-THIN 10 / MISSING 0
+    / SHIPPED-SOVEREIGN 0; the
+    remaining 129 rows printed
+    NOT-YET-REJUDGED, the
+    absence of judgement stated,
+    never hidden. NO src change,
+    NO new road, NO migration;
+    head stays 0042. Route
+    census stays 356 paths / 439
+    operations. Evidence
+    (team-01 hidden_files/P219_E
+    VIDENCE.md + logs): battery
+    16 passed; neighbours fence
+    101 passed; team full suite
+    6239 passed / 5 skipped / 0
+    failed (= 6223 banked at
+    P-218 + 16 exact). Banking:
+    combined fence on the merged
+    tree 117 passed / 0 failed
+    (= 16 + 101 exact); forge
+    confirmation full suite raw
+    1 failed / 6238 passed / 5
+    skipped in 445.09s - the
+    sole failure tests/test_p099
+    _failure_manners.py::test_sa
+    ndbox_bridge_partial_then_mo
+    re, the established sandbox
+    contention class under
+    shared load (a Mythic Coder
+    suite ran concurrently),
+    solo re-run 1 passed in
+    1.13s, exit 0 - effective
+    forge confirmation 6239
+    passed / 5 skipped / 0
+    failed (logs forge hidden_fi
+    les/P219_FORGE_FULL.log +
+    P219_P099_SOLO.log). The
+    tranche-1 HAVE-THIN still-
+    missing depths are recorded
+    as keeper findings in
+    team-01 hidden_files/P219_EV
+    IDENCE.md; none folded into
+    this slice. Carried items
+    unchanged: D1 stateless SSE
+    error-swallowing FENCED,
+    ruling outstanding; per-
+    swipe thinking browsing
+    DECLINED-PENDING-WORD; K-A
+    binding label update, K-B
+    retention / bulk clear and
+    K-C unified-search history
+    NAMED OPEN. Defects in
+    banked code: none found at
+    banking. Banked now
+    P-001..P-219 + the
+    commissioned binding
+    depth/role slice. PART XIV
+    OPEN (P-219..P-232, gate
+    P-232). Next in roadmap
+    order: P-220 - parity matrix
+    tranche 2, the rows whose
+    road home was Part III, re-
+    judged.
+    P-220 BANKED - Parity
+    matrix tranche 2 (Part XIV,
+    The Proof Spine; scope
+    DERIVED - the roadmap gives
+    Part XIV only its part-
+    table line, P-219..P-232,
+    plus founding principle
+    4). - team-02 commit
+    66db780 merged (no-ff)
+    into yrsa/two-mirrors-
+    build as
+    3197db16045c8c8cf3e268
+    65cc461a45ec8871be
+    (parents 5f3b01d +
+    66db780). Merge CLEAN -
+    4 files, +322/-19:
+    docs/PARITY_MATRIX_2026-
+    11-10.md tranche 2 judged,
+    tests/test_p220_parity_
+    matrix.py NEW (18 tests),
+    tests/test_p219_parity_
+    matrix.py pins 5/6/8
+    healed to the cumulative
+    tranche 1 union 2 shape,
+    docs/CLEAN_ROOM_LOG_2026-
+    10-30.md +1 headed P-220
+    entry. Scope: tranche 2
+    closing judgements for
+    the ten rows whose road
+    home was Part III (ST-15,
+    ST-16, ST-17, ST-18,
+    ST-20, ST-22, ST-23,
+    ST-25, ST-26, VX-22)
+    under the ST-26 keeper
+    ruling (ST-26 included in
+    tranche 2 as MISSING):
+    HAVE 2 / HAVE-THIN 7 /
+    MISSING 1 / SHIPPED-
+    SOVEREIGN 0. Cumulative
+    judged 22 rows: HAVE 4 /
+    HAVE-THIN 17 / MISSING 1
+    / SHIPPED-SOVEREIGN 0;
+    the remaining 119 rows
+    printed NOT-YET-REJUDGED.
+    NO src change, NO
+    migration; head stays
+    0042. Route census stays
+    356 paths / 439
+    operations. Evidence
+    (team-02 hidden_files/
+    P220_EVIDENCE.md + logs):
+    battery 34 passed (18 new
+    + 16 healed P-219);
+    neighbours fence 159
+    passed; team full suite
+    6257 passed / 5 skipped /
+    0 failed in 440.84s
+    (= 6239 banked at P-219 +
+    18 exact). Banking:
+    combined fence on the
+    merged tree 177 passed /
+    0 failed (= 18 + 16 + 101
+    + 42 exact); forge
+    confirmation full suite
+    6257 passed / 5 skipped /
+    0 failed in 431.68s, exit
+    0 - exact, no contention
+    failure, no solo re-run
+    needed (log forge
+    hidden_files/P220_FORGE_
+    FULL.log). Carried items
+    unchanged: D1 stateless
+    SSE error-swallowing
+    FENCED, ruling
+    outstanding; per-swipe
+    thinking browsing
+    DECLINED-PENDING-WORD;
+    K-A binding label update,
+    K-B retention / bulk
+    clear and K-C unified-
+    search history NAMED
+    OPEN. Defects in banked
+    code: none found at
+    banking. Banked now
+    P-001..P-220 + the
+    commissioned binding
+    depth/role slice. PART
+    XIV OPEN (P-219..P-232,
+    gate P-232). Next in
+    roadmap order: P-221 -
+    parity matrix tranche 3,
+    the rows whose road home
+    was Part IV, re-judged.
+    P-221 BANKED - Parity
+    matrix tranche 3 (Part XIV,
+    The Proof Spine; scope
+    DERIVED - the roadmap gives
+    Part XIV only its part-
+    table line, P-219..P-232,
+    plus founding principle 4).
+    - team-03 commit aa2ff8c
+    merged (no-ff) into
+    yrsa/two-mirrors-build as
+    e9db01046205afe1f78e39f20d8
+    57a39725c4f21 (parents
+    4503bb1 + aa2ff8c). Merge
+    CLEAN - 5 files, +362/-20:
+    docs/PARITY_MATRIX_2026-11-
+    10.md tranche 3 judged, tes
+    ts/test_p221_parity_matrix.
+    py NEW (18 tests), tests/te
+    st_p219_parity_matrix.py
+    pins 5/6/8 healed to the
+    cumulative tranche 1 union
+    2 union 3 shape, tests/test
+    _p220_parity_matrix.py pins
+    6/8/9 healed to the
+    cumulative shape, docs/CLEA
+    N_ROOM_LOG_2026-10-30.md +1
+    headed P-221 entry. Scope:
+    tranche 3 closing
+    judgements for the fourteen
+    rows whose road home was
+    Part IV (ST-06, ST-28,
+    ST-29, ST-30, ST-31, ST-32,
+    ST-33, ST-35, ST-36, ST-38,
+    ST-39, ST-74, VX-16, VX-18)
+    under the keeper rulings Q1
+    (ST-30 and VX-18 included
+    as MISSING) and Q2 (ST-39
+    included as HAVE-THIN):
+    HAVE 2 / HAVE-THIN 10 /
+    MISSING 2 / SHIPPED-
+    SOVEREIGN 0. Cumulative
+    judged 36 rows: HAVE 6 /
+    HAVE-THIN 27 / MISSING 3 /
+    SHIPPED-SOVEREIGN 0; the
+    remaining 105 rows printed
+    NOT-YET-REJUDGED. NO src
+    change, NO migration; head
+    stays 0042. Route census
+    stays 356 paths / 439
+    operations. Evidence
+    (team-03 hidden_files/P221_
+    EVIDENCE.md + logs):
+    battery 18 passed;
+    neighbours fence 200
+    passed; combined 218
+    passed; team full suite
+    6275 passed / 5 skipped / 0
+    failed in 425.43s (= 6257
+    banked at P-220 + 18
+    exact). Banking: combined
+    fence on the merged tree
+    218 passed / 0 failed (= 18
+    new + 200 neighbours
+    exact); forge confirmation
+    full suite 6275 passed / 5
+    skipped / 0 failed in
+    420.68s, exit 0 - exact, no
+    contention failure, no solo
+    re-run needed (log forge hi
+    dden_files/P221_FORGE_FULL.
+    log). Carried items
+    unchanged: D1 stateless SSE
+    error-swallowing FENCED,
+    ruling outstanding; per-
+    swipe thinking browsing
+    DECLINED-PENDING-WORD; K-A
+    binding label update, K-B
+    retention / bulk clear and
+    K-C unified-search history
+    NAMED OPEN. Defects in
+    banked code: none found at
+    banking. Banked now
+    P-001..P-221 + the
+    commissioned binding
+    depth/role slice. PART XIV
+    OPEN (P-219..P-232, gate
+    P-232). Next in roadmap
+    order: P-222 - parity
+    matrix tranche 4, the rows
+    whose road home was Part V,
+    re-judged (scout in
+    rotation team-01).
+    P-222 BANKED - Parity
+    matrix tranche 4 (Part XIV,
+    The Proof Spine; scope
+    DERIVED - the roadmap gives
+    Part XIV only its part-
+    table line, P-219..P-232,
+    plus founding principle 4).
+    - team-01 commit 6c1cf17
+    merged (no-ff) into
+    yrsa/two-mirrors-build as 3
+    a0ea0a161c0163cfb46b333686e
+    e9dc099f1367 (parents
+    8e792a1 + 6c1cf17). Merge
+    CLEAN - 6 files, +360/-20:
+    docs/PARITY_MATRIX_2026-11-
+    10.md tranche 4 judged, tes
+    ts/test_p222_parity_matrix.
+    py NEW (18 tests), tests/te
+    st_p219_parity_matrix.py
+    pins 5/6/8 healed to the
+    cumulative tranche 1 union
+    2 union 3 union 4 shape, te
+    sts/test_p220_parity_matrix
+    .py pins 6/8/9 healed to
+    the cumulative shape, tests
+    /test_p221_parity_matrix.py
+    pins 6/9 healed to the
+    cumulative shape (JUDGED
+    gains TRANCHE4), docs/CLEAN
+    _ROOM_LOG_2026-10-30.md +1
+    headed P-222 entry. Scope:
+    tranche 4 closing
+    judgements for the twelve
+    rows whose road home was
+    Part V (ST-07, ST-13,
+    ST-14, ST-46, ST-47, ST-48,
+    ST-49, ST-50, ST-51, ST-53,
+    ST-60, VX-06) under the
+    keeper ruling Q1 (ST-50
+    included as MISSING): HAVE
+    5 / HAVE-THIN 6 / MISSING 1
+    / SHIPPED-SOVEREIGN 0.
+    Cumulative judged 48 rows:
+    HAVE 11 / HAVE-THIN 33 /
+    MISSING 4 / SHIPPED-
+    SOVEREIGN 0; the remaining
+    93 rows printed NOT-YET-
+    REJUDGED. NO src change, NO
+    migration; head stays 0042.
+    Route census stays 356
+    paths / 439 operations.
+    Evidence (team-01 hidden_fi
+    les/P222_EVIDENCE.md +
+    logs): battery 18 passed;
+    neighbours fence 253
+    passed; combined 271
+    passed; team full suite
+    6293 passed / 5 skipped / 0
+    failed in 426.05s (= 6275
+    banked at P-221 + 18
+    exact). Fence recount note
+    (honest delta, not a
+    failure): the design
+    expected 243 neighbours on
+    a heritage figure of 101
+    carried from P-220;
+    recounting the named
+    heritage files at this base
+    gives 111, the delta of
+    exactly 10 being tests/test
+    _p202_gate_record.py, so
+    the combined fence is 271,
+    not the design arithmetic
+    261; every fence pin
+    passed. Banking: combined
+    fence on the merged tree
+    271 passed / 0 failed in
+    71.67s (= 18 new + 253
+    neighbours exact; run at
+    banking, log forge hidden_f
+    iles/P222_COMBINED.log);
+    forge confirmation full
+    suite 6293 passed / 5
+    skipped / 0 failed in
+    428.86s, exit 0 - exact, no
+    contention failure, no solo
+    re-run needed (log forge hi
+    dden_files/P222_FORGE_FULL.
+    log). Carried items
+    unchanged: D1 stateless SSE
+    error-swallowing FENCED,
+    ruling outstanding; per-
+    swipe thinking browsing
+    DECLINED-PENDING-WORD; K-A
+    binding label update, K-B
+    retention / bulk clear and
+    K-C unified-search history
+    NAMED OPEN. Defects in
+    banked code: none found at
+    banking. Banked now
+    P-001..P-222 + the
+    commissioned binding
+    depth/role slice. PART XIV
+    OPEN (P-219..P-232, gate
+    P-232). Next in roadmap
+    order: P-223 - parity
+    matrix tranche 5, the rows
+    whose road home was Part
+    VI, re-judged (scout in
+    rotation team-02).
+    P-223 BANKED - Parity
+    matrix tranche 5 (Part XIV,
+    The Proof Spine; scope
+    DERIVED - the roadmap gives
+    Part XIV only its part-
+    table line, P-219..P-232,
+    plus founding principle 4).
+    - team-02 commit 6b621a6
+    merged (no-ff) into
+    yrsa/two-mirrors-build as b
+    8859b57c5e6a184df794fc05c27
+    00f6b72d1fac (parents
+    2566117 + 6b621a6). Merge
+    CLEAN - 7 files, +455/-33:
+    docs/PARITY_MATRIX_2026-11-
+    10.md tranche 5 judged, tes
+    ts/test_p223_parity_matrix.
+    py NEW (18 tests), tests/te
+    st_p219_parity_matrix.py
+    pins 5/6/8 healed to the
+    cumulative tranche 1 union
+    2 union 3 union 4 union 5
+    shape plus its pin 9
+    restated under heal class
+    5, tests/test_p220_parity_m
+    atrix.py pins 6/9 healed
+    (pin 8 extended) plus its
+    pin 10 restated under heal
+    class 5, tests/test_p221_pa
+    rity_matrix.py pins 6/9
+    healed (JUDGED gains
+    TRANCHE5) plus its pin 10
+    restated under heal class
+    5, tests/test_p222_parity_m
+    atrix.py pins 6/9 healed
+    (JUDGED gains TRANCHE5)
+    plus its pin 10 restated
+    under heal class 5, docs/CL
+    EAN_ROOM_LOG_2026-10-30.md
+    +1 headed P-223 entry.
+    Scope: tranche 5 closing
+    judgements for the nineteen
+    rows whose road home was
+    Part VI (ST-27, ST-56,
+    ST-57, ST-58, ST-61, ST-62,
+    ST-63, ST-64, ST-65, ST-66,
+    ST-67, ST-68, VX-20, VX-25,
+    VX-26, VX-34, VX-42, VX-51,
+    VX-66) under the keeper
+    rulings Q1 (ST-27 included
+    as MISSING - the banked
+    P-014 gate homed ST-27 as
+    kin scope under P-081/P-093
+    and the entry-firing
+    automation act was never
+    built), Q2 (VX-26 included
+    as HAVE-THIN - the banked
+    P-014 gate homed VX-26 as
+    explicit scope of P-085)
+    and Q3 (VX-42 included as
+    SHIPPED-SOVEREIGN - first-
+    home rule, its dedicated
+    home names P-082, with
+    P-231's end-to-end audit of
+    the DELIBERATELY-DIFFERENT
+    rows expressly preserved):
+    HAVE 2 / HAVE-THIN 15 /
+    MISSING 1 / SHIPPED-
+    SOVEREIGN 1. Cumulative
+    judged 67 rows: HAVE 13 /
+    HAVE-THIN 48 / MISSING 5 /
+    SHIPPED-SOVEREIGN 1; the
+    remaining 74 rows printed
+    NOT-YET-REJUDGED. Heal
+    class 5 (keeper ruling
+    2026-11-10, granted after
+    the build lead's stop-and-
+    report): the four
+    DELIBERATELY-DIFFERENT
+    disposition pins (P-219 pin
+    9; P-220, P-221 and P-222
+    pin 10) predate ruling Q3
+    and asserted a blanket NOT-
+    YET-REJUDGED closing the
+    ruling lawfully superseded;
+    each is restated per-row at
+    greater strength - VX-01
+    and VX-59 stay pinned NOT-
+    YET-REJUDGED exactly as
+    before, VX-42 is pinned to
+    its exact Q3 closing
+    verdict SHIPPED-SOVEREIGN
+    with P-231's audit
+    preserved - the campaign's
+    established merged-truth
+    heal pattern, no pin
+    loosened and no other pin
+    widened. NO src change, NO
+    migration; head stays 0042.
+    Route census stays 356
+    paths / 439 operations.
+    Evidence (team-02 hidden_fi
+    les/P223_EVIDENCE.md +
+    logs): battery 18 passed;
+    neighbours fence 297
+    passed; combined 315
+    passed; team full suite
+    6311 passed / 5 skipped / 0
+    failed in 417.92s (= 6293
+    banked at P-222 + 18
+    exact). Banking: combined
+    fence on the merged tree
+    315 passed / 0 failed in
+    27.30s (= 18 new + 297
+    neighbours exact; run at
+    banking, log forge hidden_f
+    iles/P223_COMBINED.log);
+    forge confirmation full
+    suite 6311 passed / 5
+    skipped / 0 failed in
+    425.48s, exit 0 - exact, no
+    contention failure, no solo
+    re-run needed (log forge hi
+    dden_files/P223_FORGE_FULL.
+    log). Carried items
+    unchanged: D1 stateless SSE
+    error-swallowing FENCED,
+    ruling outstanding; per-
+    swipe thinking browsing
+    DECLINED-PENDING-WORD; K-A
+    binding label update, K-B
+    retention / bulk clear and
+    K-C unified-search history
+    NAMED OPEN. Defects in
+    banked code: none found at
+    banking. Banked now
+    P-001..P-223 + the
+    commissioned binding
+    depth/role slice. PART XIV
+    OPEN (P-219..P-232, gate
+    P-232). Next in roadmap
+    order: P-224 - parity
+    matrix tranche 6, the rows
+    whose road home was Part
+    VII, re-judged (scout in
+    rotation team-03).
+    P-224 BANKED - Parity
+    matrix tranche 6 (Part XIV,
+    The Proof Spine; scope
+    DERIVED - the roadmap gives
+    Part XIV only its part-
+    table line, P-219..P-232,
+    plus founding principle 4).
+    - team-03 commit 4b4f1f0
+    merged (no-ff) into
+    yrsa/two-mirrors-build as d
+    71a269a3484f4b5fcd8fbbe96cb
+    f548c30d6fb2 (parents
+    d940375 + 4b4f1f0). Merge
+    CLEAN - 8 files, +419/-18:
+    docs/PARITY_MATRIX_2026-11-
+    10.md tranche 6 judged, tes
+    ts/test_p224_parity_matrix.
+    py NEW (18 tests), tests/te
+    st_p219_parity_matrix.py
+    counts pin restated (the
+    tranches 1-5 line re-scoped
+    to the tranche 1-5 subset,
+    the 1-6 line pinned against
+    full JUDGED), tests/test_p2
+    20_parity_matrix.py pins
+    6/9 extended, tests/test_p2
+    21_parity_matrix.py pin 9
+    restated (JUDGED gains
+    TRANCHE6), tests/test_p222_
+    parity_matrix.py pin 9
+    restated, tests/test_p223_p
+    arity_matrix.py pin 9
+    restated, docs/CLEAN_ROOM_L
+    OG_2026-10-30.md +1 headed
+    P-224 entry.
+    Scope: tranche 6 closing
+    judgements for the five
+    rows whose road home was
+    Part VII (VX-04, VX-10,
+    VX-11, VX-12, VX-14) under
+    the keeper rulings Q1
+    (VX-11 included - the
+    banked P-014 definition
+    queue homed VX-11 to Part
+    VII and Part VII built its
+    substance, the ST-27 kin-
+    scope precedent), Q2 (VX-11
+    judged HAVE-THIN - the
+    confidence marks and
+    replacement lexicon fully
+    built, the repeat-request
+    signal layer built, the
+    open character-asks act per
+    the P-116 gate K1 the named
+    missing depth) and Q3
+    (VX-58 confirmed out of
+    tranche 6 - its home is the
+    Part XI tranche P-228;
+    VX-09 excluded per the
+    dash-home to P-231
+    precedent): HAVE 0 / HAVE-
+    THIN 5 / MISSING 0 /
+    SHIPPED-SOVEREIGN 0.
+    Cumulative judged 72 rows:
+    HAVE 13 / HAVE-THIN 53 /
+    MISSING 5 / SHIPPED-
+    SOVEREIGN 1; the remaining
+    69 rows printed NOT-YET-
+    REJUDGED.
+    Heals (design section 5
+    standing class only, each
+    marked in-file): the P-219
+    counts pin restated, P-220
+    pins 6 and 9 extended, the
+    P-221, P-222 and P-223 pin
+    9 restated the same way
+    with JUDGED constants
+    extended by TRANCHE6 - the
+    campaign established
+    merged-truth heal pattern,
+    no pin loosened. No heal
+    class 5 event (no
+    DELIBERATELY-DIFFERENT row
+    in tranche 6).
+    NO src change, NO
+    migration; head stays 0042.
+    Route census stays 356
+    paths / 439 operations.
+    Evidence (team-03 hidden_fi
+    les/P224_EVIDENCE.md +
+    logs): battery 18 passed;
+    neighbours fence 346
+    passed; combined 364
+    passed; team full suite
+    6329 passed / 5 skipped / 0
+    failed in 547.82s (= 6311
+    banked at P-223 + 18
+    exact).
+    Banking: combined fence on
+    the merged tree 364 passed
+    / 0 failed in 27.72s (= 18
+    new + 346 neighbours exact;
+    run at banking, log forge h
+    idden_files/P224_COMBINED.l
+    og); forge confirmation
+    full suite 6329 passed / 5
+    skipped / 0 failed in
+    419.28s, exit 0 - exact, no
+    contention failure, no solo
+    re-run needed (log forge hi
+    dden_files/P224_FORGE_FULL.
+    log).
+    Carried items unchanged: D1
+    stateless SSE error-
+    swallowing FENCED, ruling
+    outstanding; per-swipe
+    thinking browsing DECLINED-
+    PENDING-WORD; K-A binding
+    label update, K-B retention
+    / bulk clear and K-C
+    unified-search history
+    NAMED OPEN. Defects in
+    banked code: none found at
+    banking. Banked now
+    P-001..P-224 + the
+    commissioned binding
+    depth/role slice. PART XIV
+    OPEN (P-219..P-232, gate
+    P-232). Next in roadmap
+    order: P-225 - parity
+    matrix tranche 7, the rows
+    whose road home was Part
+    VIII, re-judged (scout in
+    rotation team-01).
+    P-225 BANKED - Parity
+    matrix tranche 7 (Part XIV,
+    The Proof Spine; scope
+    DERIVED - the roadmap gives
+    Part XIV only its part-
+    table line, P-219..P-232,
+    plus founding principle 4).
+    - team-01 commit 3a10c22
+    merged (no-ff) into
+    yrsa/two-mirrors-build as
+    4581f9794110a7602b6e024842
+    7a9160b92eabcf (parents
+    e01547b + 3a10c22). Merge
+    CLEAN - 9 files, +427/-14:
+    docs/PARITY_MATRIX_2026-11-
+    10.md tranche 7 judged, tes
+    ts/test_p225_parity_matrix.
+    py NEW (18 tests), tests/te
+    st_p219_parity_matrix.py
+    pins 6/8 healed, tests/test
+    _p220_parity_matrix.py pins
+    6/9 extended, tests/test_p2
+    21_parity_matrix.py pin 9
+    restated (JUDGED gains
+    TRANCHE7), tests/test_p222_
+    parity_matrix.py pin 9
+    restated, tests/test_p223_p
+    arity_matrix.py pin 9
+    restated, tests/test_p224_p
+    arity_matrix.py pin 9
+    restated, docs/CLEAN_ROOM_L
+    OG_2026-10-30.md +1 headed
+    P-225 entry.
+    Scope: tranche 7 closing
+    judgement for the one row
+    whose road home was Part
+    VIII (VX-50) under the
+    keeper ruling Q1 (VX-43 NOT
+    judged in tranche 7 - no
+    P-014-style homing
+    instrument homes VX-43 to
+    Part VIII; its road home is
+    Part IX and its home
+    tranche is P-226, next):
+    HAVE 0 / HAVE-THIN 1 /
+    MISSING 0 / SHIPPED-
+    SOVEREIGN 0 (VX-50 HAVE-
+    THIN; the still-missing
+    depth named in its cell: no
+    semantic caption provider
+    in-tree - semantic_caption_
+    available is False, stated
+    as data (gate K1), no
+    screen capture, no webcam/
+    camera flow (K3), the
+    watcher a polling scan not
+    a daemon (K4), no OCR
+    (K2)).
+    Cumulative judged 73 rows:
+    HAVE 13 / HAVE-THIN 54 /
+    MISSING 5 / SHIPPED-
+    SOVEREIGN 1; the remaining
+    68 rows printed NOT-YET-
+    REJUDGED.
+    Heals (class 1 only, the
+    standing cumulative
+    restatement, each marked
+    "P-225 heal" in-file): the
+    P-219 pins 6/8 restated,
+    P-220 pins 6 and 9
+    extended, the P-221, P-222,
+    P-223 and P-224 pin 9
+    restated the same way with
+    JUDGED constants extended
+    by TRANCHE7 - the campaign
+    established merged-truth
+    heal pattern, no pin
+    loosened. No class-2 heal
+    (Branch A), no heal class 5
+    event (no DELIBERATELY-
+    DIFFERENT row in tranche 7;
+    VX-42's SHIPPED-SOVEREIGN
+    disposition pin carried
+    unchanged).
+    NO src change, NO
+    migration; head stays 0042.
+    Route census stays 356
+    paths / 439 operations.
+    Evidence (team-01 hidden_fi
+    les/P225_EVIDENCE.md +
+    logs): battery 18 passed;
+    neighbours fence 400
+    passed; combined 418
+    passed; team full suite
+    6346 passed / 5 skipped / 1
+    failed in 539.07s (= 6329
+    banked at P-224 + 18 on the
+    passed side apart from the
+    one failure below) - the
+    one failure the timing-
+    class s503 STT contract
+    test (tests/test_s503_stt.
+    py::test_real_faster_whisp
+    er_meets_predeclared_contr
+    act, RTF p50 1.406 over
+    contract, the WER accuracy
+    leg passed; solo re-run 1
+    failed / 3 passed, RTF p50
+    1.448) under proven shared-
+    machine contention (load
+    15.52 rising to 18.98,
+    another campaign's
+    processes at ~920% CPU);
+    the slice changes no src
+    and the same test was green
+    in the base suite at the
+    P-224 banking.
+    Banking: combined fence on
+    the merged tree 418 passed
+    / 0 failed in 31.85s (= 18
+    new + 400 neighbours exact;
+    run at banking, log forge h
+    idden_files/P225_COMBINED.l
+    og); forge confirmation
+    full suite 6347 passed / 5
+    skipped / 0 failed in
+    421.92s, exit 0 - exact, the
+    s503 timing test green in
+    the forge run, no solo
+    re-run needed (log forge hi
+    dden_files/P225_FORGE_FULL.
+    log).
+    Carried items unchanged: D1
+    stateless SSE error-
+    swallowing FENCED, ruling
+    outstanding; per-swipe
+    thinking browsing DECLINED-
+    PENDING-WORD; K-A binding
+    label update, K-B retention
+    / bulk clear and K-C
+    unified-search history
+    NAMED OPEN. Defects in
+    banked code: none found at
+    banking (the s503 item
+    above is a timing-class
+    contention failure, not a
+    defect). Banked now
+    P-001..P-225 + the
+    commissioned binding
+    depth/role slice. PART XIV
+    OPEN (P-219..P-232, gate
+    P-232). Next in roadmap
+    order: P-226 - parity
+    matrix tranche 8, the rows
+    whose road home was Part
+    IX, re-judged (VX-43's home
+    tranche; scout in rotation
+    team-02).
+    P-226 BANKED - Parity
+    matrix tranche 8 (Part XIV,
+    The Proof Spine; scope
+    DERIVED - the roadmap gives
+    Part XIV only its part-
+    table line, P-219..P-232,
+    plus founding principle 4).
+    - team-02 commit 2b2972c
+    merged (no-ff) into
+    yrsa/two-mirrors-build as
+    5ca649953bb25f4d57013add56
+    94edc129cdd1b4 (parents
+    a39920c + 2b2972c). Merge
+    CLEAN - 10 files:
+    docs/PARITY_MATRIX_2026-11-
+    10.md tranche 8 judged,
+    docs/CLEAN_ROOM_LOG_2026-
+    10-30.md +1 headed P-226
+    entry, tests/test_p226_
+    parity_matrix.py NEW (18
+    tests), tests/test_p219_
+    parity_matrix.py through
+    tests/test_p225_parity_
+    matrix.py healed (classes
+    1 + 2 only).
+    Scope: tranche 8 closing
+    judgement for the 23 rows
+    whose road home was Part
+    IX, under the keeper
+    rulings Q1-Q4 (VX-02 and
+    VX-05 judged HAVE-THIN in
+    tranche 8; VX-17 and VX-45
+    judged MISSING in tranche
+    8 under the first-home
+    rule; VX-08 HAVE-THIN per
+    the adopted design
+    proposal): HAVE 1 (VX-32)
+    / HAVE-THIN 7 (VX-02,
+    VX-05, VX-08, VX-28, VX-29,
+    VX-31, VX-41) / MISSING 15
+    (VX-13, VX-17, VX-30,
+    VX-33, VX-35, VX-36, VX-37,
+    VX-38, VX-39, VX-40, VX-43,
+    VX-44, VX-45, VX-46, VX-47)
+    / SHIPPED-SOVEREIGN 0. The
+    still-missing depth is
+    named in every HAVE-THIN
+    closing cell, and every
+    MISSING cell states the
+    absent engine behaviour
+    (Part IX built the scenario
+    data world; its gate item
+    K5 records runtime /
+    condition evaluation as
+    absent absolutely).
+    Cumulative judged 96 rows:
+    HAVE 14 / HAVE-THIN 61 /
+    MISSING 20 / SHIPPED-
+    SOVEREIGN 1; the remaining
+    45 rows printed NOT-YET-
+    REJUDGED.
+    Heals (classes 1 + 2 only,
+    the standing cumulative
+    restatement, each marked
+    "P-226 heal" in-file):
+    pre-heal failures exactly
+    13 (p219 pin 6; p220-p225
+    pins 6/9) - JUDGED sets
+    extended with TRANCHE8,
+    the tranches 1-7 lines
+    re-pinned against the
+    judged7 subset recounts,
+    tranche-8 + cumulative 1-8
+    stages added against the
+    full JUDGED recount; class
+    2: the four ruled-in rows
+    (VX-02, VX-05, VX-17,
+    VX-45) leave the not-yet-
+    rejudged set inside the
+    same marked restatement,
+    never silently. No heal
+    class 5 event (no
+    DELIBERATELY-DIFFERENT row
+    in tranche 8; VX-42's
+    SHIPPED-SOVEREIGN
+    disposition pin carried
+    unchanged in substance).
+    NO src change, NO
+    migration; head stays 0042.
+    Route census stays 356
+    paths / 439 operations.
+    Evidence (team-02 hidden_
+    files/P226_EVIDENCE.md +
+    logs): battery 18 passed;
+    neighbours fence 454
+    passed; combined 472
+    passed; team full suite
+    6365 passed / 5 skipped /
+    0 failed in 693.70s, exit
+    0 (= 6347 base passed + 18
+    new, exact; the timing-
+    class s503 STT contract
+    test PASSED in this run).
+    Banking: combined fence on
+    the merged tree 472 passed
+    / 0 failed (= 18 new + 454
+    neighbours exact; run at
+    banking, log forge hidden_
+    files/P226_COMBINED.log);
+    forge confirmation full
+    suite 6365 passed / 5
+    skipped / 0 failed in
+    424.51s, exit 0 - exact, no
+    solo re-run needed (log
+    forge hidden_files/
+    P226_FORGE_FULL.log).
+    Carried items unchanged:
+    D1 stateless SSE error-
+    swallowing FENCED, ruling
+    outstanding; per-swipe
+    thinking browsing DECLINED-
+    PENDING-WORD; K-A binding
+    label update, K-B retention
+    / bulk clear and K-C
+    unified-search history
+    NAMED OPEN. Defects in
+    banked code: none found at
+    banking. Banked now
+    P-001..P-226 + the
+    commissioned binding
+    depth/role slice. PART XIV
+    OPEN (P-219..P-232, gate
+    P-232). Next in roadmap
+    order: P-227 - parity
+    matrix tranche 9, the rows
+    whose road home was Part
+    X, re-judged (scout in
+    rotation team-03).
+    P-227 BANKED - Parity
+    matrix tranche 9 (Part
+    XIV, The Proof Spine;
+    scope DERIVED - the
+    roadmap gives Part XIV
+    only its part-table
+    line, P-219..P-232, plus
+    founding principle 4).
+    - team-03 commit b3a666d
+    merged (no-ff) into
+    yrsa/two-mirrors-build
+    as cb2acbc25684ac1962820
+    9b501857e5afd86cb33
+    (parents b4c906d +
+    b3a666d). Merge CLEAN -
+    11 files: docs/PARITY_MA
+    TRIX_2026-11-10.md
+    tranche 9 judged, docs/C
+    LEAN_ROOM_LOG_2026-10-
+    30.md +1 headed P-227
+    entry, tests/test_p227_p
+    arity_matrix.py NEW (18
+    tests), tests/test_p219_
+    parity_matrix.py through
+    tests/test_p226_parity_m
+    atrix.py healed (classes
+    1 + 2 only).
+    Scope: tranche 9 closing
+    judgement for the 4 rows
+    whose road home was Part
+    X, under the keeper
+    rulings Q1/Q2 (Q1: VX-48
+    = MISSING - animation is
+    the row's act and Part X
+    shipped only pure-read
+    pairing data, no timing
+    contract, renderer,
+    stage, animation or
+    playback anywhere in-
+    tree; the pairing is
+    recorded as preserved-
+    as-data, not credited as
+    the act. Q2: VX-53 =
+    MISSING - every
+    enumerated depth item is
+    grep-absent (ComfyUI,
+    LoRA, upscaler, img2img,
+    Civitai) and the P-087
+    provider seam was
+    already credited as
+    VX-51's core in tranche
+    5 and is not double-
+    counted): HAVE 0 / HAVE-
+    THIN 0 / MISSING 4
+    (VX-48, VX-49, VX-52,
+    VX-53) / SHIPPED-
+    SOVEREIGN 0. Every
+    MISSING cell states the
+    absent engine behaviour
+    (no portrait animation -
+    pairing preserved-as-
+    data only; no video or
+    3D avatar surface; no
+    video generation; the
+    generation plumbing
+    depth never built, P-087
+    seam not double-
+    counted).
+    Cumulative judged 100
+    rows: HAVE 14 / HAVE-
+    THIN 61 / MISSING 24 /
+    SHIPPED-SOVEREIGN 1; the
+    remaining 41 rows
+    printed NOT-YET-
+    REJUDGED.
+    Heals (classes 1 + 2
+    only, the standing
+    cumulative restatement,
+    each marked "P-227 heal"
+    in-file): pre-heal
+    failures exactly 15 (pin
+    6 (p219-p226) and pins
+    6/9 (p220-p226)) -
+    JUDGED sets extended
+    with TRANCHE9, the
+    tranches 1-8 lines re-
+    pinned against the
+    judged8 subset recounts,
+    tranche-9 + cumulative
+    1-9 stages added against
+    the full JUDGED recount;
+    class 2: the two ruled
+    rows (VX-48, VX-53)
+    leave the not-yet-
+    rejudged set as MISSING
+    inside the same marked
+    restatement, never
+    silently. No heal class
+    5 event (no
+    DELIBERATELY-DIFFERENT
+    row in tranche 9;
+    VX-42's SHIPPED-
+    SOVEREIGN disposition
+    pin carried unchanged in
+    substance; test_p226 pin
+    18's tranche-8 note text
+    unedited and passing
+    unhealed).
+    NO src change, NO
+    migration; head stays
+    0042. Route census stays
+    356 paths / 439
+    operations.
+    Evidence (team-03 hidden
+    _files/P227_EVIDENCE.md
+    + logs): battery 18
+    passed; neighbours fence
+    506 passed; combined 524
+    passed; team full suite
+    6383 passed / 5 skipped
+    / 0 failed in 420.96s,
+    exit 0 (= 6365 base
+    passed + 18 new, exact;
+    no timing-class failure
+    fired).
+    Banking: combined fence
+    on the merged tree 524
+    passed / 0 failed (= 18
+    new + 506 neighbours
+    exact; run at banking,
+    log forge hidden_files/P
+    227_COMBINED.log); forge
+    confirmation full suite
+    6383 passed / 5 skipped
+    / 0 failed in 425.13s,
+    exit 0 - exact, no solo
+    re-run needed (log forge
+    hidden_files/P227_FORGE_
+    FULL.log).
+    Carried items unchanged:
+    D1 stateless SSE error-
+    swallowing FENCED,
+    ruling outstanding; per-
+    swipe thinking browsing
+    DECLINED-PENDING-WORD;
+    K-A binding label
+    update, K-B retention /
+    bulk clear and K-C
+    unified-search history
+    NAMED OPEN. Defects in
+    banked code: none found
+    at banking. Banked now
+    P-001..P-227 + the
+    commissioned binding
+    depth/role slice. PART
+    XIV OPEN (P-219..P-232,
+    gate P-232). Next in
+    roadmap order: P-228 -
+    parity matrix tranche
+    10, the rows whose road
+    home was Part XI, re-
+    judged (VX-58's home
+    tranche; scout in
+    rotation team-01).
+    P-228 BANKED - Parity
+    matrix tranche 10 (Part
+    XIV, The Proof Spine;
+    scope DERIVED - the
+    roadmap gives Part XIV
+    only its part-table
+    line, P-219..P-232, plus
+    founding principle 4).
+    - team-01 commit 6bbac3d
+    fc82a0efab79b3e23340c367
+    f11f4a677 merged (no-ff)
+    into yrsa/two-mirrors-
+    build as 04b24f7948d953e
+    fe7e4a3f01977ea80ccfd265
+    2 (parents fee88c8 +
+    6bbac3d). Merge CLEAN -
+    12 files: docs/PARITY_MA
+    TRIX_2026-11-10.md
+    tranche 10 judged, docs/
+    CLEAN_ROOM_LOG_2026-10-
+    30.md +1 headed P-228
+    entry, tests/test_p228_p
+    arity_matrix.py NEW (18
+    tests), tests/test_p219_
+    parity_matrix.py through
+    tests/test_p227_parity_m
+    atrix.py healed (class 1
+    only).
+    Scope: tranche 10
+    closing judgement for
+    the 5 rows whose road
+    home was Part XI, under
+    the keeper rulings Q1/Q2
+    (Q1: VX-54 = HAVE-THIN;
+    Q2: VX-57 = MISSING -
+    both the scout proposed
+    branch, so no class-2
+    branch restatement
+    arose; VX-55, VX-56 and
+    VX-58 MISSING, certain):
+    HAVE 0 / HAVE-THIN 1
+    (VX-54) / MISSING 4
+    (VX-55, VX-56, VX-57,
+    VX-58) / SHIPPED-
+    SOVEREIGN 0.
+    Cumulative judged 105
+    rows: HAVE 14 / HAVE-
+    THIN 62 / MISSING 28 /
+    SHIPPED-SOVEREIGN 1; the
+    remaining 36 rows
+    printed NOT-YET-
+    REJUDGED.
+    Heals (class 1 only, the
+    standing cumulative
+    restatement, each marked
+    "P-228 heal" in-file):
+    all nine prior batteries
+    (test_p219..test_p227) -
+    JUDGED sets extended
+    with TRANCHE10 (JUDGED9
+    intermediate added where
+    the chain required),
+    earlier cumulative lines
+    re-pinned against the
+    subset recounts
+    (JUDGED9), tranche-10 +
+    cumulative 1-10 stages
+    added against the full
+    JUDGED recount,
+    remainder literals 41 ->
+    36 in
+    test_p226/test_p227.
+    P-227 clean-room pin-12
+    range ends at its own
+    slice and did not move.
+    Class 2: none (rulings
+    match the scout
+    proposal). Class 3:
+    none. Class 4: clean-
+    room log +1 P-228 entry
+    exactly once. Class 5:
+    NONE (no DELIBERATELY-
+    DIFFERENT row in tranche
+    10; DD pins assert only
+    VX-01/VX-59 NOT-YET +
+    VX-42 SHIPPED-SOVEREIGN,
+    untouched and passing).
+    NO src change, NO
+    migration; head stays
+    0042. Route census stays
+    356 paths / 439
+    operations.
+    Evidence (team-01 hidden
+    _files/P228_EVIDENCE.md
+    + logs): battery 18
+    passed; neighbours fence
+    559 passed; combined 577
+    passed; team full suite
+    6401 passed / 5 skipped
+    / 0 failed (= 6383 base
+    passed + 18 new, exact;
+    no timing-class failure
+    occurred, no solo re-run
+    needed).
+    Banking: combined fence
+    on the merged tree 577
+    passed / 0 failed (= 18
+    new + 559 neighbours
+    exact; run at banking,
+    log forge hidden_files/P
+    228_COMBINED.log; the
+    first banking fence run
+    omitted the two Part III
+    gate legs -
+    test_s503_stt.py and tes
+    t_p048_inspector_leg.py
+    - and read 557 passed,
+    the corrected full set
+    was re-run clean before
+    banking proceeded);
+    forge confirmation full
+    suite 6401 passed / 5
+    skipped / 0 failed in
+    429.48s, exit 0 - exact,
+    no solo re-run needed
+    (log forge hidden_files/
+    P228_FORGE_FULL.log).
+    Carried items unchanged:
+    D1 stateless SSE error-
+    swallowing FENCED,
+    ruling outstanding; per-
+    swipe thinking browsing
+    DECLINED-PENDING-WORD;
+    K-A binding label
+    update, K-B retention /
+    bulk clear and K-C
+    unified-search history
+    NAMED OPEN. Defects in
+    banked code: none found
+    at banking. Banked now
+    P-001..P-228 + the
+    commissioned binding
+    depth/role slice. PART
+    XIV OPEN (P-219..P-232,
+    gate P-232). Next in
+    roadmap order: P-229 -
+    parity matrix tranche
+    11, the rows whose road
+    home was Part XII, re-
+    judged (VX-59/VX-61;
+    scout in rotation
+    team-02).
+    P-229 BANKED - Parity
+    matrix tranche 11 (Part
+    XIV, The Proof Spine;
+    scope DERIVED - the
+    roadmap gives Part XIV
+    only its part-table
+    line, P-219..P-232, plus
+    founding principle 4).
+    - team-02 commit 9e4d9ca
+    69955af66d3924a24a725cc2
+    e4fdddbd1 merged (no-ff)
+    into yrsa/two-mirrors-
+    build as d79ff3ac70450cb
+    3ee16f8d9340798654318927
+    d (parents 148ac92 +
+    9e4d9ca). Merge CLEAN -
+    13 files: docs/PARITY_MA
+    TRIX_2026-11-10.md
+    tranche 11 judged, docs/
+    CLEAN_ROOM_LOG_2026-10-
+    30.md +1 headed P-229
+    entry, tests/test_p229_p
+    arity_matrix.py NEW (18
+    tests), tests/test_p219_
+    parity_matrix.py through
+    tests/test_p228_parity_m
+    atrix.py healed (classes
+    1 + 5).
+    Scope: tranche 11 FINAL
+    closing judgement for
+    the 2 rows whose road
+    home was Part XII, under
+    the keeper rulings Q1/Q2
+    (Q1: VX-61 = HAVE-THIN;
+    Q2: VX-59 = SHIPPED-
+    SOVEREIGN - both the
+    scout proposed branch,
+    so no class-2 branch
+    restatement arose): HAVE
+    0 / HAVE-THIN 1 (VX-61)
+    / MISSING 0 / SHIPPED-
+    SOVEREIGN 1 (VX-59).
+    VX-60 excluded: already
+    judged in tranche 1 on
+    its P-028 first home;
+    recorded in the
+    tranche-11 note per the
+    VX-66/VX-17 form, not
+    re-judged.
+    Cumulative judged 107
+    rows: HAVE 14 / HAVE-
+    THIN 63 / MISSING 28 /
+    SHIPPED-SOVEREIGN 2; the
+    remaining 34 rows
+    printed NOT-YET-
+    REJUDGED.
+    Heals (classes 1 + 5,
+    each marked in-file):
+    Class 1 - the standing
+    cumulative restatement,
+    marked "P-229 heal": all
+    ten prior batteries
+    (test_p219..test_p228) -
+    TRANCHE11 constants
+    added; JUDGED extended
+    with TRANCHE11 (JUDGED10
+    intermediate where the
+    file chain required it);
+    counts pins restated to
+    the cumulative tranches
+    1-11 truth (tranche-11
+    closing line +
+    cumulative 1-11 line
+    pinned; the cumulative
+    1-10 line re-pinned
+    against the JUDGED10
+    subset at equal
+    strength); remainder
+    assertions 36 -> 34
+    where the file carried
+    an explicit figure.
+    Class 5 - granted under
+    the keeper class-5 grant
+    (P-223 precedent),
+    marked "P-229 heal class
+    5": the DELIBERATELY-
+    DIFFERENT disposition
+    pin (pin 9 in test_p219,
+    pin 10 in
+    test_p220..test_p228)
+    restated in all ten
+    prior batteries, per-row
+    at greater strength for
+    the VX-59 half only -
+    VX-59 pinned to its
+    exact Q2 SHIPPED-
+    SOVEREIGN closing token;
+    VX-01 still pinned NOT-
+    YET-REJUDGED exactly as
+    before; VX-42 SHIPPED-
+    SOVEREIGN pin untouched.
+    Pre-heal run of the ten
+    prior batteries: 29
+    failed / 149 passed, all
+    failures inside classes
+    1+5 only; post-heal
+    battery + healed priors
+    = 196 passed (18 + 178).
+    Class 2: none (as
+    forecast). Class 3: none
+    - the new battery passed
+    18/18 on its first run.
+    Class 4: clean-room log
+    +1 headed P-229 entry
+    exactly once, additive
+    only.
+    NO src change, NO
+    migration; head stays
+    0042. Route census stays
+    356 paths / 439
+    operations.
+    Evidence (team-02 hidden
+    _files/P229_EVIDENCE.md
+    + logs): battery 18
+    passed; neighbours fence
+    577 passed; combined 595
+    passed; team full suite
+    6419 passed / 5 skipped
+    / 0 failed (= 6401 base
+    passed + 18 new, exact;
+    no timing-class failure
+    occurred, no solo re-run
+    needed; 471.83s, exit
+    0).
+    Banking: combined fence
+    on the merged tree 595
+    passed / 0 failed (= 18
+    new + 577 neighbours
+    exact; run at banking,
+    log forge hidden_files/P
+    229_COMBINED.log,
+    62.56s); forge
+    confirmation full suite
+    6419 passed / 5 skipped
+    / 0 failed in 425.05s,
+    exit 0 - exact, no solo
+    re-run needed (log forge
+    hidden_files/P229_FORGE_
+    FULL.log).
+    Carried items unchanged:
+    D1 stateless SSE error-
+    swallowing FENCED,
+    ruling outstanding; per-
+    swipe thinking browsing
+    DECLINED-PENDING-WORD;
+    K-A binding label
+    update, K-B retention /
+    bulk clear and K-C
+    unified-search history
+    NAMED OPEN. Defects in
+    banked code: none found
+    at banking. Banked now
+    P-001..P-229 + the
+    commissioned binding
+    depth/role slice. PART
+    XIV OPEN (P-219..P-232,
+    gate P-232). Next in
+    roadmap order: P-230 -
+    parity matrix tranche
+    12, the rows whose road
+    home was Part XIII, re-
+    judged (ST-55/VX-07/VX-
+    65/VX-67; scout in
+    rotation team-03).
+    P-230 BANKED - Parity
+    matrix tranche 12 (Part
+    XIV, The Proof Spine;
+    scope DERIVED - the
+    roadmap gives Part XIV
+    only its part-table
+    line, P-219..P-232, plus
+    founding principle 4).
+    - team-03 commit
+    881cb8e49f1a441f32fca58a0699011b3d55eb88
+    merged (no-ff) into
+    yrsa/two-mirrors-build as
+    6e459b53f636c9a7a8c1a8b02b35b7a46e860785
+    (parents dbc6a31 +
+    881cb8e). Merge CLEAN -
+    14 files:
+    docs/PARITY_MATRIX_2026-11-10.md
+    tranche 12 judged, docs/
+    CLEAN_ROOM_LOG_2026-10-
+    30.md +1 headed P-230
+    entry,
+    tests/test_p230_parity_matrix.py
+    NEW (18 tests),
+    tests/test_p219_parity_matrix.py
+    through
+    tests/test_p229_parity_matrix.py
+    healed (class 1 only).
+    Scope: tranche 12 FINAL
+    closing judgement for
+    the 4 rows whose road
+    home was Part XIII, under
+    the keeper rulings Q1/Q2
+    (Q1: ST-55 = MISSING;
+    Q2: VX-65 = HAVE-THIN;
+    unbranched: VX-07 =
+    MISSING, VX-67 =
+    HAVE-THIN): HAVE 0 /
+    HAVE-THIN 2 (VX-65,
+    VX-67) / MISSING 2
+    (ST-55, VX-07) /
+    SHIPPED-SOVEREIGN 0.
+    Tranche 12 is the last
+    home tranche; the 30-row
+    remainder (dash / NO-HOME
+    / ledger) stands for
+    P-231 reconciliation,
+    untouched here.
+    Cumulative judged 111
+    rows: HAVE 14 / HAVE-
+    THIN 65 / MISSING 30 /
+    SHIPPED-SOVEREIGN 2; the
+    remaining 30 rows
+    printed NOT-YET-
+    REJUDGED.
+    Heals (class 1 only,
+    each marked in-file):
+    Class 1 - the standing
+    cumulative restatement,
+    marked "P-230 heal": all
+    eleven prior batteries
+    (test_p219..test_p229) -
+    TRANCHE12 constants
+    added; JUDGED extended
+    with TRANCHE12 (JUDGED11
+    intermediate where the
+    file chain required it);
+    counts pins restated to
+    the cumulative tranches
+    1-12 truth (tranche-12
+    closing line +
+    cumulative 1-12 line
+    pinned; the cumulative
+    1-11 line re-pinned
+    against the JUDGED11
+    subset at equal
+    strength); remainder
+    assertions 34 -> 30
+    where the file carried
+    an explicit figure.
+    Class 5: none - no
+    tranche-12 row is
+    opening DELIBERATELY-
+    DIFFERENT, no class-5
+    grant given; no pin 10
+    (DD disposition) failure
+    fired in any prior
+    battery. Pre-heal run of
+    the eleven prior
+    batteries: 21 failed,
+    all failures inside
+    class 1 only (pin 6 in
+    test_p219..test_p229,
+    pin 9 in
+    test_p220..test_p229);
+    post-heal battery +
+    healed priors = 214
+    passed (18 + 196).
+    Class 2: none (no
+    branch-only prior text
+    names a tranche-12 row).
+    Class 3: none.
+    Class 4: clean-room log
+    +1 headed P-230 entry
+    exactly once, additive
+    only.
+    NO src change, NO
+    migration; head stays
+    0042. Route census stays
+    356 paths / 439
+    operations.
+    Evidence (team-03 hidden
+    _files/P230_EVIDENCE.md
+    + logs): battery 18
+    passed; neighbours fence
+    595 passed; combined 613
+    passed; team full suite
+    6437 passed / 5 skipped
+    / 0 failed (= 6419 base
+    passed + 18 new, exact;
+    no timing-class failure
+    occurred, no solo re-run
+    needed; 438.87s, exit
+    0).
+    Banking: combined fence
+    on the merged tree 613
+    passed / 0 failed (= 18
+    new + 595 neighbours
+    exact; run at banking,
+    log forge hidden_files/P
+    230_COMBINED.log,
+    93.11s); forge
+    confirmation full suite
+    6437 passed / 5 skipped
+    / 0 failed in 439.54s,
+    exit 0 - exact, no solo
+    re-run needed (log forge
+    hidden_files/P230_FORGE_
+    FULL.log).
+    Carried items unchanged:
+    D1 stateless SSE error-
+    swallowing FENCED,
+    ruling outstanding; per-
+    swipe thinking browsing
+    DECLINED-PENDING-WORD;
+    K-A binding label
+    update, K-B retention /
+    bulk clear and K-C
+    unified-search history
+    NAMED OPEN. Defects in
+    banked code: none found
+    at banking. Banked now
+    P-001..P-230 + the
+    commissioned binding
+    depth/role slice. PART
+    XIV OPEN (P-219..P-232,
+    gate P-232). Next in
+    roadmap order: P-231 -
+    parity matrix
+    reconciliation tranche,
+    the 30-row remainder
+    (dash / NO-HOME /
+    ledger) re-judged;
+    scout in rotation
+    team-01.
+    P-231 BANKED - Parity
+    matrix tranche 13
+    (RECONCILIATION) (Part
+    XIV, The Proof Spine;
+    scope DERIVED - the
+    roadmap gives Part XIV
+    only its part-table
+    line, P-219..P-232, plus
+    founding principle 4).
+    - team-01 commit
+    164a68ed5910507ef289423e1126f99283f18ee0
+    merged (no-ff) into
+    yrsa/two-mirrors-build as
+    f72fded3ed5696bebb10a260d1f783a2df0cf070
+    (parents 1ea22aa +
+    164a68e). Merge CLEAN -
+    15 files:
+    docs/PARITY_MATRIX_2026-11-10.md
+    tranche 13 judged, docs/
+    CLEAN_ROOM_LOG_2026-10-
+    30.md +1 headed P-231
+    entry,
+    tests/test_p231_parity_matrix.py
+    NEW (18 tests),
+    tests/test_p219_parity_matrix.py
+    through
+    tests/test_p230_parity_matrix.py
+    healed (classes 1 + 5).
+    Scope: tranche 13
+    RECONCILIATION closing
+    judgement for the 30-row
+    remainder (dash / NO-HOME
+    / ledger) - the rows no
+    home tranche carried -
+    under the keeper rulings
+    Q1..Q10 (Q1: VX-01 =
+    SHIPPED-SOVEREIGN,
+    class-5 granted; Q2:
+    ST-44 = SHIPPED-
+    SOVEREIGN, class-5
+    granted; Q3: ST-69 =
+    HAVE-THIN; Q4: ST-70 =
+    MISSING; Q5: ST-71 +
+    VX-64 = SHIPPED-
+    SOVEREIGN, class-5
+    granted for the pair;
+    Q6: matrix section 4
+    VX-59 passage restated
+    to match its judged
+    cell; Q7: VX-19 =
+    HAVE-THIN; Q8: VX-62 =
+    HAVE-THIN; Q9: VX-09 =
+    HAVE; Q10: machine-
+    readable twin ROWS-ONLY
+    here, the twin itself
+    left to the P-232 gate):
+    HAVE 13 / HAVE-THIN 11 /
+    MISSING 2 / SHIPPED-
+    SOVEREIGN 4 (VX-01,
+    ST-44, ST-71, VX-64).
+    Cumulative judged 141
+    rows: HAVE 27 / HAVE-
+    THIN 76 / MISSING 32 /
+    SHIPPED-SOVEREIGN 6;
+    remaining 0 rows - the
+    parity matrix stands
+    FULLY JUDGED, no row
+    left NOT-YET-REJUDGED.
+    Heals (classes 1 + 5,
+    each marked in-file):
+    Class 1 - the standing
+    cumulative restatement,
+    marked "P-231 heal": all
+    twelve prior batteries
+    (test_p219..test_p230) -
+    TRANCHE13 constants
+    added; JUDGED extended
+    with TRANCHE13 (complete
+    at 141); counts pins
+    restated to the
+    cumulative tranches
+    1-13 truth (tranche-13
+    closing line +
+    cumulative 1-13 line
+    pinned); the tranches
+    1-12 line re-pinned
+    against the JUDGED12
+    subset at equal
+    strength; remainder
+    assertions 30 -> 0
+    where the file carried
+    an explicit figure.
+    Class 5 (keeper grants
+    Q1/Q2/Q5, marked
+    "P-231 heal class 5"
+    in-file): DD disposition
+    pins restated for the
+    rows those grants judge
+    SHIPPED-SOVEREIGN
+    (VX-01, ST-44, ST-71,
+    VX-64), inside the same
+    marked restatement.
+    Class 2: none. Class 3:
+    none. Class 4: clean-
+    room log +1 headed
+    P-231 entry exactly
+    once, additive only.
+    Pre-heal run of the
+    twelve prior batteries:
+    35 failed, 179 passed,
+    all failures inside
+    classes 1 + 5; post-heal
+    battery + healed priors
+    = 232 passed (18 + 214).
+    NO src change, NO
+    migration; head stays
+    0042. Route census stays
+    356 paths / 439
+    operations.
+    Evidence (team-01 hidden
+    _files/P231_EVIDENCE.md
+    + logs): battery 18
+    passed; neighbours fence
+    613 passed; combined 631
+    passed; team full suite
+    6455 passed / 5 skipped
+    / 0 failed (= 6437 base
+    passed + 18 new, exact;
+    425.43s, exit 0).
+    Banking: combined fence
+    on the merged tree raw
+    630 passed / 1 failed
+    (= 18 new + 613
+    neighbours; the sole
+    failure the known load-
+    timing class, tests/
+    test_s503_stt.py::test_
+    real_faster_whisper_
+    meets_predeclared_
+    contract, solo re-run
+    4 passed - effective
+    fence 631 green; run at
+    banking, log forge
+    hidden_files/P231_
+    COMBINED.log, 182.23s;
+    solo log forge
+    hidden_files/P231_S503_
+    SOLO.log); forge
+    confirmation full suite
+    6455 passed / 5 skipped
+    / 0 failed in 495.12s,
+    exit 0 - exact (log forge
+    hidden_files/P231_FORGE_
+    FULL.log).
+    Carried items unchanged:
+    D1 stateless SSE error-
+    swallowing FENCED,
+    ruling outstanding; per-
+    swipe thinking browsing
+    DECLINED-PENDING-WORD;
+    K-A binding label
+    update, K-B retention /
+    bulk clear and K-C
+    unified-search history
+    NAMED OPEN. Defects in
+    banked code: none found
+    at banking. Banked now
+    P-001..P-231 + the
+    commissioned binding
+    depth/role slice. PART
+    XIV OPEN (P-219..P-232,
+    gate P-232). Next in
+    roadmap order: P-232 -
+    Part XIV gate (The Proof
+    Spine); scout in
+    rotation team-02.
+    P-232 BANKED - Part XIV
+    gate (The Proof Spine)
+    (Part XIV, The Proof
+    Spine; scope DERIVED -
+    the roadmap gives Part
+    XIV only its part-table
+    line, P-219..P-232, plus
+    founding principle 4).
+    PART XIV COMPLETE /
+    GATE PASSED.
+    - team-02 commit
+    4edaa2d542c6a986ed88595564978f850d993429
+    merged (no-ff) into
+    yrsa/two-mirrors-build as
+    f104c871cb7ffad1742bbce0a9eb39fe24478b67
+    (parents 09750a9 +
+    4edaa2d). Merge CLEAN -
+    4 files:
+    tests/test_p232_part_
+    xiv_gate.py NEW (35
+    tests),
+    tests/test_p232_gate_
+    record.py NEW (10
+    tests),
+    docs/PART_XIV_GATE_
+    2026-11-10.md NEW,
+    docs/CLEAN_ROOM_LOG_
+    2026-10-30.md +1 headed
+    P-232 entry.
+    Gate verdict: the parity
+    matrix stands FULLY
+    JUDGED - 141 rows,
+    remainder 0: HAVE 27 /
+    HAVE-THIN 76 / MISSING
+    32 / SHIPPED-SOVEREIGN
+    6, recounted
+    mechanically and agreed
+    by the gate doc, the
+    thirteen tranche
+    batteries and the banked
+    record chain. Live spot-
+    checks on the fresh
+    ZqxGate232 world: VX-32
+    HAVE, VX-65 HAVE-THIN,
+    VX-48 MISSING, VX-59
+    SHIPPED-SOVEREIGN.
+    Carried items accounted
+    BY NAME: D1 FENCED;
+    per-swipe browsing
+    DECLINED-PENDING-WORD;
+    bot runtime
+    substrateless
+    (chat.write RESERVED at
+    both sites); K-A / K-B /
+    K-C NAMED OPEN (K-A's
+    delete_chat cascade half
+    reserved expressly for
+    Volmarr); P-208 / P-209
+    record gaps as census
+    facts; VX-59 packs
+    WITHOUT signatures;
+    Evaluation Sitting never
+    queued; web /generate
+    live-SSE still excluded;
+    Q10 machine-readable
+    twin discharged as the
+    gate's mechanical
+    recount, ROWS-ONLY
+    standing, no twin file
+    founded.
+    NO src change, NO new
+    road, NO migration -
+    head stays 0042. Route
+    census stays 356 paths /
+    439 operations.
+    Evidence (team-02 hidden
+    _files/P232_EVIDENCE.md
+    + logs): gate battery 45
+    passed; neighbours fence
+    240 passed; combined
+    fence 285 passed; team
+    full suite 6500 passed /
+    5 skipped / 0 failed
+    (= 6455 base passed + 45
+    new, exact; 453.82s,
+    exit 0).
+    Banking: gate battery on
+    the merged tree 45
+    passed (log forge
+    hidden_files/P232_
+    GATE_CONFIRM.log,
+    7.68s); forge
+    confirmation full suite
+    6500 passed / 5 skipped
+    / 0 failed in 630.56s,
+    exit 0 - exact (log forge
+    hidden_files/P232_FULL_
+    CONFIRM.log). Defects in
+    banked code: none found
+    at banking.
+    Banked now P-001..P-232.
+    PART XIV COMPLETE - the
+    Two Mirrors parity
+    roadmap (fourteen parts,
+    232 slices) stands
+    COMPLETE. Next in
+    roadmap order: none -
+    no Part XV exists in the
+    governing roadmap; the
+    Evaluation Sitting
+    remains Volmarr's to
+    call and was never
+    queued.

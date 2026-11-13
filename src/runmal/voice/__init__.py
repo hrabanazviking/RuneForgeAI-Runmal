@@ -16,7 +16,33 @@ Layered, provider-isolated pieces (see docs/VOICE_ARCHITECTURE.md):
 - ``support``   — echo / self-interruption support contract (S509).
 - ``metrics``   — monotonic per-stage latency metrics (S510).
 - ``profiles``  — per-character voice profiles (S512).
+- ``session``   — voice sessions bound to a chat: settings resolved
+  honestly at start, turns persisted with playback truth (P-101).
+- ``live`` / ``live_router`` — the live voice host: per-session
+  orchestrators wired into the app process (P-102).
+- ``projection`` / ``projection_router`` — recorded turns landed
+  in their chat as provenance-carrying messages (P-103).
+- ``autoproject`` / ``autoproject_router`` — the async
+  auto-projecting host: opted-in sessions project as their
+  turns are recorded (P-104).
+- ``mishearing`` / ``mishearing_router`` — STT word-confidence
+  truth: low-confidence detection + replacement suggestions
+  over the persisted evidence (P-105, VX-11); the session
+  aggregate report - pooled statistics, often-missed words,
+  lexicon coverage (P-114).
+- ``repeat_requests`` / ``repeat_router`` - the repeat-request
+  signal: pending requests derived from the P-105 truth +
+  the durable host acknowledgement record (P-108, VX-11),
+  its acknowledgement housekeeping (P-111), and the
+  cross-session digest with wall-clock aging over the
+  persisted stamps (P-115).
+- ``affects``   - the VX-12 affect vocabulary carried as data
+  on voice profiles + session snapshots; no backend consumes
+  one yet and every surface says so (P-109).
 - ``routing``   — persisted logical device routes (S513).
+- ``latency``   — per-turn latency evidence derived from the
+  orchestrator's clock-stamped transitions, persisted on the
+  session record (P-110).
 - ``benchmark`` — reproducible voice benchmark harness (S514).
 
 Core modules are stdlib-only: heavy runtime packages (numpy, onnxruntime,

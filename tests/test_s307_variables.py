@@ -31,7 +31,8 @@ def make_client(tmp_path, monkeypatch):
 
 def test_registry_lists_the_variable_model():
     names = [v["name"] for v in list_variables()]
-    assert names == ["char", "user", "original", "time", "date", "weekday"]
+    assert names == ["char", "user", "original", "time", "date", "weekday",
+                     "last_vision_description"]
     for v in list_variables():
         assert v["description"]
 

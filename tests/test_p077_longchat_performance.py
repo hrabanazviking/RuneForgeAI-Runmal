@@ -58,7 +58,7 @@ def make_client(tmp_path, monkeypatch):
     monkeypatch.setenv("RUNMAL_DATA_DIR", str(tmp_path))
     db_path = tmp_path / "test.db"
     applied = migrate_to_head(db_path)
-    assert applied[-1] == "0041"  # P-077 PROVISIONAL migration
+    assert applied[-1] == "0042"  # P-077 PROVISIONAL migration
     engine = create_db_engine(db_path)
     factory = create_session_factory(engine)
     client = TestClient(create_app(factory))
@@ -125,7 +125,7 @@ def _canon(dicts):
 
 
 def test_migration_0041_provisional_index(tmp_path):
-    assert MIGRATIONS[-1][0] == "0041"
+    assert MIGRATIONS[-1][0] == "0042"
     assert "PROVISIONAL" in MIGRATIONS[-1][1]
     db_path = tmp_path / "m.db"
     migrate_to_head(db_path)

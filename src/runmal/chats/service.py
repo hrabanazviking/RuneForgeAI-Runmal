@@ -16,6 +16,7 @@ from runmal.chats import actions as action_mod
 from runmal.chats import greetings as greeting_mod
 from runmal.chats.greetings import GreetingChoice
 from runmal.chats import provenance as prov_mod
+from runmal.chats import reasoning as reasoning_mod
 from runmal.chats import swipes as swipe_mod
 from runmal.chats.swipes import (
     SwipeRegenSettings,
@@ -268,6 +269,7 @@ def message_to_dict(message: Message) -> dict:
         "speaker_id": message.speaker_id,
         "speaker_name": message.speaker_name,
         "provenance": prov_mod.active_view(message, swipe_id),
+        "reasoning": reasoning_mod.active_view(message, swipe_id),
         "created_at": message.created_at.isoformat(),
         "updated_at": message.updated_at.isoformat() if message.updated_at else None,
     }
@@ -780,6 +782,53 @@ async def delete_chat(session: AsyncSession, user_id: str, chat_id: str) -> bool
         remove_chat_undo(user_id, chat_id)
     except Exception:
         pass
+    try:
+        from runmal.prompt.vision_link import purge_chat
+
+        purge_chat(chat_id)
+    except Exception:
+        pass
+    try:
+        # P-120 custody: the chat's image attachments (index
+        # rows + byte files) die with the chat, like its vision
+        # descriptions above.
+        import os as _os
+        from pathlib import Path as _Path
+
+        from runmal.vision.attachments import AttachmentStore
+
+        AttachmentStore(
+            _Path(_os.environ.get("RUNMAL_DATA_DIR", ".runmal-data"))
+        ).purge_chat(chat_id)
+    except Exception:
+        pass
+    try:
+        # P-121 custody (wired at banking): the chat's folder-
+        # watch registrations and their ingested records die
+        # with the chat, like its attachments above.
+        import os as _os_w
+        from pathlib import Path as _Path_w
+
+        from runmal.vision.watcher import WatchStore
+
+        WatchStore(
+            _Path_w(_os_w.environ.get("RUNMAL_DATA_DIR", ".runmal-data"))
+        ).purge_chat(chat_id)
+    except Exception:
+        pass
+    try:
+        # P-169 custody: the chat's workspace binding dies
+        # with the chat, like its watch registrations above.
+        import os as _os_ws
+        from pathlib import Path as _Path_ws
+
+        from runmal.workspaces.bindings import WorkspaceStore
+
+        WorkspaceStore(
+            _Path_ws(_os_ws.environ.get("RUNMAL_DATA_DIR", ".runmal-data"))
+        ).purge_chat(chat_id)
+    except Exception:
+        pass
     await _dispatch_plugin("chat.deleted", chat_id=chat_id, data={"chat_id": chat_id})
     return True
 
@@ -795,6 +844,7 @@ async def append_message(
     speaker_name: str | None = None,
     event_data: dict | None = None,
     provenance: dict | None = None,
+    reasoning: dict | None = None,
 ) -> Message:
     chat = await _get_owned_chat(session, user_id, chat_id)
     if chat is None:
@@ -833,6 +883,14 @@ async def append_message(
     if provenance is None:
         provenance = await _default_record(
             session, user_id, chat, role, speaker_id, speaker_name)
+    # P-205: a reasoning param is ONE swipe's record (strict-built
+    # by the producing road). None means the road did not capture:
+    # the stored document's swipe-0 record is not_recorded -- there
+    # is NO default-record builder inventing facts (the deliberate
+    # difference from provenance's _default_record).
+    reasoning_document = reasoning_mod.build_document(
+        reasoning if reasoning is not None
+        else reasoning_mod.not_recorded_record())
     message = Message(
         chat_id=chat_id,
         role=role,
@@ -844,6 +902,7 @@ async def append_message(
         position=new_position,
         provenance_json=prov_mod.dump_document(
             prov_mod.build_document(provenance)),
+        reasoning_json=reasoning_mod.dump_document(reasoning_document),
     )
     session.add(message)
     await session.flush()
@@ -1006,6 +1065,45 @@ async def delete_message(
     if was_materialised:
         _renumber(await _ordered_messages(session, chat_id))
     await session.commit()
+    try:
+        # P-120 custody: a deleted message's image attachments
+        # (index rows + byte files) are purged with it.
+        # P-122 source custody: descriptions derived from those
+        # attachments are purged with them, so derived text
+        # never outlives the deleted bytes.
+        # P-124 watcher custody: watcher ingested records
+        # naming those attachments are forgotten with them,
+        # so the scan dedupe memory never tombstones a file
+        # whose attachment died with this message.
+        import os as _os
+        from pathlib import Path as _Path
+
+        from runmal.vision.attachments import AttachmentStore
+
+        _att_store = AttachmentStore(
+            _Path(_os.environ.get("RUNMAL_DATA_DIR", ".runmal-data"))
+        )
+        _att_ids = [
+            row.id for row in _att_store.list_for_message(message_id)
+        ]
+        _att_store.purge_message(message_id)
+        if _att_ids:
+            from runmal.vision.service import (
+                SOURCE_ATTACHMENT,
+                VisionStore,
+                descriptions_path,
+            )
+
+            _vis_store = VisionStore(descriptions_path(_att_store.data_dir))
+            for _att_id in _att_ids:
+                _vis_store.purge_source(SOURCE_ATTACHMENT, _att_id)
+            from runmal.vision.watcher import WatchStore as _WatchStore
+
+            _watch_store = _WatchStore(_att_store.data_dir)
+            for _att_id in _att_ids:
+                _watch_store.forget_attachment(_att_id)
+    except Exception:
+        pass
     await _dispatch_plugin(
         "message.deleted",
         chat_id=chat_id,
@@ -1111,6 +1209,8 @@ async def copy_message_to_branch(
                     m, source_chat_id=chat_id, source_message_id=m.id,
                     source_content_sha256=hashlib.sha256(
                         m.content.encode("utf-8")).hexdigest())),
+            reasoning_json=reasoning_mod.dump_document(
+                reasoning_mod.document_for_copy(m)),
         )
 
     if target_chat_id is None:
@@ -1287,18 +1387,32 @@ async def add_swipe(
     chat_id: str,
     message_id: str,
     content: str,
+    *,
+    reasoning: dict | None = None,
 ) -> Message | None:
     """Append a new alternate to a message's swipe deck (P-065).
 
     The new alternate becomes the active one. Returns None when the
     chat or message is missing/foreign. Invalid content raises
     ValueError. The mutation event records only counts -- never
-    the alternate text.
+    the alternate text. P-209: ``reasoning`` is the new swipe's
+    ONE reasoning record (strict, P-205), supplied by a caller
+    that generated the alternate; None keeps the standing
+    not_recorded stamp.
     """
     message = await _get_owned_message(session, user_id, chat_id, message_id)
     if message is None:
         return None
     swipe_mod.validate_new_alternate(content)
+    if reasoning is not None:
+        # P-209: a caller landing a GENERATED alternate may
+        # attach that generation's reasoning record. Strict-
+        # validate it BEFORE any store, so a lying record
+        # leaves the deck and the document untouched. With no
+        # record attached this seam invents nothing (the
+        # append_message P-205 doctrine verbatim: no param,
+        # no capture, not_recorded).
+        reasoning_mod.build_document(reasoning)
     await _journal(session, user_id, chat_id, "message.swipe_add", {"message_id": message_id})
     deck, _idx = _deck(message)
     new_deck = list(deck)
@@ -1317,6 +1431,11 @@ async def add_swipe(
     message.provenance_json = prov_mod.dump_document(
         prov_mod.with_record_for_swipe(
             prov_mod.parse_provenance(message), new_id, swipe_record))
+    message.reasoning_json = reasoning_mod.dump_document(
+        reasoning_mod.with_record_for_swipe(
+            reasoning_mod.parse_reasoning(message), new_id,
+            reasoning if reasoning is not None
+            else reasoning_mod.not_recorded_record()))
     await _record_event(
         session,
         chat_id,
@@ -1406,6 +1525,9 @@ async def delete_swipe(
     message.provenance_json = prov_mod.dump_document(
         prov_mod.without_swipe(
             getattr(message, "provenance_json", None), index))
+    message.reasoning_json = reasoning_mod.dump_document(
+        reasoning_mod.without_swipe(
+            getattr(message, "reasoning_json", None), index))
     if index < active:
         new_active = active - 1
     elif index == active:
@@ -1492,6 +1614,20 @@ async def import_session_swipes(
                 document, position, session_record)
     if document is not None:
         message.provenance_json = prov_mod.dump_document(document)
+        # P-205: the session-import road captures no reasoning; the
+        # replacement deck's records are honestly not_recorded.
+        reasoning_document = None
+        for position in range(len(swipes_list)):
+            if reasoning_document is None:
+                reasoning_document = reasoning_mod.build_document(
+                    reasoning_mod.not_recorded_record(),
+                    swipe_index=position)
+            else:
+                reasoning_document = reasoning_mod.with_record_for_swipe(
+                    reasoning_document, position,
+                    reasoning_mod.not_recorded_record())
+        message.reasoning_json = reasoning_mod.dump_document(
+            reasoning_document)
     await _record_event(
         session,
         chat_id,
@@ -1556,6 +1692,22 @@ async def get_message_provenance(
     return view
 
 
+async def get_message_reasoning(
+    session: AsyncSession, user_id: str, chat_id: str, message_id: str
+) -> dict | None:
+    """One message's FULL reasoning document (every recorded
+    swipe), for the Assistant View's future reads (P-205). None
+    when missing/foreign."""
+    message = await _get_owned_message(session, user_id, chat_id, message_id)
+    if message is None:
+        return None
+    view = reasoning_mod.full_view(message)
+    view["message_id"] = message.id
+    view["chat_id"] = chat_id
+    view["active_swipe_id"] = _deck(message)[1]
+    return view
+
+
 async def list_chat_provenance(
     session: AsyncSession, user_id: str, chat_id: str
 ) -> dict | None:
@@ -1578,4 +1730,28 @@ async def list_chat_provenance(
         "chat_id": chat_id,
         "messages": messages,
         "summary": prov_mod.summarise_provenance(views),
+    }
+
+
+async def list_chat_reasoning(
+    session: AsyncSession, user_id: str, chat_id: str
+) -> dict | None:
+    """A chat's per-message reasoning views: every message's
+    ACTIVE view and FULL document (P-210), for the Inspector
+    reasoning census. None when the chat is missing or
+    foreign. Pure read over the banked P-205 tolerant
+    readers; persists nothing."""
+    if await _get_owned_chat(session, user_id, chat_id) is None:
+        return None
+    history = await _ordered_messages(session, chat_id)
+    messages = []
+    for message in history:
+        messages.append({
+            "message_id": message.id, "role": message.role,
+            "active": reasoning_mod.active_view(message, _deck(message)[1]),
+            "full": reasoning_mod.full_view(message),
+        })
+    return {
+        "chat_id": chat_id,
+        "messages": messages,
     }

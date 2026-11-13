@@ -78,11 +78,68 @@ function renderInto(div, text) {
   div.innerHTML = window.RunmalRenderer.renderMarkdownLite(text);
 }
 
-function appendMessage(role, text, rendered) {
+function markingBadge(marking) {
+  // P-107 (VX-11 rendered markings): the badge under a landed
+  // voice transcript. Text only - the suggested hearing is
+  // data shown as text, never rendered as message content.
+  const badge = document.createElement("div");
+  badge.className = "voice-marking";
+  if (!marking.evidence_available) {
+    badge.textContent = "Voice line: hearing evidence unavailable.";
+  } else if (!marking.has_confidence_evidence) {
+    badge.textContent = "Voice line: no confidence evidence was recorded.";
+  } else if (marking.needs_repeat) {
+    badge.textContent = "Heard with doubt - " + marking.low_confidence_count
+      + " unclear word(s).";
+    if (marking.replacements_applied && marking.replacements_applied.length) {
+      badge.textContent += " Suggested hearing: " + marking.suggested_text;
+    }
+  } else {
+    badge.textContent = "Heard clearly.";
+  }
+  return badge;
+}
+
+function reasoningPanel(view) {
+  // P-206 Assistant View: the thinking panel under a reply,
+  // built ONLY from the P-205 stored record the thread read
+  // already carried. Recorded thinking is text in a native
+  // <details> disclosure, collapsed by default (the reply
+  // stays primary); every other status is one honest status
+  // line. Text via textContent ONLY - never as HTML, never
+  // through the markdown renderer (the markingBadge rule:
+  // thinking is data shown as text, not message content).
+  if (!view) return null;
+  if (view.kind === "recorded") {
+    const details = document.createElement("details");
+    details.className = "reasoning";
+    const summary = document.createElement("summary");
+    summary.textContent = view.label;
+    details.appendChild(summary);
+    const body = document.createElement("div");
+    body.className = "reasoning-text";
+    body.textContent = view.text;
+    details.appendChild(body);
+    return details;
+  }
+  const line = document.createElement("div");
+  line.className = "reasoning-status";
+  line.textContent = view.text;
+  return line;
+}
+
+function appendMessage(role, text, rendered, marking, reasoning) {
   const div = document.createElement("div");
   div.className = "msg " + role;
-  if (rendered) renderInto(div, text);
+  if (rendered && marking && marking.has_confidence_evidence) {
+    div.innerHTML = window.RunmalRenderer.renderMarkedTranscript(
+      text, marking.low_confidence_words);
+  }
+  else if (rendered) renderInto(div, text);
   else div.textContent = text;
+  if (marking) div.appendChild(markingBadge(marking));
+  const panel = reasoningPanel(window.RunmalRenderer.reasoningView(reasoning));
+  if (panel) div.appendChild(panel);
   $("thread").appendChild(div);
   div.scrollIntoView({ block: "end" });
   return div;
@@ -129,7 +186,7 @@ function renderThread() {
     });
     thread.appendChild(more);
   }
-  for (const m of visible) appendMessage(m.role, m.content, true);
+  for (const m of visible) appendMessage(m.role, m.content, true, m.voice_marking || null, m.reasoning || null);
 }
 
 async function loadPresets() {
@@ -212,6 +269,7 @@ async function streamGeneration(chatId) {
   setRetryVisible(false);
   const bubble = appendMessage("assistant", "");
   let full = "";
+  let reasoningParts = [];
   let stopped = false;
   try {
     const res = await fetch("/api/v1/generate", {
@@ -243,6 +301,11 @@ async function streamGeneration(chatId) {
           if (event.type === "token") {
             full += event.text;
             bubble.textContent = full; // incremental token rendering
+          } else if (event.type === "reasoning") {
+            // P-209: collected for STORAGE only, in arrival
+            // order -- never rendered live, never merged into
+            // the answer text (P-206 stored-only rendering).
+            reasoningParts.push(event.text);
           } else if (event.type === "done") {
             if (event.finish_reason === "cancelled") stopped = true;
           }
@@ -254,7 +317,16 @@ async function streamGeneration(chatId) {
     announce(stopped ? "Generation stopped." : "Reply received.");
     await api("/api/v1/chats/" + chatId + "/messages", {
       method: "POST",
-      body: JSON.stringify({ role: "assistant", content: full || "(no output)" }),
+      body: JSON.stringify({
+        role: "assistant",
+        content: full || "(no output)",
+        // P-209: the record this stream produced, riding the
+        // one append that persists the reply; the panel still
+        // renders the STORED record on the next thread read.
+        reasoning: reasoningParts.length
+          ? { status: "recorded", text: reasoningParts.join("") }
+          : { status: "not_present" },
+      }),
     });
     state.allMessages.push({ role: "assistant", content: full || "(no output)" });
     state.totalMessages += 1;

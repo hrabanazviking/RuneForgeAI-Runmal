@@ -28,6 +28,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.db.models import Character, CharacterVoiceProfile
 from runmal.voice.backends import KNOWN_TTS_BACKENDS as _REGISTRY_TTS_BACKENDS
+from runmal.voice.affects import PARAM_KEY as _AFFECT_PARAM_KEY
+from runmal.voice.affects import normalize_affect as _normalize_affect
 from runmal.voice.tts import VoiceInfo
 
 #: Prompt transcript for the default zero-shot voice (corpus line 1;
@@ -81,6 +83,12 @@ async def set_character_voice(
         raise ValueError(f"unknown character: {character_id}")
     if tts_backend and tts_backend not in KNOWN_TTS_BACKENDS:
         raise ValueError(f"unknown TTS backend: {tts_backend}")
+    # P-109 (VX-12): an affect named in the params is validated
+    # strictly at this write door - the vocabulary first real
+    # consumer. Absence is neutral; an unknown affect is refused
+    # here, never stored to be silently honoured later.
+    if params and _AFFECT_PARAM_KEY in params:
+        _normalize_affect(params[_AFFECT_PARAM_KEY])
     row = await session.get(CharacterVoiceProfile, character_id)
     if row is None:
         row = CharacterVoiceProfile(character_id=character_id, user_id=user_id)

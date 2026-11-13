@@ -526,8 +526,8 @@ def test_j_drill_script_runs_green(tmp_path):
 
 
 def test_k_hygiene_migration_and_roadmap():
-    assert MIGRATIONS[-1][0] == "0041"
-    assert "0042" not in [m[0] for m in MIGRATIONS]
+    assert MIGRATIONS[-1][0] == "0042"
+    assert [m[0] for m in MIGRATIONS].count("0042") == 1  # P-205 banking heal: 0042 taken once, by P-205 m0042
     roadmap = (REPO / "docs" / "RUNMAL_TWO_MIRRORS_PARITY_ROADMAP_2026-10-30.md").read_text()
     section = roadmap[roadmap.index("## Part V"):roadmap.index("## Part VI")]
     import re as _re

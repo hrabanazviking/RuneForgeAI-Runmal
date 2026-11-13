@@ -140,16 +140,16 @@ async def seed_chat(factory, user, turns):
 
 
 def test_migration_head_is_0039_from_p073_none_from_p069_no_0040(tmp_path):
-    assert MIGRATIONS[-1][0] == "0041"
+    assert MIGRATIONS[-1][0] == "0042"
     # P-075 banking heal: 0040 now exists exactly once and is P-075's
     # m0040_message_provenance -- still none from P-069.
     assert [rev for rev, _desc, _mod in MIGRATIONS].count("0040") == 1
     # P-077 banking heal: 0040 now stands at [-2] beneath P-077's 0041.
-    assert MIGRATIONS[-2][2].__name__.endswith("m0040_message_provenance")
-    assert MIGRATIONS[-1][2].__name__.endswith("m0041_message_order_index")
+    assert MIGRATIONS[-3][2].__name__.endswith("m0040_message_provenance")
+    assert MIGRATIONS[-2][2].__name__.endswith("m0041_message_order_index")
     db_path = tmp_path / "m.db"
     applied = migrate_to_head(db_path)
-    assert applied[-1] == "0041"
+    assert applied[-1] == "0042"
 
 
 # ---------------- pure: mode resolution ----------------

@@ -335,3 +335,211 @@ async def voice_page(request: Request) -> HTMLResponse:
     if any_remap:
         page = page.replace('id="remap-warning" hidden', 'id="remap-warning"')
     return HTMLResponse(page)
+
+
+# ------------------------------------------------- sessions (P-101)
+# The voice session as a first-class citizen of a chat: start/stop,
+# per-chat settings resolved honestly at start (character voice +
+# provider truth), and turns persisted with the session in the
+# voice JSON store. Founding routes above are untouched.
+
+from fastapi import Depends  # noqa: E402
+from sqlalchemy.ext.asyncio import AsyncSession  # noqa: E402
+
+from runmal.db.deps import get_owner_id, get_session  # noqa: E402
+from runmal.db.models import Chat  # noqa: E402
+from runmal.voice import session as voice_session  # noqa: E402
+from runmal.voice.latency import session_latency_view  # noqa: E402
+from runmal.voice.profiles import resolve_character_voice  # noqa: E402
+from runmal.voice import affects as affects_mod  # noqa: E402
+
+
+def _session_store(request: Request) -> voice_session.VoiceSessionStore:
+    data_dir = Path(os.environ.get("RUNMAL_DATA_DIR", ".runmal-data"))
+    return voice_session.VoiceSessionStore(data_dir / voice_session.SESSIONS_FILENAME)
+
+
+@router.post("/voice/sessions", status_code=status.HTTP_201_CREATED)
+async def start_voice_session(
+    payload: dict,
+    request: Request,
+    session: AsyncSession = Depends(get_session),
+    owner_id: str = Depends(get_owner_id),
+) -> dict:
+    chat_id = str(payload.get("chat_id", ""))
+    chat = await session.get(Chat, chat_id) if chat_id else None
+    if chat is None or chat.user_id != owner_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="chat not found"
+        )
+    character = None
+    if chat.character_id:
+        character = await resolve_character_voice(session, owner_id, chat.character_id)
+    settings = voice_session.resolve_session_settings(
+        defaults=VoiceSettings.load(), character=character
+    )
+    created = voice_session.start_session(
+        _session_store(request),
+        chat_id=chat.id,
+        user_id=owner_id,
+        character_id=chat.character_id,
+        settings=settings,
+        auto_project=bool(payload.get("auto_project", False)),
+    )
+    return created.to_dict()
+
+
+@router.get("/voice/sessions")
+async def list_voice_sessions(request: Request, chat_id: str = "") -> dict:
+    store = _session_store(request)
+    sessions = store.list_for_chat(chat_id) if chat_id else store.all_sessions()
+    active = store.active_for_chat(chat_id) if chat_id else None
+    return {
+        "sessions": [s.summary_dict() for s in sessions],
+        "active_session_id": active.session_id if active else None,
+    }
+
+
+@router.get("/voice/affects")
+async def list_voice_affects() -> dict:
+    return affects_mod.vocabulary_view()
+
+
+@router.get("/voice/sessions/{session_id}/affect")
+async def get_voice_session_affect(session_id: str, request: Request) -> dict:
+    found = _session_store(request).get(session_id)
+    if found is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="voice session not found"
+        )
+    view = affects_mod.affect_view(found.settings.affect, found.settings.affect_source)
+    view["session_id"] = found.session_id
+    view["chat_id"] = found.chat_id
+    return view
+
+
+@router.get("/voice/sessions/{session_id}")
+async def get_voice_session(session_id: str, request: Request) -> dict:
+    found = _session_store(request).get(session_id)
+    if found is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="voice session not found"
+        )
+    return found.to_dict()
+
+
+@router.get("/voice/sessions/{session_id}/latency")
+async def get_voice_session_latency(session_id: str, request: Request) -> dict:
+    """Per-turn latency evidence + the section-10 aggregate
+    (P-110): durations derived only from the orchestrator's
+    clock-stamped transitions, persisted on the session."""
+    found = _session_store(request).get(session_id)
+    if found is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="voice session not found"
+        )
+    return session_latency_view(found)
+
+
+@router.post("/voice/sessions/{session_id}/stop")
+async def stop_voice_session(session_id: str, payload: dict, request: Request) -> dict:
+    store = _session_store(request)
+    found = store.get(session_id)
+    if found is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="voice session not found"
+        )
+    found.stop(str(payload.get("note", "") or ""))
+    store.save_session(found)
+    return found.to_dict()
+
+
+@router.post("/voice/sessions/{session_id}/turns", status_code=status.HTTP_201_CREATED)
+async def record_voice_turn(
+    session_id: str,
+    payload: dict,
+    request: Request,
+    db: AsyncSession = Depends(get_session),
+) -> dict:
+    store = _session_store(request)
+    found = store.get(session_id)
+    if found is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="voice session not found"
+        )
+    raw_words = payload.get("transcript_words") or []
+    if not isinstance(raw_words, list):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="transcript_words must be a list",
+        )
+    try:
+        word_evidence = tuple(
+            voice_session.WordConfidence.from_dict(entry)
+            for entry in raw_words
+            if isinstance(entry, dict)
+        )
+        if len(word_evidence) != len(raw_words):
+            raise ValueError("transcript_words entries must be objects")
+    except (TypeError, ValueError):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="transcript_words are malformed",
+        ) from None
+    try:
+        turn = found.record_turn(
+            transcript_text=str(payload.get("transcript_text", "") or ""),
+            transcript_language=str(payload.get("transcript_language", "") or ""),
+            response_text=str(payload.get("response_text", "") or ""),
+            heard_certain=str(payload.get("heard_certain", "") or ""),
+            heard_uncertain=str(payload.get("heard_uncertain", "") or ""),
+            heard_unplayed=str(payload.get("heard_unplayed", "") or ""),
+            interrupted=bool(payload.get("interrupted", False)),
+            error=str(payload.get("error", "") or ""),
+            chunks_total=int(payload.get("chunks_total", 0) or 0),
+            chunks_played=int(payload.get("chunks_played", 0) or 0),
+            transcript_words=word_evidence,
+        )
+    except voice_session.VoiceSessionError as exc:
+        code = (
+            status.HTTP_409_CONFLICT
+            if "stopped" in str(exc)
+            else status.HTTP_422_UNPROCESSABLE_ENTITY
+        )
+        raise HTTPException(status_code=code, detail=str(exc)) from None
+    except (TypeError, ValueError):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="turn fields are malformed",
+        ) from None
+    store.save_session(found)
+    result = turn.to_dict()
+    # P-104: an opted-in session auto-projects through the async
+    # host; the report rides along only when one was attempted.
+    from runmal.voice import autoproject as _auto
+
+    report = await _auto.autoproject_session(db, session=found, store=store)
+    if report["attempted"]:
+        result["auto_projection"] = report
+    return result
+
+
+@router.delete("/voice/chats/{chat_id}/sessions")
+async def drop_chat_voice_sessions(chat_id: str, request: Request) -> dict:
+    store = _session_store(request)
+    dropped = store.drop_chat(chat_id)
+    # P-111: dropping a chat's sessions is the act that orphans
+    # their repeat acknowledgements (P-108's inert records) -
+    # prune every acknowledgement whose session no longer
+    # exists in the same housekeeping act, and report the count.
+    from runmal.voice import repeat_requests as _rr
+
+    data_dir = Path(os.environ.get("RUNMAL_DATA_DIR", ".runmal-data"))
+    live = {s.session_id for s in store.all_sessions()}
+    pruned = _rr.AcknowledgementStore(
+        data_dir / _rr.ACK_FILENAME).prune_orphans(live)
+    return {
+        "chat_id": chat_id,
+        "dropped": dropped,
+        "repeat_acknowledgements_pruned": pruned["removed_records"],
+    }

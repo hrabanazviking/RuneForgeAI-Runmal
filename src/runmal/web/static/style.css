@@ -23,6 +23,7 @@
   --danger-bg: #3d1113;
   --code-bg: #21262d;
   --overlay: rgba(0, 0, 0, 0.7);
+  --stt-low-tint: rgba(255, 176, 0, 0.18);
   --author-1: #f778ba;
   --author-2: #79c0ff;
   --author-3: #7ee787;
@@ -47,6 +48,7 @@
   --danger-bg: #fdecec;
   --code-bg: #efe9dc;
   --overlay: rgba(31, 35, 40, 0.45);
+  --stt-low-tint: rgba(180, 120, 0, 0.22);
   --author-1: #be185d;
   --author-2: #1d4ed8;
   --author-3: #15803d;
@@ -71,6 +73,8 @@
     --danger-bg: #fdecec;
     --code-bg: #efe9dc;
     --overlay: rgba(31, 35, 40, 0.45);
+    --stt-low-tint: rgba(180, 120, 0, 0.22);
+  --stt-low-tint: rgba(180, 120, 0, 0.22);
     --author-1: #be185d;
     --author-2: #1d4ed8;
     --author-3: #15803d;
@@ -296,3 +300,22 @@ button#stop { background: var(--danger); }
   #gallery-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
   #palette { padding-top: 6vh; }
 }
+
+/* P-107 (VX-11): STT confidence markings in the thread. The
+   signal is never colour alone - a dotted underline carries
+   it, the tint only assists. */
+.stt-low { text-decoration: underline dotted; text-underline-offset: 3px;
+  background: var(--stt-low-tint); border-radius: 3px; }
+.voice-marking { margin-top: 6px; font-size: 0.85em; opacity: 0.85; }
+
+/* P-206 Assistant View: the thinking panel under a reply.
+   Muted and subordinate to the bubble it sits under; design
+   tokens only, no raw colours or sizes. */
+.reasoning { margin-top: var(--space-2); color: var(--dim);
+  font-size: 0.85em; border-top: 1px solid var(--line);
+  padding-top: var(--space-1); }
+.reasoning summary { cursor: pointer; color: var(--dim); }
+.reasoning-text { margin-top: var(--space-1); white-space: pre-wrap;
+  color: var(--dim); }
+.reasoning-status { margin-top: var(--space-2); font-size: 0.85em;
+  color: var(--dim); opacity: 0.85; }

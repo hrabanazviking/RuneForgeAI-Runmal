@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.chats import metadata as metadata_mod
 from runmal.chats.greetings import GreetingChoice
+from runmal.chats import reasoning as reasoning_mod
 from runmal.chats import service
 from runmal.chats.service import chat_to_dict, event_to_dict, message_to_dict
 from runmal.chats.swipes import settings_to_data
@@ -18,6 +19,67 @@ from runmal.prompt.authors_note import note_to_data
 from runmal.prompt.post_history import instructions_to_data
 
 router = APIRouter(tags=["chats"])
+
+
+def _with_voice_markings(message_dicts):
+    """P-107: attach the additive voice_marking view to any
+    landed voice-transcript message dicts (runmal.voice.
+    markings). Tolerant by design: any voice-store failure
+    leaves the dicts unmarked rather than bricking the
+    thread surface - the marking is a view, never the road."""
+    try:
+        import os
+        from pathlib import Path as _Path
+
+        from runmal.voice import markings as markings_mod
+        from runmal.voice import mishearing as mis_mod
+        from runmal.voice import session as voice_session
+
+        data_dir = _Path(os.environ.get("RUNMAL_DATA_DIR", ".runmal-data"))
+        store = voice_session.VoiceSessionStore(
+            data_dir / voice_session.SESSIONS_FILENAME)
+        pairs = mis_mod.ReplacementStore(
+            data_dir / mis_mod.REPLACEMENTS_FILENAME).pairs()
+        markings_mod.markings_for_messages(message_dicts, store, pairs)
+    except Exception:
+        pass
+    return message_dicts
+
+
+def _with_attachment_views(message_dicts):
+    """P-120: attach the additive attachments view (honest
+    sniffed metadata records from runmal.vision.attachments)
+    to any message dicts that carry image attachments.
+    Tolerant by design, exactly like _with_voice_markings:
+    any attachment-store failure leaves the dicts untouched —
+    the view is never the road. Chat-level attachments
+    (message_id None) never land here; they surface on the
+    vision attachment list road only."""
+    try:
+        import os
+        from pathlib import Path as _Path
+
+        from runmal.vision.attachments import AttachmentStore
+
+        data_dir = _Path(os.environ.get("RUNMAL_DATA_DIR", ".runmal-data"))
+        store = AttachmentStore(data_dir)
+        by_message: dict[str, list[dict]] = {}
+        seen_chats: set[str] = set()
+        for d in message_dicts:
+            chat_id = d.get("chat_id")
+            if chat_id and chat_id not in seen_chats:
+                seen_chats.add(chat_id)
+                for row in store.list_for_chat(chat_id):
+                    if row.message_id:
+                        by_message.setdefault(row.message_id, []).append(
+                            row.to_dict())
+        for d in message_dicts:
+            rows = by_message.get(d.get("id") or "")
+            if rows:
+                d["attachments"] = rows
+    except Exception:
+        pass
+    return message_dicts
 
 
 class ChatCreate(BaseModel):
@@ -38,9 +100,27 @@ class ChatUpdate(BaseModel):
     title: str
 
 
+class ReasoningIn(BaseModel):
+    """One swipe's reasoning record on the wire (P-209): the
+    record's shape only -- never a document. Converted with
+    the strict builder before anything is stored, so a lying
+    payload is refused (422), never stored."""
+
+    status: Literal["recorded", "not_present", "not_recorded", "unknown"]
+    text: str | None = None
+
+
+def _reasoning_record(reasoning: ReasoningIn | None) -> dict | None:
+    if reasoning is None:
+        return None
+    return reasoning_mod.build_record(
+        status=reasoning.status, text=reasoning.text)
+
+
 class MessageCreate(BaseModel):
     role: Literal["user", "assistant", "system"]
     content: str = Field(min_length=1)
+    reasoning: ReasoningIn | None = None
 
 
 class MessageUpdate(BaseModel):
@@ -71,6 +151,7 @@ class ChatBackendProfileIn(BaseModel):
 
 class SwipeCreate(BaseModel):
     content: str = Field(min_length=1)
+    reasoning: ReasoningIn | None = None
 
 
 class SwipeSelectIn(BaseModel):
@@ -296,7 +377,8 @@ async def get_chat(
         raise HTTPException(status_code=404, detail="chat not found")
     history = await service.get_history(session, user_id, chat_id) or []
     payload = chat_to_dict(chat, len(history))
-    payload["messages"] = [message_to_dict(m) for m in history]
+    payload["messages"] = _with_attachment_views(
+        _with_voice_markings([message_to_dict(m) for m in history]))
     return payload
 
 
@@ -398,7 +480,9 @@ async def append_message(
     session: AsyncSession = Depends(get_session),
 ):
     try:
-        message = await service.append_message(session, user_id, chat_id, body.role, body.content)
+        message = await service.append_message(
+            session, user_id, chat_id, body.role, body.content,
+            reasoning=_reasoning_record(body.reasoning))
     except KeyError:
         raise HTTPException(status_code=404, detail="chat not found") from None
     except ValueError as exc:
@@ -419,7 +503,8 @@ async def get_history(
         history = await service.get_history(session, user_id, chat_id)
         if history is None:
             raise HTTPException(status_code=404, detail="chat not found")
-        return [message_to_dict(m) for m in history]
+        return _with_attachment_views(
+            _with_voice_markings([message_to_dict(m) for m in history]))
     page_result = await service.get_history_page(
         session, user_id, chat_id,
         limit=limit if limit is not None else 100,
@@ -429,7 +514,8 @@ async def get_history(
         raise HTTPException(status_code=404, detail="chat not found")
     page, total, effective_offset, effective_limit = page_result
     return {
-        "messages": [message_to_dict(m) for m in page],
+        "messages": _with_attachment_views(
+            _with_voice_markings([message_to_dict(m) for m in page])),
         "total": total,
         "limit": effective_limit,
         "offset": effective_offset,
@@ -492,6 +578,23 @@ async def get_message_provenance(
     production record for every swipe (P-075). Legacy messages
     read as an explicit not_recorded document, never a 404."""
     payload = await service.get_message_provenance(
+        session, user_id, chat_id, message_id)
+    if payload is None:
+        raise HTTPException(status_code=404, detail="message not found")
+    return payload
+
+
+@router.get("/chats/{chat_id}/messages/{message_id}/reasoning")
+async def get_message_reasoning(
+    chat_id: str,
+    message_id: str,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    """A message's full reasoning document: the recorded thinking
+    for every swipe (P-205). Legacy and unwired-road messages
+    read as an explicit not_recorded document, never a 404."""
+    payload = await service.get_message_reasoning(
         session, user_id, chat_id, message_id)
     if payload is None:
         raise HTTPException(status_code=404, detail="message not found")
@@ -617,7 +720,8 @@ async def add_swipe(
     """Append an alternate to a message's swipe deck (P-065)."""
     try:
         message = await service.add_swipe(
-            session, user_id, chat_id, message_id, body.content
+            session, user_id, chat_id, message_id, body.content,
+            reasoning=_reasoning_record(body.reasoning),
         )
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc

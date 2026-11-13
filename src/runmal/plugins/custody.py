@@ -36,6 +36,15 @@ or an honest empty - nothing here invents persistence they
 do not have; landed P-023 assets and founding chats/messages
 are host data, named as references, never custody's to delete.
 
+P-113 (the P-100 gate's finding F1, discharged at this
+next custody touch): the fixed list also names
+``runmal.game-bridge`` - a durable-file citizen served by
+the same ``_FILE_STORES`` idiom - and
+``runmal.plugin-settings-ui``, served section-scoped
+through its own module's custody verbs: the shared
+plugin_settings store is never exported or deleted whole,
+only the settings-ui citizen's own section of it.
+
 Wiring: :func:`register_plugin` only (the custody citizen
 itself holds no data). ``build_registry`` / ``create_app``
 are unchanged. No migration: head stays 0041. Sandbox stance
@@ -82,6 +91,8 @@ CITIZEN_PLUGIN_IDS = (
     "runmal.expressions",
     "runmal.variables",
     PLUGIN_ID,
+    "runmal.game-bridge",
+    "runmal.plugin-settings-ui",
 )
 
 #: plugin_id -> (module path, store file kind) for the durable
@@ -91,6 +102,7 @@ _FILE_STORES = {
     "runmal.regex-scripts": "runmal.plugins.regex_scripts",
     "runmal.expressions": "runmal.plugins.expressions",
     "runmal.variables": "runmal.plugins.variables",
+    "runmal.game-bridge": "runmal.plugins.game_bridge",
 }
 
 #: plugin_id -> module path for citizens whose manifest can be
@@ -107,6 +119,8 @@ _MANIFEST_MODULES = {
     "runmal.stt": "runmal.plugins.stt",
     "runmal.expressions": "runmal.plugins.expressions",
     "runmal.variables": "runmal.plugins.variables",
+    "runmal.game-bridge": "runmal.plugins.game_bridge",
+    "runmal.plugin-settings-ui": "runmal.plugins.settings_ui",
 }
 
 
@@ -155,6 +169,7 @@ def custody_coverage() -> dict:
             "runmal.image-generation", "runmal.web-search",
             "runmal.tts", "runmal.stt"],
         "stateless": [PLUGIN_ID],
+        "plugin_settings": ["runmal.plugin-settings-ui"],
         "universal_sections": ["host_ledger", "registration"],
     }
 
@@ -556,6 +571,68 @@ async def _instance_section(plugin_id, *, instances, session, user_id,
     return handler(instance, delete=delete, allowed=allowed)
 
 
+# -- settings-ui citizen: section-scoped over the shared store ------------
+
+
+def _settings_ui_section(*, user_id, base_dir, delete: bool) -> dict:
+    """Custody for runmal.plugin-settings-ui (P-113, F1).
+
+    The citizen operates the shared per-owner plugin_settings
+    store, in which every plugin's owner values live as one
+    section keyed by plugin id. Only the settings-ui
+    citizen's OWN section is its custody data: the export
+    carries exactly that section verbatim (or an honest
+    empty - the citizen declares no settings, so empty is
+    the expected truth), and the delete goes through the
+    module's own ``delete_plugin_settings`` so exactly that
+    section is removed and every other plugin's section -
+    and the shared file itself - is untouched. A corrupt
+    store reports ``error`` carrying the module's own
+    refusal text, never a silent empty.
+    """
+    base = {"name": "plugin_settings_store", "kind": "plugin_settings"}
+    if user_id is None:
+        return {**base, "status": "unavailable",
+                "reason": "owner user_id not supplied: the plugin "
+                          "settings store is per-owner"}
+    try:
+        module = _import_module("runmal.plugins.settings_ui")
+    except ImportError:
+        return {**base, "status": "unavailable",
+                "reason": "module runmal.plugins.settings_ui is not "
+                          "present in this build; custody never "
+                          "touches a store it cannot identify"}
+    _check_user_id(user_id)
+    path = Path(module.store_path(user_id, base_dir))
+    if delete:
+        try:
+            report = module.delete_plugin_settings(
+                user_id, module.PLUGIN_ID, base_dir=base_dir)
+        except Exception as exc:
+            return {**base, "status": "error", "store_path": str(path),
+                    "error": f"{type(exc).__name__}: {exc}",
+                    "removed": {}}
+        removed = {"settings_sections": int(
+            report.get("removed", {}).get("settings_sections", 0))}
+        return {**base,
+                "status": "deleted" if removed["settings_sections"]
+                          else "empty",
+                "store_path": str(path), "removed": removed}
+    try:
+        module.load_stored_values(user_id, module.PLUGIN_ID,
+                                  base_dir=base_dir)
+        doc = module._load_doc(user_id, base_dir)
+    except Exception as exc:
+        return {**base, "status": "error", "store_path": str(path),
+                "error": f"{type(exc).__name__}: {exc}"}
+    section = doc.get("plugins", {}).get(module.PLUGIN_ID)
+    if section is None:
+        return {**base, "status": "empty", "store_path": str(path),
+                "schema": getattr(module, "STORE_SCHEMA", None),
+                "section": None}
+    return {**base, "status": "exported", "store_path": str(path),
+            "schema": doc.get("schema"), "section": section}
+
 # -- universal sections: host ledger + registration ---------------------------
 
 
@@ -616,6 +693,9 @@ async def _data_sections(plugin_id, *, user_id, base_dir, session,
     if plugin_id in _FILE_STORES:
         return [_file_section(plugin_id, user_id=user_id,
                               base_dir=base_dir, delete=delete)]
+    if plugin_id == "runmal.plugin-settings-ui":
+        return [_settings_ui_section(user_id=user_id,
+                                     base_dir=base_dir, delete=delete)]
     if plugin_id == "runmal.summarise":
         return [await _summarise_section(user_id=user_id, session=session,
                                          delete=delete)]

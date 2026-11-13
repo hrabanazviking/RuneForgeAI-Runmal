@@ -199,14 +199,14 @@ def test_migration_head_is_0037_provisional(tmp_path):
     # heal: 0037 now stands at [-3] and the head is P-073's 0039.
     # Pins reworked
     # to merged truth at the merged positions.
-    assert MIGRATIONS[-5][0] == "0037"
-    assert "PROVISIONAL" in MIGRATIONS[-5][1]
-    assert MIGRATIONS[-1][0] == "0041"
+    assert MIGRATIONS[-6][0] == "0037"
+    assert "PROVISIONAL" in MIGRATIONS[-6][1]
+    assert MIGRATIONS[-1][0] == "0042"
     db_path = tmp_path / "m.db"
     applied = migrate_to_head(db_path)
-    assert applied[-5] == "0037"
-    assert applied[-1] == "0041"
-    assert current_revision(db_path) == "0041"
+    assert applied[-6] == "0037"  # P-205 banking heal: positions shifted by 0042
+    assert applied[-1] == "0042"
+    assert current_revision(db_path) == "0042"
 
 
 # ---------------- A. create / list / get round-trip ----------------

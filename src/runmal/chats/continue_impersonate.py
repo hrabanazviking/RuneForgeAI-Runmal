@@ -49,6 +49,24 @@ written to the event log (the P-056/P-065 precedent).
 Cross-user isolation: every entry resolves the chat through
 the owned-chat check; a foreign or missing chat returns None
 (or False for discard) and no generation runs.
+
+P-207 wiring: the shared generation seam (:func:`_generate_text`)
+now collects the generation service's reasoning dicts in arrival
+order and returns a strict P-205 record beside the text (the
+bridge producer's pattern). Continue NEXT lands that record via
+``append_message``'s ``reasoning=`` param; continue EXTEND
+combines it with the active swipe's existing record ONLY when
+that record is itself seam-owned (``recorded`` / ``not_present``)
+-- recorded+recorded concatenates in production order,
+not_present+recorded becomes recorded, recorded+not_present
+keeps the existing text, not_present+not_present stays
+not_present -- and leaves a legacy ``not_recorded`` / ``unknown``
+swipe's ``reasoning_json`` byte-untouched, because that swipe's
+earlier production was never captured. Impersonate carries the
+record TRANSIENTLY on the draft document only: draft reasoning
+is a fact about the DRAFT generation only, it is persisted
+NOWHERE, and accept never attaches it (the landed text is
+user-supplied, so its message keeps reading ``not_recorded``).
 """
 
 from __future__ import annotations
@@ -61,6 +79,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from runmal.backends.messages import ChatMessage
 from runmal.characters.service import get_character
 from runmal.chats import provenance as prov_mod
+from runmal.chats import reasoning as reasoning_mod
 from runmal.chats.service import (
     _deck,
     _get_owned_chat,
@@ -293,13 +312,18 @@ async def resolve_backend(session: AsyncSession, user_id: str, chat: Chat):
     return generation_service.default_backend()
 
 
-async def _generate_text(backend, messages: list[ChatMessage]) -> str:
-    """Collect one generation's text through the generation
-    service. Error, cancellation, or empty output raises
-    GenerationFailedError -- the caller stores nothing."""
+async def _generate_text(backend, messages: list[ChatMessage]) -> tuple[str, dict]:
+    """Collect one generation's text and reasoning record through
+    the generation service (P-207). Reasoning dicts are collected
+    in arrival order, exactly as the bridge loop collects them;
+    the returned record is the caller's to land or carry. Error,
+    cancellation, or empty output raises GenerationFailedError --
+    the caller stores nothing and no record is built for a failed
+    generation: there is nothing to land."""
     from runmal.generation import service as generation_service
 
     parts: list[str] = []
+    reasoning_parts: list[str] = []
     finish: str | None = None
     error_code: str | None = None
     async for event in generation_service.generate_events(
@@ -308,6 +332,8 @@ async def _generate_text(backend, messages: list[ChatMessage]) -> str:
         kind = event.get("type")
         if kind == "token":
             parts.append(event["text"])
+        elif kind == "reasoning":
+            reasoning_parts.append(event["text"])
         elif kind == "error":
             error_code = event.get("code") or "backend_error"
         elif kind == "done":
@@ -319,7 +345,38 @@ async def _generate_text(backend, messages: list[ChatMessage]) -> str:
         raise GenerationFailedError(f"generation did not finish cleanly: {finish}")
     if not text or not text.strip():
         raise GenerationFailedError("generation produced no text")
-    return text
+    reasoning_text = "".join(reasoning_parts)
+    if reasoning_text:
+        record = reasoning_mod.build_record(status="recorded", text=reasoning_text)
+    else:
+        record = reasoning_mod.build_record(status="not_present")
+    return text, record
+
+
+def _combine_extend_reasoning(existing_view, new_record):
+    """Combine an EXTEND generation's record with the active
+    swipe's existing record (P-207). Returns the combined record,
+    or None when the existing record is not seam-owned
+    (``not_recorded`` / ``unknown``): the caller then leaves the
+    swipe's ``reasoning_json`` byte-untouched, because that
+    swipe's earlier production was never captured and no record
+    for the whole swipe can be honestly claimed."""
+    existing_status = existing_view.get("status")
+    if existing_status is None:
+        existing_status = existing_view.get("reasoning_status")
+    if existing_status not in ("recorded", "not_present"):
+        return None
+    new_status = new_record.get("status")
+    if existing_status == "recorded" and new_status == "recorded":
+        return reasoning_mod.build_record(
+            status="recorded", text=existing_view["text"] + new_record["text"])
+    if existing_status == "not_present" and new_status == "recorded":
+        return reasoning_mod.build_record(
+            status="recorded", text=new_record["text"])
+    if existing_status == "recorded" and new_status == "not_present":
+        return reasoning_mod.build_record(
+            status="recorded", text=existing_view["text"])
+    return reasoning_mod.build_record(status="not_present")
 
 
 def _run_session(mode: Mode, messages: list[ChatMessage], text: str) -> GenerationSession:
@@ -362,16 +419,22 @@ async def continue_chat(
     system_prompt = await _chat_system_prompt(session, user_id, chat)
     messages, resolved = build_continue_messages(hist, system_prompt, mode, instruction)
     backend = backend or await resolve_backend(session, user_id, chat)
-    text = await _generate_text(backend, messages)
+    text, reasoning_record = await _generate_text(backend, messages)
     gen = _run_session(Mode.NORMAL, messages, text)
     role, committed_text = gen.commit()
     assert role == "assistant" and committed_text == text
     if resolved == MODE_EXTEND:
         message = history[-1]
         deck, idx = _deck(message)
+        existing_view = reasoning_mod.active_view(message, idx)
         new_deck = list(deck)
         new_deck[idx] = deck[idx] + text
         _store_deck(message, new_deck, idx)
+        combined = _combine_extend_reasoning(existing_view, reasoning_record)
+        if combined is not None:
+            message.reasoning_json = reasoning_mod.dump_document(
+                reasoning_mod.with_record_for_swipe(
+                    reasoning_mod.parse_reasoning(message), idx, combined))
         backend_key, model_id = prov_mod.backend_model_fields(backend)
         message.provenance_json = prov_mod.dump_document(
             prov_mod.with_amendment(
@@ -406,6 +469,7 @@ async def continue_chat(
             speaker_name=speaker_name,
             event_data={"source": KIND_CONTINUE, "mode": resolved},
             provenance=record,
+            reasoning=reasoning_record,
         )
         await _record_event(
             session,
@@ -455,7 +519,7 @@ async def impersonate_draft(
     system_prompt = await _chat_system_prompt(session, user_id, chat)
     messages = build_impersonate_messages(hist, system_prompt, instruction)
     backend = backend or await resolve_backend(session, user_id, chat)
-    text = await _generate_text(backend, messages)
+    text, reasoning_record = await _generate_text(backend, messages)
     gen = _run_session(Mode.IMPERSONATE, messages, text)
     await _record_event(
         session,
@@ -481,6 +545,7 @@ async def impersonate_draft(
         "backend": backend.backend_key,
         "fingerprint": gen.fingerprint,
         "generation_state": gen.state.value,
+        "reasoning": reasoning_record,
     }
 
 

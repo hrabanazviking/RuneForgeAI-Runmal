@@ -39,6 +39,8 @@ class ResolveIn(BaseModel):
     text: str
     char: str = ""
     user: str = "User"
+    last_vision_description: str = ""
+    chat_id: str = ""
 
 
 def _visible(exc: Exception) -> HTTPException:
@@ -91,7 +93,14 @@ async def resolve_tool(body: ResolveIn):
     """Resolve variables in a preview text; unknown ones are flagged."""
     from runmal.prompt.variables import resolve_variables
 
-    result = resolve_variables(body.text, char_name=body.char, user_name=body.user)
+    vision_text = body.last_vision_description
+    if body.chat_id and not vision_text:
+        from runmal.prompt.vision_link import last_description_text
+
+        vision_text = last_description_text(body.chat_id)
+    result = resolve_variables(
+        body.text, char_name=body.char, user_name=body.user,
+        last_vision_description=vision_text)
     return result.to_dict()
 
 

@@ -19,6 +19,7 @@ from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.chats import provenance as prov_mod
+from runmal.chats import reasoning as reasoning_mod
 from runmal.characters.service import get_character
 from runmal.db.models import Character, Chat, ChatEvent, Group, GroupMember, Message
 from runmal.groupchat.policies import get_policy
@@ -64,6 +65,8 @@ def message_to_dict(message: Message) -> dict:
         "speaker_id": message.speaker_id,
         "speaker_name": message.speaker_name,
         "provenance": prov_mod.active_view(
+            message, getattr(message, "swipe_id", 0) or 0),
+        "reasoning": reasoning_mod.active_view(
             message, getattr(message, "swipe_id", 0) or 0),
         "created_at": message.created_at.isoformat(),
         "updated_at": message.updated_at.isoformat() if message.updated_at else None,
@@ -269,6 +272,7 @@ async def append_message(
     content: str,
     *,
     provenance: dict | None = None,
+    reasoning: dict | None = None,
 ) -> Message | None:
     """Append a transcript message with explicit speaker identity.
 
@@ -308,6 +312,10 @@ async def append_message(
         speaker_name=speaker_name,
         provenance_json=prov_mod.dump_document(
             prov_mod.build_document(provenance)),
+        reasoning_json=reasoning_mod.dump_document(
+            reasoning_mod.build_document(
+                reasoning if reasoning is not None
+                else reasoning_mod.not_recorded_record())),
     )
     session.add(message)
     await session.flush()
@@ -335,3 +343,44 @@ async def list_messages(session: AsyncSession, user_id: str, group_id: str) -> l
         select(Message).where(Message.chat_id == chat.id).order_by(Message.created_at)
     )
     return list(result.scalars())
+
+
+async def list_group_reasoning(
+    session: AsyncSession, user_id: str, group_id: str
+) -> dict | None:
+    """A group's per-message reasoning views: every
+    transcript message's ACTIVE view and FULL document
+    (P-211), for the Inspector group reasoning census,
+    plus the speaker identity the transcript itself
+    carries. None when the group is missing or foreign.
+    Pure read over the banked P-205 tolerant readers;
+    persists nothing.
+
+    The owned fence IS list_messages itself: it is
+    called, its None (missing or foreign group)
+    propagates as None, and no second fence is written,
+    so existence never leaks. The room chat is resolved
+    through the banked _room_chat, exactly as
+    list_messages resolves it. Each message's active
+    view is resolved exactly as message_to_dict resolves
+    it (the message's active swipe)."""
+    messages = await list_messages(session, user_id, group_id)
+    if messages is None:
+        return None
+    chat = await _room_chat(session, group_id)
+    entries = []
+    for message in messages:
+        entries.append({
+            "message_id": message.id,
+            "role": message.role,
+            "speaker_id": message.speaker_id,
+            "speaker_name": message.speaker_name,
+            "active": reasoning_mod.active_view(
+                message, getattr(message, "swipe_id", 0) or 0),
+            "full": reasoning_mod.full_view(message),
+        })
+    return {
+        "group_id": group_id,
+        "room_chat_id": chat.id if chat is not None else None,
+        "messages": entries,
+    }
