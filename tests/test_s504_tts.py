@@ -294,10 +294,26 @@ def test_pyproject_extras_mirror_curated_install_sets():
     # Wheel tags (cp312/cp313) follow the running interpreter in the
     # registry sets and are pinned to cp312 in pyproject; normalize
     # the tag before comparing so only real divergence fails.
+    # The torch/torchaudio CPU refs are written per architecture:
+    # direct +cpu wheel URLs on x86_64 in both writings, and — in
+    # the registry set only — PyPI pins on aarch64, because the CPU
+    # wheel index ships no aarch64 wheels and hatchling cannot
+    # carry an environment marker on a direct reference in
+    # pyproject. Canonicalize either writing to a version-bearing
+    # token so the guard still catches a missing entry or a
+    # version divergence between the two writings.
     from runmal.voice.backends import CHATTERBOX_PACKAGES, COSYVOICE_PACKAGES
 
     def norm(entries):
-        return [re.sub(r"cp3\d+", "cp3XX", e) for e in entries]
+        out = []
+        for e in entries:
+            e = re.sub(r"cp3\d+", "cp3XX", e)
+            m = re.match(r"(torch|torchaudio)\s*(?:@|==)\s*(\S+)", e)
+            if m:
+                ver = re.search(r"\d+\.\d+\.\d+", m.group(2))
+                e = f"{m.group(1)}<cpuref:{ver.group(0) if ver else '?'}>"
+            out.append(e)
+        return out
 
     assert norm(_pyproject_extra("voice-cosyvoice")) == \
         norm(list(COSYVOICE_PACKAGES))
@@ -321,8 +337,16 @@ def test_cosyvoice_set_excludes_soxr_and_uses_cpu_torch():
     assert "librosa" in names and "soxr" not in names
     assert "python-soxr" not in names and "ttsfrd" not in names
     assert "transformers==4.51.3" in COSYVOICE_PACKAGES
-    torch_refs = [p for p in COSYVOICE_PACKAGES if p.startswith("torch @")]
-    assert torch_refs and "%2Bcpu" in torch_refs[0]
+    torch_refs = [p for p in COSYVOICE_PACKAGES
+                  if p.startswith(("torch @", "torch=="))]
+    assert torch_refs
+    if torch_refs[0].startswith("torch @"):
+        assert "%2Bcpu" in torch_refs[0]
+    else:
+        # aarch64: the plain PyPI pin IS the CPU build there — the
+        # nvidia-* companions are x86_64-markered (see
+        # runmal.voice.backends._torch_cpu_refs).
+        assert torch_refs[0] == "torch==2.6.0"
     assert "modelscope==1.32.0" in COSYVOICE_PACKAGES
 
 

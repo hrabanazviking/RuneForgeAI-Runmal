@@ -33,6 +33,7 @@ from __future__ import annotations
 
 import logging
 import os
+import platform
 import re
 import sys
 import threading
@@ -95,9 +96,25 @@ def _torch_cpu_refs() -> tuple[str, str]:
     GPU torch stays available as a user's own install choice
     (interoperability principle). Wheel tags follow the RUNNING
     interpreter — the install machinery installs into the app env.
+
+    ARM (aarch64) writes the refs differently, on evidence: the
+    ``download.pytorch.org`` CPU index publishes no aarch64 wheels
+    (the ``linux_aarch64`` URL answers 403, verified 2026-11-13),
+    while PyPI's ``manylinux_2_28_aarch64`` builds of torch 2.6.0
+    ARE CPU builds — every ``nvidia-*`` companion in torch's
+    declared requirements is marker-gated to
+    ``platform_machine == 'x86_64'``, so nothing unlicensed rides
+    along on ARM. A plain version pin therefore resolves to the
+    same BSD-3 CPU tree there. The mirror writing in
+    ``pyproject.toml`` keeps the x86_64 form (hatchling cannot
+    carry an environment marker on a direct reference); the
+    drift guard in ``tests/test_s504_tts.py`` canonicalizes
+    either writing before comparing.
     """
     tag = f"cp{sys.version_info.major}{sys.version_info.minor}"
     base = "https://download.pytorch.org/whl/cpu"
+    if platform.machine().lower() in ("aarch64", "arm64"):
+        return ("torch==2.6.0", "torchaudio==2.6.0")
     return (
         f"torch @ {base}/torch-2.6.0%2Bcpu-{tag}-{tag}-linux_x86_64.whl",
         f"torchaudio @ {base}/torchaudio-2.6.0%2Bcpu-{tag}-{tag}-linux_x86_64.whl",
