@@ -24,6 +24,11 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "ruff>=0.8", "pytest-asyncio>=0.24"]
+# Desktop shell (R-01, ADR-0010): one uniform pin on every platform.
+# 6.8.0.2 is the newest PySide6 whose aarch64 wheel installs on
+# glibc 2.36 (Mimir / Debian bookworm); newer aarch64 wheels are
+# manylinux_2_39 (glibc >= 2.39) and cannot land there.
+desktop = ["PySide6-Essentials==6.8.0.2"]
 # Campaign V voice extras — every entry passed the S504 license gate
 # (docs/VOICE_LICENSE_MATRIX.md): Apache-2.0 / MIT / BSD only. Model
 # weights (Whisper small, Silero VAD) download separately into cache
