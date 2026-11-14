@@ -344,8 +344,8 @@ def test_14_census_head_and_exact_control_census(
         len([k for k in methods
              if k in ("get", "post", "put", "delete", "patch")])
         for methods in paths.values())
-    assert len(paths) == 356
-    assert operations == 439
+    assert len(paths) == 365
+    assert operations == 455
     assert MIGRATIONS[-1][0] == "0042"
     assert current_revision(client.db_path) == "0042"
     assert all(rev != "0043" for rev, _desc, _mod in MIGRATIONS)

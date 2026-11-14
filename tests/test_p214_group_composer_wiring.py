@@ -303,8 +303,8 @@ def test_14_census_head_and_page_integrity(tmp_path, monkeypatch):
         for methods in paths.values())
     # No road is added, moved or removed by P-214: the census
     # stands at the P-213 census and NO pin is healed.
-    assert len(paths) == 356
-    assert operations == 439
+    assert len(paths) == 365
+    assert operations == 455
     assert MIGRATIONS[-1][0] == "0042"
     assert current_revision(client.db_path) == "0042"
     assert all(rev != "0043" for rev, _desc, _mod in MIGRATIONS)

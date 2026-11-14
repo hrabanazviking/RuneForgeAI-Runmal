@@ -407,8 +407,8 @@ def test_13_route_census_unchanged_no_heal(tmp_path, monkeypatch):
         for methods in paths.values())
     # No road is added, moved or removed by P-212: the census
     # stands at the P-211 census and NO pin is healed.
-    assert len(paths) == 356
-    assert operations == 439
+    assert len(paths) == 365
+    assert operations == 455
 
 
 def test_14_migration_head_and_chat_wiring_fences(tmp_path, monkeypatch):

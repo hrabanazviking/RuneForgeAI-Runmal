@@ -365,12 +365,16 @@ def test_15_route_census_equals_p206_census(tmp_path, monkeypatch):
         len([k for k in methods
              if k in ("get", "post", "put", "delete", "patch")])
         for methods in paths.values())
-    # P-211 heal: 356 / 439 since P-211's one new road
-    # (P-210 heal: 355 / 438 since P-210's one new road;
+    # R-03 heal: 365 / 455 — R-02's backend-profile roads
+    # (+7 paths / +12 operations) landed without healing this
+    # pin, and R-03 adds /chats/{id}/persona (GET+POST) and
+    # /user-name (GET+PUT): +2 paths / +4 operations.
+    # (P-211 heal: 356 / 439 since P-211's one new road;
+    # P-210 heal: 355 / 438 since P-210's one new road;
     # the P-206 census this pin was written against was
-    # 354 / 437; P-207 itself added no road).
-    assert len(paths) == 356
-    assert operations == 439
+    # 354 / 437; P-207 itself added no road.)
+    assert len(paths) == 365
+    assert operations == 455
 
 
 async def test_16_declined_family_still_not_recorded(tmp_path):

@@ -510,8 +510,8 @@ def test_13_route_census_grows_by_exactly_one_road(tmp_path, monkeypatch):
     )
     # P-211 heal: 356 / 439 since P-211's one new road
     # (the Inspector group reasoning road).
-    assert len(paths) == 356  # 354 at P-209 + P-210/P-211 roads
-    assert operations == 439
+    assert len(paths) == 365  # 354 at P-209 + P-210/P-211 roads
+    assert operations == 455
     assert "/api/v1/inspector/chats/{chat_id}/reasoning" in paths
 
 

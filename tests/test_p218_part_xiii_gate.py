@@ -448,21 +448,25 @@ def test_a6_schema_tags_exactly_five_verbatim():
 def test_a7_census_migration_and_part_delta(tmp_path, monkeypatch):
     client = make_client(tmp_path, monkeypatch)
     paths, operations = census(client)
-    assert len(paths) == 356
-    assert operations == 439
+    assert len(paths) == 365
+    assert operations == 455
     assert MIGRATIONS[-1][0] == "0042"
     migrations_dir = SRC / "db" / "migrations"
     assert not [p.name for p in migrations_dir.glob("m0043*")]
-    # The part's whole census delta over the P-209 census
-    # (354 / 437) is exactly the two Inspector reasoning
-    # roads: P-210 +1/+1 and P-211 +1/+1, nothing else.
+    # The part's census delta over the P-209 census
+    # (354 / 437) was exactly the two Inspector reasoning
+    # roads: P-210 +1/+1 and P-211 +1/+1. R-03 heal: the
+    # non-reasoning remainder has since grown by the R-02
+    # backend-profile roads (+7 paths / +12 operations,
+    # landed unhealed) and R-03's persona/user-name roads
+    # (+2 / +4), so the remainder pins move with the census.
     reasoning_paths = {
         "/api/v1/inspector/chats/{chat_id}/reasoning",
         "/api/v1/inspector/groups/{group_id}/reasoning",
     }
     assert reasoning_paths <= set(paths)
-    assert len(paths) - len(reasoning_paths) == 354
-    assert operations - 2 == 437
+    assert len(paths) - len(reasoning_paths) == 363
+    assert operations - 2 == 453
 
 
 def test_a8_group_page_census_twenty_ids():

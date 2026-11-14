@@ -489,8 +489,8 @@ def test_a8_matrix_doc_structure():
 def test_a9_standing_census(tmp_path, monkeypatch):
     client = make_client(tmp_path, monkeypatch)
     paths, operations = census(client)
-    assert len(paths) == 356
-    assert operations == 439
+    assert len(paths) == 365
+    assert operations == 455
     assert MIGRATIONS[-1][0] == "0042"
     migrations_dir = SRC / "db" / "migrations"
     assert not [p.name for p in migrations_dir.glob("m0043*")]

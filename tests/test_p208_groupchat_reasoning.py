@@ -469,8 +469,8 @@ def test_15_route_census_equals_p207_census(tmp_path, monkeypatch):
     # (P-210 heal: 355 / 438 since P-210's one new road;
     # the P-207 census this pin was written against was
     # 354 / 437; P-208 itself added no road).
-    assert len(paths) == 356
-    assert operations == 439
+    assert len(paths) == 365
+    assert operations == 455
 
 
 async def test_16_add_swipe_still_not_recorded(tmp_path):

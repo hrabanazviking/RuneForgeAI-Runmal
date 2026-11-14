@@ -157,23 +157,44 @@ async def _resolve_speaker(
     return None, speaker_name
 
 
-def persona_system_prompt(character) -> str:
-    """The persona's system prompt from its card slots (S110 manifest)."""
+def persona_system_prompt(character, user_name: str = "User") -> str:
+    """The persona's system prompt from its card slots (S110 manifest).
+
+    ``user_name`` resolves the card's ``{{user}}`` macro (R-03): the
+    persisted user name by the time :func:`compose_messages` calls
+    this; the default ``"User"`` keeps direct callers on the pre-R-03
+    behaviour.
+    """
     try:
         card = parse_json_card(character.card_json.encode("utf-8"))
     except CardParseError:
         return ""
-    return render_system_prompt(build_slot_manifest(card))
+    return render_system_prompt(build_slot_manifest(card, user_name=user_name))
 
 
-async def compose_messages(session: AsyncSession, user_id: str, chat: Chat) -> list[ChatMessage]:
+async def compose_messages(
+    session: AsyncSession,
+    user_id: str,
+    chat: Chat,
+    user_name: str | None = None,
+) -> list[ChatMessage]:
     """Server-side prompt composition from conversation state (§7):
-    persona system prompt first, then the stored history in order."""
+    persona system prompt first, then the stored history in order.
+
+    ``user_name=None`` (the ordinary road) resolves ``{{user}}`` from
+    the persisted R-03 user-name setting, defaulting to ``"User"``;
+    an explicit value wins, for tests and future callers with their
+    own resolution.
+    """
+    if user_name is None:
+        from runmal.persona.user_settings import get_user_name
+
+        user_name = get_user_name()
     messages: list[ChatMessage] = []
     if chat.character_id:
         character = await get_character(session, user_id, chat.character_id)
         if character is not None:
-            system_prompt = persona_system_prompt(character)
+            system_prompt = persona_system_prompt(character, user_name=user_name)
             if system_prompt:
                 messages.append(ChatMessage(role="system", content=system_prompt))
     history = await chats.get_history(session, user_id, chat.id) or []

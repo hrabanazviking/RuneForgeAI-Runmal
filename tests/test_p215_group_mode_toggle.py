@@ -308,8 +308,8 @@ def test_13_route_census_unchanged(tmp_path, monkeypatch):
         len([k for k in methods
              if k in ("get", "post", "put", "delete", "patch")])
         for methods in paths.values())
-    assert len(paths) == 356
-    assert operations == 439
+    assert len(paths) == 365
+    assert operations == 455
 
 
 def test_14_head_and_exact_control_census(tmp_path, monkeypatch):

@@ -381,8 +381,8 @@ def test_15_route_census_stays_354_437(tmp_path, monkeypatch):
     # P-210 heal: 355 / 438 - exactly one new road since
     # this pin was written (P-210's Inspector reasoning
     # road); P-209 itself added no road.
-    assert len(paths) == 356
-    assert operations == 439
+    assert len(paths) == 365
+    assert operations == 455
 
 
 async def test_16_content_law_on_both_new_seams(tmp_path, monkeypatch):

@@ -239,15 +239,20 @@ def build_impersonate_messages(
 
 def _persona_system_prompt(character) -> str:
     """The persona's system prompt from its card slots (S110
-    manifest) -- the same road bridge/conversation.py walks."""
+    manifest) -- the same road bridge/conversation.py walks.
+    ``{{user}}`` resolves from the persisted R-03 user-name
+    setting, exactly as on the bridge composed road."""
     from runmal.cards import CardParseError, parse_json_card
     from runmal.persona import build_slot_manifest, render_system_prompt
+    from runmal.persona.user_settings import get_user_name
 
     try:
         card = parse_json_card(character.card_json.encode("utf-8"))
     except CardParseError:
         return ""
-    return render_system_prompt(build_slot_manifest(card))
+    return render_system_prompt(
+        build_slot_manifest(card, user_name=get_user_name())
+    )
 
 
 async def _chat_system_prompt(

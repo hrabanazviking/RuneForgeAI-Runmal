@@ -677,8 +677,8 @@ def test_15_census_migration_and_p210_document_unmoved(
         )
         for methods in paths.values()
     )
-    assert len(paths) == 356
-    assert operations == 439
+    assert len(paths) == 365
+    assert operations == 455
     assert "/api/v1/inspector/groups/{group_id}/reasoning" in paths
     assert "/api/v1/inspector/chats/{chat_id}/reasoning" in paths
     # Migration head stays 0042; no 0043 file exists.
