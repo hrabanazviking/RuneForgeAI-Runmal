@@ -419,3 +419,18 @@ character, persona (R-03 road), pinned backend profile, model,
 and preset from live API data, in words, with unpinned and
 dangling states named honestly rather than filled in. Slice
 contract and evidence: `docs/DESKTOP_CHAT_STAGE_R06_2026-11-14.md`.
+
+R-07 completes the Chat Stage on the same boundaries: the full
+action surface (per-message edit/delete/swipes/branch/pin/copy,
+regenerate, continue, impersonate, Author's Note, chat search,
+checkpoints + undo surfacing) runs through `chat_logic.ChatFlow`
+over new typed client roads for the engine's existing chats
+routes — no new engine routes. Regenerate, which has no engine
+route, is composed in the flow: the last reply is set aside via
+its journaled delete so the composed prompt matches the original
+turn's, a fresh reply streams and lands only on a clean finish,
+and any other ending restores the old reply (undo journal first,
+re-append fallback). Pin state is verified by re-reading the
+pinned list, and transcript rows state pin/swipe position in
+words. Slice contract and evidence:
+`docs/DESKTOP_CHAT_STAGE_R07_2026-11-14.md`.

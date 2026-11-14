@@ -1,5 +1,5 @@
 """The Rúnmál main window — desktop shell (R-04 skeleton, R-05
-wizard, R-06 Chat Stage I).
+wizard, R-06 Chat Stage I, R-07 Chat Stage II).
 
 One ``QMainWindow`` titled "Rúnmál": the plan §2.3 menu bar, a
 toolbar, a left Library dock (Chats / Characters), a collapsible
@@ -16,11 +16,17 @@ the greeting) / renames / deletes (confirmed) / exports chats.
 The Session dock shows the open chat's character, persona,
 backend profile, model, and preset from real API data.
 
+R-07 completes the stage: a message list under the transcript
+carries the per-message actions (edit, delete, swipe ◀ ▶ with a
+list/select/delete dialog, branch, pin/unpin, copy), the chat
+actions Regenerate / Continue / Impersonate, an Author's Note
+editor, chat search, and checkpoints + undo surfacing — every
+one over the engine's existing chats roads through the same
+client layer and ChatFlow, off the GUI thread.
+
 Honesty rule (carried from R-04): an action is REAL only where
 its machinery exists. Later-slice screens stay placeholder
-actions labelled with their slice — per-message actions,
-regenerate/continue/impersonate, Author's Note, chat search and
-checkpoints/undo are R-07 and are labelled so, never dressed up.
+actions labelled with their slice, never dressed up.
 """
 
 from __future__ import annotations
@@ -30,6 +36,8 @@ from pathlib import Path
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QAction, QKeySequence
 from PySide6.QtWidgets import (
+    QApplication,
+    QCheckBox,
     QComboBox,
     QDialog,
     QDialogButtonBox,
@@ -44,6 +52,7 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QPlainTextEdit,
     QPushButton,
+    QSpinBox,
     QTabWidget,
     QTextBrowser,
     QVBoxLayout,
@@ -52,10 +61,12 @@ from PySide6.QtWidgets import (
 
 from runmal.desktop.chat_logic import (
     ChatFlow,
+    ImpersonateDraft,
     OpenChat,
     SessionView,
     StreamDraft,
     export_filename,
+    message_list_label,
     transcript_html,
 )
 from runmal.desktop.client import RunmalClient, fetch_snapshot
@@ -147,6 +158,386 @@ class RenameChatDialog(QDialog):
         return self.title_edit.text().strip()
 
 
+class EditMessageDialog(QDialog):
+    """Edit one message's text (R-07)."""
+
+    def __init__(
+        self, current_text: str, parent: QWidget | None = None
+    ) -> None:
+        super().__init__(parent)
+        self.setWindowTitle("Edit Message")
+        layout = QVBoxLayout(self)
+        layout.addWidget(QLabel("Message text:"))
+        self.text_edit = QPlainTextEdit(current_text)
+        layout.addWidget(self.text_edit)
+        buttons = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok
+            | QDialogButtonBox.StandardButton.Cancel
+        )
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+        layout.addWidget(buttons)
+
+    def text(self) -> str:
+        return self.text_edit.toPlainText()
+
+
+class SwipeListDialog(QDialog):
+    """One message's swipe deck (R-07): list every alternate,
+    select one as active, or delete one. The buttons act through
+    callbacks the window supplies (they run the real roads and
+    then refresh this list from the returned message)."""
+
+    def __init__(
+        self,
+        message: MessageView,
+        *,
+        on_select,
+        on_delete,
+        parent: QWidget | None = None,
+    ) -> None:
+        super().__init__(parent)
+        self.setWindowTitle("Swipes")
+        self._message = message
+        self._on_select = on_select
+        self._on_delete = on_delete
+        layout = QVBoxLayout(self)
+        self.deck_label = QLabel("")
+        layout.addWidget(self.deck_label)
+        self.swipe_list = QListWidget()
+        layout.addWidget(self.swipe_list)
+        row = QHBoxLayout()
+        self.select_button = QPushButton("Select")
+        self.select_button.clicked.connect(
+            lambda _c=False: self._act(self._on_select)
+        )
+        row.addWidget(self.select_button)
+        self.delete_button = QPushButton("Delete Swipe")
+        self.delete_button.clicked.connect(
+            lambda _c=False: self._act(self._on_delete)
+        )
+        row.addWidget(self.delete_button)
+        layout.addLayout(row)
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
+        buttons.rejected.connect(self.reject)
+        buttons.accepted.connect(self.accept)
+        layout.addWidget(buttons)
+        self.refresh(message)
+
+    def refresh(self, message: MessageView) -> None:
+        self._message = message
+        deck = list(message.swipes) or [message.content]
+        self.deck_label.setText(
+            f"{len(deck)} alternate(s) — active is "
+            f"{message.swipe_id + 1} of {len(deck)}."
+        )
+        self.swipe_list.clear()
+        for index, text in enumerate(deck):
+            excerpt = " ".join(text.split())
+            if len(excerpt) > 70:
+                excerpt = excerpt[:67] + "…"
+            item = QListWidgetItem(f"{index + 1}. {excerpt}")
+            item.setData(_CHAT_ID_ROLE, index)
+            self.swipe_list.addItem(item)
+            if index == message.swipe_id:
+                self.swipe_list.setCurrentItem(item)
+
+    def selected_index(self) -> int | None:
+        item = self.swipe_list.currentItem()
+        if item is None:
+            return None
+        index = item.data(_CHAT_ID_ROLE)
+        return index if isinstance(index, int) else None
+
+    def _act(self, callback) -> None:
+        index = self.selected_index()
+        if index is None:
+            return
+        # The callback runs the road OFF the GUI thread and calls
+        # back with the updated message when it lands.
+        callback(self._message.id, index, self.refresh)
+
+
+class AuthorsNoteDialog(QDialog):
+    """The chat's Author's Note editor (R-07, P-056 shape)."""
+
+    def __init__(
+        self, note, parent: QWidget | None = None
+    ) -> None:
+        super().__init__(parent)
+        self.setWindowTitle("Author's Note")
+        layout = QVBoxLayout(self)
+        layout.addWidget(QLabel("Note text (steers every reply):"))
+        self.text_edit = QPlainTextEdit(note.text)
+        layout.addWidget(self.text_edit)
+        row = QHBoxLayout()
+        row.addWidget(QLabel("Depth:"))
+        self.depth_spin = QSpinBox()
+        self.depth_spin.setRange(0, 100)
+        self.depth_spin.setValue(note.depth)
+        row.addWidget(self.depth_spin)
+        row.addWidget(QLabel("Frequency:"))
+        self.frequency_spin = QSpinBox()
+        self.frequency_spin.setRange(1, 100)
+        self.frequency_spin.setValue(note.frequency)
+        row.addWidget(self.frequency_spin)
+        row.addWidget(QLabel("Role:"))
+        self.role_combo = QComboBox()
+        self.role_combo.addItems(["system", "user", "assistant"])
+        self.role_combo.setCurrentText(note.role or "system")
+        row.addWidget(self.role_combo)
+        layout.addLayout(row)
+        self.enabled_check = QCheckBox("Enabled")
+        self.enabled_check.setChecked(note.enabled)
+        layout.addWidget(self.enabled_check)
+        buttons = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok
+            | QDialogButtonBox.StandardButton.Cancel
+        )
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+        layout.addWidget(buttons)
+
+    def values(self) -> dict:
+        return {
+            "text": self.text_edit.toPlainText(),
+            "depth": self.depth_spin.value(),
+            "frequency": self.frequency_spin.value(),
+            "enabled": self.enabled_check.isChecked(),
+            "role": self.role_combo.currentText(),
+        }
+
+
+class ImpersonateDialog(QDialog):
+    """An impersonate draft (R-07): the model's suggestion for
+    YOUR next line, editable. Accept lands the final text as a
+    real user message; Discard stores nothing."""
+
+    def __init__(
+        self, draft: ImpersonateDraft, parent: QWidget | None = None
+    ) -> None:
+        super().__init__(parent)
+        self.setWindowTitle("Impersonate — Draft Your Next Line")
+        self.draft = draft
+        layout = QVBoxLayout(self)
+        layout.addWidget(
+            QLabel("A draft in your voice — edit it, accept it, or discard it:")
+        )
+        self.text_edit = QPlainTextEdit(draft.content)
+        layout.addWidget(self.text_edit)
+        row = QHBoxLayout()
+        self.accept_button = QPushButton("Accept as My Message")
+        self.accept_button.clicked.connect(self.accept)
+        row.addWidget(self.accept_button)
+        self.discard_button = QPushButton("Discard Draft")
+        self.discard_button.clicked.connect(self.reject)
+        row.addWidget(self.discard_button)
+        layout.addLayout(row)
+
+    def text(self) -> str:
+        return self.text_edit.toPlainText()
+
+
+class ChatSearchDialog(QDialog):
+    """Chat search (R-07, P-072): query across chats (or only the
+    open one), results as chat + snippet rows; opening a result
+    goes through the window callback."""
+
+    def __init__(
+        self,
+        *,
+        on_search,
+        on_open,
+        current_chat_id: str | None = None,
+        parent: QWidget | None = None,
+    ) -> None:
+        super().__init__(parent)
+        self.setWindowTitle("Search Chats")
+        self._on_search = on_search
+        self._on_open = on_open
+        self._current_chat_id = current_chat_id
+        self.hits: list = []
+        layout = QVBoxLayout(self)
+        row = QHBoxLayout()
+        self.query_edit = QLineEdit()
+        self.query_edit.setPlaceholderText("Words to find…")
+        self.query_edit.returnPressed.connect(
+            lambda: self.run_search()
+        )
+        row.addWidget(self.query_edit, 1)
+        self.search_button = QPushButton("Search")
+        self.search_button.clicked.connect(lambda _c=False: self.run_search())
+        row.addWidget(self.search_button)
+        layout.addLayout(row)
+        self.scope_check = QCheckBox("Only this chat")
+        self.scope_check.setEnabled(current_chat_id is not None)
+        layout.addWidget(self.scope_check)
+        self.results_label = QLabel("No search yet.")
+        self.results_label.setWordWrap(True)
+        layout.addWidget(self.results_label)
+        self.results_list = QListWidget()
+        self.results_list.itemDoubleClicked.connect(
+            lambda item: self._open_item(item)
+        )
+        layout.addWidget(self.results_list)
+        open_row = QHBoxLayout()
+        self.open_button = QPushButton("Open Chat")
+        self.open_button.clicked.connect(
+            lambda _c=False: self._open_current()
+        )
+        open_row.addWidget(self.open_button)
+        layout.addLayout(open_row)
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
+        buttons.rejected.connect(self.reject)
+        buttons.accepted.connect(self.accept)
+        layout.addWidget(buttons)
+
+    def run_search(self) -> None:
+        query = self.query_edit.text().strip()
+        if not query:
+            self.results_label.setText("Write something to search for first.")
+            return
+        scope = (
+            self._current_chat_id
+            if (self.scope_check.isChecked() and self._current_chat_id)
+            else None
+        )
+        self.results_label.setText("Searching…")
+        # The callback runs the search OFF the GUI thread and
+        # calls back into apply_outcome() when it lands.
+        self._on_search(query, scope, self.apply_outcome)
+
+    def apply_outcome(self, outcome) -> None:
+        if outcome is None:
+            self.results_label.setText("That search failed — see the status bar.")
+            return
+        self.hits = list(outcome.hits)
+        self.results_label.setText(outcome.status_words)
+        self.results_list.clear()
+        for hit in self.hits:
+            excerpt = " ".join(hit.snippet.split())
+            if len(excerpt) > 80:
+                excerpt = excerpt[:77] + "…"
+            item = QListWidgetItem(
+                f"{hit.chat_title or hit.chat_id} — {excerpt}"
+            )
+            item.setData(_CHAT_ID_ROLE, hit.chat_id)
+            self.results_list.addItem(item)
+
+    def _open_current(self) -> None:
+        item = self.results_list.currentItem()
+        if item is not None:
+            self._open_item(item)
+
+    def _open_item(self, item: QListWidgetItem) -> None:
+        chat_id = item.data(_CHAT_ID_ROLE)
+        if chat_id:
+            self._on_open(chat_id)
+
+
+class CheckpointsDialog(QDialog):
+    """Checkpoints + undo surfacing (R-07): list the open chat's
+    checkpoints (create / restore-as-new-chat / delete) and its
+    undo journal (top first), with an Undo Last button. All roads
+    run through the window-supplied callbacks."""
+
+    def __init__(
+        self,
+        *,
+        checkpoints: list,
+        undo_entries: list,
+        on_create,
+        on_restore,
+        on_delete,
+        on_undo,
+        parent: QWidget | None = None,
+    ) -> None:
+        super().__init__(parent)
+        self.setWindowTitle("Checkpoints & Undo")
+        self._on_create = on_create
+        self._on_restore = on_restore
+        self._on_delete = on_delete
+        self._on_undo = on_undo
+        layout = QVBoxLayout(self)
+        layout.addWidget(QLabel("Checkpoints (snapshots of this chat):"))
+        self.checkpoint_list = QListWidget()
+        layout.addWidget(self.checkpoint_list)
+        row = QHBoxLayout()
+        self.create_button = QPushButton("Create Checkpoint")
+        self.create_button.clicked.connect(lambda _c=False: self._create())
+        row.addWidget(self.create_button)
+        self.restore_button = QPushButton("Restore as New Chat")
+        self.restore_button.clicked.connect(lambda _c=False: self._restore())
+        row.addWidget(self.restore_button)
+        self.delete_button = QPushButton("Delete Checkpoint")
+        self.delete_button.clicked.connect(lambda _c=False: self._delete())
+        row.addWidget(self.delete_button)
+        layout.addLayout(row)
+        layout.addWidget(QLabel("Undo journal (newest first):"))
+        self.undo_list = QListWidget()
+        layout.addWidget(self.undo_list)
+        undo_row = QHBoxLayout()
+        self.undo_button = QPushButton("Undo Last Action")
+        self.undo_button.clicked.connect(lambda _c=False: self._undo())
+        undo_row.addWidget(self.undo_button)
+        layout.addLayout(undo_row)
+        self.state_label = QLabel("")
+        self.state_label.setWordWrap(True)
+        layout.addWidget(self.state_label)
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
+        buttons.rejected.connect(self.reject)
+        buttons.accepted.connect(self.accept)
+        layout.addWidget(buttons)
+        self.refresh(checkpoints, undo_entries)
+
+    def refresh(self, checkpoints: list, undo_entries: list) -> None:
+        self.checkpoint_list.clear()
+        for checkpoint in checkpoints:
+            item = QListWidgetItem(
+                f"{checkpoint.name} · {checkpoint.message_count} "
+                f"message(s) · {checkpoint.created_at}"
+            )
+            item.setData(_CHAT_ID_ROLE, checkpoint.id)
+            self.checkpoint_list.addItem(item)
+        if checkpoints:
+            self.checkpoint_list.setCurrentRow(0)
+        self.undo_list.clear()
+        for entry in undo_entries:
+            item = QListWidgetItem(entry.label)
+            item.setData(_CHAT_ID_ROLE, entry.id)
+            self.undo_list.addItem(item)
+        self.undo_button.setEnabled(bool(undo_entries))
+        self.state_label.setText(
+            f"{len(checkpoints)} checkpoint(s) · "
+            f"{len(undo_entries)} undoable action(s)."
+        )
+
+    def selected_checkpoint_id(self) -> str | None:
+        item = self.checkpoint_list.currentItem()
+        if item is None:
+            return None
+        value = item.data(_CHAT_ID_ROLE)
+        return value if isinstance(value, str) else None
+
+    def _create(self) -> None:
+        # Callbacks run their roads OFF the GUI thread and call
+        # back into refresh() with the new state when they land.
+        self._on_create(self)
+
+    def _restore(self) -> None:
+        checkpoint_id = self.selected_checkpoint_id()
+        if checkpoint_id:
+            self._on_restore(checkpoint_id)
+
+    def _delete(self) -> None:
+        checkpoint_id = self.selected_checkpoint_id()
+        if checkpoint_id:
+            self._on_delete(self, checkpoint_id)
+
+    def _undo(self) -> None:
+        self._on_undo(self)
+
+
 class MainWindow(QMainWindow):
     """Rúnmál shell window (engine + client injected)."""
 
@@ -187,6 +578,17 @@ class MainWindow(QMainWindow):
         self._new_chat_dialog: NewChatDialog | None = None
         self._rename_dialog: RenameChatDialog | None = None
         self._delete_box: QMessageBox | None = None
+        # Chat Stage II state (R-07).
+        self._edit_dialog: EditMessageDialog | None = None
+        self._swipe_dialog: SwipeListDialog | None = None
+        self._note_dialog: AuthorsNoteDialog | None = None
+        self._impersonate_dialog: ImpersonateDialog | None = None
+        self._search_dialog: ChatSearchDialog | None = None
+        self._checkpoints_dialog: CheckpointsDialog | None = None
+        self._delete_message_box: QMessageBox | None = None
+        self._branch_name_dialog: RenameChatDialog | None = None
+        self.last_impersonate_draft: ImpersonateDraft | None = None
+        self.last_search_outcome = None
 
         self.setWindowTitle("Rúnmál")
         self.resize(1200, 800)
@@ -231,6 +633,91 @@ class MainWindow(QMainWindow):
             "or press New Chat.</i></p>"
         )
         layout.addWidget(self.message_view, 1)
+
+        # R-07: the message list + per-message action bar. The
+        # transcript above is the reading view; this list is how a
+        # message is PICKED for an action (edit/delete/swipes/
+        # branch/pin/copy), one row per stored message.
+        self.message_list = QListWidget()
+        self.message_list.setObjectName("messageList")
+        self.message_list.setMaximumHeight(130)
+        layout.addWidget(self.message_list)
+        message_row = QHBoxLayout()
+        self.edit_message_button = QPushButton("Edit…")
+        self.edit_message_button.clicked.connect(
+            lambda _c=False: self.open_edit_message_dialog()
+        )
+        message_row.addWidget(self.edit_message_button)
+        self.delete_message_button = QPushButton("Delete Message")
+        self.delete_message_button.clicked.connect(
+            lambda _c=False: self.confirm_delete_selected_message()
+        )
+        message_row.addWidget(self.delete_message_button)
+        self.swipe_prev_button = QPushButton("◀ Swipe")
+        self.swipe_prev_button.clicked.connect(
+            lambda _c=False: self.swipe_selected(-1)
+        )
+        message_row.addWidget(self.swipe_prev_button)
+        self.swipe_next_button = QPushButton("Swipe ▶")
+        self.swipe_next_button.clicked.connect(
+            lambda _c=False: self.swipe_selected(1)
+        )
+        message_row.addWidget(self.swipe_next_button)
+        self.swipes_button = QPushButton("Swipes…")
+        self.swipes_button.clicked.connect(
+            lambda _c=False: self.open_swipe_dialog()
+        )
+        message_row.addWidget(self.swipes_button)
+        self.branch_button = QPushButton("Branch…")
+        self.branch_button.clicked.connect(
+            lambda _c=False: self.open_branch_dialog()
+        )
+        message_row.addWidget(self.branch_button)
+        self.pin_button = QPushButton("Pin")
+        self.pin_button.clicked.connect(
+            lambda _c=False: self.toggle_pin_selected()
+        )
+        message_row.addWidget(self.pin_button)
+        self.copy_message_button = QPushButton("Copy")
+        self.copy_message_button.clicked.connect(
+            lambda _c=False: self.copy_selected_message()
+        )
+        message_row.addWidget(self.copy_message_button)
+        layout.addLayout(message_row)
+
+        # R-07: the chat-level action row.
+        chat_row = QHBoxLayout()
+        self.regenerate_button = QPushButton("Regenerate")
+        self.regenerate_button.clicked.connect(
+            lambda _c=False: self.regenerate_last()
+        )
+        chat_row.addWidget(self.regenerate_button)
+        self.continue_button = QPushButton("Continue")
+        self.continue_button.clicked.connect(
+            lambda _c=False: self.continue_current()
+        )
+        chat_row.addWidget(self.continue_button)
+        self.impersonate_button = QPushButton("Impersonate…")
+        self.impersonate_button.clicked.connect(
+            lambda _c=False: self.open_impersonate()
+        )
+        chat_row.addWidget(self.impersonate_button)
+        self.authors_note_button = QPushButton("Author's Note…")
+        self.authors_note_button.clicked.connect(
+            lambda _c=False: self.open_authors_note_dialog()
+        )
+        chat_row.addWidget(self.authors_note_button)
+        self.search_button = QPushButton("Search Chats…")
+        self.search_button.clicked.connect(
+            lambda _c=False: self.open_search_dialog()
+        )
+        chat_row.addWidget(self.search_button)
+        self.checkpoints_button = QPushButton("Checkpoints & Undo…")
+        self.checkpoints_button.clicked.connect(
+            lambda _c=False: self.open_checkpoints_dialog()
+        )
+        chat_row.addWidget(self.checkpoints_button)
+        layout.addLayout(chat_row)
 
         self.chat_stage_status = QLabel("Streaming: idle")
         self.chat_stage_status.setWordWrap(True)
@@ -295,7 +782,8 @@ class MainWindow(QMainWindow):
         chat_buttons.addWidget(self.export_chat_button)
         chats_layout.addLayout(chat_buttons)
         chats_note = QLabel(
-            "Per-message actions, search and checkpoints land in R-07."
+            "Per-message actions, search and checkpoints live in "
+            "the Chat Stage (R-07)."
         )
         chats_note.setWordWrap(True)
         chats_layout.addWidget(chats_note)
@@ -411,8 +899,19 @@ class MainWindow(QMainWindow):
         file_menu.addAction(self.action_quit)
 
         edit_menu = bar.addMenu("Edit")
-        self._placeholder(edit_menu, "Undo", "R-07")
-        self._placeholder(edit_menu, "Find in Chat…", "R-07")
+        self.action_undo = QAction("Undo", self)
+        self.action_undo.setStatusTip(
+            "Undo the open chat's most recent journaled action (R-07)"
+        )
+        self.action_undo.triggered.connect(
+            lambda _c=False: self.undo_last_action()
+        )
+        edit_menu.addAction(self.action_undo)
+        self.action_find = QAction("Find in Chat…", self)
+        self.action_find.triggered.connect(
+            lambda _c=False: self.open_search_dialog()
+        )
+        edit_menu.addAction(self.action_find)
 
         view_menu = bar.addMenu("View")
         view_menu.addAction(self.library_dock.toggleViewAction())
@@ -423,8 +922,21 @@ class MainWindow(QMainWindow):
         self._placeholder(view_menu, "Ornament Density…", "R-15")
 
         chat_menu = bar.addMenu("Chat")
-        self._placeholder(chat_menu, "Regenerate", "R-07")
-        self._placeholder(chat_menu, "Continue", "R-07")
+        self.action_regenerate = QAction("Regenerate", self)
+        self.action_regenerate.triggered.connect(
+            lambda _c=False: self.regenerate_last()
+        )
+        chat_menu.addAction(self.action_regenerate)
+        self.action_continue = QAction("Continue", self)
+        self.action_continue.triggered.connect(
+            lambda _c=False: self.continue_current()
+        )
+        chat_menu.addAction(self.action_continue)
+        self.action_impersonate = QAction("Impersonate…", self)
+        self.action_impersonate.triggered.connect(
+            lambda _c=False: self.open_impersonate()
+        )
+        chat_menu.addAction(self.action_impersonate)
         self.action_stop_generating = QAction("Stop Generating", self)
         self.action_stop_generating.triggered.connect(
             lambda _c=False: self.request_stop()
@@ -474,7 +986,7 @@ class MainWindow(QMainWindow):
         status.addPermanentWidget(self.engine_status_label)
         status.addPermanentWidget(self.backend_status_label)
         status.addPermanentWidget(self.streaming_status_label)
-        status.showMessage("Rúnmál — Chat Stage (R-06)")
+        status.showMessage("Rúnmál — Chat Stage (R-07)")
 
     # ------------------------------------------------------------ client
 
@@ -699,6 +1211,29 @@ class MainWindow(QMainWindow):
         )
         bar = self.message_view.verticalScrollBar()
         bar.setValue(bar.maximum())
+        # R-07: keep the actionable message list in step with the
+        # stored history (the pending user line and the draft are
+        # display-only — actions land on stored messages only).
+        selected_id = self.selected_message_id()
+        self.message_list.clear()
+        for message in self.current_messages:
+            item = QListWidgetItem(
+                message_list_label(
+                    message,
+                    character_name=character_name,
+                    user_name=self._user_name,
+                )
+            )
+            item.setData(_CHAT_ID_ROLE, message.id)
+            self.message_list.addItem(item)
+            if message.id == selected_id:
+                self.message_list.setCurrentItem(item)
+        if (
+            self.message_list.currentItem() is None
+            and self.message_list.count() > 0
+        ):
+            self.message_list.setCurrentRow(self.message_list.count() - 1)
+        self._update_message_chrome()
 
     def _apply_open_chat(self, opened: OpenChat) -> None:
         self.current_chat = opened.chat
@@ -899,6 +1434,7 @@ class MainWindow(QMainWindow):
                 "<p><i>No chat open — pick one in the Chats dock, "
                 "or press New Chat.</i></p>"
             )
+            self.message_list.clear()
             self._update_composer_chrome()
         self.refresh_blocking()
         return deleted
@@ -965,6 +1501,7 @@ class MainWindow(QMainWindow):
                         "<p><i>No chat open — pick one in the Chats dock, "
                         "or press New Chat.</i></p>"
                     )
+                    self.message_list.clear()
                     self._update_composer_chrome()
             self.refresh_async()
 
@@ -1002,6 +1539,751 @@ class MainWindow(QMainWindow):
         Path(path).write_text(text, encoding="utf-8")
         self.statusBar().showMessage(f"Chat exported to {path}.", 8000)
 
+    # ------------------------------------------- R-07 message actions
+
+    def selected_message_id(self) -> str | None:
+        item = self.message_list.currentItem()
+        if item is None:
+            return None
+        value = item.data(_CHAT_ID_ROLE)
+        return value if isinstance(value, str) and value else None
+
+    def selected_message(self) -> MessageView | None:
+        message_id = self.selected_message_id()
+        if not message_id:
+            return None
+        for message in self.current_messages:
+            if message.id == message_id:
+                return message
+        return None
+
+    def _update_message_chrome(self) -> None:
+        has_chat = self.current_chat_id is not None and not self._streaming
+        message = self.selected_message()
+        has_message = has_chat and message is not None
+        for button in (
+            self.edit_message_button,
+            self.delete_message_button,
+            self.swipes_button,
+            self.branch_button,
+            self.copy_message_button,
+        ):
+            button.setEnabled(has_message)
+        deck = message.swipe_count if message is not None else 1
+        self.swipe_prev_button.setEnabled(
+            has_message and message is not None and message.swipe_id > 0
+        )
+        self.swipe_next_button.setEnabled(
+            has_message and message is not None and message.swipe_id < deck - 1
+        )
+        self.pin_button.setEnabled(has_message)
+        if message is not None:
+            self.pin_button.setText("Unpin" if message.pinned else "Pin")
+        for button in (
+            self.regenerate_button,
+            self.continue_button,
+            self.impersonate_button,
+            self.authors_note_button,
+            self.checkpoints_button,
+        ):
+            button.setEnabled(has_chat)
+        self.search_button.setEnabled(self._engine.is_running)
+        self.action_regenerate.setEnabled(has_chat)
+        self.action_continue.setEnabled(has_chat)
+        self.action_impersonate.setEnabled(has_chat)
+        self.action_undo.setEnabled(has_chat)
+
+    def _reload_open_chat(self, words: str = "") -> None:
+        """Re-read the open chat after an action landed, keeping
+        the action's words in the stage status afterwards."""
+        chat_id = self.current_chat_id
+        if chat_id is None:
+            return
+        try:
+            self.open_chat_blocking(chat_id)
+        except Exception as exc:  # the action's words already landed
+            self._apply_error(str(exc))
+            return
+        if words:
+            self.chat_stage_status.setText(words)
+            self.statusBar().showMessage(words, 8000)
+        self.refresh_async()
+
+    def _run_action(self, fn, words_of) -> None:
+        """Run one ChatFlow action off-thread; on success reload
+        the open chat and show ``words_of(result)``."""
+
+        def done(result) -> None:
+            self._reload_open_chat(words_of(result))
+
+        worker = run_async(fn, done, self._apply_error)
+        self._workers.append(worker)
+
+    # -- edit / delete --
+
+    def edit_message_blocking(
+        self, message_id: str, content: str
+    ) -> MessageView:
+        updated = self.flow().edit_message(
+            self.current_chat_id or "", message_id, content
+        )
+        self._reload_open_chat(f"Message edited — “{updated.content[:40]}”.")
+        return updated
+
+    def open_edit_message_dialog(self) -> EditMessageDialog | None:
+        message = self.selected_message()
+        if message is None or self.current_chat_id is None:
+            self.statusBar().showMessage("Pick a message to edit first.", 5000)
+            return None
+        dialog = EditMessageDialog(message.content, self)
+        dialog.accepted.connect(
+            lambda d=dialog, mid=message.id: self._edit_accepted(mid, d)
+        )
+        dialog.destroyed.connect(
+            lambda _obj=None: setattr(self, "_edit_dialog", None)
+        )
+        self._edit_dialog = dialog
+        dialog.show()
+        return dialog
+
+    def _edit_accepted(self, message_id: str, dialog: EditMessageDialog) -> None:
+        self._edit_dialog = None
+        chat_id = self.current_chat_id
+        if chat_id is None:
+            return
+        text = dialog.text()
+        flow = self.flow()
+        self._run_action(
+            lambda: flow.edit_message(chat_id, message_id, text),
+            lambda _m: "Message edited and saved.",
+        )
+
+    def delete_message_blocking(self, message_id: str) -> bool:
+        deleted = self.flow().delete_message(
+            self.current_chat_id or "", message_id
+        )
+        self._reload_open_chat(
+            "Message deleted — Undo can bring it back."
+            if deleted
+            else "That message was already gone."
+        )
+        return deleted
+
+    def confirm_delete_selected_message(self) -> QMessageBox | None:
+        message = self.selected_message()
+        if message is None or self.current_chat_id is None:
+            self.statusBar().showMessage(
+                "Pick a message to delete first.", 5000
+            )
+            return None
+        box = QMessageBox(self)
+        box.setIcon(QMessageBox.Icon.Warning)
+        box.setWindowTitle("Delete Message")
+        excerpt = " ".join(message.content.split())[:80]
+        box.setText(f"Delete this message?\n“{excerpt}”")
+        box.setInformativeText(
+            "The message leaves the chat history. The deletion is "
+            "journaled, so Checkpoints & Undo can restore it."
+        )
+        delete_button = box.addButton(
+            "Delete", QMessageBox.ButtonRole.DestructiveRole
+        )
+        box.addButton(QMessageBox.StandardButton.Cancel)
+        box.setDefaultButton(QMessageBox.StandardButton.Cancel)
+        box.buttonClicked.connect(
+            lambda button, mid=message.id, db=delete_button: (
+                self._delete_message_confirmed(mid) if button is db else None
+            )
+        )
+        box.destroyed.connect(
+            lambda _obj=None: setattr(self, "_delete_message_box", None)
+        )
+        self._delete_message_box = box
+        box.show()
+        return box
+
+    def _delete_message_confirmed(self, message_id: str) -> None:
+        self._delete_message_box = None
+        chat_id = self.current_chat_id
+        if chat_id is None:
+            return
+        flow = self.flow()
+        self._run_action(
+            lambda: flow.delete_message(chat_id, message_id),
+            lambda deleted: (
+                "Message deleted — Undo can bring it back."
+                if deleted
+                else "That message was already gone."
+            ),
+        )
+
+    # -- swipes --
+
+    def swipe_selected_blocking(self, step: int) -> MessageView | None:
+        message = self.selected_message()
+        if message is None or self.current_chat_id is None:
+            return None
+        flow = self.flow()
+        updated = (
+            flow.swipe_next(self.current_chat_id, message.id)
+            if step > 0
+            else flow.swipe_prev(self.current_chat_id, message.id)
+        )
+        self._reload_open_chat(
+            f"Swipe {updated.swipe_id + 1} of {updated.swipe_count} shown."
+        )
+        return updated
+
+    def swipe_selected(self, step: int) -> None:
+        message = self.selected_message()
+        if message is None or self.current_chat_id is None:
+            self.statusBar().showMessage("Pick a message first.", 5000)
+            return
+        chat_id = self.current_chat_id
+        flow = self.flow()
+        fn = flow.swipe_next if step > 0 else flow.swipe_prev
+        self._run_action(
+            lambda: fn(chat_id, message.id),
+            lambda m: f"Swipe {m.swipe_id + 1} of {m.swipe_count} shown.",
+        )
+
+    def select_swipe_blocking(
+        self, message_id: str, index: int
+    ) -> MessageView:
+        updated = self.flow().select_swipe(
+            self.current_chat_id or "", message_id, index
+        )
+        self._reload_open_chat(
+            f"Swipe {updated.swipe_id + 1} of {updated.swipe_count} shown."
+        )
+        return updated
+
+    def delete_swipe_blocking(
+        self, message_id: str, index: int
+    ) -> MessageView:
+        updated = self.flow().delete_swipe(
+            self.current_chat_id or "", message_id, index
+        )
+        self._reload_open_chat(
+            f"Swipe deleted — {updated.swipe_count} alternate(s) remain."
+        )
+        return updated
+
+    def open_swipe_dialog(self) -> SwipeListDialog | None:
+        message = self.selected_message()
+        if message is None or self.current_chat_id is None:
+            self.statusBar().showMessage(
+                "Pick a message to see its swipes.", 5000
+            )
+            return None
+        chat_id = self.current_chat_id
+        flow = self.flow()
+
+        def _async_swipe(fn):
+            def start(message_id: str, index: int, done) -> None:
+                worker = run_async(
+                    lambda: fn(chat_id, message_id, index),
+                    done,
+                    self._apply_error,
+                )
+                self._workers.append(worker)
+
+            return start
+
+        dialog = SwipeListDialog(
+            message,
+            on_select=_async_swipe(flow.select_swipe),
+            on_delete=_async_swipe(flow.delete_swipe),
+            parent=self,
+        )
+        dialog.finished.connect(
+            lambda _r=0: self._reload_open_chat("Swipes updated.")
+        )
+        dialog.destroyed.connect(
+            lambda _obj=None: setattr(self, "_swipe_dialog", None)
+        )
+        self._swipe_dialog = dialog
+        dialog.show()
+        return dialog
+
+    # -- branch / pin / copy --
+
+    def branch_blocking(
+        self, *, message_id: str | None = None, name: str = ""
+    ) -> ChatSummary:
+        branch = self.flow().branch_from(
+            self.current_chat_id or "", message_id=message_id, name=name
+        )
+        self.refresh_blocking()
+        self.open_chat_blocking(branch.id)
+        self.chat_stage_status.setText(
+            f"Branched — now in the new chat “{branch.title or branch.id}”; "
+            "the original chat is unchanged."
+        )
+        return branch
+
+    def open_branch_dialog(self) -> RenameChatDialog | None:
+        message = self.selected_message()
+        if self.current_chat_id is None:
+            self.statusBar().showMessage("Open a chat first.", 5000)
+            return None
+        dialog = RenameChatDialog("", self)
+        dialog.setWindowTitle("Branch Chat")
+        dialog.accepted.connect(
+            lambda d=dialog, mid=(message.id if message else None):
+            self._branch_accepted(mid, d)
+        )
+        dialog.destroyed.connect(
+            lambda _obj=None: setattr(self, "_branch_name_dialog", None)
+        )
+        self._branch_name_dialog = dialog
+        dialog.show()
+        return dialog
+
+    def _branch_accepted(
+        self, message_id: str | None, dialog: RenameChatDialog
+    ) -> None:
+        self._branch_name_dialog = None
+        chat_id = self.current_chat_id
+        if chat_id is None:
+            return
+        name = dialog.title()
+        flow = self.flow()
+
+        def branch() -> ChatSummary:
+            return flow.branch_from(chat_id, message_id=message_id, name=name)
+
+        def done(new_chat: ChatSummary) -> None:
+            self.refresh_async()
+            self.open_chat_async(new_chat.id)
+            self.statusBar().showMessage(
+                f"Branched — now in “{new_chat.title or new_chat.id}”; "
+                "the original chat is unchanged.",
+                8000,
+            )
+
+        worker = run_async(branch, done, self._apply_error)
+        self._workers.append(worker)
+
+    def toggle_pin_blocking(self) -> bool | None:
+        message = self.selected_message()
+        if message is None or self.current_chat_id is None:
+            return None
+        now_pinned = self.flow().set_pinned(
+            self.current_chat_id, message, not message.pinned
+        )
+        self._reload_open_chat(
+            "Message pinned to memory."
+            if now_pinned
+            else "Message unpinned."
+        )
+        return now_pinned
+
+    def toggle_pin_selected(self) -> None:
+        message = self.selected_message()
+        if message is None or self.current_chat_id is None:
+            self.statusBar().showMessage("Pick a message first.", 5000)
+            return
+        chat_id = self.current_chat_id
+        target = not message.pinned
+        flow = self.flow()
+        self._run_action(
+            lambda: flow.set_pinned(chat_id, message, target),
+            lambda now: (
+                "Message pinned to memory." if now else "Message unpinned."
+            ),
+        )
+
+    def copy_selected_message(self) -> str:
+        message = self.selected_message()
+        if message is None:
+            self.statusBar().showMessage("Pick a message to copy first.", 5000)
+            return ""
+        QApplication.clipboard().setText(message.content)
+        self.statusBar().showMessage("Message copied.", 4000)
+        return message.content
+
+    # -- regenerate / continue / impersonate --
+
+    def regenerate_blocking(self):
+        """Regenerate the last reply synchronously (proof/tests)."""
+        chat_id = self.current_chat_id or ""
+        flow = self.flow()
+        request_id = self.client().new_request_id()
+        self._active_request_id = request_id
+        self._streaming = True
+        self._draft = StreamDraft()
+        try:
+            result = flow.regenerate(
+                chat_id,
+                on_event=lambda event: (
+                    self._draft.apply(event) if self._draft else None
+                ),
+                request_id=request_id,
+            )
+        finally:
+            self._streaming = False
+            self._active_request_id = None
+            self._draft = None
+        self._reload_open_chat(result.status_words)
+        return result
+
+    def regenerate_last(self) -> None:
+        if self._streaming or self.current_chat_id is None:
+            if self.current_chat_id is None:
+                self.statusBar().showMessage("Open a chat first.", 5000)
+            return
+        chat_id = self.current_chat_id
+        self._draft = StreamDraft()
+        self._streaming = True
+        self._active_request_id = self.client().new_request_id()
+        self._set_streaming_words("regenerating…")
+        self._update_composer_chrome()
+        self.stop_button.setEnabled(True)
+        self.action_stop_generating.setEnabled(True)
+        flow = self.flow()
+        request_id = self._active_request_id
+
+        def run(emit) -> object:
+            return flow.regenerate(chat_id, on_event=emit, request_id=request_id)
+
+        worker = run_stream(
+            run, self._on_stream_event, self._on_regen_done, self._on_turn_failed
+        )
+        self._workers.append(worker)
+
+    def _on_regen_done(self, result) -> None:
+        self._streaming = False
+        self._active_request_id = None
+        self._draft = None
+        self._update_composer_chrome()
+        self._set_streaming_words("idle")
+        self._reload_open_chat(result.status_words)
+
+    def continue_blocking(self):
+        outcome = self.flow().continue_turn(self.current_chat_id or "")
+        self._reload_open_chat(outcome.status_words)
+        return outcome
+
+    def continue_current(self) -> None:
+        if self.current_chat_id is None:
+            self.statusBar().showMessage("Open a chat first.", 5000)
+            return
+        chat_id = self.current_chat_id
+        flow = self.flow()
+        self._run_action(
+            lambda: flow.continue_turn(chat_id),
+            lambda outcome: outcome.status_words,
+        )
+
+    def impersonate_blocking(self) -> ImpersonateDraft:
+        draft = self.flow().impersonate(self.current_chat_id or "")
+        self.last_impersonate_draft = draft
+        return draft
+
+    def accept_impersonate_blocking(self, content: str) -> MessageView:
+        draft = self.last_impersonate_draft
+        if draft is None:
+            raise ValueError("no impersonate draft to accept")
+        message = self.flow().accept_impersonate(
+            self.current_chat_id or "", draft, content
+        )
+        self.last_impersonate_draft = None
+        self._reload_open_chat("Impersonated line accepted as your message.")
+        return message
+
+    def discard_impersonate_blocking(self) -> bool:
+        draft = self.last_impersonate_draft
+        if draft is None:
+            return False
+        discarded = self.flow().discard_impersonate(
+            self.current_chat_id or "", draft
+        )
+        self.last_impersonate_draft = None
+        self._reload_open_chat("Impersonate draft discarded — nothing was stored.")
+        return discarded
+
+    def open_impersonate(self) -> None:
+        if self.current_chat_id is None:
+            self.statusBar().showMessage("Open a chat first.", 5000)
+            return
+        chat_id = self.current_chat_id
+        flow = self.flow()
+
+        def drafted(draft: ImpersonateDraft) -> None:
+            self.last_impersonate_draft = draft
+            dialog = ImpersonateDialog(draft, self)
+            dialog.accepted.connect(
+                lambda d=dialog: self._impersonate_accepted(d)
+            )
+            dialog.rejected.connect(
+                lambda d=dialog: self._impersonate_discarded(d)
+            )
+            dialog.destroyed.connect(
+                lambda _obj=None: setattr(self, "_impersonate_dialog", None)
+            )
+            self._impersonate_dialog = dialog
+            dialog.show()
+
+        worker = run_async(
+            lambda: flow.impersonate(chat_id), drafted, self._apply_error
+        )
+        self._workers.append(worker)
+
+    def _impersonate_accepted(self, dialog: ImpersonateDialog) -> None:
+        self._impersonate_dialog = None
+        draft = self.last_impersonate_draft
+        chat_id = self.current_chat_id
+        if draft is None or chat_id is None:
+            return
+        text = dialog.text()
+        flow = self.flow()
+        self._run_action(
+            lambda: flow.accept_impersonate(chat_id, draft, text),
+            lambda _m: "Impersonated line accepted as your message.",
+        )
+        self.last_impersonate_draft = None
+
+    def _impersonate_discarded(self, dialog: ImpersonateDialog) -> None:
+        self._impersonate_dialog = None
+        draft = self.last_impersonate_draft
+        chat_id = self.current_chat_id
+        if draft is None or chat_id is None:
+            return
+        flow = self.flow()
+        self._run_action(
+            lambda: flow.discard_impersonate(chat_id, draft),
+            lambda _d: "Impersonate draft discarded — nothing was stored.",
+        )
+        self.last_impersonate_draft = None
+
+    # -- author's note --
+
+    def authors_note_blocking(self):
+        return self.flow().authors_note(self.current_chat_id or "")
+
+    def save_authors_note_blocking(self, **values):
+        note = self.flow().save_authors_note(
+            self.current_chat_id or "", **values
+        )
+        self._reload_open_chat(
+            "Author's Note saved."
+            if note.enabled and note.text.strip()
+            else "Author's Note saved (currently not steering: "
+            "empty or disabled)."
+        )
+        return note
+
+    def open_authors_note_dialog(self) -> None:
+        if self.current_chat_id is None:
+            self.statusBar().showMessage("Open a chat first.", 5000)
+            return
+        chat_id = self.current_chat_id
+        flow = self.flow()
+
+        def got(note) -> None:
+            dialog = AuthorsNoteDialog(note, self)
+            dialog.accepted.connect(
+                lambda d=dialog: self._note_accepted(chat_id, d)
+            )
+            dialog.destroyed.connect(
+                lambda _obj=None: setattr(self, "_note_dialog", None)
+            )
+            self._note_dialog = dialog
+            dialog.show()
+
+        worker = run_async(
+            lambda: flow.authors_note(chat_id), got, self._apply_error
+        )
+        self._workers.append(worker)
+
+    def _note_accepted(self, chat_id: str, dialog: AuthorsNoteDialog) -> None:
+        self._note_dialog = None
+        values = dialog.values()
+        flow = self.flow()
+        self._run_action(
+            lambda: flow.save_authors_note(chat_id, **values),
+            lambda _n: "Author's Note saved.",
+        )
+
+    # -- search --
+
+    def search_blocking(self, query: str, chat_id: str | None = None):
+        outcome = self.flow().search(query, chat_id=chat_id)
+        self.last_search_outcome = outcome
+        return outcome
+
+    def open_search_dialog(self) -> ChatSearchDialog:
+        flow = self.flow()
+
+        def on_search(query: str, scope_chat_id: str | None, done) -> None:
+            def found(outcome) -> None:
+                self.last_search_outcome = outcome
+                done(outcome)
+
+            worker = run_async(
+                lambda: flow.search(query, chat_id=scope_chat_id),
+                found,
+                lambda message: (self._apply_error(message), done(None)),
+            )
+            self._workers.append(worker)
+
+        def on_open(chat_id: str) -> None:
+            if chat_id != self.current_chat_id and not self._streaming:
+                self.open_chat_async(chat_id)
+
+        dialog = ChatSearchDialog(
+            on_search=on_search,
+            on_open=on_open,
+            current_chat_id=self.current_chat_id,
+            parent=self,
+        )
+        dialog.destroyed.connect(
+            lambda _obj=None: setattr(self, "_search_dialog", None)
+        )
+        self._search_dialog = dialog
+        dialog.show()
+        return dialog
+
+    # -- checkpoints / undo --
+
+    def checkpoints_state_blocking(self):
+        chat_id = self.current_chat_id or ""
+        flow = self.flow()
+        return flow.checkpoints(chat_id), flow.undo_journal(chat_id)
+
+    def create_checkpoint_blocking(self, name: str = ""):
+        checkpoint = self.flow().create_checkpoint(
+            self.current_chat_id or "", name=name
+        )
+        self._reload_open_chat(
+            f"Checkpoint “{checkpoint.name}” created "
+            f"({checkpoint.message_count} message(s))."
+        )
+        return checkpoint
+
+    def restore_checkpoint_blocking(self, checkpoint_id: str) -> ChatSummary:
+        restored = self.flow().restore_checkpoint(
+            self.current_chat_id or "", checkpoint_id
+        )
+        self.refresh_blocking()
+        self.open_chat_blocking(restored.id)
+        self.chat_stage_status.setText(
+            f"Checkpoint restored as the new chat "
+            f"“{restored.title or restored.id}” — the original chat "
+            "is unchanged."
+        )
+        return restored
+
+    def delete_checkpoint_blocking(self, checkpoint_id: str) -> bool:
+        deleted = self.flow().delete_checkpoint(
+            self.current_chat_id or "", checkpoint_id
+        )
+        self._reload_open_chat(
+            "Checkpoint deleted." if deleted else "That checkpoint was gone."
+        )
+        return deleted
+
+    def undo_blocking(self) -> dict:
+        result = self.flow().undo_last(self.current_chat_id or "")
+        undone = result.get("undone", "the last action")
+        self._reload_open_chat(f"Undid: {undone}.")
+        return result
+
+    def undo_last_action(self) -> None:
+        if self.current_chat_id is None:
+            self.statusBar().showMessage("Open a chat first.", 5000)
+            return
+        chat_id = self.current_chat_id
+        flow = self.flow()
+
+        def words(result: dict) -> str:
+            return f"Undid: {result.get('undone', 'the last action')}."
+
+        self._run_action(lambda: flow.undo_last(chat_id), words)
+
+    def open_checkpoints_dialog(self) -> CheckpointsDialog | None:
+        if self.current_chat_id is None:
+            self.statusBar().showMessage("Open a chat first.", 5000)
+            return None
+        chat_id = self.current_chat_id
+        flow = self.flow()
+
+        def state():
+            return flow.checkpoints(chat_id), flow.undo_journal(chat_id)
+
+        def _async_state(fn):
+            """Run ``fn`` + a state re-read off-thread; refresh the
+            dialog with the new state when it lands."""
+
+            def start(dialog, *args) -> None:
+                def work():
+                    fn(*args)
+                    return state()
+
+                worker = run_async(
+                    work,
+                    lambda result: dialog.refresh(*result),
+                    self._apply_error,
+                )
+                self._workers.append(worker)
+
+            return start
+
+        def on_restore(checkpoint_id: str) -> None:
+            def done(restored: ChatSummary) -> None:
+                self.refresh_async()
+                self.open_chat_async(restored.id)
+                self.statusBar().showMessage(
+                    f"Checkpoint restored as “{restored.title or restored.id}”.",
+                    8000,
+                )
+
+            worker = run_async(
+                lambda: flow.restore_checkpoint(chat_id, checkpoint_id),
+                done,
+                self._apply_error,
+            )
+            self._workers.append(worker)
+
+        def on_undo(dialog) -> None:
+            def work():
+                flow.undo_last(chat_id)
+                return state()
+
+            def done(result) -> None:
+                dialog.refresh(*result)
+                self._reload_open_chat("Undid the last journaled action.")
+
+            worker = run_async(work, done, self._apply_error)
+            self._workers.append(worker)
+
+        # The dialog opens empty and fills from an off-thread
+        # state read — no network on the GUI thread, ever.
+        dialog = CheckpointsDialog(
+            checkpoints=[],
+            undo_entries=[],
+            on_create=_async_state(lambda: flow.create_checkpoint(chat_id)),
+            on_restore=on_restore,
+            on_delete=_async_state(
+                lambda cid: flow.delete_checkpoint(chat_id, cid)
+            ),
+            on_undo=on_undo,
+            parent=self,
+        )
+        dialog.destroyed.connect(
+            lambda _obj=None: setattr(self, "_checkpoints_dialog", None)
+        )
+        self._checkpoints_dialog = dialog
+        dialog.show()
+        worker = run_async(
+            state,
+            lambda result: dialog.refresh(*result),
+            self._apply_error,
+        )
+        self._workers.append(worker)
+        return dialog
+
     # ------------------------------------------------------------ sending
 
     def _update_composer_chrome(self) -> None:
@@ -1016,6 +2298,7 @@ class MainWindow(QMainWindow):
             )
         elif not self._streaming:
             self.chat_stage_status.setText("Streaming: idle")
+        self._update_message_chrome()
 
     def _set_streaming_words(self, words: str) -> None:
         self.streaming_status_label.setText(f"Streaming: {words}")
@@ -1235,7 +2518,7 @@ class MainWindow(QMainWindow):
             QLabel(
                 "Rúnmál — sovereign AI chat app.\n"
                 "Native windowed shell (R-04 skeleton, R-05 "
-                "first-run wizard, R-06 Chat Stage) over the "
+                "first-run wizard, R-06/R-07 Chat Stage) over the "
                 "in-process engine.\n"
                 "Toolkit: PySide6 6.8.0.2 (ADR-0010)."
             )

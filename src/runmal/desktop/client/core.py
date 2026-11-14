@@ -29,9 +29,11 @@ from runmal.desktop.client.errors import (
     TransportError,
 )
 from runmal.desktop.client.models import (
+    AuthorsNoteView,
     BackendProfile,
     CharacterSummary,
     ChatSummary,
+    CheckpointView,
     EngineSnapshot,
     FirstRunState,
     GeneratedReply,
@@ -40,7 +42,9 @@ from runmal.desktop.client.models import (
     MessageView,
     PersonaView,
     PresetSummary,
+    SearchHitView,
     StreamEvent,
+    UndoEntryView,
     detect_first_run,
 )
 from runmal.desktop.client.session import DesktopSession
@@ -301,6 +305,319 @@ class RunmalClient:
         """The chat's active persona (R-03 local persona road)."""
         payload = self._request("GET", f"/api/v1/chats/{chat_id}/persona")
         return PersonaView.from_dict(payload if isinstance(payload, dict) else {})
+
+    # ------------------------------------------- message actions (R-07)
+
+    def edit_message(
+        self, chat_id: str, message_id: str, content: str
+    ) -> MessageView:
+        """Edit one message's content (``PATCH
+        /chats/{id}/messages/{mid}``, P-068)."""
+        payload = self._request(
+            "PATCH",
+            f"/api/v1/chats/{chat_id}/messages/{message_id}",
+            json={"content": content},
+        )
+        return MessageView.from_dict(payload if isinstance(payload, dict) else {})
+
+    def delete_message(self, chat_id: str, message_id: str) -> bool:
+        """Delete one message (``DELETE
+        /chats/{id}/messages/{mid}``, P-068). Journaled by the
+        engine (P-076), so the Undo surface can restore it."""
+        payload = self._request(
+            "DELETE", f"/api/v1/chats/{chat_id}/messages/{message_id}"
+        )
+        return bool(isinstance(payload, dict) and payload.get("deleted"))
+
+    def add_swipe(
+        self, chat_id: str, message_id: str, content: str
+    ) -> MessageView:
+        """Append an alternate to a message's swipe deck (``POST
+        .../swipes``, P-065). Returns the message with its deck."""
+        payload = self._request(
+            "POST",
+            f"/api/v1/chats/{chat_id}/messages/{message_id}/swipes",
+            json={"content": content},
+        )
+        return MessageView.from_dict(payload if isinstance(payload, dict) else {})
+
+    def select_swipe(
+        self,
+        chat_id: str,
+        message_id: str,
+        *,
+        action: str | None = None,
+        index: int | None = None,
+    ) -> MessageView:
+        """Select the active alternate in a swipe deck (``POST
+        .../swipes/select``, P-065): a relative ``action``
+        (next/prev/first/last) or an explicit ``index``."""
+        body: dict[str, Any] = {}
+        if action is not None:
+            body["action"] = action
+        if index is not None:
+            body["index"] = index
+        payload = self._request(
+            "POST",
+            f"/api/v1/chats/{chat_id}/messages/{message_id}/swipes/select",
+            json=body,
+        )
+        return MessageView.from_dict(payload if isinstance(payload, dict) else {})
+
+    def delete_swipe(
+        self, chat_id: str, message_id: str, index: int
+    ) -> MessageView:
+        """Delete one alternate from a swipe deck (``DELETE
+        .../swipes/{index}``, P-065)."""
+        payload = self._request(
+            "DELETE",
+            f"/api/v1/chats/{chat_id}/messages/{message_id}/swipes/{index}",
+        )
+        return MessageView.from_dict(payload if isinstance(payload, dict) else {})
+
+    def pin_message(self, chat_id: str, message_id: str) -> dict[str, Any]:
+        """Pin a message to memory (``POST .../pin``, P-068): a
+        real pinned Memory record; the memory document is returned
+        raw (its shape is the memory domain's, R-12's concern)."""
+        payload = self._request(
+            "POST", f"/api/v1/chats/{chat_id}/messages/{message_id}/pin"
+        )
+        return payload if isinstance(payload, dict) else {}
+
+    def unpin_message(self, chat_id: str, message_id: str) -> bool:
+        """Unpin a message (``DELETE .../pin``, P-068)."""
+        payload = self._request(
+            "DELETE", f"/api/v1/chats/{chat_id}/messages/{message_id}/pin"
+        )
+        return bool(isinstance(payload, dict) and payload.get("unpinned"))
+
+    def list_pinned_messages(self, chat_id: str) -> list[MessageView]:
+        """A chat's pinned messages, in display order (``GET
+        /chats/{id}/pinned-messages``, P-068)."""
+        payload = self._request(
+            "GET", f"/api/v1/chats/{chat_id}/pinned-messages"
+        )
+        rows = payload if isinstance(payload, list) else []
+        return [MessageView.from_dict(r) for r in rows if isinstance(r, dict)]
+
+    # --------------------------------------------- branches (R-07)
+
+    def branch_chat(
+        self,
+        chat_id: str,
+        *,
+        message_id: str | None = None,
+        name: str | None = None,
+    ) -> ChatSummary:
+        """Fork a chat at a message (``POST /chats/{id}/branches``,
+        P-066). Never destructive: the source is copied, never
+        mutated. No message_id forks the whole chat."""
+        body: dict[str, Any] = {}
+        if message_id:
+            body["message_id"] = message_id
+        if name:
+            body["name"] = name
+        payload = self._request(
+            "POST", f"/api/v1/chats/{chat_id}/branches", json=body
+        )
+        return ChatSummary.from_dict(payload if isinstance(payload, dict) else {})
+
+    def list_branches(self, chat_id: str) -> dict[str, Any]:
+        """A chat's branch family (``GET /chats/{id}/branches``,
+        P-066), returned raw — the family document's shape is the
+        branches domain's; the logic layer projects what it shows."""
+        payload = self._request("GET", f"/api/v1/chats/{chat_id}/branches")
+        return payload if isinstance(payload, dict) else {}
+
+    # ------------------------------------------ author's note (R-07)
+
+    def get_authors_note(self, chat_id: str) -> AuthorsNoteView:
+        """A chat's author's note (``GET
+        /chats/{id}/authors-note``, P-056)."""
+        payload = self._request(
+            "GET", f"/api/v1/chats/{chat_id}/authors-note"
+        )
+        return AuthorsNoteView.from_dict(
+            payload if isinstance(payload, dict) else {}
+        )
+
+    def set_authors_note(
+        self,
+        chat_id: str,
+        *,
+        text: str,
+        depth: int = 4,
+        frequency: int = 1,
+        enabled: bool = True,
+        role: str = "system",
+    ) -> ChatSummary:
+        """Set a chat's author's note (``POST
+        /chats/{id}/authors-note``, P-056). The route answers with
+        the chat row, like the other chat-setting roads."""
+        payload = self._request(
+            "POST",
+            f"/api/v1/chats/{chat_id}/authors-note",
+            json={
+                "text": text,
+                "depth": depth,
+                "frequency": frequency,
+                "enabled": enabled,
+                "role": role,
+            },
+        )
+        return ChatSummary.from_dict(payload if isinstance(payload, dict) else {})
+
+    # -------------------------------------- continue / impersonate
+
+    def continue_chat(
+        self, chat_id: str, *, mode: str = "auto", instruction: str | None = None
+    ) -> dict[str, Any]:
+        """Continue a chat (``POST /chats/{id}/continue``, P-069):
+        the engine generates AND lands the result (extend grows
+        the last assistant message; next appends a new one). The
+        landing document is returned raw; the logic layer
+        projects it."""
+        body: dict[str, Any] = {"mode": mode}
+        if instruction:
+            body["instruction"] = instruction
+        payload = self._request(
+            "POST", f"/api/v1/chats/{chat_id}/continue", json=body
+        )
+        return payload if isinstance(payload, dict) else {}
+
+    def impersonate_draft(
+        self, chat_id: str, *, instruction: str | None = None
+    ) -> dict[str, Any]:
+        """Draft the next user turn (``POST
+        /chats/{id}/impersonate``, P-069). A DRAFT document only —
+        nothing is stored as a message until
+        :meth:`accept_impersonate` lands a final text."""
+        body: dict[str, Any] = {}
+        if instruction:
+            body["instruction"] = instruction
+        payload = self._request(
+            "POST", f"/api/v1/chats/{chat_id}/impersonate", json=body
+        )
+        return payload if isinstance(payload, dict) else {}
+
+    def accept_impersonate(
+        self, chat_id: str, content: str, *, draft_id: str | None = None
+    ) -> MessageView:
+        """Accept an impersonate draft (``POST
+        /chats/{id}/impersonate/accept``, P-069): the final text
+        (the draft verbatim or the user's edit of it) is appended
+        as a real user message."""
+        body: dict[str, Any] = {"content": content}
+        if draft_id:
+            body["draft_id"] = draft_id
+        payload = self._request(
+            "POST", f"/api/v1/chats/{chat_id}/impersonate/accept", json=body
+        )
+        return MessageView.from_dict(payload if isinstance(payload, dict) else {})
+
+    def discard_impersonate(
+        self, chat_id: str, *, draft_id: str | None = None
+    ) -> bool:
+        """Discard an impersonate draft (``POST
+        /chats/{id}/impersonate/discard``, P-069): records the
+        discard, stores nothing."""
+        body: dict[str, Any] = {}
+        if draft_id:
+            body["draft_id"] = draft_id
+        payload = self._request(
+            "POST", f"/api/v1/chats/{chat_id}/impersonate/discard", json=body
+        )
+        return bool(isinstance(payload, dict) and payload.get("discarded"))
+
+    # ------------------------------------------------ search (R-07)
+
+    def search_chats(
+        self, query: str, *, chat_id: str | None = None, limit: int = 20
+    ) -> tuple[list[SearchHitView], dict[str, Any]]:
+        """Search chats (``GET /api/v1/chats/search``, P-072):
+        returns the typed hits plus the raw result document (mode
+        used, fallback honesty, scan counts) for display words."""
+        params: dict[str, Any] = {"q": query, "limit": limit}
+        if chat_id:
+            params["chat_id"] = chat_id
+        payload = self._request("GET", "/api/v1/chats/search", params=params)
+        document = payload if isinstance(payload, dict) else {}
+        rows = document.get("results")
+        hits = (
+            [SearchHitView.from_dict(r) for r in rows if isinstance(r, dict)]
+            if isinstance(rows, list)
+            else []
+        )
+        return hits, document
+
+    # ------------------------------------ checkpoints / undo (R-07)
+
+    def list_checkpoints(self, chat_id: str) -> list[CheckpointView]:
+        """A chat's checkpoints, oldest first (``GET
+        /chats/{id}/checkpoints``, P-067)."""
+        payload = self._request("GET", f"/api/v1/chats/{chat_id}/checkpoints")
+        rows = payload if isinstance(payload, list) else []
+        return [
+            CheckpointView.from_dict(r) for r in rows if isinstance(r, dict)
+        ]
+
+    def create_checkpoint(
+        self, chat_id: str, *, name: str | None = None
+    ) -> CheckpointView:
+        """Snapshot a chat as a named checkpoint (``POST
+        /chats/{id}/checkpoints``, P-067). Never destructive."""
+        body: dict[str, Any] = {}
+        if name:
+            body["name"] = name
+        payload = self._request(
+            "POST", f"/api/v1/chats/{chat_id}/checkpoints", json=body
+        )
+        return CheckpointView.from_dict(
+            payload if isinstance(payload, dict) else {}
+        )
+
+    def restore_checkpoint(
+        self, chat_id: str, checkpoint_id: str, *, name: str | None = None
+    ) -> ChatSummary:
+        """Restore a checkpoint as a NEW chat (``POST
+        /chats/{id}/checkpoints/{cid}/restore``, P-067); the
+        source chat is never discarded."""
+        body: dict[str, Any] = {}
+        if name:
+            body["name"] = name
+        payload = self._request(
+            "POST",
+            f"/api/v1/chats/{chat_id}/checkpoints/{checkpoint_id}/restore",
+            json=body,
+        )
+        return ChatSummary.from_dict(payload if isinstance(payload, dict) else {})
+
+    def delete_checkpoint(self, chat_id: str, checkpoint_id: str) -> bool:
+        """Delete one checkpoint file (``DELETE
+        /chats/{id}/checkpoints/{cid}``, P-067)."""
+        payload = self._request(
+            "DELETE", f"/api/v1/chats/{chat_id}/checkpoints/{checkpoint_id}"
+        )
+        return bool(isinstance(payload, dict) and payload.get("deleted"))
+
+    def list_undo(self, chat_id: str) -> list[UndoEntryView]:
+        """A chat's undo journal, top of stack first (``GET
+        /chats/{id}/undo``, P-076). Metadata only."""
+        payload = self._request("GET", f"/api/v1/chats/{chat_id}/undo")
+        document = payload if isinstance(payload, dict) else {}
+        rows = document.get("entries")
+        if not isinstance(rows, list):
+            return []
+        return [
+            UndoEntryView.from_dict(r) for r in rows if isinstance(r, dict)
+        ]
+
+    def undo_last(self, chat_id: str) -> dict[str, Any]:
+        """Undo the most recent journaled operation (``POST
+        /chats/{id}/undo``, P-076): restores the operation's
+        before-image in place and consumes the entry."""
+        payload = self._request("POST", f"/api/v1/chats/{chat_id}/undo", json={})
+        return payload if isinstance(payload, dict) else {}
 
     # ------------------------------------------------------------ characters
 

@@ -201,9 +201,11 @@ def test_stage_structure_and_honest_placeholders(qapp) -> None:
         assert window.send_button.isEnabled() is False
         assert window.stop_button.isEnabled() is False
         assert "No chat open" in window.chat_stage_status.text()
-        # R-07 work is labelled R-07, never dressed as R-06.
-        assert "R-07" in window.placeholder_actions["Regenerate"].statusTip()
-        assert "R-07" in window.placeholder_actions["Continue"].statusTip()
+        # R-07 has since LANDED: Regenerate/Continue are real
+        # actions now, no longer placeholders (R-07 slice note).
+        assert "Regenerate" not in window.placeholder_actions
+        assert "Continue" not in window.placeholder_actions
+        assert window.action_regenerate.text() == "Regenerate"
         # Stop Generating is REAL now (not a placeholder).
         assert "Stop Generating" not in window.placeholder_actions
         assert window.action_stop_generating.text() == "Stop Generating"

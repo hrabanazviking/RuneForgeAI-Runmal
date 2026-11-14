@@ -157,20 +157,145 @@ def detect_first_run(
 
 @dataclass(frozen=True)
 class MessageView:
-    """One row of ``GET /api/v1/chats/{id}/messages`` (R-05)."""
+    """One row of ``GET /api/v1/chats/{id}/messages`` (R-05; the
+    swipe deck + pin state joined in R-07 — the engine's
+    ``message_to_dict`` always carries them)."""
 
     id: str
     role: str = ""
     content: str = ""
     speaker_name: str | None = None
+    swipes: list[str] = field(default_factory=list)
+    swipe_id: int = 0
+    pinned: bool = False
 
     @classmethod
     def from_dict(cls, payload: dict[str, Any]) -> MessageView:
+        deck = payload.get("swipes")
+        swipes = (
+            [str(s) for s in deck if isinstance(s, str)]
+            if isinstance(deck, list)
+            else []
+        )
+        swipe_id = payload.get("swipe_id", 0)
         return cls(
             id=str(payload.get("id", "")),
             role=str(payload.get("role", "")),
             content=str(payload.get("content", "")),
             speaker_name=payload.get("speaker_name") or None,
+            swipes=swipes,
+            swipe_id=swipe_id if isinstance(swipe_id, int) else 0,
+            pinned=bool(payload.get("pinned", False)),
+        )
+
+    @property
+    def swipe_count(self) -> int:
+        """How many alternates this message's deck holds (the
+        active content always counts as one, even before the
+        engine materialises a deck)."""
+        return max(len(self.swipes), 1)
+
+
+@dataclass(frozen=True)
+class AuthorsNoteView:
+    """``GET /api/v1/chats/{id}/authors-note`` (P-056 shape: all
+    five keys, always)."""
+
+    text: str = ""
+    depth: int = 4
+    frequency: int = 1
+    enabled: bool = True
+    role: str = "system"
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> AuthorsNoteView:
+        depth = payload.get("depth", 4)
+        frequency = payload.get("frequency", 1)
+        return cls(
+            text=str(payload.get("text", "")),
+            depth=depth if isinstance(depth, int) else 4,
+            frequency=frequency if isinstance(frequency, int) else 1,
+            enabled=bool(payload.get("enabled", True)),
+            role=str(payload.get("role", "system")),
+        )
+
+
+@dataclass(frozen=True)
+class CheckpointView:
+    """One row of ``GET /api/v1/chats/{id}/checkpoints`` (P-067
+    metadata projection: never message bodies)."""
+
+    id: str
+    name: str = ""
+    created_at: str = ""
+    message_count: int = 0
+    chat_title: str = ""
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> CheckpointView:
+        count = payload.get("message_count", 0)
+        return cls(
+            id=str(payload.get("id", "")),
+            name=str(payload.get("name", "")),
+            created_at=str(payload.get("created_at", "")),
+            message_count=count if isinstance(count, int) else 0,
+            chat_title=str(payload.get("chat_title", "")),
+        )
+
+
+@dataclass(frozen=True)
+class UndoEntryView:
+    """One row of a chat's undo journal (P-076 metadata projection:
+    operation + detail words, never payloads)."""
+
+    id: str
+    operation: str = ""
+    detail: str = ""
+    created_at: str = ""
+    message_count: int = 0
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> UndoEntryView:
+        count = payload.get("message_count", 0)
+        return cls(
+            id=str(payload.get("id", "")),
+            operation=str(payload.get("operation", "")),
+            detail=str(payload.get("detail", "")),
+            created_at=str(payload.get("created_at", "")),
+            message_count=count if isinstance(count, int) else 0,
+        )
+
+    @property
+    def label(self) -> str:
+        """One-line human label: what would be undone."""
+        words = self.operation or "operation"
+        if self.detail:
+            words += f" — {self.detail}"
+        return words
+
+
+@dataclass(frozen=True)
+class SearchHitView:
+    """One result row of ``GET /api/v1/chats/search`` (P-072):
+    which chat, which message, and the matched snippet."""
+
+    chat_id: str
+    chat_title: str = ""
+    message_id: str = ""
+    role: str = ""
+    snippet: str = ""
+    ordinal: int = 0
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> SearchHitView:
+        ordinal = payload.get("ordinal", 0)
+        return cls(
+            chat_id=str(payload.get("chat_id", "")),
+            chat_title=str(payload.get("chat_title", "")),
+            message_id=str(payload.get("message_id", "")),
+            role=str(payload.get("role", "")),
+            snippet=str(payload.get("snippet", "")),
+            ordinal=ordinal if isinstance(ordinal, int) else 0,
         )
 
 

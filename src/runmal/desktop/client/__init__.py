@@ -30,9 +30,11 @@ from runmal.desktop.client.errors import (
     TransportError,
 )
 from runmal.desktop.client.models import (
+    AuthorsNoteView,
     BackendProfile,
     CharacterSummary,
     ChatSummary,
+    CheckpointView,
     EngineSnapshot,
     FirstRunState,
     GeneratedReply,
@@ -41,7 +43,9 @@ from runmal.desktop.client.models import (
     MessageView,
     PersonaView,
     PresetSummary,
+    SearchHitView,
     StreamEvent,
+    UndoEntryView,
     detect_first_run,
 )
 from runmal.desktop.client.session import DesktopSession
@@ -49,9 +53,11 @@ from runmal.desktop.client.session import DesktopSession
 __all__ = [
     "ApiError",
     "AuthError",
+    "AuthorsNoteView",
     "BackendProfile",
     "CharacterSummary",
     "ChatSummary",
+    "CheckpointView",
     "ClientError",
     "DesktopSession",
     "EngineSnapshot",
@@ -64,8 +70,10 @@ __all__ = [
     "PersonaView",
     "PresetSummary",
     "RunmalClient",
+    "SearchHitView",
     "StreamEvent",
     "TransportError",
+    "UndoEntryView",
     "detect_first_run",
     "fetch_snapshot",
 ]
