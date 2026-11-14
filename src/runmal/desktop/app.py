@@ -17,8 +17,11 @@ from runmal.desktop.window import MainWindow
 
 
 def create_window(engine: EngineHandle | None = None) -> MainWindow:
-    """Build the main window over ``engine`` (a fresh handle if none)."""
-    return MainWindow(engine or EngineHandle())
+    """Build the main window over ``engine`` (a fresh handle if none).
+
+    The app entry is the auto-wizard road (R-05): when the first
+    refresh finds a first run, the setup wizard opens unasked."""
+    return MainWindow(engine or EngineHandle(), auto_wizard=True)
 
 
 def main(argv: list[str] | None = None) -> int:

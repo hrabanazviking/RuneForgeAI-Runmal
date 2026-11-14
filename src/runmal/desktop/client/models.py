@@ -156,6 +156,86 @@ def detect_first_run(
 
 
 @dataclass(frozen=True)
+class MessageView:
+    """One row of ``GET /api/v1/chats/{id}/messages`` (R-05)."""
+
+    id: str
+    role: str = ""
+    content: str = ""
+    speaker_name: str | None = None
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> MessageView:
+        return cls(
+            id=str(payload.get("id", "")),
+            role=str(payload.get("role", "")),
+            content=str(payload.get("content", "")),
+            speaker_name=payload.get("speaker_name") or None,
+        )
+
+
+@dataclass(frozen=True)
+class GeneratedReply:
+    """One collected ``POST /api/v1/generate`` SSE stream (R-05).
+
+    The stream's token events are concatenated by the client; the
+    backend key and generation mode come from the response headers
+    the generation router sets (``X-Backend-Key`` /
+    ``X-Generation-Mode``), so a caller can say honestly *which*
+    backend answered and whether the prompt was composed.
+    """
+
+    text: str
+    backend_key: str = ""
+    mode: str = ""
+
+
+@dataclass(frozen=True)
+class ImportOutcome:
+    """The wizard-relevant verdict of ``POST /api/v1/library/imports``.
+
+    The bulk report accounts for every file; the wizard imports ONE
+    card file, so this view collapses the report to: did a character
+    land (created, repaired-in, or an exact duplicate of an existing
+    one), which one, and a plain reason when nothing landed. File
+    contents never appear here (the report never carries them).
+    """
+
+    ok: bool
+    character_id: str = ""
+    character_name: str = ""
+    reason: str = ""
+
+    @classmethod
+    def from_report(cls, payload: dict[str, Any]) -> ImportOutcome:
+        entries = payload.get("entries")
+        if isinstance(entries, list):
+            for entry in entries:
+                if not isinstance(entry, dict):
+                    continue
+                if entry.get("detected_kind") not in (None, "card"):
+                    continue
+                created_id = entry.get("created_id")
+                if created_id:
+                    return cls(
+                        ok=True,
+                        character_id=str(created_id),
+                        character_name=str(entry.get("created_name") or ""),
+                    )
+                duplicate_of = entry.get("duplicate_of")
+                if duplicate_of:
+                    return cls(
+                        ok=True,
+                        character_id=str(duplicate_of),
+                        character_name=str(entry.get("created_name") or ""),
+                    )
+            for entry in entries:
+                if isinstance(entry, dict) and entry.get("reason"):
+                    return cls(ok=False, reason=str(entry["reason"]))
+        return cls(ok=False, reason="the file did not contain a usable card")
+
+
+@dataclass(frozen=True)
 class EngineSnapshot:
     """Everything the shell skeleton shows about the engine at once:
     health + the three lists + the derived first-run state. Fetched

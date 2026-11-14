@@ -35,7 +35,10 @@ from runmal.desktop.client.models import (
     ChatSummary,
     EngineSnapshot,
     FirstRunState,
+    GeneratedReply,
     HealthStatus,
+    ImportOutcome,
+    MessageView,
     detect_first_run,
 )
 from runmal.desktop.client.session import DesktopSession
@@ -50,7 +53,10 @@ __all__ = [
     "DesktopSession",
     "EngineSnapshot",
     "FirstRunState",
+    "GeneratedReply",
     "HealthStatus",
+    "ImportOutcome",
+    "MessageView",
     "NotFoundError",
     "RunmalClient",
     "TransportError",

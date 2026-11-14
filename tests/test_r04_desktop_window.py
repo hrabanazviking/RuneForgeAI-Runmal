@@ -37,6 +37,13 @@ def qapp():
 def window(qapp):
     handle = EngineHandle()
     win = MainWindow(handle)
+    # Shown, not just built: banner/dock visibility assertions read
+    # *effective* visibility, which is always False inside a
+    # never-shown top-level. (R-05 fix: this test failed identically
+    # at base e3d4467 on a real Qt host for exactly that reason; the
+    # launch proof always showed the window, the test never did.)
+    win.show()
+    qapp.processEvents()
     yield win, handle
     win.close()
 

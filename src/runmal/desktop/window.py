@@ -10,11 +10,17 @@ its machinery exists in R-04 (engine lifecycle, dock toggles, status
 refresh, first-run status, About, Quit). Everything whose screen
 lands in a later slice is a placeholder action that says so in the
 status bar when triggered — never a dead button dressed as a feature.
+
+R-05 adds: File → First-Run Setup… opens the real setup wizard
+(``runmal.desktop.wizard``), the first-run banner points at it, and
+when the app entry enables ``auto_wizard`` a detected first run
+opens the wizard unasked. Wizard completion refreshes the window
+into the greeted chat the wizard opened.
 """
 
 from __future__ import annotations
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QAction, QKeySequence
 from PySide6.QtWidgets import (
     QDialog,
@@ -46,12 +52,24 @@ class MainWindow(QMainWindow):
         self,
         engine: EngineHandle,
         client: RunmalClient | None = None,
+        *,
+        auto_wizard: bool = False,
     ) -> None:
         super().__init__()
         self._engine = engine
         self._client = client
         self._workers: list = []
         self.placeholder_actions: dict[str, QAction] = {}
+        # Auto-wizard (R-05): the real app entry enables this so a
+        # first run opens the setup wizard unasked; tests and proof
+        # drivers construct the window without it and drive the
+        # wizard explicitly (the F15/purpleraider app entry is the
+        # auto road — see desktop/app.py).
+        self._auto_wizard = auto_wizard
+        self._wizard = None
+        self._wizard_shown = False
+        self.setup_result: dict = {}
+        self.setup_chat_id: str | None = None
 
         self.setWindowTitle("Rúnmál")
         self.resize(1200, 800)
@@ -72,6 +90,7 @@ class MainWindow(QMainWindow):
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         title.setStyleSheet("font-size: 20px; font-weight: bold;")
         layout.addWidget(title)
+        self.stage_title = title
         self.first_run_banner = QLabel("")
         self.first_run_banner.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.first_run_banner.setWordWrap(True)
@@ -85,6 +104,7 @@ class MainWindow(QMainWindow):
         body.setAlignment(Qt.AlignmentFlag.AlignCenter)
         body.setWordWrap(True)
         layout.addWidget(body)
+        self.stage_body = body
         layout.addStretch(1)
         self.setCentralWidget(stage)
 
@@ -285,10 +305,13 @@ class MainWindow(QMainWindow):
         if snapshot.first_run.is_first_run:
             self.first_run_banner.setText(
                 "First run: no backend profile and no character yet. "
-                "The setup wizard lands in R-05 — File → First-Run "
-                "Setup… re-checks this state."
+                "File → First-Run Setup… opens the setup wizard: "
+                "connect a mind, meet your first character."
             )
             self.first_run_banner.setVisible(True)
+            if self._auto_wizard and not self._wizard_shown:
+                self._wizard_shown = True
+                QTimer.singleShot(0, self.open_setup_wizard)
         else:
             self.first_run_banner.setVisible(False)
         self.update_engine_chrome()
@@ -367,7 +390,9 @@ class MainWindow(QMainWindow):
     # ------------------------------------------------------------ dialogs
 
     def show_first_run_status(self) -> None:
-        """Real first-run *detection display* (the wizard is R-05)."""
+        """File → First-Run Setup… (R-05): re-check first-run state,
+        then open the setup wizard either way — it is also how a
+        configured install adds another mind or character."""
         if not self._engine.is_running:
             self.statusBar().showMessage(
                 "First-run check needs the engine — start it first.", 5000
@@ -381,11 +406,59 @@ class MainWindow(QMainWindow):
         if snapshot.first_run.is_first_run:
             self.statusBar().showMessage(
                 "First run detected: no backend profile, no character. "
-                "Setup wizard lands in R-05.",
+                "Opening the setup wizard.",
                 8000,
             )
         else:
-            self.statusBar().showMessage(snapshot.first_run.label, 8000)
+            self.statusBar().showMessage(
+                snapshot.first_run.label
+                + " Opening the setup wizard.",
+                8000,
+            )
+        self.open_setup_wizard()
+
+    def open_setup_wizard(self):
+        """Open (or raise) the R-05 First-Run Setup wizard.
+
+        Returns the wizard. Completion lands in
+        :meth:`_on_setup_completed`, which refreshes the window into
+        the greeted chat the wizard opened."""
+        from runmal.desktop.wizard import SetupWizard
+
+        if self._wizard is not None and self._wizard.isVisible():
+            self._wizard.raise_()
+            self._wizard.activateWindow()
+            return self._wizard
+        wizard = SetupWizard(self.client(), self)
+        wizard.setup_completed.connect(self._on_setup_completed)
+        wizard.destroyed.connect(lambda _obj=None: setattr(self, "_wizard", None))
+        self._wizard = wizard
+        self._wizard_shown = True
+        wizard.show()
+        return wizard
+
+    def _on_setup_completed(self, result: dict) -> None:
+        """The wizard finished: remember the landing and refresh the
+        window so the greeted chat it opened is what the user sees."""
+        self.setup_result = dict(result)
+        self.setup_chat_id = result.get("chat_id") or None
+        # The finished wizard is spent (its flow state is the old
+        # run); the next open builds a fresh one. The hidden wizard
+        # stays parented to this window and is not deleted while its
+        # workers may still be landing — dropping only our reference.
+        self._wizard = None
+        name = result.get("character_name") or "your character"
+        greeting = result.get("greeting") or ""
+        self.stage_title.setText(f"Chat with {name}")
+        if greeting:
+            self.stage_body.setText(f"“{greeting}”")
+        self.first_run_banner.setVisible(False)
+        self.statusBar().showMessage(
+            f"Setup complete — your first chat with {name} is open.",
+            10000,
+        )
+        if self._engine.is_running:
+            self.refresh_async()
 
     def show_about(self) -> None:
         dialog = QDialog(self)
@@ -394,8 +467,8 @@ class MainWindow(QMainWindow):
         layout.addWidget(
             QLabel(
                 "Rúnmál — sovereign AI chat app.\n"
-                "Native windowed shell (R-04 skeleton) over the "
-                "in-process engine.\n"
+                "Native windowed shell (R-04 skeleton, R-05 "
+                "first-run wizard) over the in-process engine.\n"
                 "Toolkit: PySide6 6.8.0.2 (ADR-0010)."
             )
         )

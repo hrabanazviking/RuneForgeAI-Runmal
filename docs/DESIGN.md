@@ -388,3 +388,18 @@ per the interface-redo plan §2.2:
   never appear in reprs, errors, or logs (INV-023).
 
 Slice contract and evidence: `docs/DESKTOP_SHELL_R04_2026-11-14.md`.
+
+R-05 adds the First-Run Setup wizard on the same boundaries: Qt
+widgets in `desktop/wizard.py` hold no decisions — the flow lives
+in the Qt-free `desktop/wizard_logic.py` (`WizardFlow`) over the
+same client layer, extended with typed write roads (backend-profile
+create/update/delete + write-only secret set, character create,
+library card import, chat create/pin/messages, user-name get/set,
+composed-turn SSE collection). The wizard is shown on detected
+first run by the app entry (`MainWindow(auto_wizard=True)`) and is
+reachable any time from File → First-Run Setup…; completion lands
+the main window in the greeted chat the wizard opened. Backend
+health is always rendered as plain words, never raw JSON, and the
+Demo (`fake`) backend is labelled as a canned responder everywhere
+it appears. Slice contract and evidence:
+`docs/DESKTOP_WIZARD_R05_2026-11-14.md`.
