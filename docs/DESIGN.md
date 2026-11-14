@@ -360,3 +360,31 @@ The web UI ("Hearth") is styled by a single token layer in
 - **Layout shells:** `.shell` is the sidebar+main grid used by the chat
   surface; `.page` is the centered single-column shell used by the
   connections, editor, and tools pages.
+
+## 19. Desktop shell (R-04, ADR-0010)
+
+The native windowed shell lives in `src/runmal/desktop/` and is the
+engine's primary client going forward (the web shell is removed in
+R-16; the engine, HTTP API, bridge, and CLI stay). Its boundaries,
+per the interface-redo plan §2.2:
+
+- **One boundary:** widgets never import engine services and never
+  touch SQL. Every engine interaction goes through the typed client
+  layer (`src/runmal/desktop/client/`, Qt-free, HTTP over loopback)
+  — the same contract the engine tests prove, and the boundary any
+  future shell (mobile included) reuses.
+- **In-process engine, hosted not embedded:** the shell starts the
+  FastAPI app in-process (uvicorn in a worker thread) through the
+  Qt-free host seam `desktop/engine.py`; status is read from the
+  real `/healthz`, never from internal flags alone.
+- **Off-thread by construction:** all client/network work runs off
+  the GUI thread (Qt thread pool + signals via
+  `desktop/workers.py`); layouts are Qt layouts and panels are
+  docks/dialogs so screens can reflow to narrower sizes later.
+- **Session:** the shell authenticates with the owner-only local
+  credential read in-process (bearer); the launcher bootstrap-nonce
+  → session-cookie road remains the browser/out-of-process road.
+  Both are implemented in `desktop/client/session.py`; credentials
+  never appear in reprs, errors, or logs (INV-023).
+
+Slice contract and evidence: `docs/DESKTOP_SHELL_R04_2026-11-14.md`.
