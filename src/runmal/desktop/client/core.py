@@ -29,8 +29,11 @@ from runmal.desktop.client.errors import (
     TransportError,
 )
 from runmal.desktop.client.models import (
+    AssetView,
     AuthorsNoteView,
     BackendProfile,
+    BindingView,
+    CharacterCardView,
     CharacterSummary,
     ChatSummary,
     CheckpointView,
@@ -39,12 +42,17 @@ from runmal.desktop.client.models import (
     GeneratedReply,
     HealthStatus,
     ImportOutcome,
+    LibraryCardView,
+    LorebookSummary,
     MessageView,
+    OrganisationView,
     PersonaView,
     PresetSummary,
     SearchHitView,
     StreamEvent,
+    TagCountView,
     UndoEntryView,
+    VersionHistoryView,
     detect_first_run,
 )
 from runmal.desktop.client.session import DesktopSession
@@ -116,6 +124,21 @@ class RunmalClient:
         if not response.content:
             return None
         return response.json()
+
+    def _request_bytes(
+        self, method: str, path: str, **kwargs: Any
+    ) -> tuple[bytes, str]:
+        """One binary road (R-08: avatar / asset bytes). Returns
+        ``(content, media_type)``; HTTP failures raise the same
+        typed errors as :meth:`_request`."""
+        try:
+            response = self._http.request(method, path, **kwargs)
+        except httpx.HTTPError as exc:
+            raise TransportError(
+                f"engine unreachable: {exc.__class__.__name__}"
+            ) from exc
+        self._raise_for_status(response)
+        return response.content, response.headers.get("content-type", "")
 
     # ------------------------------------------------------- health/status
 
@@ -646,6 +669,343 @@ class RunmalClient:
         return CharacterSummary.from_dict(
             payload if isinstance(payload, dict) else {}
         )
+
+    # ------------------------------------------- characters R-08 (full)
+
+    def update_character(
+        self, character_id: str, card: dict[str, Any], *, name: str | None = None
+    ) -> CharacterSummary:
+        """Replace a character's card (``PATCH /characters/{id}``).
+        The card dict is the stored shape (unknown fields ride
+        through the engine's importer/exporter, INV-009)."""
+        body: dict[str, Any] = {"card": card}
+        if name:
+            body["name"] = name
+        payload = self._request(
+            "PATCH", f"/api/v1/characters/{character_id}", json=body
+        )
+        return CharacterSummary.from_dict(
+            payload if isinstance(payload, dict) else {}
+        )
+
+    def delete_character(self, character_id: str) -> bool:
+        """Soft-delete a character (``DELETE /characters/{id}``,
+        S303): hidden, assets retained, undoable via
+        :meth:`restore_character`."""
+        payload = self._request(
+            "DELETE", f"/api/v1/characters/{character_id}"
+        )
+        return bool(isinstance(payload, dict) and payload.get("deleted"))
+
+    def restore_character(self, character_id: str) -> CharacterSummary:
+        """Undo a soft delete (``POST /characters/{id}/restore``)."""
+        payload = self._request(
+            "POST", f"/api/v1/characters/{character_id}/restore", json={}
+        )
+        return CharacterSummary.from_dict(
+            payload if isinstance(payload, dict) else {}
+        )
+
+    def duplicate_character(self, character_id: str) -> CharacterSummary:
+        """Copy a character under a fresh id (``POST
+        /characters/{id}/duplicate``, S303)."""
+        payload = self._request(
+            "POST", f"/api/v1/characters/{character_id}/duplicate", json={}
+        )
+        return CharacterSummary.from_dict(
+            payload if isinstance(payload, dict) else {}
+        )
+
+    def get_character_versions(
+        self, character_id: str
+    ) -> VersionHistoryView:
+        """A character's version history (``GET
+        /characters/{id}/versions``, P-025)."""
+        payload = self._request(
+            "GET", f"/api/v1/characters/{character_id}/versions"
+        )
+        return VersionHistoryView.from_dict(
+            payload if isinstance(payload, dict) else {}
+        )
+
+    def get_character_version_card(
+        self, character_id: str, version_no: int
+    ) -> dict[str, Any]:
+        """One version's stored card dict (``GET
+        /characters/{id}/versions/{n}`` carries ``card``)."""
+        payload = self._request(
+            "GET", f"/api/v1/characters/{character_id}/versions/{version_no}"
+        )
+        if isinstance(payload, dict):
+            card = payload.get("card")
+            if isinstance(card, dict):
+                return card
+        return {}
+
+    def get_character_card(self, character_id: str) -> CharacterCardView:
+        """The character's FULL card, composed from existing roads:
+        the summary row + its current version's stored card (the
+        version road is the only one that returns the whole card —
+        there is no card-export route, and none is added)."""
+        summary = self.get_character(character_id)
+        card = self.get_character_version_card(character_id, summary.version_no)
+        return CharacterCardView.from_parts(summary, card)
+
+    def upload_avatar(
+        self, character_id: str, filename: str, data: bytes
+    ) -> str:
+        """Upload/replace a character's avatar (``POST
+        /characters/{id}/avatar``, multipart). Returns the stored
+        filename the engine reports."""
+        payload = self._request(
+            "POST",
+            f"/api/v1/characters/{character_id}/avatar",
+            files=[("file", (filename, data))],
+        )
+        if isinstance(payload, dict):
+            return str(payload.get("filename", ""))
+        return ""
+
+    def get_avatar_bytes(
+        self, character_id: str
+    ) -> tuple[bytes, str] | None:
+        """The character's avatar bytes + media type (``GET
+        /characters/{id}/avatar``); None when it has none."""
+        try:
+            return self._request_bytes(
+                "GET", f"/api/v1/characters/{character_id}/avatar"
+            )
+        except NotFoundError:
+            return None
+
+    def get_character_book(self, character_id: str) -> dict[str, Any]:
+        """The character's travelling character-book (``GET
+        /characters/{id}/character-book``, P-039): the bound
+        book serialised, or the card's embedded book, or
+        ``{"entries": []}``."""
+        payload = self._request(
+            "GET", f"/api/v1/characters/{character_id}/character-book"
+        )
+        return payload if isinstance(payload, dict) else {}
+
+    # ------------------------------------------------ library (R-08)
+
+    def list_library_cards(
+        self,
+        *,
+        q: str = "",
+        tags: list[str] | None = None,
+        tag_mode: str = "any",
+        favourites_only: bool = False,
+        sort: str = "name",
+        limit: int = 200,
+        offset: int = 0,
+    ) -> tuple[int, list[LibraryCardView]]:
+        """One page of the character library (``GET
+        /library/cards``, P-024): search text, tag filter,
+        favourites, sort. Returns ``(total, items)``."""
+        params: dict[str, Any] = {
+            "tag_mode": tag_mode,
+            "favourites_only": str(favourites_only).lower(),
+            "sort": sort,
+            "limit": limit,
+            "offset": offset,
+        }
+        if q:
+            params["q"] = q
+        if tags:
+            params["tag"] = tags
+        payload = self._request("GET", "/api/v1/library/cards", params=params)
+        document = payload if isinstance(payload, dict) else {}
+        rows = document.get("items")
+        total = document.get("total", 0)
+        return (
+            total if isinstance(total, int) else 0,
+            [
+                LibraryCardView.from_dict(r)
+                for r in rows
+                if isinstance(r, dict)
+            ]
+            if isinstance(rows, list)
+            else [],
+        )
+
+    def list_library_tags(self) -> list[TagCountView]:
+        """Every library tag with its character count (``GET
+        /library/tags``, P-024)."""
+        payload = self._request("GET", "/api/v1/library/tags")
+        rows = payload.get("tags") if isinstance(payload, dict) else None
+        return (
+            [TagCountView.from_dict(r) for r in rows if isinstance(r, dict)]
+            if isinstance(rows, list)
+            else []
+        )
+
+    def get_organisation(self, character_id: str) -> OrganisationView:
+        """A character's library organisation (tags + favourite)."""
+        payload = self._request(
+            "GET", f"/api/v1/library/cards/{character_id}/organisation"
+        )
+        return OrganisationView.from_dict(
+            payload if isinstance(payload, dict) else {}
+        )
+
+    def set_character_tags(
+        self, character_id: str, tags: list[str]
+    ) -> OrganisationView:
+        """Replace a character's tags (``PUT
+        /library/cards/{id}/tags``): the engine keeps the tag rows
+        and the card's own tag list in step."""
+        payload = self._request(
+            "PUT",
+            f"/api/v1/library/cards/{character_id}/tags",
+            json={"tags": tags},
+        )
+        return OrganisationView.from_dict(
+            payload if isinstance(payload, dict) else {}
+        )
+
+    def set_character_favourite(
+        self, character_id: str, is_favourite: bool
+    ) -> OrganisationView:
+        """Set/clear a character's favourite flag (``PUT
+        /library/cards/{id}/favourite``)."""
+        payload = self._request(
+            "PUT",
+            f"/api/v1/library/cards/{character_id}/favourite",
+            json={"is_favourite": is_favourite},
+        )
+        return OrganisationView.from_dict(
+            payload if isinstance(payload, dict) else {}
+        )
+
+    def import_character_files(
+        self, files: list[tuple[str, bytes]]
+    ) -> dict[str, Any]:
+        """Bulk-import card files (``POST /library/imports``,
+        P-022): the full report dict — refusals are data in it,
+        never errors."""
+        payload = self._request(
+            "POST",
+            "/api/v1/library/imports",
+            files=[("files", (name, data)) for name, data in files],
+            data={"dry_run": "false"},
+        )
+        return payload if isinstance(payload, dict) else {}
+
+    # ------------------------------------------------- assets (R-08)
+
+    def list_assets(self, character_id: str) -> list[AssetView]:
+        """A character's assets (``GET /characters/{id}/assets``,
+        P-023), metadata only."""
+        payload = self._request(
+            "GET", f"/api/v1/characters/{character_id}/assets"
+        )
+        rows = payload if isinstance(payload, list) else []
+        return [AssetView.from_dict(r) for r in rows if isinstance(r, dict)]
+
+    def upload_asset(
+        self,
+        character_id: str,
+        filename: str,
+        data: bytes,
+        *,
+        kind: str = "embedded",
+        name: str = "",
+    ) -> AssetView:
+        """Upload one asset file for a character (``POST
+        /characters/{id}/assets``, multipart, P-023)."""
+        payload = self._request(
+            "POST",
+            f"/api/v1/characters/{character_id}/assets",
+            files=[("file", (filename, data))],
+            data={"kind": kind, "name": name},
+        )
+        return AssetView.from_dict(payload if isinstance(payload, dict) else {})
+
+    def get_asset_bytes(
+        self, character_id: str, asset_id: str
+    ) -> tuple[bytes, str]:
+        """One asset's stored bytes + media type (``GET
+        .../assets/{aid}/content``)."""
+        return self._request_bytes(
+            "GET",
+            f"/api/v1/characters/{character_id}/assets/{asset_id}/content",
+        )
+
+    def get_asset_thumbnail(
+        self, character_id: str, asset_id: str
+    ) -> tuple[bytes, str] | None:
+        """One asset's thumbnail bytes when the engine has one
+        ready (``GET .../assets/{aid}/thumbnail``); None when no
+        thumbnail exists — an honest absence, not an error."""
+        try:
+            return self._request_bytes(
+                "GET",
+                f"/api/v1/characters/{character_id}/assets/{asset_id}/thumbnail",
+            )
+        except NotFoundError:
+            return None
+
+    # ------------------------------------- lorebook binding (R-08)
+
+    def list_lorebooks(self) -> list[LorebookSummary]:
+        """All lorebooks (``GET /lorebooks``) — the binding
+        picker's roster (the full editor is R-10)."""
+        payload = self._request("GET", "/api/v1/lorebooks")
+        rows = payload if isinstance(payload, list) else []
+        return [
+            LorebookSummary.from_dict(r) for r in rows if isinstance(r, dict)
+        ]
+
+    def get_lorebook_binding(self, character_id: str) -> BindingView:
+        """A character's lorebook binding (``GET
+        /characters/{id}/lorebook-binding``, P-039)."""
+        payload = self._request(
+            "GET", f"/api/v1/characters/{character_id}/lorebook-binding"
+        )
+        return BindingView.from_dict(
+            payload if isinstance(payload, dict) else {}
+        )
+
+    def bind_lorebook(
+        self, character_id: str, lorebook_id: str, *, precedence: str | None = None
+    ) -> BindingView:
+        """Bind a lorebook to a character (``PUT
+        /characters/{id}/lorebook-binding``, P-039)."""
+        body: dict[str, Any] = {"lorebook_id": lorebook_id}
+        if precedence:
+            body["precedence"] = precedence
+        payload = self._request(
+            "PUT",
+            f"/api/v1/characters/{character_id}/lorebook-binding",
+            json=body,
+        )
+        return BindingView.from_dict(
+            payload if isinstance(payload, dict) else {}
+        )
+
+    def set_binding_precedence(
+        self, character_id: str, precedence: str
+    ) -> BindingView:
+        """Change a binding's precedence (``PATCH
+        /characters/{id}/lorebook-binding``)."""
+        payload = self._request(
+            "PATCH",
+            f"/api/v1/characters/{character_id}/lorebook-binding",
+            json={"precedence": precedence},
+        )
+        return BindingView.from_dict(
+            payload if isinstance(payload, dict) else {}
+        )
+
+    def unbind_lorebook(self, character_id: str) -> bool:
+        """Remove a character's lorebook binding (``DELETE
+        /characters/{id}/lorebook-binding``)."""
+        payload = self._request(
+            "DELETE", f"/api/v1/characters/{character_id}/lorebook-binding"
+        )
+        return bool(isinstance(payload, dict) and payload.get("unbound"))
 
     def import_character_file(self, filename: str, data: bytes) -> ImportOutcome:
         """Import one card file (JSON/PNG) via the bulk library road

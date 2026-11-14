@@ -434,3 +434,23 @@ re-append fallback). Pin state is verified by re-reading the
 pinned list, and transcript rows state pin/swipe position in
 words. Slice contract and evidence:
 `docs/DESKTOP_CHAT_STAGE_R07_2026-11-14.md`.
+
+R-08 adds the Characters library + full card editor on the same
+boundaries: the Characters dock tab is the library (search, tag
+census filter, favourites, over the P-024 library roads) and the
+five-tab editor dialog covers every card field, the greetings
+deck, avatar/assets, character-book + lorebook binding, and
+version history with restore — through the Qt-free
+`desktop/character_logic.py` (`CharacterFlow`) over new typed
+client roads for the existing characters/library/assets routes,
+no new engine routes. Three roads are composed in the flow and
+documented in the slice doc: the full card is read by joining
+the summary row with the version road's stored card, a version
+restore PATCHes that stored card back, and export serialises
+the stored card — because no card-read/export/restore-version
+route exists. Card edits overlay onto the stored dict at its
+own field level (wrapped `data` or flat), so unknown fields
+survive (INV-009); tags save through the organisation road,
+which keeps tag rows and the card's tag list in step. Slice
+contract and evidence:
+`docs/DESKTOP_CHARACTERS_R08_2026-11-14.md`.

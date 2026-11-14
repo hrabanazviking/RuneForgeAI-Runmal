@@ -108,14 +108,367 @@ class CharacterSummary:
     id: str
     name: str = ""
     has_avatar: bool = False
+    version_no: int = 1
+    lineage_id: str = ""
+    avatar_asset: str | None = None
 
     @classmethod
     def from_dict(cls, payload: dict[str, Any]) -> CharacterSummary:
+        version_no = payload.get("version_no", 1)
         return cls(
             id=str(payload.get("id", "")),
             name=str(payload.get("name", "")),
             has_avatar=bool(payload.get("has_avatar", False)),
+            version_no=version_no if isinstance(version_no, int) else 1,
+            lineage_id=str(payload.get("lineage_id", "") or ""),
+            avatar_asset=payload.get("avatar_asset") or None,
         )
+
+
+def card_data_of(card: dict[str, Any]) -> dict[str, Any]:
+    """The field level of a stored card dict (R-08).
+
+    Stored cards are the exporter's v2/v3 shape — fields live
+    under ``data`` — but flat cards (v1-style, or a caller's raw
+    dict) carry them at the top level. This returns the mapping
+    that holds the card's fields, tolerantly."""
+    data = card.get("data")
+    if isinstance(data, dict):
+        return data
+    return card
+
+
+def _str_list(value: Any) -> list[str]:
+    if isinstance(value, list):
+        return [str(v) for v in value if isinstance(v, str)]
+    return []
+
+
+@dataclass(frozen=True)
+class CharacterCardView:
+    """One character's FULL card (R-08), read through the roads
+    that exist: the summary row (``GET /characters/{id}``) joined
+    with the stored card carried by the version road
+    (``GET /characters/{id}/versions/{n}`` — the only existing
+    road that returns the whole card; there is no card-export
+    route). ``raw_card`` is the stored dict verbatim, so an edit
+    can overlay fields on it and unknown-but-valid fields survive
+    the round trip (INV-009)."""
+
+    id: str
+    name: str = ""
+    version_no: int = 1
+    lineage_id: str = ""
+    has_avatar: bool = False
+    avatar_asset: str | None = None
+    description: str = ""
+    personality: str = ""
+    scenario: str = ""
+    system_prompt: str = ""
+    mes_example: str = ""
+    post_history_instructions: str = ""
+    first_mes: str = ""
+    alternate_greetings: list[str] = field(default_factory=list)
+    creator_notes: str = ""
+    tags: list[str] = field(default_factory=list)
+    creator: str = ""
+    character_version: str = ""
+    nickname: str = ""
+    group_only_greetings: list[str] = field(default_factory=list)
+    character_book: dict[str, Any] = field(default_factory=dict)
+    raw_card: dict[str, Any] = field(default_factory=dict)
+
+    @classmethod
+    def from_parts(
+        cls, summary: CharacterSummary, card: dict[str, Any]
+    ) -> CharacterCardView:
+        data = card_data_of(card)
+        book = data.get("character_book")
+        return cls(
+            id=summary.id,
+            name=str(data.get("name") or summary.name or ""),
+            version_no=summary.version_no,
+            lineage_id=summary.lineage_id,
+            has_avatar=summary.has_avatar,
+            avatar_asset=summary.avatar_asset,
+            description=str(data.get("description") or ""),
+            personality=str(data.get("personality") or ""),
+            scenario=str(data.get("scenario") or ""),
+            system_prompt=str(data.get("system_prompt") or ""),
+            mes_example=str(data.get("mes_example") or ""),
+            post_history_instructions=str(
+                data.get("post_history_instructions") or ""
+            ),
+            first_mes=str(data.get("first_mes") or ""),
+            alternate_greetings=_str_list(data.get("alternate_greetings")),
+            creator_notes=str(data.get("creator_notes") or ""),
+            tags=_str_list(data.get("tags")),
+            creator=str(data.get("creator") or ""),
+            character_version=str(data.get("character_version") or ""),
+            nickname=str(data.get("nickname") or ""),
+            group_only_greetings=_str_list(data.get("group_only_greetings")),
+            character_book=book if isinstance(book, dict) else {},
+            raw_card=card,
+        )
+
+    @property
+    def book_entry_count(self) -> int:
+        entries = self.character_book.get("entries")
+        return len(entries) if isinstance(entries, list) else 0
+
+
+def _int_or(value: Any, fallback: int) -> int:
+    return value if isinstance(value, int) else fallback
+
+
+@dataclass(frozen=True)
+class LibraryCardView:
+    """One row of ``GET /api/v1/library/cards`` (P-024): the
+    library's own projection — name, tags, favourite, avatar."""
+
+    id: str
+    name: str = ""
+    created_at: str = ""
+    has_avatar: bool = False
+    tags: list[str] = field(default_factory=list)
+    is_favourite: bool = False
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> LibraryCardView:
+        return cls(
+            id=str(payload.get("id", "")),
+            name=str(payload.get("name", "")),
+            created_at=str(payload.get("created_at", "")),
+            has_avatar=bool(payload.get("has_avatar", False)),
+            tags=_str_list(payload.get("tags")),
+            is_favourite=bool(payload.get("is_favourite", False)),
+        )
+
+    @property
+    def label(self) -> str:
+        """One dock line: name, favourite as a WORD, tags, avatar."""
+        parts = [self.name or self.id]
+        if self.is_favourite:
+            parts.append("★ favourite")
+        if self.tags:
+            parts.append("tags: " + ", ".join(self.tags))
+        if self.has_avatar:
+            parts.append("avatar")
+        return " · ".join(parts)
+
+
+@dataclass(frozen=True)
+class TagCountView:
+    """One row of ``GET /api/v1/library/tags`` (P-024)."""
+
+    tag: str
+    tag_key: str = ""
+    count: int = 0
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> TagCountView:
+        return cls(
+            tag=str(payload.get("tag", "")),
+            tag_key=str(payload.get("tag_key", "")),
+            count=_int_or(payload.get("count"), 0),
+        )
+
+
+@dataclass(frozen=True)
+class OrganisationView:
+    """``GET /api/v1/library/cards/{id}/organisation`` (P-024):
+    the character's tags + favourite flag as the library keeps
+    them (rows kept in step with the card's own tag list)."""
+
+    character_id: str
+    name: str = ""
+    tags: list[str] = field(default_factory=list)
+    is_favourite: bool = False
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> OrganisationView:
+        return cls(
+            character_id=str(payload.get("character_id", "")),
+            name=str(payload.get("name", "")),
+            tags=_str_list(payload.get("tags")),
+            is_favourite=bool(payload.get("is_favourite", False)),
+        )
+
+
+@dataclass(frozen=True)
+class CharacterVersionView:
+    """One row of a character's version history (P-025)."""
+
+    character_id: str
+    version_no: int = 1
+    lineage_id: str = ""
+    name: str = ""
+    content_hash: str = ""
+    created_at: str = ""
+    deleted: bool = False
+    is_latest: bool = False
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> CharacterVersionView:
+        return cls(
+            character_id=str(payload.get("character_id", "")),
+            version_no=_int_or(payload.get("version_no"), 1),
+            lineage_id=str(payload.get("lineage_id", "")),
+            name=str(payload.get("name", "")),
+            content_hash=str(payload.get("content_hash", "")),
+            created_at=str(payload.get("created_at") or ""),
+            deleted=bool(payload.get("deleted", False)),
+            is_latest=bool(payload.get("is_latest", False)),
+        )
+
+    @property
+    def label(self) -> str:
+        words = f"v{self.version_no}"
+        if self.is_latest:
+            words += " · latest"
+        if self.deleted:
+            words += " · deleted"
+        if self.created_at:
+            words += f" · {self.created_at}"
+        return words
+
+
+@dataclass(frozen=True)
+class VersionHistoryView:
+    """``GET /api/v1/characters/{id}/versions`` (P-025)."""
+
+    character_id: str
+    lineage_id: str = ""
+    name: str = ""
+    latest_version_no: int = 1
+    versions: list[CharacterVersionView] = field(default_factory=list)
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> VersionHistoryView:
+        rows = payload.get("versions")
+        return cls(
+            character_id=str(payload.get("character_id", "")),
+            lineage_id=str(payload.get("lineage_id", "")),
+            name=str(payload.get("name", "")),
+            latest_version_no=_int_or(payload.get("latest_version_no"), 1),
+            versions=[
+                CharacterVersionView.from_dict(r)
+                for r in rows
+                if isinstance(r, dict)
+            ]
+            if isinstance(rows, list)
+            else [],
+        )
+
+
+@dataclass(frozen=True)
+class AssetView:
+    """One row of ``GET /api/v1/characters/{id}/assets`` (P-023).
+    Metadata only — bytes travel the content/thumbnail roads."""
+
+    id: str
+    character_id: str = ""
+    kind: str = ""
+    name: str = ""
+    source_type: str = ""
+    status: str = ""
+    format: str = ""
+    media_type: str = ""
+    width: int | None = None
+    height: int | None = None
+    byte_size: int = 0
+    has_thumbnail: bool = False
+    thumbnail_status: str = ""
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> AssetView:
+        width = payload.get("width")
+        height = payload.get("height")
+        return cls(
+            id=str(payload.get("id", "")),
+            character_id=str(payload.get("character_id", "")),
+            kind=str(payload.get("kind", "")),
+            name=str(payload.get("name", "")),
+            source_type=str(payload.get("source_type", "")),
+            status=str(payload.get("status", "")),
+            format=str(payload.get("format", "")),
+            media_type=str(payload.get("media_type", "")),
+            width=width if isinstance(width, int) else None,
+            height=height if isinstance(height, int) else None,
+            byte_size=_int_or(payload.get("byte_size"), 0),
+            has_thumbnail=bool(payload.get("has_thumbnail", False)),
+            thumbnail_status=str(payload.get("thumbnail_status", "")),
+        )
+
+    @property
+    def label(self) -> str:
+        parts = [self.name or self.id]
+        if self.kind:
+            parts.append(self.kind)
+        if self.status:
+            parts.append(self.status)
+        if self.width and self.height:
+            parts.append(f"{self.width}×{self.height}")
+        if self.byte_size:
+            parts.append(f"{self.byte_size} bytes")
+        return " · ".join(parts)
+
+
+@dataclass(frozen=True)
+class LorebookSummary:
+    """One row of ``GET /api/v1/lorebooks`` (identity fields the
+    binding picker needs; the full lorebook editor is R-10)."""
+
+    id: str
+    name: str = ""
+    entry_count: int = 0
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> LorebookSummary:
+        return cls(
+            id=str(payload.get("id", "")),
+            name=str(payload.get("name", "")),
+            entry_count=_int_or(payload.get("entry_count"), 0),
+        )
+
+
+@dataclass(frozen=True)
+class BindingView:
+    """``GET /api/v1/characters/{id}/lorebook-binding`` (P-039):
+    bound or honestly unbound, with the book's name when known."""
+
+    bound: bool
+    character_id: str = ""
+    lorebook_id: str | None = None
+    precedence: str | None = None
+    entry_count: int = 0
+    lorebook_name: str = ""
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> BindingView:
+        book = payload.get("lorebook")
+        return cls(
+            bound=bool(payload.get("bound", False)),
+            character_id=str(payload.get("character_id", "")),
+            lorebook_id=payload.get("lorebook_id") or None,
+            precedence=payload.get("precedence") or None,
+            entry_count=_int_or(payload.get("entry_count"), 0),
+            lorebook_name=(
+                str(book.get("name", ""))
+                if isinstance(book, dict)
+                else ""
+            ),
+        )
+
+    @property
+    def label(self) -> str:
+        if not self.bound:
+            return "No lorebook bound to this character."
+        name = self.lorebook_name or self.lorebook_id or "lorebook"
+        words = f"Bound lorebook: {name} · {self.entry_count} entr(ies)"
+        if self.precedence:
+            words += f" · precedence: {self.precedence}"
+        return words + "."
 
 
 @dataclass(frozen=True)

@@ -24,6 +24,15 @@ editor, chat search, and checkpoints + undo surfacing — every
 one over the engine's existing chats roads through the same
 client layer and ChatFlow, off the GUI thread.
 
+R-08 makes the Characters dock tab the character library
+(search, tag filter, favourites, avatars) with the full card
+editor dialog — every card field, alternate greetings, avatar
+upload, assets, character-book + lorebook binding, version
+history with restore — plus create-from-scratch, duplicate,
+soft-delete with undo, and bulk import/export, all over the
+existing characters/library/assets roads through
+``character_logic.CharacterFlow``.
+
 Honesty rule (carried from R-04): an action is REAL only where
 its machinery exists. Later-slice screens stay placeholder
 actions labelled with their slice, never dressed up.
@@ -34,7 +43,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QTimer
-from PySide6.QtGui import QAction, QKeySequence
+from PySide6.QtGui import QAction, QKeySequence, QPixmap
 from PySide6.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -52,6 +61,7 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QPlainTextEdit,
     QPushButton,
+    QScrollArea,
     QSpinBox,
     QTabWidget,
     QTextBrowser,
@@ -59,6 +69,13 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from runmal.desktop.character_logic import (
+    CARD_TEXT_FIELDS,
+    CharacterFlow,
+    EditorBundle,
+    parse_tags,
+    tags_text,
+)
 from runmal.desktop.chat_logic import (
     ChatFlow,
     ImpersonateDraft,
@@ -71,6 +88,7 @@ from runmal.desktop.chat_logic import (
 )
 from runmal.desktop.client import RunmalClient, fetch_snapshot
 from runmal.desktop.client.models import (
+    CharacterSummary,
     ChatSummary,
     EngineSnapshot,
     MessageView,
@@ -538,6 +556,416 @@ class CheckpointsDialog(QDialog):
         self._on_undo(self)
 
 
+class CharacterEditorDialog(QDialog):
+    """The full character card editor (R-08).
+
+    Create mode (``bundle is None``): every card field, empty;
+    saving creates the character. Edit mode: the fields of the
+    character's stored card, plus Avatar & Assets, the
+    character-book + lorebook binding, and the version history
+    with restore. The extra tabs act through window-supplied
+    callbacks (they run the real roads off the GUI thread and
+    refresh this dialog's sections when they land); the lorebook
+    ENTRY editor itself is R-10 and is labelled as such here.
+    """
+
+    _TEXT_WIDGETS = {
+        "description": "description_edit",
+        "personality": "personality_edit",
+        "scenario": "scenario_edit",
+        "system_prompt": "system_prompt_edit",
+        "mes_example": "mes_example_edit",
+        "post_history_instructions": "post_history_edit",
+        "first_mes": "first_mes_edit",
+        "creator_notes": "creator_notes_edit",
+        "creator": "creator_edit",
+        "character_version": "version_edit",
+        "nickname": "nickname_edit",
+    }
+
+    def __init__(
+        self,
+        bundle: EditorBundle | None,
+        *,
+        on_upload_avatar=None,
+        on_upload_asset=None,
+        on_bind=None,
+        on_unbind=None,
+        on_restore_version=None,
+        parent: QWidget | None = None,
+    ) -> None:
+        super().__init__(parent)
+        self.bundle = bundle
+        self.character_id = bundle.card.id if bundle is not None else None
+        self._on_upload_avatar = on_upload_avatar
+        self._on_upload_asset = on_upload_asset
+        self._on_bind = on_bind
+        self._on_unbind = on_unbind
+        self._on_restore_version = on_restore_version
+        card = bundle.card if bundle is not None else None
+        self.setWindowTitle(
+            f"Character Editor — {card.name}" if card else "New Character"
+        )
+        self.resize(760, 680)
+        layout = QVBoxLayout(self)
+        self.tabs = QTabWidget()
+        layout.addWidget(self.tabs, 1)
+        self._build_card_tab(card)
+        self._build_greetings_tab(card)
+        self._build_avatar_tab(bundle)
+        self._build_book_tab(bundle)
+        self._build_versions_tab(bundle)
+        buttons = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Save
+            | QDialogButtonBox.StandardButton.Cancel
+        )
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+        layout.addWidget(buttons)
+
+    # ------------------------------------------------------------ build
+
+    def _plain(self, text: str = "") -> QPlainTextEdit:
+        edit = QPlainTextEdit(text)
+        edit.setMaximumHeight(110)
+        return edit
+
+    def _build_card_tab(self, card) -> None:
+        form = QWidget()
+        form_layout = QVBoxLayout(form)
+        form_layout.addWidget(QLabel("Name:"))
+        self.name_edit = QLineEdit(card.name if card else "")
+        form_layout.addWidget(self.name_edit)
+        for field_name, label in (
+            ("description", "Description:"),
+            ("personality", "Personality:"),
+            ("scenario", "Scenario:"),
+            ("system_prompt", "System prompt:"),
+            ("mes_example", "Example dialogue (mes_example):"),
+            ("post_history_instructions", "Post-history instructions:"),
+            ("first_mes", "First message (greeting):"),
+            ("creator_notes", "Creator notes (never sent to the model):"),
+        ):
+            form_layout.addWidget(QLabel(label))
+            edit = self._plain(getattr(card, field_name) if card else "")
+            setattr(self, self._TEXT_WIDGETS[field_name], edit)
+            form_layout.addWidget(edit)
+        form_layout.addWidget(QLabel("Creator:"))
+        self.creator_edit = QLineEdit(card.creator if card else "")
+        form_layout.addWidget(self.creator_edit)
+        form_layout.addWidget(QLabel("Card version:"))
+        self.version_edit = QLineEdit(card.character_version if card else "")
+        form_layout.addWidget(self.version_edit)
+        form_layout.addWidget(QLabel("Nickname:"))
+        self.nickname_edit = QLineEdit(card.nickname if card else "")
+        form_layout.addWidget(self.nickname_edit)
+        form_layout.addWidget(QLabel("Tags (comma-separated):"))
+        self.tags_edit = QLineEdit(tags_text(card.tags) if card else "")
+        form_layout.addWidget(self.tags_edit)
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setWidget(form)
+        self.tabs.addTab(scroll, "Card")
+
+    def _build_greetings_tab(self, card) -> None:
+        tab = QWidget()
+        layout = QVBoxLayout(tab)
+        layout.addWidget(QLabel("Alternate greetings (a new chat may open with any of these):"))
+        self.greetings_list = QListWidget()
+        self.greetings_list.itemClicked.connect(
+            lambda _item: self._greeting_selected()
+        )
+        layout.addWidget(self.greetings_list)
+        self.greeting_edit = QPlainTextEdit()
+        layout.addWidget(self.greeting_edit)
+        row = QHBoxLayout()
+        self.add_greeting_button = QPushButton("Add Greeting")
+        self.add_greeting_button.clicked.connect(
+            lambda _c=False: self.add_greeting()
+        )
+        row.addWidget(self.add_greeting_button)
+        self.update_greeting_button = QPushButton("Update Selected")
+        self.update_greeting_button.clicked.connect(
+            lambda _c=False: self.update_greeting()
+        )
+        row.addWidget(self.update_greeting_button)
+        self.remove_greeting_button = QPushButton("Remove Selected")
+        self.remove_greeting_button.clicked.connect(
+            lambda _c=False: self.remove_greeting()
+        )
+        row.addWidget(self.remove_greeting_button)
+        layout.addLayout(row)
+        group_count = len(card.group_only_greetings) if card else 0
+        self.group_greetings_label = QLabel(
+            f"Group-only greetings on this card: {group_count} "
+            "(preserved as-is; group chats land in R-11)."
+        )
+        self.group_greetings_label.setWordWrap(True)
+        layout.addWidget(self.group_greetings_label)
+        self.tabs.addTab(tab, "Greetings")
+        for greeting in card.alternate_greetings if card else []:
+            self._append_greeting_item(greeting)
+
+    def _build_avatar_tab(self, bundle) -> None:
+        tab = QWidget()
+        layout = QVBoxLayout(tab)
+        self.avatar_label = QLabel(
+            "Avatar: none yet." if bundle is None
+            else ("Avatar: set." if bundle.card.has_avatar else "Avatar: none yet.")
+        )
+        self.avatar_label.setWordWrap(True)
+        layout.addWidget(self.avatar_label)
+        self.avatar_preview = QLabel("")
+        self.avatar_preview.setMinimumHeight(80)
+        layout.addWidget(self.avatar_preview)
+        self.upload_avatar_button = QPushButton("Upload Avatar…")
+        self.upload_avatar_button.setEnabled(
+            bundle is not None and self._on_upload_avatar is not None
+        )
+        self.upload_avatar_button.clicked.connect(
+            lambda _c=False: self._pick_avatar()
+        )
+        layout.addWidget(self.upload_avatar_button)
+        layout.addWidget(QLabel("Assets (files that travel with this character):"))
+        self.assets_list = QListWidget()
+        layout.addWidget(self.assets_list)
+        self.upload_asset_button = QPushButton("Upload Asset…")
+        self.upload_asset_button.setEnabled(
+            bundle is not None and self._on_upload_asset is not None
+        )
+        self.upload_asset_button.clicked.connect(
+            lambda _c=False: self._pick_asset()
+        )
+        layout.addWidget(self.upload_asset_button)
+        if bundle is None:
+            note = QLabel(
+                "Save the character first — avatar and assets "
+                "attach to a saved character."
+            )
+            note.setWordWrap(True)
+            layout.addWidget(note)
+        self.tabs.addTab(tab, "Avatar & Assets")
+        if bundle is not None:
+            self.refresh_assets(bundle.assets)
+
+    def _build_book_tab(self, bundle) -> None:
+        tab = QWidget()
+        layout = QVBoxLayout(tab)
+        self.book_label = QLabel(
+            bundle.book_label if bundle is not None
+            else "Character book: a new character starts with none."
+        )
+        self.book_label.setWordWrap(True)
+        layout.addWidget(self.book_label)
+        self.binding_label = QLabel(
+            bundle.binding.label if bundle is not None
+            else "Lorebook binding: save the character first."
+        )
+        self.binding_label.setWordWrap(True)
+        layout.addWidget(self.binding_label)
+        layout.addWidget(QLabel("Bind a lorebook to this character:"))
+        self.lorebook_combo = QComboBox()
+        self.lorebook_combo.addItem("(Pick a lorebook)", None)
+        if bundle is not None:
+            for book in bundle.lorebooks:
+                self.lorebook_combo.addItem(
+                    f"{book.name or book.id} · {book.entry_count} entr(ies)",
+                    book.id,
+                )
+        layout.addWidget(self.lorebook_combo)
+        layout.addWidget(QLabel("Precedence (optional, e.g. character_first):"))
+        self.precedence_edit = QLineEdit(
+            bundle.binding.precedence or "" if bundle is not None else ""
+        )
+        layout.addWidget(self.precedence_edit)
+        row = QHBoxLayout()
+        self.bind_button = QPushButton("Bind Lorebook")
+        self.bind_button.setEnabled(bundle is not None and self._on_bind is not None)
+        self.bind_button.clicked.connect(lambda _c=False: self._bind())
+        row.addWidget(self.bind_button)
+        self.unbind_button = QPushButton("Unbind")
+        self.unbind_button.setEnabled(
+            bundle is not None and bundle.binding.bound
+            and self._on_unbind is not None
+        )
+        self.unbind_button.clicked.connect(
+            lambda _c=False: self._on_unbind(self) if self._on_unbind else None
+        )
+        row.addWidget(self.unbind_button)
+        layout.addLayout(row)
+        note = QLabel(
+            "Editing lorebook ENTRIES is the Lorebooks screen (R-10); "
+            "here you bind a book and see the character's own book."
+        )
+        note.setWordWrap(True)
+        layout.addWidget(note)
+        self.tabs.addTab(tab, "Book & Binding")
+
+    def _build_versions_tab(self, bundle) -> None:
+        tab = QWidget()
+        layout = QVBoxLayout(tab)
+        layout.addWidget(QLabel(
+            "Version history (same-name cards are versioned, "
+            "never overwritten):"
+        ))
+        self.versions_list = QListWidget()
+        layout.addWidget(self.versions_list)
+        self.restore_version_button = QPushButton("Restore Selected Version")
+        self.restore_version_button.setEnabled(
+            bundle is not None and self._on_restore_version is not None
+        )
+        self.restore_version_button.clicked.connect(
+            lambda _c=False: self._restore()
+        )
+        layout.addWidget(self.restore_version_button)
+        self.tabs.addTab(tab, "Versions")
+        if bundle is not None and bundle.versions is not None:
+            self.refresh_versions(bundle.versions)
+
+    # ------------------------------------------------------------ values
+
+    def values(self) -> tuple[dict, list[str]]:
+        """The editor's field bag + parsed tags (what Save sends)."""
+        edits: dict = {"name": self.name_edit.text().strip()}
+        for field_name in CARD_TEXT_FIELDS:
+            widget_name = self._TEXT_WIDGETS[field_name]
+            widget = getattr(self, widget_name)
+            if isinstance(widget, QLineEdit):
+                edits[field_name] = widget.text()
+            else:
+                edits[field_name] = widget.toPlainText()
+        edits["alternate_greetings"] = self.greetings()
+        card = self.bundle.card if self.bundle is not None else None
+        edits["group_only_greetings"] = (
+            list(card.group_only_greetings) if card else []
+        )
+        return edits, parse_tags(self.tags_edit.text())
+
+    # ---------------------------------------------------------- greetings
+
+    def _append_greeting_item(self, text: str) -> None:
+        excerpt = " ".join(text.split())
+        if len(excerpt) > 70:
+            excerpt = excerpt[:67] + "…"
+        item = QListWidgetItem(excerpt or "(empty greeting)")
+        item.setData(_CHAT_ID_ROLE, text)
+        self.greetings_list.addItem(item)
+
+    def greetings(self) -> list[str]:
+        out: list[str] = []
+        for index in range(self.greetings_list.count()):
+            value = self.greetings_list.item(index).data(_CHAT_ID_ROLE)
+            if isinstance(value, str):
+                out.append(value)
+        return out
+
+    def _greeting_selected(self) -> None:
+        item = self.greetings_list.currentItem()
+        if item is not None:
+            value = item.data(_CHAT_ID_ROLE)
+            self.greeting_edit.setPlainText(value if isinstance(value, str) else "")
+
+    def add_greeting(self) -> None:
+        text = self.greeting_edit.toPlainText()
+        if text.strip():
+            self._append_greeting_item(text)
+            self.greeting_edit.clear()
+
+    def update_greeting(self) -> None:
+        item = self.greetings_list.currentItem()
+        if item is None:
+            return
+        text = self.greeting_edit.toPlainText()
+        item.setData(_CHAT_ID_ROLE, text)
+        excerpt = " ".join(text.split())
+        item.setText(excerpt[:67] + "…" if len(excerpt) > 70 else excerpt)
+
+    def remove_greeting(self) -> None:
+        row = self.greetings_list.currentRow()
+        if row >= 0:
+            self.greetings_list.takeItem(row)
+            self.greeting_edit.clear()
+
+    # ------------------------------------------------------------- assets
+
+    def refresh_assets(self, assets: list) -> None:
+        self.assets_list.clear()
+        for asset in assets:
+            item = QListWidgetItem(asset.label)
+            item.setData(_CHAT_ID_ROLE, asset.id)
+            self.assets_list.addItem(item)
+
+    def set_avatar(self, data: bytes, media_type: str = "") -> None:
+        pixmap = QPixmap()
+        if data and pixmap.loadFromData(data):
+            self.avatar_preview.setPixmap(
+                pixmap.scaled(160, 160, Qt.AspectRatioMode.KeepAspectRatio)
+            )
+            self.avatar_label.setText("Avatar: set (preview above).")
+        elif data:
+            self.avatar_label.setText(
+                "Avatar: stored, but this image cannot be previewed here."
+            )
+
+    def _pick_avatar(self) -> None:
+        if self._on_upload_avatar is None:
+            return
+        path, _filter = QFileDialog.getOpenFileName(
+            self, "Upload Avatar", "",
+            "Images (*.png *.jpg *.jpeg *.webp *.gif);;All files (*)",
+        )
+        if path:
+            self._on_upload_avatar(self, path)
+
+    def _pick_asset(self) -> None:
+        if self._on_upload_asset is None:
+            return
+        path, _filter = QFileDialog.getOpenFileName(
+            self, "Upload Asset", "", "All files (*)"
+        )
+        if path:
+            self._on_upload_asset(self, path)
+
+    # ------------------------------------------------------------- binding
+
+    def _bind(self) -> None:
+        if self._on_bind is not None:
+            self._on_bind(self)
+
+    def refresh_binding(self, binding) -> None:
+        self.binding_label.setText(binding.label)
+        self.unbind_button.setEnabled(
+            binding.bound and self._on_unbind is not None
+        )
+
+    def selected_lorebook_id(self) -> str | None:
+        value = self.lorebook_combo.currentData()
+        return value if isinstance(value, str) and value else None
+
+    # ------------------------------------------------------------ versions
+
+    def refresh_versions(self, history) -> None:
+        self.versions_list.clear()
+        for version in history.versions:
+            item = QListWidgetItem(
+                f"{version.label} · {version.name}"
+            )
+            item.setData(_CHAT_ID_ROLE, version.version_no)
+            self.versions_list.addItem(item)
+
+    def selected_version_no(self) -> int | None:
+        item = self.versions_list.currentItem()
+        if item is None:
+            return None
+        value = item.data(_CHAT_ID_ROLE)
+        return value if isinstance(value, int) else None
+
+    def _restore(self) -> None:
+        version_no = self.selected_version_no()
+        if version_no is not None and self._on_restore_version is not None:
+            self._on_restore_version(self, version_no)
+
+
 class MainWindow(QMainWindow):
     """Rúnmál shell window (engine + client injected)."""
 
@@ -589,6 +1017,13 @@ class MainWindow(QMainWindow):
         self._branch_name_dialog: RenameChatDialog | None = None
         self.last_impersonate_draft: ImpersonateDraft | None = None
         self.last_search_outcome = None
+        # Characters (R-08) state.
+        self._character_flow_instance: CharacterFlow | None = None
+        self._character_editor: CharacterEditorDialog | None = None
+        self._delete_character_box: QMessageBox | None = None
+        self._library_items: list | None = None
+        self._last_deleted_character_id: str | None = None
+        self.last_import_outcome = None
 
         self.setWindowTitle("Rúnmál")
         self.resize(1200, 800)
@@ -791,6 +1226,32 @@ class MainWindow(QMainWindow):
 
         characters_tab = QWidget()
         characters_layout = QVBoxLayout(characters_tab)
+        # R-08: the Characters tab IS the library — search text,
+        # tag filter, favourites, then the roster with the card
+        # editor and the library actions below it.
+        search_row = QHBoxLayout()
+        self.character_search_edit = QLineEdit()
+        self.character_search_edit.setPlaceholderText("Search characters…")
+        self.character_search_edit.returnPressed.connect(
+            lambda: self.search_library_async()
+        )
+        search_row.addWidget(self.character_search_edit, 1)
+        self.character_search_button = QPushButton("Search")
+        self.character_search_button.clicked.connect(
+            lambda _c=False: self.search_library_async()
+        )
+        search_row.addWidget(self.character_search_button)
+        characters_layout.addLayout(search_row)
+        filter_row = QHBoxLayout()
+        self.favourites_only_check = QCheckBox("Favourites only")
+        filter_row.addWidget(self.favourites_only_check)
+        self.tag_filter_combo = QComboBox()
+        self.tag_filter_combo.addItem("All tags", None)
+        filter_row.addWidget(self.tag_filter_combo, 1)
+        characters_layout.addLayout(filter_row)
+        self.library_status_label = QLabel("Library: full roster.")
+        self.library_status_label.setWordWrap(True)
+        characters_layout.addWidget(self.library_status_label)
         self.characters_list = QListWidget()
         self.characters_list.itemDoubleClicked.connect(
             lambda item: self._character_item_activated(item)
@@ -801,8 +1262,56 @@ class MainWindow(QMainWindow):
             lambda _c=False: self._new_chat_with_selected_character()
         )
         characters_layout.addWidget(self.new_chat_with_button)
+        editor_row = QHBoxLayout()
+        self.new_character_button = QPushButton("New Character…")
+        self.new_character_button.clicked.connect(
+            lambda _c=False: self.open_new_character_editor()
+        )
+        editor_row.addWidget(self.new_character_button)
+        self.edit_character_button = QPushButton("Edit Character…")
+        self.edit_character_button.clicked.connect(
+            lambda _c=False: self.open_character_editor_for_selected()
+        )
+        editor_row.addWidget(self.edit_character_button)
+        characters_layout.addLayout(editor_row)
+        library_row = QHBoxLayout()
+        self.duplicate_character_button = QPushButton("Duplicate")
+        self.duplicate_character_button.clicked.connect(
+            lambda _c=False: self.duplicate_selected_character()
+        )
+        library_row.addWidget(self.duplicate_character_button)
+        self.favourite_character_button = QPushButton("Favourite")
+        self.favourite_character_button.clicked.connect(
+            lambda _c=False: self.toggle_selected_favourite()
+        )
+        library_row.addWidget(self.favourite_character_button)
+        self.delete_character_button = QPushButton("Delete")
+        self.delete_character_button.clicked.connect(
+            lambda _c=False: self.confirm_delete_selected_character()
+        )
+        library_row.addWidget(self.delete_character_button)
+        characters_layout.addLayout(library_row)
+        undo_row = QHBoxLayout()
+        self.undo_delete_character_button = QPushButton("Undo Delete")
+        self.undo_delete_character_button.setEnabled(False)
+        self.undo_delete_character_button.clicked.connect(
+            lambda _c=False: self.undo_delete_character()
+        )
+        undo_row.addWidget(self.undo_delete_character_button)
+        self.import_characters_button = QPushButton("Import…")
+        self.import_characters_button.clicked.connect(
+            lambda _c=False: self.import_characters_dialog()
+        )
+        undo_row.addWidget(self.import_characters_button)
+        self.export_character_button = QPushButton("Export…")
+        self.export_character_button.clicked.connect(
+            lambda _c=False: self.export_selected_character()
+        )
+        undo_row.addWidget(self.export_character_button)
+        characters_layout.addLayout(undo_row)
         characters_note = QLabel(
-            "The full character library and editor land in R-08."
+            "Double-click a character to chat with them. Delete is "
+            "a soft delete — Undo Delete brings the character back."
         )
         characters_note.setWordWrap(True)
         characters_layout.addWidget(characters_note)
@@ -945,8 +1454,16 @@ class MainWindow(QMainWindow):
         self._placeholder(chat_menu, "Prompt Inspector", "R-12")
 
         characters_menu = bar.addMenu("Characters")
-        self._placeholder(characters_menu, "New Character…", "R-08")
-        self._placeholder(characters_menu, "Character Editor…", "R-08")
+        self.action_new_character = QAction("New Character…", self)
+        self.action_new_character.triggered.connect(
+            lambda _c=False: self.open_new_character_editor()
+        )
+        characters_menu.addAction(self.action_new_character)
+        self.action_character_editor = QAction("Character Editor…", self)
+        self.action_character_editor.triggered.connect(
+            lambda _c=False: self.open_character_editor_for_selected()
+        )
+        characters_menu.addAction(self.action_character_editor)
 
         world_menu = bar.addMenu("World")
         self._placeholder(world_menu, "Lorebooks…", "R-10")
@@ -986,7 +1503,7 @@ class MainWindow(QMainWindow):
         status.addPermanentWidget(self.engine_status_label)
         status.addPermanentWidget(self.backend_status_label)
         status.addPermanentWidget(self.streaming_status_label)
-        status.showMessage("Rúnmál — Chat Stage (R-07)")
+        status.showMessage("Rúnmál — Chat Stage (R-07) · Characters (R-08)")
 
     # ------------------------------------------------------------ client
 
@@ -1037,10 +1554,18 @@ class MainWindow(QMainWindow):
             if chat.id == self.current_chat_id:
                 self.chats_list.setCurrentItem(item)
         self.characters_list.clear()
-        for character in snapshot.characters:
-            item = QListWidgetItem(character.name or character.id)
-            item.setData(_CHAT_ID_ROLE, character.id)
-            self.characters_list.addItem(item)
+        if self._library_items is not None:
+            # A library search/filter is showing: re-render it (its
+            # rows carry tags/favourites the roster rows do not).
+            for entry in self._library_items:
+                item = QListWidgetItem(entry.label)
+                item.setData(_CHAT_ID_ROLE, entry.id)
+                self.characters_list.addItem(item)
+        else:
+            for character in snapshot.characters:
+                item = QListWidgetItem(character.name or character.id)
+                item.setData(_CHAT_ID_ROLE, character.id)
+                self.characters_list.addItem(item)
 
         if self.current_chat_id is None:
             if snapshot.profiles:
@@ -1538,6 +2063,547 @@ class MainWindow(QMainWindow):
     def _export_write(self, path: str, text: str) -> None:
         Path(path).write_text(text, encoding="utf-8")
         self.statusBar().showMessage(f"Chat exported to {path}.", 8000)
+
+    # ------------------------------------------- R-08 characters
+
+    def character_flow(self) -> CharacterFlow:
+        """The window's Characters flow (over the same client)."""
+        if self._character_flow_instance is None:
+            self._character_flow_instance = CharacterFlow(self.client())
+        return self._character_flow_instance
+
+    def selected_character_id(self) -> str | None:
+        item = self.characters_list.currentItem()
+        if item is not None:
+            value = item.data(_CHAT_ID_ROLE)
+            if isinstance(value, str) and value:
+                return value
+        return None
+
+    # -- library search / filter --
+
+    def _library_query(self) -> dict:
+        tag = self.tag_filter_combo.currentData()
+        return {
+            "q": self.character_search_edit.text().strip(),
+            "tags": [tag] if isinstance(tag, str) and tag else None,
+            "favourites_only": self.favourites_only_check.isChecked(),
+        }
+
+    def refresh_library_blocking(self):
+        """Run the dock's library query and render it (proof/tests;
+        the GUI path is :meth:`search_library_async`)."""
+        total, items = self.character_flow().library(**self._library_query())
+        self._library_items = list(items)
+        self.library_status_label.setText(
+            f"Library: {total} character(s) match."
+        )
+        self.refresh_blocking()
+        return total, items
+
+    def search_library_async(self) -> None:
+        flow = self.character_flow()
+        query = self._library_query()
+
+        def done(result) -> None:
+            total, items = result
+            self._library_items = list(items)
+            self.library_status_label.setText(
+                f"Library: {total} character(s) match."
+            )
+            self.refresh_async()
+
+        worker = run_async(
+            lambda: flow.library(**query), done, self._apply_error
+        )
+        self._workers.append(worker)
+
+    def refresh_library_tags_blocking(self):
+        """Reload the tag filter from the library's tag census."""
+        tags = self.character_flow().library_tags()
+        current = self.tag_filter_combo.currentData()
+        self.tag_filter_combo.clear()
+        self.tag_filter_combo.addItem("All tags", None)
+        for entry in tags:
+            self.tag_filter_combo.addItem(
+                f"{entry.tag} ({entry.count})", entry.tag
+            )
+        for index in range(self.tag_filter_combo.count()):
+            if self.tag_filter_combo.itemData(index) == current:
+                self.tag_filter_combo.setCurrentIndex(index)
+                break
+        return tags
+
+    def _reset_library_view(self) -> None:
+        """Drop a library search/filter back to the full roster —
+        called after any roster-changing action, so the dock
+        never renders a stale filtered page as if it were the
+        roster."""
+        self._library_items = None
+        self.library_status_label.setText("Library: full roster.")
+
+    # -- editor --
+
+    def open_character_editor_blocking(
+        self, character_id: str
+    ) -> CharacterEditorDialog:
+        """Fetch the editor bundle synchronously and show the
+        dialog (proof/tests; the GUI path is async)."""
+        bundle = self.character_flow().open_editor(character_id)
+        dialog = self._make_character_editor(bundle)
+        avatar = self.character_flow().avatar_bytes(character_id)
+        if avatar is not None:
+            dialog.set_avatar(avatar[0], avatar[1])
+        return dialog
+
+    def _make_character_editor(
+        self, bundle: EditorBundle | None
+    ) -> CharacterEditorDialog:
+        dialog = CharacterEditorDialog(
+            bundle,
+            on_upload_avatar=self._editor_upload_avatar,
+            on_upload_asset=self._editor_upload_asset,
+            on_bind=self._editor_bind,
+            on_unbind=self._editor_unbind,
+            on_restore_version=self._editor_restore_version,
+            parent=self,
+        )
+        dialog.accepted.connect(
+            lambda d=dialog: self._editor_save_accepted(d)
+        )
+        dialog.destroyed.connect(
+            lambda _obj=None: setattr(self, "_character_editor", None)
+        )
+        self._character_editor = dialog
+        dialog.show()
+        return dialog
+
+    def open_new_character_editor(self) -> CharacterEditorDialog:
+        """Create-from-scratch: the editor, empty (R-08)."""
+        if self._character_editor is not None and self._character_editor.isVisible():
+            self._character_editor.raise_()
+            self._character_editor.activateWindow()
+            return self._character_editor
+        return self._make_character_editor(None)
+
+    def open_character_editor_for_selected(self) -> None:
+        character_id = self.selected_character_id()
+        if not character_id:
+            self.statusBar().showMessage(
+                "Pick a character to edit first.", 5000
+            )
+            return
+        flow = self.character_flow()
+
+        def done(bundle: EditorBundle) -> None:
+            dialog = self._make_character_editor(bundle)
+            avatar = None
+            try:
+                avatar = flow.avatar_bytes(character_id)
+            except Exception:
+                avatar = None
+            if avatar is not None:
+                dialog.set_avatar(avatar[0], avatar[1])
+
+        worker = run_async(
+            lambda: flow.open_editor(character_id), done, self._apply_error
+        )
+        self._workers.append(worker)
+
+    def save_editor_blocking(self, dialog: CharacterEditorDialog):
+        """Save the editor's values synchronously (proof/tests)."""
+        edits, tags = dialog.values()
+        flow = self.character_flow()
+        if dialog.character_id is None:
+            created = flow.create_character(edits, tags)
+            self._reset_library_view()
+            self.refresh_blocking()
+            return created
+        saved = flow.save_character(dialog.bundle.card, edits, tags)
+        self._reset_library_view()
+        self.refresh_blocking()
+        return saved
+
+    def _editor_save_accepted(self, dialog: CharacterEditorDialog) -> None:
+        self._character_editor = None
+        edits, tags = dialog.values()
+        flow = self.character_flow()
+        if dialog.character_id is None:
+
+            def done(created) -> None:
+                self.statusBar().showMessage(
+                    f"Character “{created.name}” created.", 8000
+                )
+                self._reset_library_view()
+                self.refresh_async()
+
+            worker = run_async(
+                lambda: flow.create_character(edits, tags),
+                done,
+                self._apply_error,
+            )
+        else:
+            card = dialog.bundle.card
+
+            def done(saved) -> None:
+                self.statusBar().showMessage(
+                    f"Character “{saved.name}” saved.", 8000
+                )
+                self._reset_library_view()
+                self.refresh_async()
+
+            worker = run_async(
+                lambda: flow.save_character(card, edits, tags),
+                done,
+                self._apply_error,
+            )
+        self._workers.append(worker)
+
+    # -- editor tab callbacks (run off-thread, refresh the dialog) --
+
+    def _editor_upload_avatar(
+        self, dialog: CharacterEditorDialog, path: str
+    ) -> None:
+        character_id = dialog.character_id
+        if not character_id:
+            return
+        flow = self.character_flow()
+        data = Path(path).read_bytes()
+        filename = Path(path).name
+
+        def work():
+            stored = flow.set_avatar(character_id, filename, data)
+            return stored, flow.avatar_bytes(character_id)
+
+        def done(result) -> None:
+            _stored, avatar = result
+            if avatar is not None:
+                dialog.set_avatar(avatar[0], avatar[1])
+            self.statusBar().showMessage("Avatar saved.", 5000)
+            self.refresh_async()
+
+        worker = run_async(work, done, self._apply_error)
+        self._workers.append(worker)
+
+    def _editor_upload_asset(
+        self, dialog: CharacterEditorDialog, path: str
+    ) -> None:
+        character_id = dialog.character_id
+        if not character_id:
+            return
+        flow = self.character_flow()
+        data = Path(path).read_bytes()
+        filename = Path(path).name
+
+        def work():
+            flow.add_asset(character_id, filename, data)
+            return flow.assets(character_id)
+
+        worker = run_async(
+            work,
+            lambda assets: (
+                dialog.refresh_assets(assets),
+                self.statusBar().showMessage("Asset uploaded.", 5000),
+            ),
+            self._apply_error,
+        )
+        self._workers.append(worker)
+
+    def _editor_bind(self, dialog: CharacterEditorDialog) -> None:
+        character_id = dialog.character_id
+        lorebook_id = dialog.selected_lorebook_id()
+        if not character_id or not lorebook_id:
+            self.statusBar().showMessage(
+                "Pick a lorebook to bind first.", 5000
+            )
+            return
+        precedence = dialog.precedence_edit.text().strip()
+        flow = self.character_flow()
+        worker = run_async(
+            lambda: flow.bind(character_id, lorebook_id, precedence),
+            lambda binding: (
+                dialog.refresh_binding(binding),
+                self.statusBar().showMessage("Lorebook bound.", 5000),
+            ),
+            self._apply_error,
+        )
+        self._workers.append(worker)
+
+    def _editor_unbind(self, dialog: CharacterEditorDialog) -> None:
+        character_id = dialog.character_id
+        if not character_id:
+            return
+        flow = self.character_flow()
+
+        def work():
+            flow.unbind(character_id)
+            return flow.open_editor(character_id)
+
+        worker = run_async(
+            work,
+            lambda bundle: (
+                dialog.refresh_binding(bundle.binding),
+                self.statusBar().showMessage("Lorebook unbound.", 5000),
+            ),
+            self._apply_error,
+        )
+        self._workers.append(worker)
+
+    def _editor_restore_version(
+        self, dialog: CharacterEditorDialog, version_no: int
+    ) -> None:
+        character_id = dialog.character_id
+        if not character_id:
+            return
+        flow = self.character_flow()
+
+        def work():
+            flow.restore_version(character_id, version_no)
+            return flow.open_editor(character_id)
+
+        def done(bundle: EditorBundle) -> None:
+            dialog.refresh_versions(bundle.versions)
+            self.statusBar().showMessage(
+                f"Version {version_no} restored as the current card — "
+                "reopen the editor to edit the restored fields.",
+                8000,
+            )
+            self.refresh_async()
+
+        worker = run_async(work, done, self._apply_error)
+        self._workers.append(worker)
+
+    # -- duplicate / favourite / delete-with-undo --
+
+    def duplicate_character_blocking(
+        self, character_id: str
+    ) -> CharacterSummary:
+        clone = self.character_flow().duplicate(character_id)
+        self._reset_library_view()
+        self.refresh_blocking()
+        return clone
+
+    def duplicate_selected_character(self) -> None:
+        character_id = self.selected_character_id()
+        if not character_id:
+            self.statusBar().showMessage(
+                "Pick a character to duplicate first.", 5000
+            )
+            return
+        flow = self.character_flow()
+
+        def done(clone) -> None:
+            self.statusBar().showMessage(
+                f"Duplicated as “{clone.name}”.", 5000
+            )
+            self._reset_library_view()
+            self.refresh_async()
+
+        worker = run_async(
+            lambda: flow.duplicate(character_id), done, self._apply_error
+        )
+        self._workers.append(worker)
+
+    def toggle_favourite_blocking(self, character_id: str) -> bool:
+        """Flip the favourite flag; returns the NEW state, read
+        from the organisation the engine reports afterwards."""
+        flow = self.character_flow()
+        organisation = self.character_flow().organisation(character_id)
+        updated = flow.set_favourite(character_id, not organisation.is_favourite)
+        return updated.is_favourite
+
+    def toggle_selected_favourite(self) -> None:
+        character_id = self.selected_character_id()
+        if not character_id:
+            self.statusBar().showMessage(
+                "Pick a character to favourite first.", 5000
+            )
+            return
+
+        def done(now: bool) -> None:
+            self.statusBar().showMessage(
+                "Marked as a favourite." if now else "Favourite removed.",
+                5000,
+            )
+            if self._library_items is not None:
+                self.search_library_async()
+            else:
+                self.refresh_async()
+
+        worker = run_async(
+            lambda: self.toggle_favourite_blocking(character_id),
+            done,
+            self._apply_error,
+        )
+        self._workers.append(worker)
+
+    def delete_character_blocking(self, character_id: str) -> bool:
+        """Soft-delete (already confirmed); arms Undo Delete."""
+        deleted = self.character_flow().delete(character_id)
+        if deleted:
+            self._last_deleted_character_id = character_id
+            self.undo_delete_character_button.setEnabled(True)
+        self._reset_library_view()
+        self.refresh_blocking()
+        return deleted
+
+    def confirm_delete_selected_character(self) -> QMessageBox | None:
+        """Delete with undo, in honest words: the character is
+        hidden, its files are kept, Undo Delete restores it."""
+        character_id = self.selected_character_id()
+        if not character_id:
+            self.statusBar().showMessage(
+                "Pick a character to delete first.", 5000
+            )
+            return None
+        name = character_id
+        item = self.characters_list.currentItem()
+        if item is not None:
+            name = item.text()
+        box = QMessageBox(self)
+        box.setIcon(QMessageBox.Icon.Warning)
+        box.setWindowTitle("Delete Character")
+        box.setText(f"Delete “{name}”?")
+        box.setInformativeText(
+            "This is a soft delete: the character leaves the "
+            "library, but its card and files are kept — Undo "
+            "Delete brings it straight back."
+        )
+        delete_button = box.addButton(
+            "Delete", QMessageBox.ButtonRole.DestructiveRole
+        )
+        box.addButton(QMessageBox.StandardButton.Cancel)
+        box.setDefaultButton(QMessageBox.StandardButton.Cancel)
+        box.buttonClicked.connect(
+            lambda button, cid=character_id, db=delete_button: (
+                self._delete_character_confirmed(cid) if button is db else None
+            )
+        )
+        box.destroyed.connect(
+            lambda _obj=None: setattr(self, "_delete_character_box", None)
+        )
+        self._delete_character_box = box
+        box.show()
+        return box
+
+    def _delete_character_confirmed(self, character_id: str) -> None:
+        self._delete_character_box = None
+        flow = self.character_flow()
+
+        def done(deleted: bool) -> None:
+            if deleted:
+                self._last_deleted_character_id = character_id
+                self.undo_delete_character_button.setEnabled(True)
+                self.statusBar().showMessage(
+                    "Character deleted — Undo Delete can restore it.",
+                    8000,
+                )
+            self.refresh_async()
+
+        worker = run_async(
+            lambda: flow.delete(character_id), done, self._apply_error
+        )
+        self._workers.append(worker)
+
+    def undo_delete_character_blocking(self) -> CharacterSummary:
+        character_id = self._last_deleted_character_id or ""
+        restored = self.character_flow().undo_delete(character_id)
+        self._last_deleted_character_id = None
+        self.undo_delete_character_button.setEnabled(False)
+        self._reset_library_view()
+        self.refresh_blocking()
+        return restored
+
+    def undo_delete_character(self) -> None:
+        if not self._last_deleted_character_id:
+            self.statusBar().showMessage(
+                "Nothing deleted to undo.", 5000
+            )
+            return
+        character_id = self._last_deleted_character_id
+        flow = self.character_flow()
+
+        def done(restored) -> None:
+            self._last_deleted_character_id = None
+            self.undo_delete_character_button.setEnabled(False)
+            self.statusBar().showMessage(
+                f"Character “{restored.name}” restored.", 5000
+            )
+            self.refresh_async()
+
+        worker = run_async(
+            lambda: flow.undo_delete(character_id), done, self._apply_error
+        )
+        self._workers.append(worker)
+
+    # -- import / export --
+
+    def import_characters_blocking(self, paths: list[str]):
+        """Import card files from local paths (proof/tests)."""
+        files = [(Path(p).name, Path(p).read_bytes()) for p in paths]
+        outcome = self.character_flow().import_files(files)
+        self.last_import_outcome = outcome
+        self._reset_library_view()
+        self.refresh_blocking()
+        return outcome
+
+    def import_characters_dialog(self) -> None:
+        paths, _filter = QFileDialog.getOpenFileNames(
+            self, "Import Characters", "",
+            "Card files (*.json *.png *.charx);;All files (*)",
+        )
+        if not paths:
+            return
+        flow = self.character_flow()
+
+        def work():
+            files = [(Path(p).name, Path(p).read_bytes()) for p in paths]
+            return flow.import_files(files)
+
+        def done(outcome) -> None:
+            self.last_import_outcome = outcome
+            self.statusBar().showMessage(outcome.status_words, 10000)
+            self._reset_library_view()
+            self.refresh_async()
+
+        worker = run_async(work, done, self._apply_error)
+        self._workers.append(worker)
+
+    def export_character_to_path(self, character_id: str, path: str) -> str:
+        text = self.character_flow().export_text(character_id)
+        Path(path).write_text(text, encoding="utf-8")
+        return path
+
+    def export_selected_character(self) -> None:
+        character_id = self.selected_character_id()
+        if not character_id:
+            self.statusBar().showMessage(
+                "Pick a character to export first.", 5000
+            )
+            return
+        flow = self.character_flow()
+
+        def got(card) -> None:
+            path, _filter = QFileDialog.getSaveFileName(
+                self, "Export Character", flow.export_filename(card),
+                "JSON files (*.json);;All files (*)",
+            )
+            if not path:
+                return
+            worker = run_async(
+                lambda: flow.export_text(character_id),
+                lambda text: self._export_write(path, text),
+                self._apply_error,
+            )
+            self._workers.append(worker)
+
+        client = self.client()
+        worker = run_async(
+            lambda: client.get_character_card(character_id),
+            got,
+            self._apply_error,
+        )
+        self._workers.append(worker)
 
     # ------------------------------------------- R-07 message actions
 
