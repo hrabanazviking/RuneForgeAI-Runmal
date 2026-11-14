@@ -1,4 +1,11 @@
-"""Connection profile API (S211): CRUD, set-active, health probe."""
+"""Connection profile API (S211): CRUD, set-active, health probe.
+
+RETIRED (R-02, 2026-11-14): these routes manage the legacy S211
+``connections`` profiles, whose data never drove generation. The real,
+generation-driving profile API is ``/api/v1/backend-profiles``
+(``runmal.backends.router``). These routes stay mounted and readable so
+existing data is not destroyed; no new client should bind to them.
+"""
 
 from __future__ import annotations
 

@@ -7,6 +7,18 @@ stored on a profile.
 Health probes report reachability, latency, and capabilities. The probe
 callable is injectable (tests use a fake probe); the default probe answers
 locally for the fake backend and HTTP-probes real base URLs otherwise.
+
+RETIRED (R-02, 2026-11-14): this S211 ``connections`` system is retired.
+Its data NEVER drove generation — generation, chats, and the bridge have
+always resolved through the separate backend-profile system in
+``runmal.backends.profiles`` (S306), now exposed at
+``/api/v1/backend-profiles``. There is therefore nothing to migrate and
+no migration is performed: inventing one would be theatre over inert
+data. These rows and routes are left readable (not deleted) so existing
+data is not destroyed; new clients must use backend profiles, and the
+desktop shell's Connections page (R-09) binds to them. The one consumer
+that still reads this system is the per-chat generation manifest, which
+uses the active connection only as a sampler-compatibility label.
 """
 
 from __future__ import annotations

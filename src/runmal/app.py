@@ -25,6 +25,7 @@ from runmal.auth import (
     verify_credential,
 )
 from runmal.assets.router import router as assets_router
+from runmal.backends.router import router as backend_profiles_router
 from runmal.backups.router import router as backups_router
 from runmal.bridge.router import admin_router as bridge_admin_router
 from runmal.bridge.router import router as bridge_router
@@ -217,6 +218,11 @@ def create_app(
     )
     app.include_router(
         connections_router,
+        prefix="/api/v1",
+        dependencies=[Depends(require_local_auth)],
+    )
+    app.include_router(
+        backend_profiles_router,
         prefix="/api/v1",
         dependencies=[Depends(require_local_auth)],
     )
