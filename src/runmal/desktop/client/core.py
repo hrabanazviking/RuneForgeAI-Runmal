@@ -15,6 +15,8 @@ hosts export) must never route — or break — loopback traffic.
 from __future__ import annotations
 
 import json
+import uuid
+from collections.abc import Iterator
 from typing import Any
 
 import httpx
@@ -36,6 +38,9 @@ from runmal.desktop.client.models import (
     HealthStatus,
     ImportOutcome,
     MessageView,
+    PersonaView,
+    PresetSummary,
+    StreamEvent,
     detect_first_run,
 )
 from runmal.desktop.client.session import DesktopSession
@@ -236,6 +241,67 @@ class RunmalClient:
         rows = payload if isinstance(payload, list) else []
         return [MessageView.from_dict(r) for r in rows if isinstance(r, dict)]
 
+    def get_chat(self, chat_id: str) -> ChatSummary:
+        """One chat's summary (``GET /chats/{id}``; the payload also
+        embeds its messages — the shell reads those through
+        :meth:`list_chat_messages`, so only the summary is parsed)."""
+        payload = self._request("GET", f"/api/v1/chats/{chat_id}")
+        return ChatSummary.from_dict(payload if isinstance(payload, dict) else {})
+
+    def rename_chat(self, chat_id: str, title: str) -> ChatSummary:
+        """Rename a chat (``PATCH /chats/{id}``, R-06 chats dock)."""
+        payload = self._request(
+            "PATCH", f"/api/v1/chats/{chat_id}", json={"title": title}
+        )
+        return ChatSummary.from_dict(payload if isinstance(payload, dict) else {})
+
+    def delete_chat(self, chat_id: str) -> bool:
+        """Delete a chat (``DELETE /chats/{id}``). Irreversible —
+        callers confirm with the user first."""
+        payload = self._request("DELETE", f"/api/v1/chats/{chat_id}")
+        return bool(isinstance(payload, dict) and payload.get("deleted"))
+
+    def export_chat(self, chat_id: str) -> dict[str, Any]:
+        """The portable export document for a chat (``GET
+        /chats/{id}/export``, S111): chat metadata + full history,
+        no secrets (INV-023/025)."""
+        payload = self._request("GET", f"/api/v1/chats/{chat_id}/export")
+        return payload if isinstance(payload, dict) else {}
+
+    def append_message(
+        self, chat_id: str, role: str, content: str
+    ) -> MessageView:
+        """Persist one message in a chat (``POST /chats/{id}/messages``).
+
+        This is the landing road for a composed turn (R-06): the
+        caller appends the user's line BEFORE generating (so the
+        server-side composition includes it) and the assistant's
+        reply AFTER a cleanly finished stream — exactly the
+        bridge's landing discipline (a cancelled or errored stream
+        stores nothing)."""
+        payload = self._request(
+            "POST",
+            f"/api/v1/chats/{chat_id}/messages",
+            json={"role": role, "content": content},
+        )
+        return MessageView.from_dict(payload if isinstance(payload, dict) else {})
+
+    def set_chat_preset(
+        self, chat_id: str, preset_id: str | None
+    ) -> ChatSummary:
+        """Apply (or clear, with None) a chat's sampling preset."""
+        payload = self._request(
+            "POST",
+            f"/api/v1/chats/{chat_id}/preset",
+            json={"preset_id": preset_id},
+        )
+        return ChatSummary.from_dict(payload if isinstance(payload, dict) else {})
+
+    def get_chat_persona(self, chat_id: str) -> PersonaView:
+        """The chat's active persona (R-03 local persona road)."""
+        payload = self._request("GET", f"/api/v1/chats/{chat_id}/persona")
+        return PersonaView.from_dict(payload if isinstance(payload, dict) else {})
+
     # ------------------------------------------------------------ characters
 
     def list_characters(self) -> list[CharacterSummary]:
@@ -244,6 +310,13 @@ class RunmalClient:
         return [
             CharacterSummary.from_dict(r) for r in rows if isinstance(r, dict)
         ]
+
+    def get_character(self, character_id: str) -> CharacterSummary:
+        """One character's summary (``GET /characters/{id}``)."""
+        payload = self._request("GET", f"/api/v1/characters/{character_id}")
+        return CharacterSummary.from_dict(
+            payload if isinstance(payload, dict) else {}
+        )
 
     def create_character(
         self, card: dict[str, Any], *, name: str | None = None
@@ -270,6 +343,19 @@ class RunmalClient:
         return ImportOutcome.from_report(
             payload if isinstance(payload, dict) else {}
         )
+
+    # --------------------------------------------------------------- presets
+
+    def list_presets(self) -> list[PresetSummary]:
+        """All sampling presets (identity fields only — the full
+        preset editor is R-09; R-06 displays the applied name)."""
+        payload = self._request("GET", "/api/v1/presets")
+        rows = payload if isinstance(payload, list) else []
+        return [PresetSummary.from_dict(r) for r in rows if isinstance(r, dict)]
+
+    def get_preset(self, preset_id: str) -> PresetSummary:
+        payload = self._request("GET", f"/api/v1/presets/{preset_id}")
+        return PresetSummary.from_dict(payload if isinstance(payload, dict) else {})
 
     # ------------------------------------------------------------- user name
 
@@ -341,6 +427,95 @@ class RunmalClient:
         return GeneratedReply(
             text="".join(chunks), backend_key=backend_key, mode=mode
         )
+
+    @staticmethod
+    def new_request_id() -> str:
+        """A fresh generation request id (the generation service's
+        own shape: uuid4 hex). The caller keeps it so the Stop
+        control can cancel exactly this stream."""
+        return uuid.uuid4().hex
+
+    def stream_composed(
+        self,
+        chat_id: str,
+        *,
+        request_id: str,
+        profile_id: str | None = None,
+        params: dict[str, Any] | None = None,
+    ) -> Iterator[StreamEvent]:
+        """Stream one composed turn (R-03 road, R-06 incremental).
+
+        Yields :class:`StreamEvent` in wire order: a ``started``
+        event carrying the response headers (which backend answered,
+        composed vs raw), then ``token``/``reasoning`` events as
+        they arrive, then a terminal ``done`` — or an ``error``
+        event with a plain message (provider payloads never cross,
+        INV-001/023). HTTP failures before the stream opens raise
+        the typed client errors, like every other road. The stream
+        runs on the CALLER's thread: the shell runs it on a worker
+        thread and calls :meth:`cancel_generate` (from another
+        thread; the httpx client is thread-safe) to stop it.
+        """
+        body: dict[str, Any] = {"chat_id": chat_id, "request_id": request_id}
+        if profile_id:
+            body["profile_id"] = profile_id
+        if params:
+            body["params"] = params
+        try:
+            with self._http.stream(
+                "POST", "/api/v1/generate", json=body
+            ) as response:
+                self._raise_for_status(response)
+                yield StreamEvent(
+                    kind="started",
+                    backend_key=response.headers.get("X-Backend-Key", ""),
+                    mode=response.headers.get("X-Generation-Mode", ""),
+                )
+                for line in response.iter_lines():
+                    if not line.startswith("data:"):
+                        continue
+                    try:
+                        event = json.loads(line[len("data:"):].strip())
+                    except ValueError:
+                        continue
+                    if not isinstance(event, dict):
+                        continue
+                    kind = event.get("type")
+                    if kind == "token":
+                        text = event.get("text")
+                        if isinstance(text, str) and text:
+                            yield StreamEvent(kind="token", text=text)
+                    elif kind == "reasoning":
+                        text = event.get("text")
+                        if isinstance(text, str) and text:
+                            yield StreamEvent(kind="reasoning", text=text)
+                    elif kind == "error":
+                        message = event.get("message")
+                        yield StreamEvent(
+                            kind="error",
+                            message=str(message)
+                            if message
+                            else "generation failed in the engine",
+                        )
+                    elif kind == "done":
+                        reason = event.get("finish_reason")
+                        yield StreamEvent(
+                            kind="done",
+                            finish_reason=str(reason) if reason else "",
+                        )
+        except httpx.HTTPError as exc:
+            raise TransportError(
+                f"engine unreachable: {exc.__class__.__name__}"
+            ) from exc
+
+    def cancel_generate(self, request_id: str) -> bool:
+        """Ask the engine to cancel one in-flight generation
+        (``POST /api/v1/generate/cancel``, INV-003). Returns the
+        engine's verdict: True when the request was live."""
+        payload = self._request(
+            "POST", "/api/v1/generate/cancel", json={"request_id": request_id}
+        )
+        return bool(isinstance(payload, dict) and payload.get("cancelled"))
 
     # ------------------------------------------------------------ first run
 

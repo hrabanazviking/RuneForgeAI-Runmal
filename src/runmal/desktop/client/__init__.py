@@ -39,6 +39,9 @@ from runmal.desktop.client.models import (
     HealthStatus,
     ImportOutcome,
     MessageView,
+    PersonaView,
+    PresetSummary,
+    StreamEvent,
     detect_first_run,
 )
 from runmal.desktop.client.session import DesktopSession
@@ -58,7 +61,10 @@ __all__ = [
     "ImportOutcome",
     "MessageView",
     "NotFoundError",
+    "PersonaView",
+    "PresetSummary",
     "RunmalClient",
+    "StreamEvent",
     "TransportError",
     "detect_first_run",
     "fetch_snapshot",

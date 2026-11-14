@@ -236,6 +236,69 @@ class ImportOutcome:
 
 
 @dataclass(frozen=True)
+class PresetSummary:
+    """One row of ``GET /api/v1/presets`` (``preset_to_dict``).
+
+    Only the identity fields the shell displays; the param bag
+    itself is R-09's concern (the full editor), never rendered
+    here."""
+
+    id: str
+    name: str = ""
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> PresetSummary:
+        return cls(
+            id=str(payload.get("id", "")),
+            name=str(payload.get("name", "")),
+        )
+
+
+@dataclass(frozen=True)
+class PersonaView:
+    """``GET /api/v1/chats/{id}/persona`` (R-03): the chat's active
+    persona, or no persona when the chat has no character."""
+
+    chat_id: str
+    character_id: str | None = None
+    name: str | None = None
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> PersonaView:
+        persona = payload.get("persona")
+        if isinstance(persona, dict):
+            return cls(
+                chat_id=str(payload.get("chat_id", "")),
+                character_id=persona.get("character_id") or None,
+                name=persona.get("name") or None,
+            )
+        return cls(chat_id=str(payload.get("chat_id", "")))
+
+    @property
+    def present(self) -> bool:
+        return self.character_id is not None
+
+
+@dataclass(frozen=True)
+class StreamEvent:
+    """One event of a ``POST /api/v1/generate`` SSE stream (R-06).
+
+    ``kind`` is one of ``started`` (carries the response headers:
+    ``backend_key`` + ``mode``), ``token`` / ``reasoning`` (carry
+    ``text``), ``done`` (carries ``finish_reason``), or ``error``
+    (carries a plain ``message`` — provider payloads never cross,
+    INV-001/023). The client yields these in wire order; the chat
+    flow reduces them into the visible draft."""
+
+    kind: str
+    text: str = ""
+    finish_reason: str = ""
+    message: str = ""
+    backend_key: str = ""
+    mode: str = ""
+
+
+@dataclass(frozen=True)
 class EngineSnapshot:
     """Everything the shell skeleton shows about the engine at once:
     health + the three lists + the derived first-run state. Fetched

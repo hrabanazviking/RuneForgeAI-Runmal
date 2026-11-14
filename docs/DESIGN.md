@@ -403,3 +403,19 @@ health is always rendered as plain words, never raw JSON, and the
 Demo (`fake`) backend is labelled as a canned responder everywhere
 it appears. Slice contract and evidence:
 `docs/DESKTOP_WIZARD_R05_2026-11-14.md`.
+
+R-06 adds Chat Stage I on the same boundaries: the centre stage
+streams a composed turn through the Qt-free
+`desktop/chat_logic.py` (`ChatFlow`) over the client layer —
+the user's line is persisted first so server-side composition
+includes it, the reply streams in live (client
+`stream_composed` + `workers.run_stream`), and the reply is
+landed only on a clean finish, the bridge's discipline; Stop
+cancels by request id through the engine's cancel road. The
+Chats dock manages chats (open/new with a character picker —
+the engine seeds the greeting — rename, confirmed delete,
+portable export), and the Session dock resolves the open chat's
+character, persona (R-03 road), pinned backend profile, model,
+and preset from live API data, in words, with unpinned and
+dangling states named honestly rather than filled in. Slice
+contract and evidence: `docs/DESKTOP_CHAT_STAGE_R06_2026-11-14.md`.
