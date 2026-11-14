@@ -95,10 +95,10 @@ try {
     if (-not $Proc.HasExited) { Stop-Process -Id $Proc.Id -Force }
 }
 
-$InnoCandidates = @(
+$InnoCandidates = @(@(
     "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe",
     "$env:ProgramFiles\Inno Setup 6\ISCC.exe"
-) | Where-Object { $_ -and (Test-Path $_) }
+) | Where-Object { $_ -and (Test-Path $_) })
 
 if (-not $InnoCandidates) {
     throw "Inno Setup 6 is required to create Runmal-Setup.exe. Install it from https://jrsoftware.org/isdl.php and run this builder again."
