@@ -472,6 +472,184 @@ class BindingView:
 
 
 @dataclass(frozen=True)
+class LorebookView:
+    """One lorebook, full shape (``GET /api/v1/lorebooks/{id}`` and
+    the list rows, R-10): the book's own fields + entry count."""
+
+    id: str
+    name: str = ""
+    description: str = ""
+    scan_depth: int = 4
+    token_budget: int | None = None
+    scan_mode: str = "depth"
+    scan_external_context: bool = False
+    entry_count: int = 0
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> LorebookView:
+        return cls(
+            id=str(payload.get("id", "")),
+            name=str(payload.get("name", "") or ""),
+            description=str(payload.get("description", "") or ""),
+            scan_depth=_int_or(payload.get("scan_depth"), 4),
+            token_budget=(
+                _int_or(payload.get("token_budget"), 0)
+                if payload.get("token_budget") is not None
+                else None
+            ),
+            scan_mode=str(payload.get("scan_mode", "depth") or "depth"),
+            scan_external_context=bool(
+                payload.get("scan_external_context", False)
+            ),
+            entry_count=_int_or(payload.get("entry_count"), 0),
+        )
+
+    def fields_dict(self) -> dict[str, Any]:
+        """The book's editable fields as a plain dict (form fill)."""
+        return {
+            "name": self.name,
+            "description": self.description,
+            "scan_depth": self.scan_depth,
+            "token_budget": self.token_budget,
+            "scan_mode": self.scan_mode,
+            "scan_external_context": self.scan_external_context,
+        }
+
+
+@dataclass(frozen=True)
+class LoreEntryView:
+    """One lorebook entry, full shape (``entry_to_dict``, R-10).
+    The whole stored document is kept in ``raw`` so fields the
+    shell does not know survive a save verbatim."""
+
+    id: str
+    lorebook_id: str = ""
+    raw: dict[str, Any] = field(default_factory=dict)
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> LoreEntryView:
+        return cls(
+            id=str(payload.get("id", "")),
+            lorebook_id=str(payload.get("lorebook_id", "") or ""),
+            raw=dict(payload),
+        )
+
+    @property
+    def name(self) -> str:
+        return str(self.raw.get("name", "") or "")
+
+    def fields_dict(self) -> dict[str, Any]:
+        """The entry's fields as stored (form fill + save base)."""
+        return dict(self.raw)
+
+
+@dataclass(frozen=True)
+class LoreScopeView:
+    """One scope assignment (``scope_to_dict``, R-10)."""
+
+    id: str
+    lorebook_id: str = ""
+    scope_kind: str = ""
+    owner_id: str | None = None
+    token_budget: int | None = None
+    position: int = 0
+    lorebook_name: str = ""
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> LoreScopeView:
+        book = payload.get("lorebook")
+        return cls(
+            id=str(payload.get("id", "") or ""),
+            lorebook_id=str(payload.get("lorebook_id", "") or ""),
+            scope_kind=str(payload.get("scope_kind", "") or ""),
+            owner_id=payload.get("owner_id") or None,
+            token_budget=(
+                _int_or(payload.get("token_budget"), 0)
+                if payload.get("token_budget") is not None
+                else None
+            ),
+            position=_int_or(payload.get("position"), 0),
+            lorebook_name=(
+                str(book.get("name", ""))
+                if isinstance(book, dict)
+                else ""
+            ),
+        )
+
+
+@dataclass(frozen=True)
+class PreviewRow:
+    """One entry's verdict row from an activation preview (the
+    merged ``preview_activation`` shape, R-10)."""
+
+    entry_id: str
+    name: str = ""
+    status: str = ""
+    matched_primary: list[str] = field(default_factory=list)
+    matched_secondary: list[str] = field(default_factory=list)
+    via: str | None = None
+    tokens: int | None = None
+    discard_reason: str | None = None
+    scope: str = ""
+    lorebook_id: str = ""
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> PreviewRow:
+        return cls(
+            entry_id=str(payload.get("entry_id", "") or ""),
+            name=str(payload.get("name", "") or ""),
+            status=str(payload.get("status", "") or ""),
+            matched_primary=[
+                str(k) for k in (payload.get("matched_primary") or [])
+            ],
+            matched_secondary=[
+                str(k) for k in (payload.get("matched_secondary") or [])
+            ],
+            via=payload.get("via") or None,
+            tokens=(
+                _int_or(payload.get("tokens"), 0)
+                if payload.get("tokens") is not None
+                else None
+            ),
+            discard_reason=payload.get("discard_reason") or None,
+            scope=str(payload.get("scope", "") or ""),
+            lorebook_id=str(payload.get("lorebook_id", "") or ""),
+        )
+
+
+@dataclass(frozen=True)
+class LayerScopeSummary:
+    """One layer's summary in a layered lore preview (R-10)."""
+
+    scope: str
+    books: list[str] = field(default_factory=list)
+    budget: int | None = None
+    tokens_used: int = 0
+    included: int = 0
+    discarded: int = 0
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> LayerScopeSummary:
+        books = payload.get("books") or []
+        return cls(
+            scope=str(payload.get("scope", "") or ""),
+            books=[
+                str(b.get("name", "") or b.get("lorebook_id", ""))
+                for b in books
+                if isinstance(b, dict)
+            ],
+            budget=(
+                _int_or(payload.get("budget"), 0)
+                if payload.get("budget") is not None
+                else None
+            ),
+            tokens_used=_int_or(payload.get("tokens_used"), 0),
+            included=_int_or(payload.get("included"), 0),
+            discarded=_int_or(payload.get("discarded"), 0),
+        )
+
+
+@dataclass(frozen=True)
 class FirstRunState:
     """First-run detection result (R-04; consumed by the R-05 wizard).
 

@@ -43,14 +43,19 @@ from runmal.desktop.client.models import (
     GeneratedReply,
     HealthStatus,
     ImportOutcome,
+    LayerScopeSummary,
     LibraryCardView,
     LorebookSummary,
+    LorebookView,
+    LoreEntryView,
+    LoreScopeView,
     MessageView,
     OrganisationView,
     OverrideView,
     PersonaView,
     PresetDetail,
     PresetSummary,
+    PreviewRow,
     SearchHitView,
     StreamEvent,
     TagCountView,
@@ -355,6 +360,19 @@ class RunmalClient:
     def get_chat_persona(self, chat_id: str) -> PersonaView:
         """The chat's active persona (R-03 local persona road)."""
         payload = self._request("GET", f"/api/v1/chats/{chat_id}/persona")
+        return PersonaView.from_dict(payload if isinstance(payload, dict) else {})
+
+    def set_chat_persona(
+        self, chat_id: str, character_id: str | None
+    ) -> PersonaView:
+        """Switch a chat's active persona (``POST
+        /chats/{id}/persona``, R-03 road; R-10 panel). ``None``
+        clears. Affects future turns only."""
+        payload = self._request(
+            "POST",
+            f"/api/v1/chats/{chat_id}/persona",
+            json={"character_id": character_id},
+        )
         return PersonaView.from_dict(payload if isinstance(payload, dict) else {})
 
     # ------------------------------------------- message actions (R-07)
@@ -1034,6 +1052,186 @@ class RunmalClient:
             "DELETE", f"/api/v1/characters/{character_id}/lorebook-binding"
         )
         return bool(isinstance(payload, dict) and payload.get("unbound"))
+
+    # ------------------------------------------- lorebooks, full (R-10)
+
+    def list_lorebook_views(self) -> list[LorebookView]:
+        """All lorebooks, full shape (``GET /api/v1/lorebooks``)."""
+        payload = self._request("GET", "/api/v1/lorebooks")
+        rows = payload if isinstance(payload, list) else []
+        return [LorebookView.from_dict(r) for r in rows if isinstance(r, dict)]
+
+    def get_lorebook(self, book_id: str) -> LorebookView:
+        payload = self._request("GET", f"/api/v1/lorebooks/{book_id}")
+        return LorebookView.from_dict(payload if isinstance(payload, dict) else {})
+
+    def create_lorebook(self, fields: dict[str, Any]) -> LorebookView:
+        """Create a lorebook (``POST /api/v1/lorebooks``)."""
+        payload = self._request("POST", "/api/v1/lorebooks", json=fields)
+        return LorebookView.from_dict(payload if isinstance(payload, dict) else {})
+
+    def update_lorebook(
+        self, book_id: str, fields: dict[str, Any]
+    ) -> LorebookView:
+        """Patch a lorebook (``PATCH /api/v1/lorebooks/{id}``); only
+        the named fields are sent."""
+        payload = self._request(
+            "PATCH", f"/api/v1/lorebooks/{book_id}", json=fields
+        )
+        return LorebookView.from_dict(payload if isinstance(payload, dict) else {})
+
+    def delete_lorebook(self, book_id: str) -> bool:
+        payload = self._request("DELETE", f"/api/v1/lorebooks/{book_id}")
+        return bool(isinstance(payload, dict) and payload.get("deleted"))
+
+    def import_lorebook(self, document: dict[str, Any]) -> LorebookView:
+        """Import a lorebook document (``POST /lorebooks/import``)."""
+        payload = self._request("POST", "/api/v1/lorebooks/import", json=document)
+        return LorebookView.from_dict(payload if isinstance(payload, dict) else {})
+
+    def export_lorebook(self, book_id: str) -> dict[str, Any]:
+        """Export a lorebook document (``GET
+        /lorebooks/{id}/export``) as a plain dict."""
+        payload = self._request("GET", f"/api/v1/lorebooks/{book_id}/export")
+        return payload if isinstance(payload, dict) else {}
+
+    def lorebook_editor_schema(self) -> dict[str, Any]:
+        """The P-042 editor census (``GET /lorebooks/editor-schema``)
+        the R-10 forms are generated from."""
+        payload = self._request("GET", "/api/v1/lorebooks/editor-schema")
+        return payload if isinstance(payload, dict) else {}
+
+    def list_lore_entries(self, book_id: str) -> list[LoreEntryView]:
+        payload = self._request("GET", f"/api/v1/lorebooks/{book_id}/entries")
+        rows = payload if isinstance(payload, list) else []
+        return [LoreEntryView.from_dict(r) for r in rows if isinstance(r, dict)]
+
+    def create_lore_entry(
+        self, book_id: str, fields: dict[str, Any]
+    ) -> LoreEntryView:
+        """Create an entry (``POST /lorebooks/{id}/entries``)."""
+        payload = self._request(
+            "POST", f"/api/v1/lorebooks/{book_id}/entries", json=fields
+        )
+        return LoreEntryView.from_dict(payload if isinstance(payload, dict) else {})
+
+    def update_lore_entry(
+        self, book_id: str, entry_id: str, fields: dict[str, Any]
+    ) -> LoreEntryView:
+        """Patch an entry (``PATCH /lorebooks/{id}/entries/{eid}``);
+        only the named fields are sent."""
+        payload = self._request(
+            "PATCH",
+            f"/api/v1/lorebooks/{book_id}/entries/{entry_id}",
+            json=fields,
+        )
+        return LoreEntryView.from_dict(payload if isinstance(payload, dict) else {})
+
+    def delete_lore_entry(self, book_id: str, entry_id: str) -> bool:
+        payload = self._request(
+            "DELETE", f"/api/v1/lorebooks/{book_id}/entries/{entry_id}"
+        )
+        return bool(isinstance(payload, dict) and payload.get("deleted"))
+
+    def list_book_scopes(self, book_id: str) -> list[LoreScopeView]:
+        """A book's scope assignments (``GET
+        /lorebooks/{id}/scopes``)."""
+        payload = self._request("GET", f"/api/v1/lorebooks/{book_id}/scopes")
+        rows = (
+            payload.get("scopes")
+            if isinstance(payload, dict)
+            else None
+        )
+        return [
+            LoreScopeView.from_dict(r)
+            for r in (rows or [])
+            if isinstance(r, dict)
+        ]
+
+    def assign_book_scope(
+        self,
+        book_id: str,
+        scope_kind: str,
+        owner_id: str | None,
+        *,
+        token_budget: int | None = None,
+        position: int = 0,
+    ) -> LoreScopeView:
+        """Assign a book to a scope (``PUT /lorebooks/{id}/scope``)."""
+        body: dict[str, Any] = {
+            "scope_kind": scope_kind,
+            "owner_id": owner_id,
+            "position": position,
+        }
+        if token_budget is not None:
+            body["token_budget"] = token_budget
+        payload = self._request(
+            "PUT", f"/api/v1/lorebooks/{book_id}/scope", json=body
+        )
+        return LoreScopeView.from_dict(payload if isinstance(payload, dict) else {})
+
+    def unassign_book_scope(
+        self, book_id: str, scope_kind: str, owner_id: str | None
+    ) -> bool:
+        """Remove a scope assignment (``DELETE
+        /lorebooks/{id}/scope`` with query params)."""
+        params: dict[str, Any] = {"scope_kind": scope_kind}
+        if owner_id is not None:
+            params["owner_id"] = owner_id
+        payload = self._request(
+            "DELETE", f"/api/v1/lorebooks/{book_id}/scope", params=params
+        )
+        return bool(isinstance(payload, dict) and payload.get("deleted"))
+
+    def preview_lorebook(
+        self, book_id: str, messages: list[str]
+    ) -> list[PreviewRow]:
+        """Activation preview for one book (``POST
+        /lorebooks/{id}/preview``) — per-entry verdict rows."""
+        payload = self._request(
+            "POST",
+            f"/api/v1/lorebooks/{book_id}/preview",
+            json={"messages": list(messages)},
+        )
+        rows = payload.get("entries") if isinstance(payload, dict) else None
+        return [
+            PreviewRow.from_dict(r) for r in (rows or []) if isinstance(r, dict)
+        ]
+
+    def preview_chat_lore(
+        self, chat_id: str, messages: list[str]
+    ) -> tuple[list[PreviewRow], list[LayerScopeSummary], list[str]]:
+        """Layered lore preview for a chat (``POST
+        /chats/{id}/lore-preview``): every layer's verdict rows,
+        the per-layer scope summaries, and shadowed-book words."""
+        payload = self._request(
+            "POST",
+            f"/api/v1/chats/{chat_id}/lore-preview",
+            json={"messages": list(messages)},
+        )
+        if not isinstance(payload, dict):
+            return [], [], []
+        rows: list[PreviewRow] = []
+        layers = payload.get("layers")
+        if isinstance(layers, dict):
+            for layer in layers.values():
+                if not isinstance(layer, dict):
+                    continue
+                for row in layer.get("entries") or []:
+                    if isinstance(row, dict):
+                        rows.append(PreviewRow.from_dict(row))
+        summaries = [
+            LayerScopeSummary.from_dict(s)
+            for s in (payload.get("scopes") or [])
+            if isinstance(s, dict)
+        ]
+        shadowed = [
+            str(s.get("name") or s.get("lorebook_id") or s)
+            if isinstance(s, dict)
+            else str(s)
+            for s in (payload.get("shadowed") or [])
+        ]
+        return rows, summaries, shadowed
 
     def import_character_file(self, filename: str, data: bytes) -> ImportOutcome:
         """Import one card file (JSON/PNG) via the bulk library road

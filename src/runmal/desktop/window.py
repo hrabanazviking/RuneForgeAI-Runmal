@@ -43,6 +43,14 @@ per-field sources) — through the Qt-free
 the S207/P-054 preset roads, no new engine routes; the Session
 dock gains a preset quick-apply control for the open chat.
 
+R-10 adds Persona (the ``{{user}}`` name + the open chat's
+persona character, over the R-03 persona roads — what the
+engine actually has, named honestly) and the Lorebooks editor
+(book/entry forms generated from the P-042 editor census,
+scope assignments, and the activation + layered lore previews
+rendered in words) through the Qt-free ``persona_logic`` /
+``lore_logic`` flows, no new engine routes.
+
 Honesty rule (carried from R-04): an action is REAL only where
 its machinery exists. Later-slice screens stay placeholder
 actions labelled with their slice, never dressed up.
@@ -107,11 +115,39 @@ from runmal.desktop.client.models import (
     CharacterSummary,
     ChatSummary,
     EngineSnapshot,
+    LorebookView,
+    LoreEntryView,
+    LoreScopeView,
     MessageView,
+    PersonaView,
     PresetDetail,
+    PreviewRow,
 )
 from runmal.desktop.client.session import DesktopSession
 from runmal.desktop.engine import EngineHandle, EngineState
+from runmal.desktop.lore_logic import (
+    KIND_BOOL,
+    KIND_INT_OR_NULL,
+    KIND_KEYS,
+    KIND_LONGTEXT,
+    KIND_SELECT,
+    SCOPE_KINDS,
+    SCOPE_LABELS,
+    LoreFlow,
+    SchemaField,
+    activation_kind_words,
+    keys_to_text,
+    layer_words,
+    schema_fields,
+    scope_words,
+    text_to_keys,
+    verdict_words,
+)
+from runmal.desktop.persona_logic import (
+    PersonaFlow,
+    UserNameState,
+    persona_words,
+)
 from runmal.desktop.settings_logic import (
     CHAT_BACKEND_LABELS,
     EMBEDDING_BACKEND_LABELS,
@@ -2483,6 +2519,997 @@ class GenerationDialog(QDialog):
             self.resolve_preset_label.setText("")
 
 
+class SchemaFormWidget(QWidget):
+    """A form generated from the lorebook editor census (R-10):
+    one editor per census field, kinds mapped to widgets. Values
+    round-trip typed (ints as ints, keys as line lists); derived
+    fields render as read-only words and are never collected."""
+
+    def __init__(
+        self, fields: list[SchemaField], parent: QWidget | None = None
+    ) -> None:
+        super().__init__(parent)
+        self._fields = list(fields)
+        self._editors: dict[str, QWidget] = {}
+        self._derived_labels: dict[str, QLabel] = {}
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        for spec in self._fields:
+            if spec.kind == KIND_BOOL and not spec.derived:
+                check = QCheckBox(spec.label)
+                if spec.help:
+                    check.setToolTip(spec.help)
+                self._editors[spec.name] = check
+                layout.addWidget(check)
+                continue
+            label = QLabel(spec.label)
+            if spec.help:
+                label.setToolTip(spec.help)
+            layout.addWidget(label)
+            layout.addWidget(self._make_editor(spec))
+        for name in ("constant", "vectorised"):
+            editor = self._editors.get(name)
+            if isinstance(editor, QCheckBox):
+                editor.toggled.connect(
+                    lambda _c=False: self._refresh_derived()
+                )
+        self._refresh_derived()
+
+    def _make_editor(self, spec: SchemaField) -> QWidget:
+        if spec.derived:
+            label = QLabel("—")
+            label.setWordWrap(True)
+            self._derived_labels[spec.name] = label
+            return label
+        if spec.kind == KIND_LONGTEXT or spec.kind == KIND_KEYS:
+            edit = QPlainTextEdit()
+            edit.setMaximumHeight(84 if spec.kind == KIND_LONGTEXT else 72)
+            self._editors[spec.name] = edit
+            return edit
+        if spec.kind == KIND_INT:
+            spin = QSpinBox()
+            spin.setRange(-1000000, 1000000)
+            self._editors[spec.name] = spin
+            return spin
+        if spec.kind == KIND_SELECT:
+            combo = QComboBox()
+            for option in spec.options:
+                combo.addItem(option, option)
+            self._editors[spec.name] = combo
+            return combo
+        # text + int_or_null are line edits (int_or_null parses on
+        # collect, so "blank = none" stays expressible).
+        edit = QLineEdit()
+        if spec.kind == KIND_INT_OR_NULL:
+            edit.setPlaceholderText("blank = none")
+        self._editors[spec.name] = edit
+        return edit
+
+    # ------------------------------------------------------------ values
+
+    def set_values(self, values: dict[str, Any]) -> None:
+        for spec in self._fields:
+            if spec.derived:
+                label = self._derived_labels.get(spec.name)
+                if label is not None:
+                    label.setText(activation_kind_words(values))
+                continue
+            editor = self._editors.get(spec.name)
+            if editor is None:
+                continue
+            value = values.get(spec.name)
+            if isinstance(editor, QCheckBox):
+                editor.setChecked(bool(value))
+            elif isinstance(editor, QSpinBox):
+                editor.setValue(int(value) if isinstance(value, int) else 0)
+            elif isinstance(editor, QComboBox):
+                index = editor.findData(value)
+                editor.setCurrentIndex(index if index >= 0 else 0)
+            elif isinstance(editor, QPlainTextEdit):
+                if spec.kind == KIND_KEYS:
+                    editor.setPlainText(keys_to_text(value))
+                else:
+                    editor.setPlainText(str(value or ""))
+            elif isinstance(editor, QLineEdit):
+                editor.setText(
+                    "" if value is None else str(value)
+                )
+        self._refresh_derived()
+
+    def _refresh_derived(self) -> None:
+        label = self._derived_labels.get("activation_kind")
+        if label is None:
+            return
+        values, _problems = self.values()
+        label.setText(activation_kind_words(values))
+
+    def values(self) -> tuple[dict[str, Any], list[str]]:
+        """Collect the form: typed values + plain-words problems."""
+        out: dict[str, Any] = {}
+        problems: list[str] = []
+        for spec in self._fields:
+            if spec.derived:
+                continue
+            editor = self._editors.get(spec.name)
+            if editor is None:
+                continue
+            if isinstance(editor, QCheckBox):
+                out[spec.name] = editor.isChecked()
+            elif isinstance(editor, QSpinBox):
+                out[spec.name] = editor.value()
+            elif isinstance(editor, QComboBox):
+                out[spec.name] = editor.currentData()
+            elif isinstance(editor, QPlainTextEdit):
+                if spec.kind == KIND_KEYS:
+                    out[spec.name] = text_to_keys(editor.toPlainText())
+                else:
+                    out[spec.name] = editor.toPlainText()
+            elif isinstance(editor, QLineEdit):
+                text = editor.text().strip()
+                if spec.kind == KIND_INT_OR_NULL:
+                    if not text:
+                        out[spec.name] = None
+                    else:
+                        try:
+                            out[spec.name] = int(text)
+                        except ValueError:
+                            problems.append(
+                                f"{spec.label} must be a whole number "
+                                "or blank."
+                            )
+                else:
+                    out[spec.name] = text
+        return out, problems
+
+    # ------------------------------------------------- test/proof drivers
+
+    def editor_for(self, name: str) -> QWidget | None:
+        return self._editors.get(name) or self._derived_labels.get(name)
+
+    def set_field_value(self, name: str, value: Any) -> None:
+        self.set_values({**self.values()[0], name: value})
+
+
+class PersonaDialog(QDialog):
+    """Persona (R-10): the two mechanisms the engine actually
+    has — your persisted ``{{user}}`` name, and the open chat's
+    persona character (future turns only). Persona files exist
+    in the engine library but no route serves them, so no
+    import/export is offered; the panel says so."""
+
+    def __init__(
+        self,
+        flow: PersonaFlow,
+        *,
+        chat_id: str | None,
+        chat_title: str = "",
+        characters: list[tuple[str, str]] | None = None,
+        on_changed=None,
+        parent: QWidget | None = None,
+    ) -> None:
+        super().__init__(parent)
+        self._flow = flow
+        self._chat_id = chat_id
+        self._chat_title = chat_title
+        self._on_changed = on_changed
+        self._workers: list = []
+        self.setWindowTitle("Persona")
+        self.resize(560, 460)
+        self._build_ui(characters or [])
+        self.refresh()
+
+    def _build_ui(self, characters: list[tuple[str, str]]) -> None:
+        root = QVBoxLayout(self)
+        self.status_label = QLabel("Loading persona…")
+        self.status_label.setWordWrap(True)
+        root.addWidget(self.status_label)
+        root.addWidget(QLabel("Your name (the {{user}} name)"))
+        self.user_name_state = QLabel("")
+        self.user_name_state.setWordWrap(True)
+        root.addWidget(self.user_name_state)
+        name_row = QHBoxLayout()
+        self.user_name_edit = QLineEdit()
+        self.user_name_edit.setPlaceholderText("Your name in chats")
+        name_row.addWidget(self.user_name_edit, 1)
+        self.save_name_button = QPushButton("Save name")
+        self.save_name_button.clicked.connect(
+            lambda _c=False: self.save_name()
+        )
+        name_row.addWidget(self.save_name_button)
+        self.clear_name_button = QPushButton("Clear name")
+        self.clear_name_button.clicked.connect(
+            lambda _c=False: self.clear_name()
+        )
+        name_row.addWidget(self.clear_name_button)
+        root.addLayout(name_row)
+        root.addWidget(QLabel("This chat's persona"))
+        self.persona_label = QLabel("")
+        self.persona_label.setWordWrap(True)
+        root.addWidget(self.persona_label)
+        persona_row = QHBoxLayout()
+        self.persona_combo = QComboBox()
+        for character_id, name in characters:
+            self.persona_combo.addItem(name, character_id)
+        persona_row.addWidget(self.persona_combo, 1)
+        self.set_persona_button = QPushButton("Set persona")
+        self.set_persona_button.clicked.connect(
+            lambda _c=False: self.set_persona()
+        )
+        persona_row.addWidget(self.set_persona_button)
+        self.clear_persona_button = QPushButton("Clear persona")
+        self.clear_persona_button.clicked.connect(
+            lambda _c=False: self.clear_persona()
+        )
+        persona_row.addWidget(self.clear_persona_button)
+        root.addLayout(persona_row)
+        explainer = QLabel(
+            "A chat's persona is the character card the chat "
+            "speaks with. Switching affects future turns only — "
+            "messages already stored keep the speaker they were "
+            "written with. Persona files (the import/export "
+            "format) exist in the engine's library, but no engine "
+            "route serves them yet, so this panel does not offer "
+            "persona import or export."
+        )
+        explainer.setWordWrap(True)
+        root.addWidget(explainer)
+        root.addStretch(1)
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
+        buttons.rejected.connect(self.reject)
+        root.addWidget(buttons)
+        if not self._chat_id:
+            self.persona_label.setText(
+                "No chat is open — open one to set its persona."
+            )
+            self.persona_combo.setEnabled(False)
+            self.set_persona_button.setEnabled(False)
+            self.clear_persona_button.setEnabled(False)
+
+    # ------------------------------------------------------------ async
+
+    def _run(self, fn, done) -> None:
+        worker = run_async(fn, done, self._failed)
+        self._workers.append(worker)
+
+    def _failed(self, message: str) -> None:
+        self.status_label.setText(f"Something failed: {message}")
+
+    def _changed(self) -> None:
+        if self._on_changed is not None:
+            self._on_changed()
+
+    # ------------------------------------------------------------ load
+
+    def refresh(self) -> None:
+        def done_name(state: UserNameState) -> None:
+            self.user_name_state.setText(state.words)
+            self.user_name_edit.setText(state.name)
+            self.status_label.setText("Persona ready.")
+
+        self._run(self._flow.user_name, done_name)
+        if self._chat_id:
+            chat_id = self._chat_id
+
+            def done_persona(persona: PersonaView) -> None:
+                self.persona_label.setText(persona_words(persona))
+                if persona.character_id:
+                    index = self.persona_combo.findData(persona.character_id)
+                    if index >= 0:
+                        self.persona_combo.setCurrentIndex(index)
+
+            self._run(lambda: self._flow.chat_persona(chat_id), done_persona)
+
+    # ----------------------------------------------------------- actions
+
+    def save_name(self) -> None:
+        name = self.user_name_edit.text().strip()
+        if not name:
+            self.status_label.setText(
+                "Type a name first — or use Clear name for the default."
+            )
+            return
+
+        def done(state: UserNameState) -> None:
+            self.user_name_state.setText(state.words)
+            self.status_label.setText(f"Saved your name: {state.name}.")
+            self._changed()
+
+        self._run(lambda: self._flow.set_user_name(name), done)
+
+    def clear_name(self) -> None:
+        def done(state: UserNameState) -> None:
+            self.user_name_state.setText(state.words)
+            self.user_name_edit.setText(state.name)
+            self.status_label.setText(
+                "Name cleared — the built-in default is back."
+            )
+            self._changed()
+
+        self._run(lambda: self._flow.set_user_name(""), done)
+
+    def set_persona(self) -> None:
+        if not self._chat_id:
+            return
+        character_id = self.persona_combo.currentData()
+        if not character_id:
+            self.status_label.setText("Pick a character first.")
+            return
+        chat_id = self._chat_id
+
+        def done(persona: PersonaView) -> None:
+            self.persona_label.setText(persona_words(persona))
+            self.status_label.setText(
+                f"Persona set for this chat: "
+                f"{persona.name or persona.character_id}."
+            )
+            self._changed()
+
+        self._run(
+            lambda: self._flow.set_chat_persona(chat_id, character_id), done
+        )
+
+    def clear_persona(self) -> None:
+        if not self._chat_id:
+            return
+        chat_id = self._chat_id
+
+        def done(persona: PersonaView) -> None:
+            self.persona_label.setText(persona_words(persona))
+            self.status_label.setText("Persona cleared for this chat.")
+            self._changed()
+
+        self._run(lambda: self._flow.set_chat_persona(chat_id, None), done)
+
+
+class LorebooksDialog(QDialog):
+    """Lorebooks (R-10): the schema-driven lorebook editor.
+
+    Book and entry forms are generated from the engine's own
+    editor census (P-042) — the shell never hand-copies the field
+    list. Scopes assign the book to global / character / persona /
+    chat layers (their own mechanism, distinct from the card
+    editor's P-039 binding); the Preview tab runs the book's
+    activation preview and the open chat's layered lore preview
+    and renders every verdict in words."""
+
+    def __init__(
+        self,
+        flow: LoreFlow,
+        *,
+        chat_id: str | None,
+        chat_title: str = "",
+        characters: list[tuple[str, str]] | None = None,
+        on_changed=None,
+        parent: QWidget | None = None,
+    ) -> None:
+        super().__init__(parent)
+        self._flow = flow
+        self._chat_id = chat_id
+        self._chat_title = chat_title
+        self._characters = characters or []
+        self._on_changed = on_changed
+        self._workers: list = []
+        self._books: dict[str, LorebookView] = {}
+        self._current_book_id: str | None = None
+        self._entries: dict[str, LoreEntryView] = {}
+        self._current_entry_id: str | None = None
+        self._scopes: list[LoreScopeView] = []
+        self._book_fields: list[SchemaField] = []
+        self._entry_fields: list[SchemaField] = []
+        self._books_gen = 0
+        self._entries_gen = 0
+        self.setWindowTitle("Lorebooks")
+        self.resize(920, 680)
+        self._build_ui()
+        self._load_schema_and_books()
+
+    # ------------------------------------------------------------ build
+
+    def _build_ui(self) -> None:
+        root = QVBoxLayout(self)
+        self.status_label = QLabel("Loading lorebooks…")
+        self.status_label.setWordWrap(True)
+        root.addWidget(self.status_label)
+        book_row = QHBoxLayout()
+        book_row.addWidget(QLabel("Lorebook:"))
+        self.books_combo = QComboBox()
+        self.books_combo.currentIndexChanged.connect(
+            lambda _i: self._book_chosen()
+        )
+        book_row.addWidget(self.books_combo, 1)
+        self.new_book_button = QPushButton("New book")
+        self.new_book_button.clicked.connect(lambda _c=False: self.new_book())
+        book_row.addWidget(self.new_book_button)
+        root.addLayout(book_row)
+
+        self.tabs = QTabWidget()
+        root.addWidget(self.tabs, 1)
+
+        # -- Book tab (form host filled when the census arrives)
+        book_tab = QWidget()
+        book_layout = QVBoxLayout(book_tab)
+        self.book_form_host = QVBoxLayout()
+        book_layout.addLayout(self.book_form_host)
+        self.book_form: SchemaFormWidget | None = None
+        book_buttons = QHBoxLayout()
+        self.save_book_button = QPushButton("Save book")
+        self.save_book_button.clicked.connect(
+            lambda _c=False: self.save_book()
+        )
+        book_buttons.addWidget(self.save_book_button)
+        self.delete_book_button = QPushButton("Delete book")
+        self.delete_book_button.clicked.connect(
+            lambda _c=False: self.delete_book()
+        )
+        book_buttons.addWidget(self.delete_book_button)
+        self.import_book_button = QPushButton("Import book…")
+        self.import_book_button.clicked.connect(
+            lambda _c=False: self.import_book()
+        )
+        book_buttons.addWidget(self.import_book_button)
+        self.export_book_button = QPushButton("Export book…")
+        self.export_book_button.clicked.connect(
+            lambda _c=False: self.export_book()
+        )
+        book_buttons.addWidget(self.export_book_button)
+        book_layout.addLayout(book_buttons)
+        book_scroll = QScrollArea()
+        book_scroll.setWidgetResizable(True)
+        book_scroll.setWidget(book_tab)
+        self.tabs.addTab(book_scroll, "Book")
+
+        # -- Entries tab
+        entries_tab = QWidget()
+        entries_layout = QHBoxLayout(entries_tab)
+        left = QVBoxLayout()
+        left.addWidget(QLabel("Entries"))
+        self.entries_list = QListWidget()
+        self.entries_list.currentItemChanged.connect(
+            lambda _cur, _prev: self._entry_chosen()
+        )
+        left.addWidget(self.entries_list, 1)
+        self.new_entry_button = QPushButton("New entry")
+        self.new_entry_button.clicked.connect(
+            lambda _c=False: self.new_entry()
+        )
+        left.addWidget(self.new_entry_button)
+        self.delete_entry_button = QPushButton("Delete entry")
+        self.delete_entry_button.clicked.connect(
+            lambda _c=False: self.delete_entry()
+        )
+        left.addWidget(self.delete_entry_button)
+        entries_layout.addLayout(left)
+        entry_right = QVBoxLayout()
+        self.entry_form_host = QVBoxLayout()
+        entry_right.addLayout(self.entry_form_host)
+        self.entry_form: SchemaFormWidget | None = None
+        self.save_entry_button = QPushButton("Save entry")
+        self.save_entry_button.clicked.connect(
+            lambda _c=False: self.save_entry()
+        )
+        entry_right.addWidget(self.save_entry_button)
+        entries_layout.addLayout(entry_right, 1)
+        entries_scroll = QScrollArea()
+        entries_scroll.setWidgetResizable(True)
+        entries_scroll.setWidget(entries_tab)
+        self.tabs.addTab(entries_scroll, "Entries")
+
+        # -- Scopes tab
+        scopes_tab = QWidget()
+        scopes_layout = QVBoxLayout(scopes_tab)
+        scopes_layout.addWidget(
+            QLabel(
+                "Assign this book to a layer. Scopes are how the "
+                "book reaches chats: globally, through a character, "
+                "through a persona, or into one chat. (The card "
+                "editor's lorebook binding is a separate, older "
+                "mechanism.)"
+            )
+        )
+        form_row = QHBoxLayout()
+        self.scope_kind_combo = QComboBox()
+        for kind in SCOPE_KINDS:
+            self.scope_kind_combo.addItem(SCOPE_LABELS[kind], kind)
+        self.scope_kind_combo.currentIndexChanged.connect(
+            lambda _i: self._scope_kind_changed()
+        )
+        form_row.addWidget(self.scope_kind_combo)
+        self.scope_owner_combo = QComboBox()
+        form_row.addWidget(self.scope_owner_combo, 1)
+        self.scope_budget_edit = QLineEdit()
+        self.scope_budget_edit.setPlaceholderText("token budget (blank = none)")
+        form_row.addWidget(self.scope_budget_edit)
+        self.scope_position_spin = QSpinBox()
+        self.scope_position_spin.setRange(0, 999)
+        self.scope_position_spin.setToolTip("Position within the layer")
+        form_row.addWidget(self.scope_position_spin)
+        self.assign_scope_button = QPushButton("Assign")
+        self.assign_scope_button.clicked.connect(
+            lambda _c=False: self.assign_scope()
+        )
+        form_row.addWidget(self.assign_scope_button)
+        scopes_layout.addLayout(form_row)
+        self.scopes_list = QListWidget()
+        scopes_layout.addWidget(self.scopes_list, 1)
+        self.unassign_scope_button = QPushButton("Remove selected assignment")
+        self.unassign_scope_button.clicked.connect(
+            lambda _c=False: self.unassign_scope()
+        )
+        scopes_layout.addWidget(self.unassign_scope_button)
+        self.tabs.addTab(scopes_tab, "Scopes")
+
+        # -- Preview tab
+        preview_tab = QWidget()
+        preview_layout = QVBoxLayout(preview_tab)
+        preview_layout.addWidget(
+            QLabel("Sample messages (one per line) to test against:")
+        )
+        self.preview_messages = QPlainTextEdit()
+        self.preview_messages.setMaximumHeight(90)
+        preview_layout.addWidget(self.preview_messages)
+        preview_buttons = QHBoxLayout()
+        self.preview_book_button = QPushButton("Preview this book")
+        self.preview_book_button.clicked.connect(
+            lambda _c=False: self.preview_book()
+        )
+        preview_buttons.addWidget(self.preview_book_button)
+        self.preview_chat_button = QPushButton("Preview the open chat's lore")
+        self.preview_chat_button.clicked.connect(
+            lambda _c=False: self.preview_chat()
+        )
+        preview_buttons.addWidget(self.preview_chat_button)
+        preview_layout.addLayout(preview_buttons)
+        self.preview_results = QPlainTextEdit()
+        self.preview_results.setReadOnly(True)
+        preview_layout.addWidget(self.preview_results, 1)
+        self.tabs.addTab(preview_tab, "Preview")
+
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
+        buttons.rejected.connect(self.reject)
+        root.addWidget(buttons)
+        self._scope_kind_changed()
+
+    # ------------------------------------------------------------ async
+
+    def _run(self, fn, done) -> None:
+        worker = run_async(fn, done, self._failed)
+        self._workers.append(worker)
+
+    def _failed(self, message: str) -> None:
+        self.status_label.setText(f"Something failed: {message}")
+
+    def _changed(self) -> None:
+        if self._on_changed is not None:
+            self._on_changed()
+
+    # ------------------------------------------------------------- load
+
+    def _load_schema_and_books(self) -> None:
+        def done(schema: dict) -> None:
+            self._book_fields = schema_fields(schema, "book")
+            self._entry_fields = schema_fields(schema, "entry")
+            self.book_form = SchemaFormWidget(self._book_fields)
+            self.book_form_host.addWidget(self.book_form)
+            self.entry_form = SchemaFormWidget(self._entry_fields)
+            self.entry_form_host.addWidget(self.entry_form)
+            self.refresh_books()
+
+        self._run(self._flow.schema, done)
+
+    def refresh_books(self, select_id: str | None = None) -> None:
+        target = select_id or self._current_book_id
+        self._books_gen += 1
+        gen = self._books_gen
+
+        def done(books: list[LorebookView]) -> None:
+            if gen != self._books_gen:
+                return
+            self._books = {b.id: b for b in books}
+            self.books_combo.blockSignals(True)
+            self.books_combo.clear()
+            for book in books:
+                self.books_combo.addItem(
+                    f"{book.name} ({book.entry_count})", book.id
+                )
+            self.books_combo.blockSignals(False)
+            if target and target in self._books:
+                index = self.books_combo.findData(target)
+                if index >= 0:
+                    self.books_combo.setCurrentIndex(index)
+            if books:
+                self._book_chosen()
+                self.status_label.setText(f"{len(books)} lorebook(s).")
+            else:
+                self._current_book_id = None
+                self.status_label.setText(
+                    "No lorebooks yet — New book starts one."
+                )
+
+        self._run(self._flow.list_books, done)
+
+    def _book_chosen(self) -> None:
+        book_id = self.books_combo.currentData()
+        if not book_id:
+            return
+        self._current_book_id = book_id
+        book = self._books.get(book_id)
+        if book is not None and self.book_form is not None:
+            self.book_form.set_values(book.fields_dict())
+        self.refresh_entries()
+        self.refresh_scopes()
+
+    def refresh_entries(self) -> None:
+        book_id = self._current_book_id
+        if not book_id:
+            return
+        self._entries_gen += 1
+        gen = self._entries_gen
+
+        def done(entries: list[LoreEntryView]) -> None:
+            if gen != self._entries_gen or book_id != self._current_book_id:
+                return
+            self._entries = {e.id: e for e in entries}
+            self.entries_list.clear()
+            for entry in entries:
+                item = QListWidgetItem(entry.name or "(unnamed entry)")
+                item.setData(_CHAT_ID_ROLE, entry.id)
+                self.entries_list.addItem(item)
+            if entries:
+                self.entries_list.setCurrentRow(0)
+            else:
+                self._current_entry_id = None
+
+        self._run(lambda: self._flow.list_entries(book_id), done)
+
+    def _entry_chosen(self) -> None:
+        item = self.entries_list.currentItem()
+        if item is None:
+            return
+        entry_id = item.data(_CHAT_ID_ROLE)
+        self._current_entry_id = entry_id
+        entry = self._entries.get(entry_id or "")
+        if entry is not None and self.entry_form is not None:
+            self.entry_form.set_values(entry.fields_dict())
+
+    def refresh_scopes(self) -> None:
+        book_id = self._current_book_id
+        if not book_id:
+            return
+
+        def done(scopes: list[LoreScopeView]) -> None:
+            if book_id != self._current_book_id:
+                return
+            self._scopes = scopes
+            self.scopes_list.clear()
+            names = dict(self._characters)
+            for scope in scopes:
+                owner = names.get(scope.owner_id or "", "")
+                if scope.scope_kind == "chat" and self._chat_title:
+                    owner = self._chat_title
+                item = QListWidgetItem(scope_words(scope, owner))
+                item.setData(_CHAT_ID_ROLE, scope.id)
+                self.scopes_list.addItem(item)
+
+        self._run(lambda: self._flow.list_scopes(book_id), done)
+
+    # ------------------------------------------------------------ books
+
+    def new_book(self) -> None:
+        self._books_gen += 1
+        self._current_book_id = None
+        self.books_combo.blockSignals(True)
+        self.books_combo.setCurrentIndex(-1)
+        self.books_combo.blockSignals(False)
+        if self.book_form is not None:
+            self.book_form.set_values(
+                {"name": "", "description": "", "scan_depth": 4,
+                 "token_budget": None, "scan_mode": "depth",
+                 "scan_external_context": False}
+            )
+        self._entries = {}
+        self.entries_list.clear()
+        self._scopes = []
+        self.scopes_list.clear()
+        self.status_label.setText("New lorebook — name it and Save book.")
+
+    def save_book(self) -> None:
+        if self.book_form is None:
+            return
+        values, problems = self.book_form.values()
+        if problems:
+            self.status_label.setText(" ".join(problems))
+            return
+        book_id = self._current_book_id
+        base = self._books.get(book_id) if book_id else None
+        fields = self._book_fields
+
+        def done(book: LorebookView) -> None:
+            self._current_book_id = book.id
+            self.status_label.setText(f"Saved lorebook “{book.name}”.")
+            self.refresh_books(select_id=book.id)
+            self._changed()
+
+        self._run(
+            lambda: self._flow.save_book(book_id, fields, values, base), done
+        )
+
+    def delete_book(self) -> None:
+        book_id = self._current_book_id
+        if not book_id:
+            self.status_label.setText("Pick a lorebook first.")
+            return
+        book = self._books.get(book_id)
+        answer = QMessageBox.question(
+            self,
+            "Delete lorebook",
+            f"Delete the lorebook “{book.name if book else book_id}” and "
+            "all its entries? There is no undo for lorebooks.",
+        )
+        if answer != QMessageBox.StandardButton.Yes:
+            return
+
+        def done(_deleted: bool) -> None:
+            self._current_book_id = None
+            self.status_label.setText("Lorebook deleted.")
+            self.refresh_books()
+            self._changed()
+
+        self._run(lambda: self._flow.delete_book(book_id), done)
+
+    def import_book(self) -> None:
+        path, _filter = QFileDialog.getOpenFileName(
+            self, "Import lorebook", "", "JSON files (*.json);;All files (*)"
+        )
+        if not path:
+            return
+        try:
+            document = json.loads(Path(path).read_text(encoding="utf-8"))
+        except (OSError, ValueError) as exc:
+            self.status_label.setText(f"Could not read that file: {exc}")
+            return
+
+        def done(book: LorebookView) -> None:
+            self.status_label.setText(f"Imported lorebook “{book.name}”.")
+            self.refresh_books(select_id=book.id)
+            self._changed()
+
+        self._run(lambda: self._flow.import_book(document), done)
+
+    def export_book(self) -> None:
+        book_id = self._current_book_id
+        if not book_id:
+            self.status_label.setText("Pick a lorebook first.")
+            return
+        book = self._books.get(book_id)
+        path, _filter = QFileDialog.getSaveFileName(
+            self,
+            "Export lorebook",
+            f"{(book.name if book else 'lorebook')}.json",
+            "JSON files (*.json);;All files (*)",
+        )
+        if not path:
+            return
+
+        def done(document: dict) -> None:
+            Path(path).write_text(
+                json.dumps(document, indent=2, ensure_ascii=False),
+                encoding="utf-8",
+            )
+            self.status_label.setText(f"Exported to {path}.")
+
+        self._run(lambda: self._flow.export_book(book_id), done)
+
+    # ---------------------------------------------------------- entries
+
+    def new_entry(self) -> None:
+        if not self._current_book_id:
+            self.status_label.setText("Pick a lorebook first.")
+            return
+        self._entries_gen += 1
+        self._current_entry_id = None
+        self.entries_list.blockSignals(True)
+        self.entries_list.setCurrentItem(None)
+        self.entries_list.blockSignals(False)
+        if self.entry_form is not None:
+            self.entry_form.set_values(
+                {"name": "", "content": "", "keys": [],
+                 "secondary_keys": [], "selective_logic": "and_any",
+                 "inclusion_group": "", "group_weight": 100,
+                 "probability": 100, "priority": 100,
+                 "position": "before_char", "depth": None,
+                 "role": "system", "enabled": True, "constant": False,
+                 "vectorised": False, "case_sensitive": False,
+                 "whole_word": True, "sticky_prompts": 0,
+                 "cooldown_prompts": 0, "delay_prompts": 0}
+            )
+        self.status_label.setText("New entry — write it and Save entry.")
+
+    def save_entry(self) -> None:
+        book_id = self._current_book_id
+        if not book_id or self.entry_form is None:
+            self.status_label.setText("Pick a lorebook first.")
+            return
+        values, problems = self.entry_form.values()
+        if problems:
+            self.status_label.setText(" ".join(problems))
+            return
+        entry_id = self._current_entry_id
+        base = self._entries.get(entry_id) if entry_id else None
+        fields = self._entry_fields
+
+        def done(entry: LoreEntryView) -> None:
+            self._current_entry_id = entry.id
+            self.status_label.setText(
+                f"Saved entry “{entry.name or entry.id}”."
+            )
+            self.refresh_entries()
+            self.refresh_books(select_id=book_id)
+            self._changed()
+
+        self._run(
+            lambda: self._flow.save_entry(
+                book_id, entry_id, fields, values, base
+            ),
+            done,
+        )
+
+    def delete_entry(self) -> None:
+        book_id = self._current_book_id
+        entry_id = self._current_entry_id
+        if not book_id or not entry_id:
+            self.status_label.setText("Pick an entry first.")
+            return
+        entry = self._entries.get(entry_id)
+        answer = QMessageBox.question(
+            self,
+            "Delete entry",
+            f"Delete the entry “{entry.name if entry else entry_id}”? "
+            "There is no undo for lorebook entries.",
+        )
+        if answer != QMessageBox.StandardButton.Yes:
+            return
+
+        def done(_deleted: bool) -> None:
+            self._current_entry_id = None
+            self.status_label.setText("Entry deleted.")
+            self.refresh_entries()
+            self.refresh_books(select_id=book_id)
+            self._changed()
+
+        self._run(lambda: self._flow.delete_entry(book_id, entry_id), done)
+
+    # ----------------------------------------------------------- scopes
+
+    def _scope_kind_changed(self) -> None:
+        kind = self.scope_kind_combo.currentData()
+        self.scope_owner_combo.clear()
+        if kind == "global":
+            self.scope_owner_combo.addItem("(every chat)", None)
+            self.scope_owner_combo.setEnabled(False)
+        elif kind == "chat":
+            if self._chat_id:
+                self.scope_owner_combo.addItem(
+                    self._chat_title or self._chat_id, self._chat_id
+                )
+            else:
+                self.scope_owner_combo.addItem("(no chat open)", None)
+            self.scope_owner_combo.setEnabled(True)
+        else:
+            for character_id, name in self._characters:
+                self.scope_owner_combo.addItem(name, character_id)
+            self.scope_owner_combo.setEnabled(True)
+
+    def assign_scope(self) -> None:
+        book_id = self._current_book_id
+        if not book_id:
+            self.status_label.setText("Pick a lorebook first.")
+            return
+        kind = self.scope_kind_combo.currentData()
+        owner_id = self.scope_owner_combo.currentData()
+        budget_text = self.scope_budget_edit.text().strip()
+        budget: int | None = None
+        if budget_text:
+            try:
+                budget = int(budget_text)
+            except ValueError:
+                self.status_label.setText(
+                    "The scope token budget must be a whole number or blank."
+                )
+                return
+        position = self.scope_position_spin.value()
+
+        def done(scope: LoreScopeView) -> None:
+            self.status_label.setText(
+                f"Assigned: {scope_words(scope)}."
+            )
+            self.refresh_scopes()
+            self._changed()
+
+        self._run(
+            lambda: self._flow.assign_scope(
+                book_id, kind, owner_id,
+                token_budget=budget, position=position,
+            ),
+            done,
+        )
+
+    def unassign_scope(self) -> None:
+        book_id = self._current_book_id
+        item = self.scopes_list.currentItem()
+        if not book_id or item is None:
+            self.status_label.setText("Pick an assignment first.")
+            return
+        scope_id = item.data(_CHAT_ID_ROLE)
+        scope = next((s for s in self._scopes if s.id == scope_id), None)
+        if scope is None:
+            return
+
+        def done(_deleted: bool) -> None:
+            self.status_label.setText("Assignment removed.")
+            self.refresh_scopes()
+            self._changed()
+
+        self._run(
+            lambda: self._flow.unassign_scope(
+                book_id, scope.scope_kind, scope.owner_id
+            ),
+            done,
+        )
+
+    # ---------------------------------------------------------- preview
+
+    def _sample_messages(self) -> list[str]:
+        return [
+            line.strip()
+            for line in self.preview_messages.toPlainText().splitlines()
+            if line.strip()
+        ]
+
+    def preview_book(self) -> None:
+        book_id = self._current_book_id
+        if not book_id:
+            self.status_label.setText("Pick a lorebook first.")
+            return
+        messages = self._sample_messages()
+        if not messages:
+            self.status_label.setText("Write at least one sample message.")
+            return
+
+        def done(rows: list[PreviewRow]) -> None:
+            if not rows:
+                self.preview_results.setPlainText(
+                    "No entries in this book yet."
+                )
+                return
+            self.preview_results.setPlainText(
+                "\n".join(verdict_words(row) for row in rows)
+            )
+
+        self._run(lambda: self._flow.preview_book(book_id, messages), done)
+
+    def preview_chat(self) -> None:
+        if not self._chat_id:
+            self.status_label.setText("No chat is open.")
+            return
+        messages = self._sample_messages()
+        if not messages:
+            self.status_label.setText("Write at least one sample message.")
+            return
+        chat_id = self._chat_id
+
+        def done(result) -> None:
+            rows, summaries, shadowed = result
+            lines = [layer_words(s) for s in summaries]
+            if shadowed:
+                lines.append("Shadowed: " + ", ".join(shadowed))
+            lines.extend(verdict_words(row) for row in rows)
+            self.preview_results.setPlainText(
+                "\n".join(lines) if lines else "No lore applies to this chat."
+            )
+
+        self._run(lambda: self._flow.preview_chat(chat_id, messages), done)
+
+
 class MainWindow(QMainWindow):
     """Rúnmál shell window (engine + client injected)."""
 
@@ -2545,6 +3572,10 @@ class MainWindow(QMainWindow):
         self._settings_flow_instance: SettingsFlow | None = None
         self._connections_dialog: ConnectionsDialog | None = None
         self._generation_dialog: GenerationDialog | None = None
+        self._persona_flow_instance: PersonaFlow | None = None
+        self._lore_flow_instance: LoreFlow | None = None
+        self._persona_dialog: PersonaDialog | None = None
+        self._lorebooks_dialog: LorebooksDialog | None = None
 
         self.setWindowTitle("Rúnmál")
         self.resize(1200, 800)
@@ -3011,9 +4042,18 @@ class MainWindow(QMainWindow):
             lambda _c=False: self.open_character_editor_for_selected()
         )
         characters_menu.addAction(self.action_character_editor)
+        self.action_persona = QAction("Persona…", self)
+        self.action_persona.triggered.connect(
+            lambda _c=False: self.open_persona_dialog()
+        )
+        characters_menu.addAction(self.action_persona)
 
         world_menu = bar.addMenu("World")
-        self._placeholder(world_menu, "Lorebooks…", "R-10")
+        self.action_lorebooks = QAction("Lorebooks…", self)
+        self.action_lorebooks.triggered.connect(
+            lambda _c=False: self.open_lorebooks_dialog()
+        )
+        world_menu.addAction(self.action_lorebooks)
         self._placeholder(world_menu, "Scenarios…", "R-12")
         self._placeholder(world_menu, "Memory…", "R-12")
 
@@ -3058,6 +4098,7 @@ class MainWindow(QMainWindow):
         status.addPermanentWidget(self.streaming_status_label)
         status.showMessage(
             "Rúnmál — Characters (R-08) · Connections & Generation (R-09)"
+            " · Persona & Lorebooks (R-10)"
         )
 
     # ------------------------------------------------------------ client
@@ -3083,6 +4124,18 @@ class MainWindow(QMainWindow):
         if self._settings_flow_instance is None:
             self._settings_flow_instance = SettingsFlow(self.client())
         return self._settings_flow_instance
+
+    def persona_flow(self) -> PersonaFlow:
+        """The window's Persona flow (R-10, over the same client)."""
+        if self._persona_flow_instance is None:
+            self._persona_flow_instance = PersonaFlow(self.client())
+        return self._persona_flow_instance
+
+    def lore_flow(self) -> LoreFlow:
+        """The window's Lorebooks flow (R-10, over the same client)."""
+        if self._lore_flow_instance is None:
+            self._lore_flow_instance = LoreFlow(self.client())
+        return self._lore_flow_instance
 
     # ------------------------------------------- settings dialogs
 
@@ -3153,6 +4206,58 @@ class MainWindow(QMainWindow):
             lambda _obj=None: setattr(self, "_generation_dialog", None)
         )
         self._generation_dialog = dialog
+        dialog.show()
+        return dialog
+
+    def open_persona_dialog(self) -> PersonaDialog:
+        """Show the Persona dialog (R-10): the ``{{user}}`` name
+        and the open chat's persona character."""
+        if (
+            self._persona_dialog is not None
+            and self._persona_dialog.isVisible()
+        ):
+            self._persona_dialog.raise_()
+            self._persona_dialog.activateWindow()
+            return self._persona_dialog
+        context = self._settings_context()
+        dialog = PersonaDialog(
+            self.persona_flow(),
+            chat_id=context["chat_id"],
+            chat_title=context["chat_title"],
+            characters=context["characters"],
+            on_changed=self._settings_changed,
+            parent=self,
+        )
+        dialog.destroyed.connect(
+            lambda _obj=None: setattr(self, "_persona_dialog", None)
+        )
+        self._persona_dialog = dialog
+        dialog.show()
+        return dialog
+
+    def open_lorebooks_dialog(self) -> LorebooksDialog:
+        """Show the Lorebooks dialog (R-10): the schema-driven
+        editor, scopes, and previews."""
+        if (
+            self._lorebooks_dialog is not None
+            and self._lorebooks_dialog.isVisible()
+        ):
+            self._lorebooks_dialog.raise_()
+            self._lorebooks_dialog.activateWindow()
+            return self._lorebooks_dialog
+        context = self._settings_context()
+        dialog = LorebooksDialog(
+            self.lore_flow(),
+            chat_id=context["chat_id"],
+            chat_title=context["chat_title"],
+            characters=context["characters"],
+            on_changed=self._settings_changed,
+            parent=self,
+        )
+        dialog.destroyed.connect(
+            lambda _obj=None: setattr(self, "_lorebooks_dialog", None)
+        )
+        self._lorebooks_dialog = dialog
         dialog.show()
         return dialog
 

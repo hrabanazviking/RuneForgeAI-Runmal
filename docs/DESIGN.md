@@ -478,3 +478,28 @@ structural bundle sections are carried verbatim through every
 edit, never silently dropped. The Session dock gains a preset
 quick-apply combo. Slice contract and evidence:
 `docs/DESKTOP_SETTINGS_R09_2026-11-15.md`.
+
+R-10 adds Persona and the Lorebooks editor on the same
+boundaries. Persona (Characters ▸ Persona…) is exactly the two
+mechanisms the engine has, named honestly: the persisted
+``{{user}}`` name and the open chat's persona character (future
+turns only), over the R-03 persona roads through the Qt-free
+`desktop/persona_logic.py`. The persona-file interop format
+exists in the engine library but no route serves it, so no
+persona import/export is offered. The Lorebooks editor
+(World ▸ Lorebooks…) generates its book and entry forms from
+the engine's own editor census (P-042) — field order, kinds,
+and select options come from `GET /lorebooks/editor-schema`,
+never a hand-copied list; `activation_kind` renders as derived
+read-only words and is never sent. Saves compose over the
+stored document so unknown entry fields survive verbatim.
+Scopes assign a book to the global / character / persona /
+chat layers with per-assignment budget and position — their
+own mechanism, distinct from the card editor's P-039 binding —
+and the Preview tab runs the book's activation preview plus
+the open chat's layered lore preview, rendering every entry's
+verdict (included / not triggered / discarded with reason /
+disabled / group-excluded) and the per-layer scope summaries
+in words, through the Qt-free `desktop/lore_logic.py`. Slice
+contract and evidence:
+`docs/DESKTOP_PERSONA_LOREBOOKS_R10_2026-11-15.md`.
