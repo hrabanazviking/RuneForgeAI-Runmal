@@ -62,7 +62,18 @@ def test_window_structure_and_menus(window) -> None:
     # Real lifecycle actions exist; placeholders are honest about it.
     assert win.action_start_engine.text() == "Start Engine"
     assert win.action_quit.text() == "Quit"
-    assert "R-09" in win.placeholder_actions["Connections…"].statusTip()
+    # R-09 graduated the Connections/Presets placeholders into real
+    # Tools actions (they were labelled R-09 up to R-08).
+    assert "Connections…" not in win.placeholder_actions
+    assert "Presets…" not in win.placeholder_actions
+    from PySide6.QtWidgets import QMenu
+
+    tools_menu = next(
+        m for m in win.menuBar().findChildren(QMenu) if m.title() == "Tools"
+    )
+    tools_texts = [a.text() for a in tools_menu.actions()]
+    assert "Connections…" in tools_texts
+    assert "Generation…" in tools_texts
 
 
 def test_initial_chrome_shows_stopped_engine(window) -> None:

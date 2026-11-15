@@ -733,6 +733,80 @@ class PresetSummary:
 
 
 @dataclass(frozen=True)
+class PresetDetail:
+    """The full preset row (``preset_to_dict``) for the R-09
+    editor: identity + the parameter bag + template reference.
+
+    The bag is the engine's open bag: canonical sampler keys plus
+    any backend-specific keys the preset carries, preserved
+    verbatim (the editor splits known/extra and never drops the
+    extra — see ``desktop/settings_logic.py``)."""
+
+    id: str
+    name: str = ""
+    params: dict[str, Any] = field(default_factory=dict)
+    template_ref: str = ""
+    source_format: str = "native"
+    prompt_count: int = 0
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> PresetDetail:
+        params = payload.get("params")
+        prompts = payload.get("prompts")
+        return cls(
+            id=str(payload.get("id", "")),
+            name=str(payload.get("name", "")),
+            params=params if isinstance(params, dict) else {},
+            template_ref=str(payload.get("template_ref", "") or ""),
+            source_format=str(payload.get("source_format", "native") or "native"),
+            prompt_count=len(prompts) if isinstance(prompts, list) else 0,
+        )
+
+
+@dataclass(frozen=True)
+class BundleView:
+    """One row of ``GET /api/v1/presets/bundles`` (P-054
+    ``bundle_to_dict``): the stored bundle document, verbatim."""
+
+    id: str
+    name: str = ""
+    bundle: dict[str, Any] = field(default_factory=dict)
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> BundleView:
+        bundle = payload.get("bundle")
+        return cls(
+            id=str(payload.get("id", "")),
+            name=str(payload.get("name", "") or ""),
+            bundle=bundle if isinstance(bundle, dict) else {},
+        )
+
+
+@dataclass(frozen=True)
+class OverrideView:
+    """One row of the P-054 override roads (``override_to_dict``):
+    one bundle assigned to one character or chat, with a partial
+    delta carried verbatim."""
+
+    id: str
+    bundle_id: str = ""
+    scope_kind: str = ""
+    owner_id: str = ""
+    overrides: dict[str, Any] = field(default_factory=dict)
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> OverrideView:
+        overrides = payload.get("overrides")
+        return cls(
+            id=str(payload.get("id", "")),
+            bundle_id=str(payload.get("bundle_id", "") or ""),
+            scope_kind=str(payload.get("scope_kind", "") or ""),
+            owner_id=str(payload.get("owner_id", "") or ""),
+            overrides=overrides if isinstance(overrides, dict) else {},
+        )
+
+
+@dataclass(frozen=True)
 class PersonaView:
     """``GET /api/v1/chats/{id}/persona`` (R-03): the chat's active
     persona, or no persona when the chat has no character."""

@@ -454,3 +454,27 @@ survive (INV-009); tags save through the organisation road,
 which keeps tag rows and the card's tag list in step. Slice
 contract and evidence:
 `docs/DESKTOP_CHARACTERS_R08_2026-11-14.md`.
+
+R-09 adds Connections & Generation settings on the same
+boundaries: two dialogs (Tools ▸ Connections…, Tools ▸
+Generation…, mirrored as buttons in the Session dock) over the
+Qt-free `desktop/settings_logic.py` (`SettingsFlow`) and new
+typed client roads for the existing profile, secret, preset,
+bundle, override, and pack routes — no new engine routes.
+Connections edits backend profiles end-to-end (human backend
+names first, technical names second), keeps API keys write-only
+(INV-023: set/clear/leave tri-state, never read back), probes
+the stored profile for a plain-words health verdict and a model
+picker, and switches the open chat's backend through the
+per-chat pin — the engine has no default-profile concept, and
+none is invented. Generation edits presets through one uniform
+sampler form generated from the engine's 29 canonical bag keys
+(grouped, human labels, per-field Set checkboxes, sliders for
+the common dials), edits bundle sampler sections and per-scope
+override deltas the same way, and shows a resolve preview that
+states what a chat will actually use, with the source of every
+value in words. Open bags stay open: unknown preset keys and
+structural bundle sections are carried verbatim through every
+edit, never silently dropped. The Session dock gains a preset
+quick-apply combo. Slice contract and evidence:
+`docs/DESKTOP_SETTINGS_R09_2026-11-15.md`.

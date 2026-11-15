@@ -33,6 +33,16 @@ soft-delete with undo, and bulk import/export, all over the
 existing characters/library/assets roads through
 ``character_logic.CharacterFlow``.
 
+R-09 adds the two settings dialogs — Connections (the real
+backend profiles: create/edit/delete, write-only API keys,
+health probe + model picker, per-chat pin) and Generation
+(presets with the full 29-field sampler form, bundles with
+per-scope overrides, packs, and the resolve preview with
+per-field sources) — through the Qt-free
+``settings_logic.SettingsFlow`` over the R-02 profile roads and
+the S207/P-054 preset roads, no new engine routes; the Session
+dock gains a preset quick-apply control for the open chat.
+
 Honesty rule (carried from R-04): an action is REAL only where
 its machinery exists. Later-slice screens stay placeholder
 actions labelled with their slice, never dressed up.
@@ -40,7 +50,9 @@ actions labelled with their slice, never dressed up.
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
+from typing import Any
 
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QAction, QKeySequence, QPixmap
@@ -51,6 +63,7 @@ from PySide6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QDockWidget,
+    QDoubleSpinBox,
     QFileDialog,
     QHBoxLayout,
     QLabel,
@@ -62,6 +75,7 @@ from PySide6.QtWidgets import (
     QPlainTextEdit,
     QPushButton,
     QScrollArea,
+    QSlider,
     QSpinBox,
     QTabWidget,
     QTextBrowser,
@@ -88,13 +102,40 @@ from runmal.desktop.chat_logic import (
 )
 from runmal.desktop.client import RunmalClient, fetch_snapshot
 from runmal.desktop.client.models import (
+    BackendProfile,
+    BundleView,
     CharacterSummary,
     ChatSummary,
     EngineSnapshot,
     MessageView,
+    PresetDetail,
 )
 from runmal.desktop.client.session import DesktopSession
 from runmal.desktop.engine import EngineHandle, EngineState
+from runmal.desktop.settings_logic import (
+    CHAT_BACKEND_LABELS,
+    EMBEDDING_BACKEND_LABELS,
+    KIND_BIAS,
+    KIND_FLOAT,
+    KIND_INT,
+    KIND_STRINGS,
+    SAMPLER_FIELDS,
+    SAMPLER_GROUPS,
+    SamplerField,
+    SettingsFlow,
+    bag_rows,
+    bias_to_text,
+    carried_sections,
+    effective_rows,
+    merge_bag,
+    resolve_notes,
+    split_bag,
+    strings_to_text,
+    text_to_bias,
+    text_to_strings,
+    validate_bag,
+    value_text,
+)
 from runmal.desktop.workers import run_async, run_stream
 
 MENU_TITLES = [
@@ -966,6 +1007,1482 @@ class CharacterEditorDialog(QDialog):
             self._on_restore_version(self, version_no)
 
 
+# ---------------------------------------------------------- R-09 widgets
+
+
+class SamplerFormWidget(QWidget):
+    """The generation-sampler form (R-09): one editor per field
+    of the canonical 29-key bag, grouped as the plan orders
+    them. A field's checkbox is its set/unset state — unchecked
+    fields are absent from the bag (unset is a real state, not
+    zero). Keys the form does not know are carried verbatim:
+    shown under the form, never dropped."""
+
+    #: Slider resolutions for the three slider-backed fields.
+    _SLIDER_SCALE = {"temperature": 100, "top_p": 1000, "min_p": 1000}
+
+    def __init__(self, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+        self._checks: dict[str, QCheckBox] = {}
+        self._editors: dict[str, QWidget] = {}
+        self._sliders: dict[str, QSlider] = {}
+        self._extra: dict[str, Any] = {}
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        by_group: dict[str, list[SamplerField]] = {}
+        for spec in SAMPLER_FIELDS:
+            by_group.setdefault(spec.group, []).append(spec)
+        for group in SAMPLER_GROUPS:
+            heading = QLabel(group)
+            heading.setStyleSheet("font-weight: bold;")
+            layout.addWidget(heading)
+            for spec in by_group.get(group, []):
+                layout.addLayout(self._field_row(spec))
+        self.extras_label = QLabel("")
+        self.extras_label.setWordWrap(True)
+        layout.addWidget(self.extras_label)
+
+    def _field_row(self, spec: SamplerField) -> QHBoxLayout:
+        row = QHBoxLayout()
+        check = QCheckBox(f"{spec.label}:")
+        check.setToolTip(f"{spec.help} (saved as: {spec.key})")
+        self._checks[spec.key] = check
+        row.addWidget(check)
+        if spec.kind == KIND_FLOAT:
+            editor: QWidget = self._float_editor(spec)
+        elif spec.kind == KIND_INT:
+            editor = self._int_editor(spec)
+        else:
+            editor = QPlainTextEdit()
+            editor.setMaximumHeight(56)
+            editor.setToolTip(f"{spec.help} (saved as: {spec.key})")
+        self._editors[spec.key] = editor
+        row.addWidget(editor, 1)
+        slider = self._sliders.get(spec.key)
+        if slider is not None:
+            row.addWidget(slider)
+            check.toggled.connect(slider.setEnabled)
+            slider.setEnabled(False)
+        check.toggled.connect(editor.setEnabled)
+        editor.setEnabled(False)
+        return row
+
+    def _float_editor(self, spec: SamplerField) -> QDoubleSpinBox:
+        spin = QDoubleSpinBox()
+        high = spec.maximum if spec.maximum is not None else 100000.0
+        low = spec.minimum if spec.minimum is not None else -100000.0
+        spin.setDecimals(4 if high <= 1 else 3)
+        spin.setRange(low, high)
+        spin.setSingleStep(0.05 if high <= 4 else 0.5)
+        scale = self._SLIDER_SCALE.get(spec.key)
+        if scale is not None:
+            top = 3.0 if spec.key == "temperature" else high
+            slider = QSlider(Qt.Orientation.Horizontal)
+            slider.setRange(0, int(top * scale))
+            slider.setFixedWidth(110)
+            slider.valueChanged.connect(
+                lambda v, s=spin, sc=scale: s.setValue(v / sc)
+            )
+            spin.valueChanged.connect(
+                lambda v, sl=slider, sc=scale: sl.setValue(
+                    int(round(v * sc))
+                )
+            )
+            self._sliders[spec.key] = slider
+        return spin
+
+    def _int_editor(self, spec: SamplerField) -> QSpinBox:
+        spin = QSpinBox()
+        low = int(spec.minimum) if spec.minimum is not None else -2000000000
+        high = int(spec.maximum) if spec.maximum is not None else 2000000000
+        spin.setRange(low, high)
+        return spin
+
+    # ------------------------------------------------------------ bag IO
+
+    def set_bag(self, bag: dict[str, Any] | None) -> None:
+        """Load a sampler bag into the form (lossless: unknown
+        keys land in the carried set)."""
+        known, self._extra = split_bag(bag or {})
+        for spec in SAMPLER_FIELDS:
+            check = self._checks[spec.key]
+            editor = self._editors[spec.key]
+            if spec.key in known:
+                check.setChecked(True)
+                self._set_editor_value(spec, editor, known[spec.key])
+            else:
+                check.setChecked(False)
+        self._render_extras()
+
+    def set_field_value(self, key: str, value: Any) -> None:
+        """Set one field's value and mark it set (proof/test
+        driver; the GUI path is the checkbox + editor)."""
+        spec = next(f for f in SAMPLER_FIELDS if f.key == key)
+        self._checks[key].setChecked(True)
+        self._set_editor_value(spec, self._editors[key], value)
+
+    def _set_editor_value(
+        self, spec: SamplerField, editor: QWidget, value: Any
+    ) -> None:
+        if spec.kind == KIND_FLOAT:
+            editor.setValue(float(value))  # type: ignore[attr-defined]
+        elif spec.kind == KIND_INT:
+            editor.setValue(int(value))  # type: ignore[attr-defined]
+        elif spec.kind == KIND_STRINGS:
+            items = value if isinstance(value, list) else [value]
+            editor.setPlainText(  # type: ignore[attr-defined]
+                strings_to_text([str(v) for v in items])
+            )
+        elif spec.kind == KIND_BIAS:
+            editor.setPlainText(  # type: ignore[attr-defined]
+                bias_to_text(value if isinstance(value, dict) else {})
+            )
+
+    def _render_extras(self) -> None:
+        if self._extra:
+            words = ", ".join(
+                f"{key} = {value_text(value)}"
+                for key, value in sorted(self._extra.items())
+            )
+            self.extras_label.setText(
+                f"Also carried, kept exactly as-is: {words}"
+            )
+        else:
+            self.extras_label.setText("")
+
+    def collect(self) -> tuple[dict[str, Any], list[str]]:
+        """Read the form back into a bag + problem words (empty
+        problems = the bag mirrors what the engine accepts)."""
+        values: dict[str, Any] = {}
+        problems: list[str] = []
+        for spec in SAMPLER_FIELDS:
+            if not self._checks[spec.key].isChecked():
+                continue
+            editor = self._editors[spec.key]
+            if spec.kind == KIND_FLOAT:
+                values[spec.key] = float(editor.value())  # type: ignore[attr-defined]
+            elif spec.kind == KIND_INT:
+                values[spec.key] = int(editor.value())  # type: ignore[attr-defined]
+            elif spec.kind == KIND_STRINGS:
+                values[spec.key] = text_to_strings(
+                    editor.toPlainText()  # type: ignore[attr-defined]
+                )
+            elif spec.kind == KIND_BIAS:
+                parsed, errors = text_to_bias(
+                    editor.toPlainText()  # type: ignore[attr-defined]
+                )
+                problems.extend(errors)
+                values[spec.key] = parsed
+        bag = merge_bag(values, self._extra)
+        problems.extend(validate_bag(bag))
+        return bag, problems
+
+
+class ConnectionsDialog(QDialog):
+    """Connections (R-09): the backend-profiles page.
+
+    Human name first, technical names second (the studies'
+    lesson): each backend kind is labelled in plain words, keys
+    are write-only (stored state is shown as words, never the
+    key), the health probe reports in words with the model
+    picker fed by the probe, and the per-chat pin is the chat's
+    backend switch — the engine has no global default profile,
+    so none is invented here.
+    """
+
+    def __init__(
+        self,
+        flow: SettingsFlow,
+        *,
+        chat_id: str | None,
+        chat_title: str = "",
+        pinned_profile_id: str | None = None,
+        on_changed=None,
+        parent: QWidget | None = None,
+    ) -> None:
+        super().__init__(parent)
+        self._flow = flow
+        self._chat_id = chat_id
+        self._chat_title = chat_title
+        self._pinned_profile_id = pinned_profile_id
+        self._on_changed = on_changed
+        self._workers: list = []
+        self._profiles: dict[str, BackendProfile] = {}
+        self._current_id: str | None = None
+        self._profiles_gen = 0
+        self.setWindowTitle("Connections — backend profiles")
+        self.resize(880, 640)
+        self._build_ui()
+        self.refresh_profiles()
+
+    # ------------------------------------------------------------ build
+
+    def _build_ui(self) -> None:
+        root = QVBoxLayout(self)
+        self.status_label = QLabel("Loading profiles…")
+        self.status_label.setWordWrap(True)
+        root.addWidget(self.status_label)
+        body = QHBoxLayout()
+        root.addLayout(body, 1)
+
+        left = QVBoxLayout()
+        left.addWidget(QLabel("Profiles"))
+        self.profiles_list = QListWidget()
+        self.profiles_list.currentItemChanged.connect(
+            lambda _cur, _prev: self._selection_changed()
+        )
+        left.addWidget(self.profiles_list, 1)
+        self.new_profile_button = QPushButton("New profile")
+        self.new_profile_button.clicked.connect(
+            lambda _c=False: self.new_profile()
+        )
+        left.addWidget(self.new_profile_button)
+        self.delete_profile_button = QPushButton("Delete profile")
+        self.delete_profile_button.clicked.connect(
+            lambda _c=False: self.delete_profile()
+        )
+        left.addWidget(self.delete_profile_button)
+        body.addLayout(left)
+
+        form_host = QWidget()
+        form = QVBoxLayout(form_host)
+        form.addWidget(QLabel("Name"))
+        self.name_edit = QLineEdit()
+        form.addWidget(self.name_edit)
+        form.addWidget(QLabel("Chat backend"))
+        self.chat_backend_combo = QComboBox()
+        for kind, label in CHAT_BACKEND_LABELS.items():
+            self.chat_backend_combo.addItem(label, kind)
+        form.addWidget(self.chat_backend_combo)
+        form.addWidget(QLabel("Server address (blank = backend default)"))
+        self.base_url_edit = QLineEdit()
+        form.addWidget(self.base_url_edit)
+        form.addWidget(QLabel("Chat model"))
+        model_row = QHBoxLayout()
+        self.chat_model_edit = QLineEdit()
+        model_row.addWidget(self.chat_model_edit, 1)
+        self.model_combo = QComboBox()
+        self.model_combo.setToolTip(
+            "Models the last connection test found — pick one to "
+            "fill the model field."
+        )
+        self.model_combo.activated.connect(self._model_picked)
+        model_row.addWidget(self.model_combo)
+        form.addLayout(model_row)
+        form.addWidget(QLabel("Chat API key (write-only)"))
+        self.chat_key_edit = QLineEdit()
+        self.chat_key_edit.setEchoMode(QLineEdit.EchoMode.Password)
+        self.chat_key_edit.setPlaceholderText(
+            "Type a new key to replace the stored one"
+        )
+        form.addWidget(self.chat_key_edit)
+        self.chat_key_state = QLabel("No chat key stored.")
+        form.addWidget(self.chat_key_state)
+        self.clear_chat_key_check = QCheckBox(
+            "Clear the stored chat key when saving"
+        )
+        form.addWidget(self.clear_chat_key_check)
+        form.addWidget(QLabel("Embedding backend"))
+        self.embedding_backend_combo = QComboBox()
+        for kind, label in EMBEDDING_BACKEND_LABELS.items():
+            self.embedding_backend_combo.addItem(label, kind)
+        form.addWidget(self.embedding_backend_combo)
+        form.addWidget(QLabel("Embedding model"))
+        self.embedding_model_edit = QLineEdit()
+        form.addWidget(self.embedding_model_edit)
+        form.addWidget(QLabel("Embedding API key (write-only)"))
+        self.embedding_key_edit = QLineEdit()
+        self.embedding_key_edit.setEchoMode(QLineEdit.EchoMode.Password)
+        self.embedding_key_edit.setPlaceholderText(
+            "Type a new key to replace the stored one"
+        )
+        form.addWidget(self.embedding_key_edit)
+        self.embedding_key_state = QLabel("No embedding key stored.")
+        form.addWidget(self.embedding_key_state)
+        self.clear_embedding_key_check = QCheckBox(
+            "Clear the stored embedding key when saving"
+        )
+        form.addWidget(self.clear_embedding_key_check)
+        button_row = QHBoxLayout()
+        self.save_button = QPushButton("Save profile")
+        self.save_button.clicked.connect(
+            lambda _c=False: self.save_profile()
+        )
+        button_row.addWidget(self.save_button)
+        self.test_button = QPushButton("Save & test connection")
+        self.test_button.clicked.connect(
+            lambda _c=False: self.save_and_probe()
+        )
+        button_row.addWidget(self.test_button)
+        form.addLayout(button_row)
+        form.addStretch(1)
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setWidget(form_host)
+        body.addWidget(scroll, 1)
+
+        pin_box = QVBoxLayout()
+        self.pin_label = QLabel("")
+        self.pin_label.setWordWrap(True)
+        pin_box.addWidget(self.pin_label)
+        pin_row = QHBoxLayout()
+        self.pin_button = QPushButton("Use this profile for the open chat")
+        self.pin_button.clicked.connect(lambda _c=False: self.pin())
+        pin_row.addWidget(self.pin_button)
+        self.unpin_button = QPushButton("Unpin (chat default road)")
+        self.unpin_button.clicked.connect(lambda _c=False: self.unpin())
+        pin_row.addWidget(self.unpin_button)
+        pin_box.addLayout(pin_row)
+        root.addLayout(pin_box)
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
+        buttons.rejected.connect(self.reject)
+        root.addWidget(buttons)
+        self._render_pin_label()
+
+    # ------------------------------------------------------------ async
+
+    def _run(self, fn, done) -> None:
+        worker = run_async(fn, done, self._failed)
+        self._workers.append(worker)
+
+    def _failed(self, message: str) -> None:
+        self.status_label.setText(f"Something failed: {message}")
+
+    def _changed(self) -> None:
+        if self._on_changed is not None:
+            self._on_changed()
+
+    # ------------------------------------------------------------ list
+
+    def refresh_profiles(self, select_id: str | None = None) -> None:
+        target = select_id or self._current_id
+        self._profiles_gen += 1
+        gen = self._profiles_gen
+
+        def done(profiles) -> None:
+            if gen != self._profiles_gen:
+                return  # a newer load or a user action superseded this one
+            self._profiles = {p.id: p for p in profiles}
+            self.profiles_list.blockSignals(True)
+            self.profiles_list.clear()
+            for profile in profiles:
+                item = QListWidgetItem(
+                    f"{profile.name} — "
+                    f"{CHAT_BACKEND_LABELS.get(profile.chat_backend, profile.chat_backend)}"
+                )
+                item.setData(Qt.ItemDataRole.UserRole, profile.id)
+                self.profiles_list.addItem(item)
+            self.profiles_list.blockSignals(False)
+            chosen = None
+            for index in range(self.profiles_list.count()):
+                item = self.profiles_list.item(index)
+                if item.data(Qt.ItemDataRole.UserRole) == target:
+                    chosen = item
+                    break
+            if chosen is None and self.profiles_list.count() > 0:
+                chosen = self.profiles_list.item(0)
+            if chosen is not None:
+                self.profiles_list.setCurrentItem(chosen)
+                self._fill_form(
+                    self._profiles[chosen.data(Qt.ItemDataRole.UserRole)]
+                )
+            else:
+                self.new_profile(quiet=True)
+            self._render_pin_label()
+            self.status_label.setText(
+                f"{len(profiles)} profile(s). Keys are write-only: "
+                "a stored key is never shown."
+            )
+
+        self._run(self._flow.list_profiles, done)
+
+    def _selection_changed(self) -> None:
+        item = self.profiles_list.currentItem()
+        if item is None:
+            return
+        profile = self._profiles.get(item.data(Qt.ItemDataRole.UserRole))
+        if profile is not None:
+            self._fill_form(profile)
+
+    def _fill_form(self, profile: BackendProfile) -> None:
+        self._current_id = profile.id
+        self.name_edit.setText(profile.name)
+        index = self.chat_backend_combo.findData(profile.chat_backend)
+        self.chat_backend_combo.setCurrentIndex(max(index, 0))
+        self.base_url_edit.setText(
+            str(profile.config.get("base_url") or "")
+        )
+        self.chat_model_edit.setText(profile.chat_model or "")
+        self.model_combo.clear()
+        emb_index = self.embedding_backend_combo.findData(
+            profile.embedding_backend or ""
+        )
+        self.embedding_backend_combo.setCurrentIndex(max(emb_index, 0))
+        self.embedding_model_edit.setText(profile.embedding_model or "")
+        self.chat_key_edit.clear()
+        self.embedding_key_edit.clear()
+        self.clear_chat_key_check.setChecked(False)
+        self.clear_embedding_key_check.setChecked(False)
+        self.clear_chat_key_check.setEnabled(profile.has_chat_secret)
+        self.clear_embedding_key_check.setEnabled(
+            profile.has_embedding_secret
+        )
+        self.chat_key_state.setText(
+            "A chat key is stored (never shown)."
+            if profile.has_chat_secret
+            else "No chat key stored."
+        )
+        self.embedding_key_state.setText(
+            "An embedding key is stored (never shown)."
+            if profile.has_embedding_secret
+            else "No embedding key stored."
+        )
+        self.delete_profile_button.setEnabled(True)
+        self._render_pin_label()
+
+    def new_profile(self, *, quiet: bool = False) -> None:
+        self._profiles_gen += 1  # a pending load must not refill the form
+        self._current_id = None
+        self.profiles_list.blockSignals(True)
+        self.profiles_list.setCurrentItem(None)
+        self.profiles_list.blockSignals(False)
+        self.name_edit.clear()
+        self.chat_backend_combo.setCurrentIndex(0)
+        self.base_url_edit.clear()
+        self.chat_model_edit.clear()
+        self.model_combo.clear()
+        self.embedding_backend_combo.setCurrentIndex(0)
+        self.embedding_model_edit.clear()
+        self.chat_key_edit.clear()
+        self.embedding_key_edit.clear()
+        self.clear_chat_key_check.setChecked(False)
+        self.clear_embedding_key_check.setChecked(False)
+        self.clear_chat_key_check.setEnabled(False)
+        self.clear_embedding_key_check.setEnabled(False)
+        self.chat_key_state.setText("No chat key stored.")
+        self.embedding_key_state.setText("No embedding key stored.")
+        self.delete_profile_button.setEnabled(False)
+        if not quiet:
+            self.status_label.setText(
+                "New profile — name it, pick the backend, Save."
+            )
+
+    # ------------------------------------------------------------ save
+
+    def _key_argument(self, edit: QLineEdit, clear: QCheckBox):
+        if clear.isChecked():
+            return ""
+        text = edit.text()
+        return text if text else None
+
+    def save_profile(self, then=None) -> None:
+        name = self.name_edit.text().strip()
+        if not name:
+            self.status_label.setText("A profile needs a name first.")
+            return
+        kwargs = {
+            "profile_id": self._current_id,
+            "name": name,
+            "chat_backend": self.chat_backend_combo.currentData(),
+            "base_url": self.base_url_edit.text().strip(),
+            "chat_model": self.chat_model_edit.text().strip(),
+            "embedding_backend": (
+                self.embedding_backend_combo.currentData() or ""
+            ),
+            "embedding_model": self.embedding_model_edit.text().strip(),
+            "chat_key": self._key_argument(
+                self.chat_key_edit, self.clear_chat_key_check
+            ),
+            "embedding_key": self._key_argument(
+                self.embedding_key_edit, self.clear_embedding_key_check
+            ),
+        }
+
+        def done(profile: BackendProfile) -> None:
+            self._current_id = profile.id
+            self.status_label.setText(f"Saved profile “{profile.name}”.")
+            self.refresh_profiles(select_id=profile.id)
+            self._changed()
+            if then is not None:
+                then(profile)
+
+        self._run(lambda: self._flow.save_profile(**kwargs), done)
+
+    def save_and_probe(self) -> None:
+        """Save the form, then probe the saved profile — the
+        test always speaks about what is actually stored."""
+
+        def probe(profile: BackendProfile) -> None:
+            def done(result) -> None:
+                self.model_combo.clear()
+                for model in result.models:
+                    self.model_combo.addItem(model)
+                self.status_label.setText(result.words)
+
+            self._run(lambda: self._flow.probe(profile.id), done)
+
+        self.save_profile(then=probe)
+
+    def _model_picked(self, index: int) -> None:
+        text = self.model_combo.itemText(index)
+        if text:
+            self.chat_model_edit.setText(text)
+
+    def delete_profile(self) -> None:
+        if self._current_id is None:
+            return
+        profile = self._profiles.get(self._current_id)
+        name = profile.name if profile else self._current_id
+        answer = QMessageBox.question(
+            self,
+            "Delete profile",
+            f"Delete the profile “{name}”? Chats pinned to it "
+            "fall back to the default road.",
+        )
+        if answer != QMessageBox.StandardButton.Yes:
+            return
+        profile_id = self._current_id
+
+        def done(_result) -> None:
+            self._current_id = None
+            self.status_label.setText(f"Deleted profile “{name}”.")
+            self.refresh_profiles()
+            self._changed()
+
+        self._run(lambda: self._flow.delete_profile(profile_id), done)
+
+    # ------------------------------------------------------------ pin
+
+    def _render_pin_label(self) -> None:
+        if not self._chat_id:
+            self.pin_label.setText(
+                "No chat is open — open a chat to pin a profile to it."
+            )
+            self.pin_button.setEnabled(False)
+            self.unpin_button.setEnabled(False)
+            return
+        pinned = self._profiles.get(self._pinned_profile_id or "")
+        pin_words = (
+            f"pinned to “{pinned.name}”"
+            if pinned is not None
+            else "not pinned (the default road answers)"
+        )
+        self.pin_label.setText(
+            f"Open chat “{self._chat_title}” is {pin_words}."
+        )
+        self.pin_button.setEnabled(self._current_id is not None)
+        self.unpin_button.setEnabled(self._pinned_profile_id is not None)
+
+    def pin(self) -> None:
+        if not self._chat_id or self._current_id is None:
+            return
+        profile_id = self._current_id
+
+        def done(_chat) -> None:
+            self._pinned_profile_id = profile_id
+            self._render_pin_label()
+            profile = self._profiles.get(profile_id)
+            name = profile.name if profile else profile_id
+            self.status_label.setText(
+                f"The open chat now uses “{name}”."
+            )
+            self._changed()
+
+        self._run(
+            lambda: self._flow.pin_profile(self._chat_id, profile_id),
+            done,
+        )
+
+    def unpin(self) -> None:
+        if not self._chat_id:
+            return
+
+        def done(_chat) -> None:
+            self._pinned_profile_id = None
+            self._render_pin_label()
+            self.status_label.setText(
+                "Pin removed — the open chat uses the default road."
+            )
+            self._changed()
+
+        self._run(
+            lambda: self._flow.pin_profile(self._chat_id, None), done
+        )
+
+
+class GenerationDialog(QDialog):
+    """Generation (R-09): presets, bundles & overrides, packs,
+    and the resolve preview.
+
+    Three tabs over the S207 preset roads and the P-054 bundle
+    roads. The preset editor is the full sampler form; the
+    bundle editor owns name + sampler + template reference and
+    CARRIES every structural section verbatim (named in the UI,
+    never silently dropped); the resolve preview renders the
+    engine's own verdict — effective values with per-field
+    sources and the applied/shadowed story in words.
+    """
+
+    def __init__(
+        self,
+        flow: SettingsFlow,
+        *,
+        chat_id: str | None,
+        chat_title: str = "",
+        chat_preset_id: str | None = None,
+        chat_character_id: str | None = None,
+        characters: list | None = None,
+        on_changed=None,
+        parent: QWidget | None = None,
+    ) -> None:
+        super().__init__(parent)
+        self._flow = flow
+        self._chat_id = chat_id
+        self._chat_title = chat_title
+        self._chat_preset_id = chat_preset_id
+        self._chat_character_id = chat_character_id
+        self._characters = list(characters or [])
+        self._on_changed = on_changed
+        self._workers: list = []
+        self._presets: dict[str, Any] = {}
+        self._preset_detail: PresetDetail | None = None
+        self._preset_gen = 0
+        self._bundles: dict[str, BundleView] = {}
+        self._bundle_base: dict[str, Any] | None = None
+        self._current_bundle_id: str | None = None
+        self._bundle_gen = 0
+        self.setWindowTitle("Generation — presets & bundles")
+        self.resize(920, 680)
+        self._build_ui()
+        self.refresh_presets()
+        self.refresh_bundles()
+        self.refresh_overrides()
+
+    # ------------------------------------------------------------ build
+
+    def _build_ui(self) -> None:
+        root = QVBoxLayout(self)
+        self.tabs = QTabWidget()
+        root.addWidget(self.tabs, 1)
+        self.tabs.addTab(self._build_presets_tab(), "Presets")
+        self.tabs.addTab(self._build_bundles_tab(), "Bundles & Overrides")
+        self.tabs.addTab(self._build_resolve_tab(), "Resolve Preview")
+        self.status_label = QLabel("Loading…")
+        self.status_label.setWordWrap(True)
+        root.addWidget(self.status_label)
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
+        buttons.rejected.connect(self.reject)
+        root.addWidget(buttons)
+
+    def _build_presets_tab(self) -> QWidget:
+        tab = QWidget()
+        body = QHBoxLayout(tab)
+        left = QVBoxLayout()
+        left.addWidget(QLabel("Presets"))
+        self.presets_list = QListWidget()
+        self.presets_list.currentItemChanged.connect(
+            lambda _cur, _prev: self._preset_selection_changed()
+        )
+        left.addWidget(self.presets_list, 1)
+        self.preset_new_button = QPushButton("New preset")
+        self.preset_new_button.clicked.connect(
+            lambda _c=False: self.new_preset()
+        )
+        left.addWidget(self.preset_new_button)
+        self.preset_duplicate_button = QPushButton("Duplicate")
+        self.preset_duplicate_button.clicked.connect(
+            lambda _c=False: self.duplicate_preset()
+        )
+        left.addWidget(self.preset_duplicate_button)
+        self.preset_delete_button = QPushButton("Delete preset")
+        self.preset_delete_button.clicked.connect(
+            lambda _c=False: self.delete_preset()
+        )
+        left.addWidget(self.preset_delete_button)
+        self.preset_import_button = QPushButton("Import preset…")
+        self.preset_import_button.clicked.connect(
+            lambda _c=False: self.import_preset()
+        )
+        left.addWidget(self.preset_import_button)
+        self.preset_export_button = QPushButton("Export preset…")
+        self.preset_export_button.clicked.connect(
+            lambda _c=False: self.export_preset()
+        )
+        left.addWidget(self.preset_export_button)
+        body.addLayout(left)
+
+        form_host = QWidget()
+        form = QVBoxLayout(form_host)
+        form.addWidget(QLabel("Preset name"))
+        self.preset_name_edit = QLineEdit()
+        form.addWidget(self.preset_name_edit)
+        form.addWidget(QLabel("Template reference (optional)"))
+        self.preset_template_edit = QLineEdit()
+        form.addWidget(self.preset_template_edit)
+        self.preset_carriage_label = QLabel("")
+        self.preset_carriage_label.setWordWrap(True)
+        form.addWidget(self.preset_carriage_label)
+        self.preset_sampler_form = SamplerFormWidget()
+        form.addWidget(self.preset_sampler_form)
+        row = QHBoxLayout()
+        self.preset_save_button = QPushButton("Save preset")
+        self.preset_save_button.clicked.connect(
+            lambda _c=False: self.save_preset()
+        )
+        row.addWidget(self.preset_save_button)
+        self.preset_apply_button = QPushButton("Apply to this chat")
+        self.preset_apply_button.clicked.connect(
+            lambda _c=False: self.apply_preset()
+        )
+        row.addWidget(self.preset_apply_button)
+        form.addLayout(row)
+        form.addStretch(1)
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setWidget(form_host)
+        body.addWidget(scroll, 1)
+        return tab
+
+    def _build_bundles_tab(self) -> QWidget:
+        tab = QWidget()
+        body = QHBoxLayout(tab)
+        left = QVBoxLayout()
+        left.addWidget(QLabel("Bundles"))
+        self.bundles_list = QListWidget()
+        self.bundles_list.currentItemChanged.connect(
+            lambda _cur, _prev: self._bundle_selection_changed()
+        )
+        left.addWidget(self.bundles_list, 1)
+        self.bundle_new_button = QPushButton("New bundle")
+        self.bundle_new_button.clicked.connect(
+            lambda _c=False: self.new_bundle()
+        )
+        left.addWidget(self.bundle_new_button)
+        self.bundle_delete_button = QPushButton("Delete bundle")
+        self.bundle_delete_button.clicked.connect(
+            lambda _c=False: self.delete_bundle()
+        )
+        left.addWidget(self.bundle_delete_button)
+        self.bundle_import_button = QPushButton("Import bundle…")
+        self.bundle_import_button.clicked.connect(
+            lambda _c=False: self.import_bundle()
+        )
+        left.addWidget(self.bundle_import_button)
+        self.bundle_export_button = QPushButton("Export share…")
+        self.bundle_export_button.clicked.connect(
+            lambda _c=False: self.export_bundle()
+        )
+        left.addWidget(self.bundle_export_button)
+        pack_label = QLabel("Preset packs")
+        left.addWidget(pack_label)
+        self.pack_inspect_button = QPushButton("Inspect pack…")
+        self.pack_inspect_button.clicked.connect(
+            lambda _c=False: self.inspect_pack()
+        )
+        left.addWidget(self.pack_inspect_button)
+        self.pack_import_button = QPushButton("Import pack…")
+        self.pack_import_button.clicked.connect(
+            lambda _c=False: self.import_pack()
+        )
+        left.addWidget(self.pack_import_button)
+        self.pack_export_button = QPushButton("Export pack…")
+        self.pack_export_button.clicked.connect(
+            lambda _c=False: self.export_pack()
+        )
+        left.addWidget(self.pack_export_button)
+        body.addLayout(left)
+
+        form_host = QWidget()
+        form = QVBoxLayout(form_host)
+        form.addWidget(QLabel("Bundle name"))
+        self.bundle_name_edit = QLineEdit()
+        form.addWidget(self.bundle_name_edit)
+        form.addWidget(QLabel("Template reference (optional)"))
+        self.bundle_template_edit = QLineEdit()
+        form.addWidget(self.bundle_template_edit)
+        self.bundle_carried_label = QLabel("")
+        self.bundle_carried_label.setWordWrap(True)
+        form.addWidget(self.bundle_carried_label)
+        form.addWidget(QLabel("Sampler section"))
+        self.bundle_sampler_form = SamplerFormWidget()
+        form.addWidget(self.bundle_sampler_form)
+        self.bundle_save_button = QPushButton("Save bundle")
+        self.bundle_save_button.clicked.connect(
+            lambda _c=False: self.save_bundle()
+        )
+        form.addWidget(self.bundle_save_button)
+        form.addWidget(QLabel("Assignments (overrides)"))
+        self.overrides_list = QListWidget()
+        self.overrides_list.setMaximumHeight(90)
+        form.addWidget(self.overrides_list)
+        scope_row = QHBoxLayout()
+        self.override_scope_combo = QComboBox()
+        if self._chat_id:
+            self.override_scope_combo.addItem(
+                f"This chat — {self._chat_title}",
+                ("chat", self._chat_id),
+            )
+        for character_id, name in self._characters:
+            self.override_scope_combo.addItem(
+                f"Character — {name}", ("character", character_id)
+            )
+        scope_row.addWidget(self.override_scope_combo, 1)
+        self.override_bundle_combo = QComboBox()
+        scope_row.addWidget(self.override_bundle_combo, 1)
+        form.addLayout(scope_row)
+        form.addWidget(
+            QLabel(
+                "Sampler delta (keys set here override the bundle "
+                "for that scope; unset keys inherit)"
+            )
+        )
+        self.override_delta_form = SamplerFormWidget()
+        form.addWidget(self.override_delta_form)
+        override_row = QHBoxLayout()
+        self.override_set_button = QPushButton("Set assignment")
+        self.override_set_button.clicked.connect(
+            lambda _c=False: self.set_override()
+        )
+        override_row.addWidget(self.override_set_button)
+        self.override_remove_button = QPushButton("Remove assignment")
+        self.override_remove_button.clicked.connect(
+            lambda _c=False: self.remove_override()
+        )
+        override_row.addWidget(self.override_remove_button)
+        form.addLayout(override_row)
+        form.addStretch(1)
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setWidget(form_host)
+        body.addWidget(scroll, 1)
+        return tab
+
+    def _build_resolve_tab(self) -> QWidget:
+        tab = QWidget()
+        layout = QVBoxLayout(tab)
+        row = QHBoxLayout()
+        row.addWidget(QLabel("Chat:"))
+        self.resolve_chat_combo = QComboBox()
+        self.resolve_chat_combo.addItem("— none —", None)
+        if self._chat_id:
+            self.resolve_chat_combo.addItem(
+                f"This chat — {self._chat_title}", self._chat_id
+            )
+            self.resolve_chat_combo.setCurrentIndex(1)
+        row.addWidget(self.resolve_chat_combo, 1)
+        row.addWidget(QLabel("Character:"))
+        self.resolve_character_combo = QComboBox()
+        self.resolve_character_combo.addItem("— none —", None)
+        for character_id, name in self._characters:
+            self.resolve_character_combo.addItem(name, character_id)
+        if self._chat_character_id:
+            index = self.resolve_character_combo.findData(
+                self._chat_character_id
+            )
+            if index >= 0:
+                self.resolve_character_combo.setCurrentIndex(index)
+        row.addWidget(self.resolve_character_combo, 1)
+        self.resolve_refresh_button = QPushButton("Refresh preview")
+        self.resolve_refresh_button.clicked.connect(
+            lambda _c=False: self.refresh_resolve()
+        )
+        row.addWidget(self.resolve_refresh_button)
+        layout.addLayout(row)
+        self.resolve_preset_label = QLabel("")
+        self.resolve_preset_label.setWordWrap(True)
+        layout.addWidget(self.resolve_preset_label)
+        self.resolve_notes_label = QLabel("")
+        self.resolve_notes_label.setWordWrap(True)
+        layout.addWidget(self.resolve_notes_label)
+        self.resolve_list = QListWidget()
+        layout.addWidget(self.resolve_list, 1)
+        return tab
+
+    # ------------------------------------------------------------ async
+
+    def _run(self, fn, done) -> None:
+        worker = run_async(fn, done, self._failed)
+        self._workers.append(worker)
+
+    def _failed(self, message: str) -> None:
+        self.status_label.setText(f"Something failed: {message}")
+
+    def _changed(self) -> None:
+        if self._on_changed is not None:
+            self._on_changed()
+
+    @staticmethod
+    def _selected_id(list_widget: QListWidget) -> str | None:
+        item = list_widget.currentItem()
+        if item is None:
+            return None
+        return item.data(Qt.ItemDataRole.UserRole)
+
+    # ------------------------------------------------------------ presets
+
+    def refresh_presets(self, select_id: str | None = None) -> None:
+        target = select_id or (
+            self._preset_detail.id if self._preset_detail else None
+        )
+        self._preset_gen += 1
+        gen = self._preset_gen
+
+        def done(presets) -> None:
+            if gen != self._preset_gen:
+                return  # superseded by a newer load or a user action
+            self._presets = {p.id: p for p in presets}
+            self.presets_list.blockSignals(True)
+            self.presets_list.clear()
+            for preset in presets:
+                item = QListWidgetItem(preset.name)
+                item.setData(Qt.ItemDataRole.UserRole, preset.id)
+                self.presets_list.addItem(item)
+            self.presets_list.blockSignals(False)
+            chosen = None
+            for index in range(self.presets_list.count()):
+                item = self.presets_list.item(index)
+                if item.data(Qt.ItemDataRole.UserRole) == target:
+                    chosen = item
+                    break
+            if chosen is None and self.presets_list.count() > 0:
+                chosen = self.presets_list.item(0)
+            if chosen is not None:
+                self.presets_list.setCurrentItem(chosen)
+                self._load_preset_detail(
+                    chosen.data(Qt.ItemDataRole.UserRole)
+                )
+            else:
+                self.new_preset(quiet=True)
+            self.status_label.setText(f"{len(presets)} preset(s).")
+
+        self._run(self._flow.list_presets, done)
+
+    def _preset_selection_changed(self) -> None:
+        preset_id = self._selected_id(self.presets_list)
+        if preset_id:
+            self._load_preset_detail(preset_id)
+
+    def _load_preset_detail(self, preset_id: str) -> None:
+        def done(detail: PresetDetail) -> None:
+            self._preset_detail = detail
+            self.preset_name_edit.setText(detail.name)
+            self.preset_template_edit.setText(detail.template_ref or "")
+            self.preset_sampler_form.set_bag(detail.params)
+            if detail.prompt_count:
+                self.preset_carriage_label.setText(
+                    f"This preset also carries {detail.prompt_count} "
+                    "prompt(s) from its source format — they are "
+                    "preserved when you save."
+                )
+            else:
+                self.preset_carriage_label.setText("")
+            self.preset_apply_button.setEnabled(self._chat_id is not None)
+
+        self._run(lambda: self._flow.preset_detail(preset_id), done)
+
+    def new_preset(self, *, quiet: bool = False) -> None:
+        self._preset_gen += 1  # a pending load must not refill the form
+        self._preset_detail = None
+        self.presets_list.blockSignals(True)
+        self.presets_list.setCurrentItem(None)
+        self.presets_list.blockSignals(False)
+        self.preset_name_edit.clear()
+        self.preset_template_edit.clear()
+        self.preset_carriage_label.setText("")
+        self.preset_sampler_form.set_bag({})
+        self.preset_apply_button.setEnabled(False)
+        if not quiet:
+            self.status_label.setText(
+                "New preset — name it, set the sampler, Save."
+            )
+
+    def _preset_form_bag(self) -> dict[str, Any] | None:
+        bag, problems = self.preset_sampler_form.collect()
+        if problems:
+            self.status_label.setText(
+                "Fix the sampler first: " + "; ".join(problems)
+            )
+            return None
+        return bag
+
+    def save_preset(self) -> None:
+        name = self.preset_name_edit.text().strip()
+        if not name:
+            self.status_label.setText("A preset needs a name first.")
+            return
+        bag = self._preset_form_bag()
+        if bag is None:
+            return
+        preset_id = self._preset_detail.id if self._preset_detail else None
+        kwargs = {
+            "preset_id": preset_id,
+            "name": name,
+            "params": bag,
+            "template_ref": self.preset_template_edit.text().strip(),
+        }
+
+        def done(detail: PresetDetail) -> None:
+            self.status_label.setText(f"Saved preset “{detail.name}”.")
+            self.refresh_presets(select_id=detail.id)
+
+        self._run(lambda: self._flow.save_preset(**kwargs), done)
+
+    def duplicate_preset(self) -> None:
+        if self._preset_detail is None:
+            self.status_label.setText("Pick a preset to duplicate first.")
+            return
+        detail = self._preset_detail
+        kwargs = {
+            "preset_id": None,
+            "name": f"{detail.name} (copy)",
+            "params": dict(detail.params),
+            "template_ref": detail.template_ref,
+        }
+
+        def done(copy: PresetDetail) -> None:
+            self.status_label.setText(
+                f"Duplicated as “{copy.name}” (the saved preset was "
+                "copied; unsaved form edits are not)."
+            )
+            self.refresh_presets(select_id=copy.id)
+
+        self._run(lambda: self._flow.save_preset(**kwargs), done)
+
+    def delete_preset(self) -> None:
+        if self._preset_detail is None:
+            return
+        detail = self._preset_detail
+        answer = QMessageBox.question(
+            self,
+            "Delete preset",
+            f"Delete the preset “{detail.name}”?",
+        )
+        if answer != QMessageBox.StandardButton.Yes:
+            return
+
+        def done(_result) -> None:
+            self._preset_detail = None
+            self.status_label.setText(f"Deleted preset “{detail.name}”.")
+            self.refresh_presets()
+            self._changed()
+
+        self._run(lambda: self._flow.delete_preset(detail.id), done)
+
+    def apply_preset(self) -> None:
+        if not self._chat_id or self._preset_detail is None:
+            return
+        preset = self._preset_detail
+
+        def done(_chat) -> None:
+            self._chat_preset_id = preset.id
+            self.status_label.setText(
+                f"Preset “{preset.name}” now applies to this chat."
+            )
+            self._changed()
+
+        self._run(
+            lambda: self._flow.apply_preset(self._chat_id, preset.id),
+            done,
+        )
+
+    def import_preset(self) -> None:
+        path, _filter = QFileDialog.getOpenFileName(
+            self, "Import preset", "", "JSON files (*.json);;All files (*)"
+        )
+        if not path:
+            return
+        try:
+            document = json.loads(Path(path).read_text(encoding="utf-8"))
+        except Exception as exc:
+            self.status_label.setText(f"That file is not JSON: {exc}")
+            return
+        name = ""
+        if isinstance(document, dict):
+            name = str(document.get("name") or "")
+        name = name or Path(path).stem
+
+        def done(detail: PresetDetail) -> None:
+            self.status_label.setText(f"Imported preset “{detail.name}”.")
+            self.refresh_presets(select_id=detail.id)
+
+        self._run(
+            lambda: self._flow.import_preset(document, name=name), done
+        )
+
+    def export_preset(self) -> None:
+        if self._preset_detail is None:
+            self.status_label.setText("Pick a preset to export first.")
+            return
+        detail = self._preset_detail
+        path, _filter = QFileDialog.getSaveFileName(
+            self,
+            "Export preset",
+            f"{detail.name}.json",
+            "JSON files (*.json);;All files (*)",
+        )
+        if not path:
+            return
+
+        def done(document) -> None:
+            Path(path).write_text(
+                json.dumps(document, indent=2, ensure_ascii=False),
+                encoding="utf-8",
+            )
+            self.status_label.setText(
+                f"Exported preset “{detail.name}” to {path}."
+            )
+
+        self._run(lambda: self._flow.export_preset(detail.id), done)
+
+    # ------------------------------------------------------------ bundles
+
+    def refresh_bundles(self, select_id: str | None = None) -> None:
+        target = select_id or self._current_bundle_id
+        self._bundle_gen += 1
+        gen = self._bundle_gen
+
+        def done(bundles) -> None:
+            if gen != self._bundle_gen:
+                return  # superseded by a newer load or a user action
+            self._bundles = {b.id: b for b in bundles}
+            self.bundles_list.blockSignals(True)
+            self.bundles_list.clear()
+            for bundle in bundles:
+                item = QListWidgetItem(bundle.name)
+                item.setData(Qt.ItemDataRole.UserRole, bundle.id)
+                self.bundles_list.addItem(item)
+            self.bundles_list.blockSignals(False)
+            self.override_bundle_combo.clear()
+            for bundle in bundles:
+                self.override_bundle_combo.addItem(bundle.name, bundle.id)
+            chosen = None
+            for index in range(self.bundles_list.count()):
+                item = self.bundles_list.item(index)
+                if item.data(Qt.ItemDataRole.UserRole) == target:
+                    chosen = item
+                    break
+            if chosen is None and self.bundles_list.count() > 0:
+                chosen = self.bundles_list.item(0)
+            if chosen is not None:
+                self.bundles_list.setCurrentItem(chosen)
+                self._fill_bundle_form(
+                    self._bundles[chosen.data(Qt.ItemDataRole.UserRole)]
+                )
+            else:
+                self.new_bundle(quiet=True)
+
+        self._run(self._flow.list_bundles, done)
+
+    def _bundle_selection_changed(self) -> None:
+        bundle_id = self._selected_id(self.bundles_list)
+        if bundle_id and bundle_id in self._bundles:
+            self._fill_bundle_form(self._bundles[bundle_id])
+
+    def _fill_bundle_form(self, view: BundleView) -> None:
+        self._current_bundle_id = view.id
+        self._bundle_base = view.bundle
+        bundle = view.bundle
+        self.bundle_name_edit.setText(view.name)
+        self.bundle_template_edit.setText(
+            str(bundle.get("template_ref") or "")
+        )
+        sampler = bundle.get("sampler")
+        self.bundle_sampler_form.set_bag(
+            sampler if isinstance(sampler, dict) else {}
+        )
+        carried = carried_sections(bundle)
+        if carried:
+            self.bundle_carried_label.setText(
+                "Carried unchanged by this editor: "
+                + ", ".join(carried)
+                + "."
+            )
+        else:
+            self.bundle_carried_label.setText("")
+
+    def new_bundle(self, *, quiet: bool = False) -> None:
+        self._bundle_gen += 1  # a pending load must not refill the form
+        self._current_bundle_id = None
+        self._bundle_base = None
+        self.bundles_list.blockSignals(True)
+        self.bundles_list.setCurrentItem(None)
+        self.bundles_list.blockSignals(False)
+        self.bundle_name_edit.clear()
+        self.bundle_template_edit.clear()
+        self.bundle_carried_label.setText("")
+        self.bundle_sampler_form.set_bag({})
+        if not quiet:
+            self.status_label.setText(
+                "New bundle — name it, set its sampler, Save."
+            )
+
+    def save_bundle(self) -> None:
+        name = self.bundle_name_edit.text().strip()
+        if not name:
+            self.status_label.setText("A bundle needs a name first.")
+            return
+        bag, problems = self.bundle_sampler_form.collect()
+        if problems:
+            self.status_label.setText(
+                "Fix the sampler first: " + "; ".join(problems)
+            )
+            return
+        kwargs = {
+            "bundle_id": self._current_bundle_id,
+            "name": name,
+            "sampler": bag,
+            "template_ref": self.bundle_template_edit.text().strip(),
+            "base": self._bundle_base,
+        }
+
+        def done(view: BundleView) -> None:
+            self.status_label.setText(f"Saved bundle “{view.name}”.")
+            self.refresh_bundles(select_id=view.id)
+
+        self._run(lambda: self._flow.save_bundle(**kwargs), done)
+
+    def delete_bundle(self) -> None:
+        if self._current_bundle_id is None:
+            return
+        view = self._bundles.get(self._current_bundle_id)
+        name = view.name if view else self._current_bundle_id
+        answer = QMessageBox.question(
+            self,
+            "Delete bundle",
+            f"Delete the bundle “{name}”? Scopes assigned to it "
+            "stop resolving it.",
+        )
+        if answer != QMessageBox.StandardButton.Yes:
+            return
+        bundle_id = self._current_bundle_id
+
+        def done(_result) -> None:
+            self._current_bundle_id = None
+            self._bundle_base = None
+            self.status_label.setText(f"Deleted bundle “{name}”.")
+            self.refresh_bundles()
+            self.refresh_overrides()
+
+        self._run(lambda: self._flow.delete_bundle(bundle_id), done)
+
+    def import_bundle(self) -> None:
+        path, _filter = QFileDialog.getOpenFileName(
+            self, "Import bundle", "", "JSON files (*.json);;All files (*)"
+        )
+        if not path:
+            return
+        try:
+            document = json.loads(Path(path).read_text(encoding="utf-8"))
+        except Exception as exc:
+            self.status_label.setText(f"That file is not JSON: {exc}")
+            return
+
+        def done(view: BundleView) -> None:
+            self.status_label.setText(f"Imported bundle “{view.name}”.")
+            self.refresh_bundles(select_id=view.id)
+
+        self._run(lambda: self._flow.import_bundle(document), done)
+
+    def export_bundle(self) -> None:
+        if self._current_bundle_id is None:
+            self.status_label.setText("Pick a bundle to export first.")
+            return
+        view = self._bundles.get(self._current_bundle_id)
+        name = view.name if view else "bundle"
+        path, _filter = QFileDialog.getSaveFileName(
+            self,
+            "Export bundle share",
+            f"{name}.json",
+            "JSON files (*.json);;All files (*)",
+        )
+        if not path:
+            return
+        bundle_id = self._current_bundle_id
+
+        def done(document) -> None:
+            Path(path).write_text(
+                json.dumps(document, indent=2, ensure_ascii=False),
+                encoding="utf-8",
+            )
+            self.status_label.setText(
+                f"Exported the share document for “{name}” to {path}."
+            )
+
+        self._run(lambda: self._flow.share_bundle(bundle_id), done)
+
+    # ------------------------------------------------------------ packs
+
+    def _read_json_file(self, title: str):
+        path, _filter = QFileDialog.getOpenFileName(
+            self, title, "", "JSON files (*.json);;All files (*)"
+        )
+        if not path:
+            return None, ""
+        try:
+            return json.loads(Path(path).read_text(encoding="utf-8")), path
+        except Exception as exc:
+            self.status_label.setText(f"That file is not JSON: {exc}")
+            return None, ""
+
+    def inspect_pack(self) -> None:
+        document, _path = self._read_json_file("Inspect preset pack")
+        if document is None:
+            return
+
+        def done(report) -> None:
+            self.status_label.setText(
+                "Pack inspection: " + json.dumps(report, ensure_ascii=False)
+            )
+
+        self._run(lambda: self._flow.inspect_pack(document), done)
+
+    def import_pack(self) -> None:
+        document, _path = self._read_json_file("Import preset pack")
+        if document is None:
+            return
+
+        def done(report) -> None:
+            self.status_label.setText(
+                "Pack imported (name clashes skipped): "
+                + json.dumps(report, ensure_ascii=False)
+            )
+            self.refresh_presets()
+            self.refresh_bundles()
+
+        self._run(
+            lambda: self._flow.import_pack(document, on_conflict="skip"),
+            done,
+        )
+
+    def export_pack(self) -> None:
+        path, _filter = QFileDialog.getSaveFileName(
+            self,
+            "Export preset pack",
+            "runmal-pack.json",
+            "JSON files (*.json);;All files (*)",
+        )
+        if not path:
+            return
+
+        def done(document) -> None:
+            Path(path).write_text(
+                json.dumps(document, indent=2, ensure_ascii=False),
+                encoding="utf-8",
+            )
+            self.status_label.setText(f"Exported a preset pack to {path}.")
+
+        self._run(lambda: self._flow.export_pack("runmal-pack"), done)
+
+    # ------------------------------------------------------------ overrides
+
+    def refresh_overrides(self) -> None:
+        def done(overrides) -> None:
+            self.overrides_list.clear()
+            for override in overrides:
+                bundle = self._bundles.get(override.bundle_id)
+                bundle_name = bundle.name if bundle else override.bundle_id
+                self.overrides_list.addItem(
+                    f"{override.scope_kind} {override.owner_id} "
+                    f"→ bundle “{bundle_name}”"
+                )
+            if not overrides:
+                self.overrides_list.addItem("(no assignments)")
+
+        self._run(self._flow.list_overrides, done)
+
+    def set_override(self) -> None:
+        scope = self.override_scope_combo.currentData()
+        bundle_id = self.override_bundle_combo.currentData()
+        if not scope or not bundle_id:
+            self.status_label.setText(
+                "Pick a scope and a bundle for the assignment first."
+            )
+            return
+        delta, problems = self.override_delta_form.collect()
+        if problems:
+            self.status_label.setText(
+                "Fix the delta first: " + "; ".join(problems)
+            )
+            return
+        scope_kind, owner_id = scope
+        overrides = {"sampler": delta} if delta else None
+
+        def done(_view) -> None:
+            self.status_label.setText(
+                f"Assignment set: {scope_kind} now uses the picked "
+                "bundle."
+            )
+            self.refresh_overrides()
+
+        self._run(
+            lambda: self._flow.set_override(
+                scope_kind, owner_id, bundle_id, overrides=overrides
+            ),
+            done,
+        )
+
+    def remove_override(self) -> None:
+        scope = self.override_scope_combo.currentData()
+        if not scope:
+            self.status_label.setText("Pick a scope first.")
+            return
+        scope_kind, owner_id = scope
+
+        def done(_result) -> None:
+            self.status_label.setText(
+                f"Assignment removed for {scope_kind} {owner_id}."
+            )
+            self.refresh_overrides()
+
+        self._run(
+            lambda: self._flow.delete_override(scope_kind, owner_id),
+            done,
+        )
+
+    # ------------------------------------------------------------ resolve
+
+    def refresh_resolve(self) -> None:
+        chat_id = self.resolve_chat_combo.currentData()
+        character_id = self.resolve_character_combo.currentData()
+
+        def done(effective) -> None:
+            self.resolve_list.clear()
+            self.resolve_notes_label.setText(
+                "\n".join(resolve_notes(effective))
+            )
+            for label, value, source in effective_rows(effective):
+                self.resolve_list.addItem(
+                    f"{label} — {value}   (from: {source})"
+                )
+
+        self._run(
+            lambda: self._flow.resolve(
+                chat_id=chat_id, character_id=character_id
+            ),
+            done,
+        )
+        if chat_id and self._chat_preset_id:
+            preset_id = self._chat_preset_id
+
+            def done_preset(detail: PresetDetail) -> None:
+                lines = [f"Applied preset for this chat: {detail.name}"]
+                lines.extend(
+                    f"  {label} — {value}"
+                    for label, value, _key in bag_rows(detail.params)
+                )
+                self.resolve_preset_label.setText("\n".join(lines))
+
+            self._run(
+                lambda: self._flow.preset_detail(preset_id), done_preset
+            )
+        elif chat_id:
+            self.resolve_preset_label.setText(
+                "This chat has no preset applied."
+            )
+        else:
+            self.resolve_preset_label.setText("")
+
+
 class MainWindow(QMainWindow):
     """Rúnmál shell window (engine + client injected)."""
 
@@ -1024,6 +2541,10 @@ class MainWindow(QMainWindow):
         self._library_items: list | None = None
         self._last_deleted_character_id: str | None = None
         self.last_import_outcome = None
+        # Connections & Generation settings (R-09) state.
+        self._settings_flow_instance: SettingsFlow | None = None
+        self._connections_dialog: ConnectionsDialog | None = None
+        self._generation_dialog: GenerationDialog | None = None
 
         self.setWindowTitle("Rúnmál")
         self.resize(1200, 800)
@@ -1350,6 +2871,32 @@ class MainWindow(QMainWindow):
         ):
             label.setWordWrap(True)
             layout.addWidget(label)
+        # R-09: preset quick-apply for the open chat — picking a
+        # preset here applies it to the chat through the real
+        # road; the combo is populated when a chat opens.
+        preset_row = QHBoxLayout()
+        preset_row.addWidget(QLabel("Apply preset:"))
+        self.session_preset_combo = QComboBox()
+        self.session_preset_combo.setToolTip(
+            "Apply a generation preset to the open chat."
+        )
+        self.session_preset_combo.activated.connect(
+            self._session_preset_chosen
+        )
+        preset_row.addWidget(self.session_preset_combo, 1)
+        layout.addLayout(preset_row)
+        settings_row = QHBoxLayout()
+        self.session_connections_button = QPushButton("Connections…")
+        self.session_connections_button.clicked.connect(
+            lambda _c=False: self.open_connections_dialog()
+        )
+        settings_row.addWidget(self.session_connections_button)
+        self.session_generation_button = QPushButton("Generation…")
+        self.session_generation_button.clicked.connect(
+            lambda _c=False: self.open_generation_dialog()
+        )
+        settings_row.addWidget(self.session_generation_button)
+        layout.addLayout(settings_row)
         layout.addStretch(1)
         self.session_dock = QDockWidget("Session", self)
         self.session_dock.setObjectName("sessionDock")
@@ -1471,8 +3018,14 @@ class MainWindow(QMainWindow):
         self._placeholder(world_menu, "Memory…", "R-12")
 
         tools_menu = bar.addMenu("Tools")
-        self._placeholder(tools_menu, "Connections…", "R-09")
-        self._placeholder(tools_menu, "Presets…", "R-09")
+        connections_action = tools_menu.addAction("Connections…")
+        connections_action.triggered.connect(
+            lambda _c=False: self.open_connections_dialog()
+        )
+        generation_action = tools_menu.addAction("Generation…")
+        generation_action.triggered.connect(
+            lambda _c=False: self.open_generation_dialog()
+        )
         self._placeholder(tools_menu, "Plugins…", "R-14")
 
         window_menu = bar.addMenu("Window")
@@ -1503,7 +3056,9 @@ class MainWindow(QMainWindow):
         status.addPermanentWidget(self.engine_status_label)
         status.addPermanentWidget(self.backend_status_label)
         status.addPermanentWidget(self.streaming_status_label)
-        status.showMessage("Rúnmál — Chat Stage (R-07) · Characters (R-08)")
+        status.showMessage(
+            "Rúnmál — Characters (R-08) · Connections & Generation (R-09)"
+        )
 
     # ------------------------------------------------------------ client
 
@@ -1521,6 +3076,135 @@ class MainWindow(QMainWindow):
         if self._flow_instance is None:
             self._flow_instance = ChatFlow(self.client())
         return self._flow_instance
+
+    def settings_flow(self) -> SettingsFlow:
+        """The window's Connections & Generation flow (R-09, over
+        the same client)."""
+        if self._settings_flow_instance is None:
+            self._settings_flow_instance = SettingsFlow(self.client())
+        return self._settings_flow_instance
+
+    # ------------------------------------------- settings dialogs
+
+    def _settings_context(self) -> dict:
+        """The open-chat context the settings dialogs act on."""
+        chat = self.current_chat
+        return {
+            "chat_id": self.current_chat_id,
+            "chat_title": (chat.title or chat.id) if chat else "",
+            "chat_preset_id": chat.preset_id if chat else None,
+            "chat_character_id": chat.character_id if chat else None,
+            "pinned_profile_id": (
+                chat.backend_profile_id if chat else None
+            ),
+            "characters": [
+                (c.id, c.name or c.id) for c in self._characters_cache
+            ],
+        }
+
+    def open_connections_dialog(self) -> ConnectionsDialog:
+        """Show the Connections dialog (R-09): the real backend
+        profiles — edit, keys, probe, per-chat pin."""
+        if (
+            self._connections_dialog is not None
+            and self._connections_dialog.isVisible()
+        ):
+            self._connections_dialog.raise_()
+            self._connections_dialog.activateWindow()
+            return self._connections_dialog
+        context = self._settings_context()
+        dialog = ConnectionsDialog(
+            self.settings_flow(),
+            chat_id=context["chat_id"],
+            chat_title=context["chat_title"],
+            pinned_profile_id=context["pinned_profile_id"],
+            on_changed=self._settings_changed,
+            parent=self,
+        )
+        dialog.destroyed.connect(
+            lambda _obj=None: setattr(self, "_connections_dialog", None)
+        )
+        self._connections_dialog = dialog
+        dialog.show()
+        return dialog
+
+    def open_generation_dialog(self) -> GenerationDialog:
+        """Show the Generation dialog (R-09): presets, bundles &
+        overrides, packs, and the resolve preview."""
+        if (
+            self._generation_dialog is not None
+            and self._generation_dialog.isVisible()
+        ):
+            self._generation_dialog.raise_()
+            self._generation_dialog.activateWindow()
+            return self._generation_dialog
+        context = self._settings_context()
+        dialog = GenerationDialog(
+            self.settings_flow(),
+            chat_id=context["chat_id"],
+            chat_title=context["chat_title"],
+            chat_preset_id=context["chat_preset_id"],
+            chat_character_id=context["chat_character_id"],
+            characters=context["characters"],
+            on_changed=self._settings_changed,
+            parent=self,
+        )
+        dialog.destroyed.connect(
+            lambda _obj=None: setattr(self, "_generation_dialog", None)
+        )
+        self._generation_dialog = dialog
+        dialog.show()
+        return dialog
+
+    def _settings_changed(self) -> None:
+        """A settings dialog changed engine state: refresh the
+        snapshot (profile caches + dock labels) and re-resolve
+        the open chat's Session view."""
+        self.refresh_async()
+        if self.current_chat_id:
+            self.open_chat_async(self.current_chat_id)
+
+    def _session_preset_chosen(self, index: int) -> None:
+        """Session-dock quick-apply: a preset picked for the open
+        chat goes through the real apply road, then the chat
+        re-resolves so the dock tells the truth."""
+        preset_id = self.session_preset_combo.itemData(index)
+        chat_id = self.current_chat_id
+        if not preset_id or not chat_id:
+            return
+        flow = self.settings_flow()
+        worker = run_async(
+            lambda: flow.apply_preset(chat_id, preset_id),
+            lambda _chat: self.open_chat_async(chat_id),
+            self._apply_error,
+        )
+        self._workers.append(worker)
+
+    def _populate_session_presets(self, chat: ChatSummary) -> None:
+        """Fill the Session dock's preset combo for an opened
+        chat: a no-op 'current' row, then every preset."""
+        client = self.client()
+
+        def done(presets) -> None:
+            if self.current_chat_id != chat.id:
+                return
+            combo = self.session_preset_combo
+            combo.blockSignals(True)
+            combo.clear()
+            current_name = None
+            for preset in presets:
+                if preset.id == chat.preset_id:
+                    current_name = preset.name
+            combo.addItem(
+                f"Current: {current_name or 'none applied'}", None
+            )
+            for preset in presets:
+                combo.addItem(preset.name, preset.id)
+            combo.setCurrentIndex(0)
+            combo.blockSignals(False)
+
+        worker = run_async(client.list_presets, done, self._apply_error)
+        self._workers.append(worker)
 
     # ------------------------------------------------------- engine chrome
 
@@ -1703,6 +3387,7 @@ class MainWindow(QMainWindow):
         self.session_model_label.setText(f"Model: {view.model_label}")
         self.session_preset_label.setText(f"Preset: {view.preset_label}")
         self.backend_status_label.setText(f"Backend: {view.profile_label}")
+        self.session_preset_combo.setEnabled(True)
 
     def _clear_session_view(self) -> None:
         self.session_chat_label.setText("Chat: none open")
@@ -1710,6 +3395,8 @@ class MainWindow(QMainWindow):
         self.session_persona_label.setText("Persona: —")
         self.session_profile_label.setText("Profile: —")
         self.session_preset_label.setText("Preset: —")
+        self.session_preset_combo.clear()
+        self.session_preset_combo.setEnabled(False)
         self.current_session = None
 
     def _render_transcript(self) -> None:
@@ -1772,6 +3459,7 @@ class MainWindow(QMainWindow):
         self.stage_body.setText(body)
         if opened.session is not None:
             self._show_session_view(opened.session)
+        self._populate_session_presets(opened.chat)
         self._render_transcript()
         for index in range(self.chats_list.count()):
             item = self.chats_list.item(index)

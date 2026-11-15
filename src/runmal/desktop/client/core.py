@@ -33,6 +33,7 @@ from runmal.desktop.client.models import (
     AuthorsNoteView,
     BackendProfile,
     BindingView,
+    BundleView,
     CharacterCardView,
     CharacterSummary,
     ChatSummary,
@@ -46,7 +47,9 @@ from runmal.desktop.client.models import (
     LorebookSummary,
     MessageView,
     OrganisationView,
+    OverrideView,
     PersonaView,
+    PresetDetail,
     PresetSummary,
     SearchHitView,
     StreamEvent,
@@ -230,6 +233,31 @@ class RunmalClient:
             "PUT",
             f"/api/v1/backend-profiles/{profile_id}/chat-secret",
             json={"value": value},
+        )
+        return BackendProfile.from_dict(payload if isinstance(payload, dict) else {})
+
+    def clear_chat_secret(self, profile_id: str) -> BackendProfile:
+        """Remove the stored chat API key (R-02 DELETE road)."""
+        payload = self._request(
+            "DELETE", f"/api/v1/backend-profiles/{profile_id}/chat-secret"
+        )
+        return BackendProfile.from_dict(payload if isinstance(payload, dict) else {})
+
+    def set_embedding_secret(self, profile_id: str, value: str) -> BackendProfile:
+        """Store an embedding API key via the write-only secret
+        route — same INV-023 discipline as :meth:`set_chat_secret`:
+        the value travels once and is never retained or echoed."""
+        payload = self._request(
+            "PUT",
+            f"/api/v1/backend-profiles/{profile_id}/embedding-secret",
+            json={"value": value},
+        )
+        return BackendProfile.from_dict(payload if isinstance(payload, dict) else {})
+
+    def clear_embedding_secret(self, profile_id: str) -> BackendProfile:
+        """Remove the stored embedding API key (R-02 DELETE road)."""
+        payload = self._request(
+            "DELETE", f"/api/v1/backend-profiles/{profile_id}/embedding-secret"
         )
         return BackendProfile.from_dict(payload if isinstance(payload, dict) else {})
 
@@ -1033,6 +1061,210 @@ class RunmalClient:
     def get_preset(self, preset_id: str) -> PresetSummary:
         payload = self._request("GET", f"/api/v1/presets/{preset_id}")
         return PresetSummary.from_dict(payload if isinstance(payload, dict) else {})
+
+    # -------------------------------------------- presets, full (R-09)
+
+    def get_preset_detail(self, preset_id: str) -> PresetDetail:
+        """The full preset row for the R-09 editor (bag included)."""
+        payload = self._request("GET", f"/api/v1/presets/{preset_id}")
+        return PresetDetail.from_dict(payload if isinstance(payload, dict) else {})
+
+    def create_preset(
+        self,
+        name: str,
+        params: dict[str, Any] | None = None,
+        template_ref: str = "",
+    ) -> PresetDetail:
+        body: dict[str, Any] = {"name": name, "template_ref": template_ref}
+        if params is not None:
+            body["params"] = params
+        payload = self._request("POST", "/api/v1/presets", json=body)
+        return PresetDetail.from_dict(payload if isinstance(payload, dict) else {})
+
+    def update_preset(
+        self,
+        preset_id: str,
+        *,
+        name: str | None = None,
+        params: dict[str, Any] | None = None,
+        template_ref: str | None = None,
+    ) -> PresetDetail:
+        """Partial preset update (S207 PATCH). Only the named
+        fields are sent; ``params={}`` is a real value (it clears
+        the bag) and is distinct from leaving params untouched."""
+        body = {
+            k: v
+            for k, v in (
+                ("name", name),
+                ("params", params),
+                ("template_ref", template_ref),
+            )
+            if v is not None
+        }
+        payload = self._request(
+            "PATCH", f"/api/v1/presets/{preset_id}", json=body
+        )
+        return PresetDetail.from_dict(payload if isinstance(payload, dict) else {})
+
+    def delete_preset(self, preset_id: str) -> bool:
+        payload = self._request("DELETE", f"/api/v1/presets/{preset_id}")
+        return bool(isinstance(payload, dict) and payload.get("ok"))
+
+    def import_preset(
+        self, payload_in: dict[str, Any], name: str | None = None
+    ) -> PresetDetail:
+        """Import a preset file object (P-021 interop road)."""
+        params = {"name": name} if name else None
+        payload = self._request(
+            "POST", "/api/v1/presets/import", json=payload_in, params=params
+        )
+        return PresetDetail.from_dict(payload if isinstance(payload, dict) else {})
+
+    def export_preset(
+        self, preset_id: str, format: str | None = None
+    ) -> dict[str, Any]:
+        """Export a preset as a file object (native / st-text /
+        st-chat); the payload is the file's JSON content."""
+        params = {"format": format} if format else None
+        payload = self._request(
+            "GET", f"/api/v1/presets/{preset_id}/export", params=params
+        )
+        return payload if isinstance(payload, dict) else {}
+
+    # ------------------------------------- preset bundles (P-054, R-09)
+
+    def list_bundles(self) -> list[BundleView]:
+        payload = self._request("GET", "/api/v1/presets/bundles")
+        rows = payload if isinstance(payload, list) else []
+        return [BundleView.from_dict(r) for r in rows if isinstance(r, dict)]
+
+    def get_bundle(self, bundle_id: str) -> BundleView:
+        payload = self._request("GET", f"/api/v1/presets/bundles/{bundle_id}")
+        return BundleView.from_dict(payload if isinstance(payload, dict) else {})
+
+    def create_bundle(self, bundle: dict[str, Any]) -> BundleView:
+        payload = self._request(
+            "POST", "/api/v1/presets/bundles", json={"bundle": bundle}
+        )
+        return BundleView.from_dict(payload if isinstance(payload, dict) else {})
+
+    def update_bundle(
+        self, bundle_id: str, bundle: dict[str, Any]
+    ) -> BundleView:
+        payload = self._request(
+            "PATCH",
+            f"/api/v1/presets/bundles/{bundle_id}",
+            json={"bundle": bundle},
+        )
+        return BundleView.from_dict(payload if isinstance(payload, dict) else {})
+
+    def delete_bundle(self, bundle_id: str) -> bool:
+        payload = self._request(
+            "DELETE", f"/api/v1/presets/bundles/{bundle_id}"
+        )
+        return bool(isinstance(payload, dict) and payload.get("ok"))
+
+    def share_bundle(self, bundle_id: str) -> dict[str, Any]:
+        """The P-054 share envelope for one bundle (file form)."""
+        payload = self._request(
+            "GET", f"/api/v1/presets/bundles/{bundle_id}/share"
+        )
+        return payload if isinstance(payload, dict) else {}
+
+    def import_bundle(
+        self, payload_in: dict[str, Any], name: str | None = None
+    ) -> BundleView:
+        """Import a bundle (bare document or share envelope)."""
+        params = {"name": name} if name else None
+        payload = self._request(
+            "POST", "/api/v1/presets/bundles/import",
+            json=payload_in, params=params,
+        )
+        return BundleView.from_dict(payload if isinstance(payload, dict) else {})
+
+    # ----------------------------------- preset overrides (P-054, R-09)
+
+    def list_overrides(self) -> list[OverrideView]:
+        payload = self._request("GET", "/api/v1/presets/overrides")
+        rows = payload if isinstance(payload, list) else []
+        return [OverrideView.from_dict(r) for r in rows if isinstance(r, dict)]
+
+    def set_override(
+        self,
+        scope_kind: str,
+        owner_id: str,
+        bundle_id: str,
+        overrides: dict[str, Any] | None = None,
+    ) -> OverrideView:
+        body: dict[str, Any] = {"bundle_id": bundle_id}
+        if overrides is not None:
+            body["overrides"] = overrides
+        payload = self._request(
+            "PUT",
+            f"/api/v1/presets/overrides/{scope_kind}/{owner_id}",
+            json=body,
+        )
+        return OverrideView.from_dict(payload if isinstance(payload, dict) else {})
+
+    def delete_override(self, scope_kind: str, owner_id: str) -> bool:
+        payload = self._request(
+            "DELETE", f"/api/v1/presets/overrides/{scope_kind}/{owner_id}"
+        )
+        return bool(isinstance(payload, dict) and payload.get("ok"))
+
+    # ---------------------------------------- preset packs (P-054, R-09)
+
+    def inspect_pack(self, payload_in: dict[str, Any]) -> dict[str, Any]:
+        payload = self._request(
+            "POST", "/api/v1/presets/packs/inspect", json=payload_in
+        )
+        return payload if isinstance(payload, dict) else {}
+
+    def import_pack(
+        self, payload_in: dict[str, Any], on_conflict: str = "create_new"
+    ) -> dict[str, Any]:
+        payload = self._request(
+            "POST", "/api/v1/presets/packs/import",
+            json=payload_in, params={"on_conflict": on_conflict},
+        )
+        return payload if isinstance(payload, dict) else {}
+
+    def export_pack(
+        self,
+        name: str,
+        bundle_ids: list[str] | None = None,
+        preset_ids: list[str] | None = None,
+    ) -> dict[str, Any]:
+        body: dict[str, Any] = {"name": name}
+        if bundle_ids is not None:
+            body["bundle_ids"] = bundle_ids
+        if preset_ids is not None:
+            body["preset_ids"] = preset_ids
+        payload = self._request(
+            "POST", "/api/v1/presets/packs/export", json=body
+        )
+        return payload if isinstance(payload, dict) else {}
+
+    def resolve_presets(
+        self,
+        chat_id: str | None = None,
+        character_id: str | None = None,
+    ) -> dict[str, Any] | None:
+        """The effective-bundle view for a chat and/or character
+        (``GET /presets/resolve``); None when no assignment
+        applies. The view carries per-field sources — provenance
+        is data, never silent (P-054)."""
+        params: dict[str, Any] = {}
+        if chat_id:
+            params["chat_id"] = chat_id
+        if character_id:
+            params["character_id"] = character_id
+        payload = self._request("GET", "/api/v1/presets/resolve", params=params)
+        if isinstance(payload, dict):
+            effective = payload.get("effective")
+            if isinstance(effective, dict):
+                return effective
+        return None
 
     # ------------------------------------------------------------- user name
 
