@@ -503,3 +503,18 @@ disabled / group-excluded) and the per-layer scope summaries
 in words, through the Qt-free `desktop/lore_logic.py`. Slice
 contract and evidence:
 `docs/DESKTOP_PERSONA_LOREBOOKS_R10_2026-11-15.md`.
+
+R-11 adds Groups (Chat ▸ Groups…): the engine's persistent
+rooms as a screen in the window — room list and creation from
+a roster checklist, the room transcript with strategy turns
+(Next / Run, optional manual speaker, generation through the
+default backend), the roster editor (per-member talkativeness
+and mute, deepening overrides — activation, lore, persona
+override — the in-group peek, and leave/return with presence
+and missed digests in words), and Room Settings (name, the
+four speaker strategies, and the P-070 deepening fields —
+generation mode, self-responses, auto mode, join affixes,
+scenario override — composed over the stored document so the
+engine's selection state rides through saves untouched),
+through the Qt-free `desktop/group_logic.py`. Slice contract
+and evidence: `docs/DESKTOP_GROUPS_R11_2026-11-15.md`.

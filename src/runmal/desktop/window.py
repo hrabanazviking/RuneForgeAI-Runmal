@@ -51,6 +51,13 @@ scope assignments, and the activation + layered lore previews
 rendered in words) through the Qt-free ``persona_logic`` /
 ``lore_logic`` flows, no new engine routes.
 
+R-11 adds Groups: the persistent group rooms (roster editor
+with per-member settings, deepening overrides, peek and
+presence/leave/return, speaker strategy + deepening settings,
+and the room transcript with strategy turns) through the
+Qt-free ``group_logic`` flow over the S210/S211/P-070
+groupchat roads, no new engine routes.
+
 Honesty rule (carried from R-04): an action is REAL only where
 its machinery exists. Later-slice screens stay placeholder
 actions labelled with their slice, never dressed up.
@@ -73,6 +80,7 @@ from PySide6.QtWidgets import (
     QDockWidget,
     QDoubleSpinBox,
     QFileDialog,
+    QFormLayout,
     QHBoxLayout,
     QLabel,
     QLineEdit,
@@ -91,6 +99,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from runmal.desktop import group_logic
 from runmal.desktop.character_logic import (
     CARD_TEXT_FIELDS,
     CharacterFlow,
@@ -115,6 +124,7 @@ from runmal.desktop.client.models import (
     CharacterSummary,
     ChatSummary,
     EngineSnapshot,
+    GroupView,
     LorebookView,
     LoreEntryView,
     LoreScopeView,
@@ -125,6 +135,7 @@ from runmal.desktop.client.models import (
 )
 from runmal.desktop.client.session import DesktopSession
 from runmal.desktop.engine import EngineHandle, EngineState
+from runmal.desktop.group_logic import GroupFlow
 from runmal.desktop.lore_logic import (
     KIND_BOOL,
     KIND_INT_OR_NULL,
@@ -2670,6 +2681,579 @@ class SchemaFormWidget(QWidget):
         self.set_values({**self.values()[0], name: value})
 
 
+class GroupsDialog(QDialog):
+    """Group rooms (R-11): the persistent rooms over the engine's
+    groupchat roads — roster editor with per-member settings,
+    overrides, peek and presence; speaker strategy + deepening
+    settings; the room transcript with strategy turns.
+
+    All state lives in the engine; the dialog re-reads after
+    every verb. GroupFlow (Qt-free) holds the words."""
+
+    def __init__(
+        self,
+        parent: QWidget,
+        flow: group_logic.GroupFlow,
+        characters: list[CharacterSummary],
+    ) -> None:
+        super().__init__(parent)
+        self.setWindowTitle("Groups")
+        self.resize(880, 620)
+        self._flow = flow
+        self._characters = characters
+        self._group: GroupView | None = None
+        self._deepening_doc: dict = {}
+
+        layout = QHBoxLayout(self)
+        left = QVBoxLayout()
+        left.addWidget(QLabel("Rooms"))
+        self.groups_list = QListWidget()
+        self.groups_list.currentRowChanged.connect(
+            lambda _row: self._load_selected_group()
+        )
+        left.addWidget(self.groups_list, 1)
+        left.addWidget(QLabel("New room"))
+        self.new_name = QLineEdit()
+        self.new_name.setPlaceholderText("Room name")
+        left.addWidget(self.new_name)
+        self.new_roster = QListWidget()
+        for character in characters:
+            item = QListWidgetItem(character.name or character.id)
+            item.setData(Qt.ItemDataRole.UserRole, character.id)
+            item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+            item.setCheckState(Qt.CheckState.Unchecked)
+            self.new_roster.addItem(item)
+        left.addWidget(self.new_roster, 1)
+        create_button = QPushButton("Create Room")
+        create_button.clicked.connect(lambda _c=False: self._create())
+        left.addWidget(create_button)
+        self.delete_button = QPushButton("Delete Room…")
+        self.delete_button.clicked.connect(lambda _c=False: self._delete())
+        left.addWidget(self.delete_button)
+        layout.addLayout(left, 1)
+
+        right_box = QVBoxLayout()
+        self.tabs = QTabWidget()
+        right_box.addWidget(self.tabs, 1)
+        self.status_label = QLabel("")
+        self.status_label.setWordWrap(True)
+        right_box.addWidget(self.status_label)
+        layout.addLayout(right_box, 2)
+        self._build_room_tab()
+        self._build_roster_tab()
+        self._build_settings_tab()
+        self._reload_groups()
+
+    # -- construction -------------------------------------------------
+
+    def _build_room_tab(self) -> None:
+        tab = QWidget()
+        lay = QVBoxLayout(tab)
+        self.transcript = QPlainTextEdit()
+        self.transcript.setReadOnly(True)
+        lay.addWidget(self.transcript, 1)
+        say_row = QHBoxLayout()
+        self.say_field = QLineEdit()
+        self.say_field.setPlaceholderText("Say something to the room…")
+        say_row.addWidget(self.say_field, 1)
+        say_button = QPushButton("Say")
+        say_button.clicked.connect(lambda _c=False: self._say())
+        say_row.addWidget(say_button)
+        lay.addLayout(say_row)
+        turn_row = QHBoxLayout()
+        self.manual_combo = QComboBox()
+        turn_row.addWidget(QLabel("Speaker:"))
+        turn_row.addWidget(self.manual_combo, 1)
+        self.generate_check = QCheckBox("Generate the reply")
+        self.generate_check.setChecked(True)
+        turn_row.addWidget(self.generate_check)
+        next_button = QPushButton("Next Turn")
+        next_button.clicked.connect(lambda _c=False: self._next_turn())
+        turn_row.addWidget(next_button)
+        lay.addLayout(turn_row)
+        run_row = QHBoxLayout()
+        self.run_spin = QSpinBox()
+        self.run_spin.setRange(1, 20)
+        self.run_spin.setValue(3)
+        run_row.addWidget(QLabel("Run turns:"))
+        run_row.addWidget(self.run_spin)
+        run_button = QPushButton("Run")
+        run_button.clicked.connect(lambda _c=False: self._run_turns())
+        run_row.addWidget(run_button)
+        run_row.addStretch(1)
+        lay.addLayout(run_row)
+        self.turn_label = QLabel("")
+        self.turn_label.setWordWrap(True)
+        lay.addWidget(self.turn_label)
+        self.tabs.addTab(tab, "Room")
+
+    def _build_roster_tab(self) -> None:
+        tab = QWidget()
+        lay = QVBoxLayout(tab)
+        lay.addWidget(QLabel("Members"))
+        self.members_list = QListWidget()
+        self.members_list.currentRowChanged.connect(
+            lambda _row: self._load_member()
+        )
+        lay.addWidget(self.members_list, 1)
+        settings = QFormLayout()
+        self.talk_spin = QDoubleSpinBox()
+        self.talk_spin.setRange(0.0, 1.0)
+        self.talk_spin.setSingleStep(0.1)
+        settings.addRow("Talkativeness", self.talk_spin)
+        self.muted_check = QCheckBox("Muted (the strategy skips them)")
+        settings.addRow("", self.muted_check)
+        lay.addLayout(settings)
+        member_buttons = QHBoxLayout()
+        save_member = QPushButton("Save Member")
+        save_member.clicked.connect(lambda _c=False: self._save_member())
+        member_buttons.addWidget(save_member)
+        peek_button = QPushButton("Peek")
+        peek_button.clicked.connect(lambda _c=False: self._peek())
+        member_buttons.addWidget(peek_button)
+        leave_button = QPushButton("Leave")
+        leave_button.clicked.connect(lambda _c=False: self._leave())
+        member_buttons.addWidget(leave_button)
+        back_button = QPushButton("Return")
+        back_button.clicked.connect(lambda _c=False: self._back())
+        member_buttons.addWidget(back_button)
+        remove_button = QPushButton("Remove…")
+        remove_button.clicked.connect(lambda _c=False: self._remove_member())
+        member_buttons.addWidget(remove_button)
+        lay.addLayout(member_buttons)
+        override_form = QFormLayout()
+        self.activation_combo = QComboBox()
+        for key, label in group_logic.ACTIVATIONS:
+            self.activation_combo.addItem(label, key)
+        override_form.addRow("Activation", self.activation_combo)
+        self.lore_check = QCheckBox("Lorebooks apply to this member")
+        self.lore_check.setChecked(True)
+        override_form.addRow("", self.lore_check)
+        self.persona_override = QPlainTextEdit()
+        self.persona_override.setPlaceholderText(
+            "Persona override (blank = use their card)"
+        )
+        self.persona_override.setMaximumHeight(60)
+        override_form.addRow("Persona override", self.persona_override)
+        lay.addLayout(override_form)
+        save_override = QPushButton("Save Override")
+        save_override.clicked.connect(lambda _c=False: self._save_override())
+        lay.addWidget(save_override)
+        self.peek_text = QPlainTextEdit()
+        self.peek_text.setReadOnly(True)
+        self.peek_text.setMaximumHeight(90)
+        lay.addWidget(self.peek_text)
+        add_row = QHBoxLayout()
+        self.add_combo = QComboBox()
+        add_row.addWidget(self.add_combo, 1)
+        add_button = QPushButton("Add Member")
+        add_button.clicked.connect(lambda _c=False: self._add_member())
+        add_row.addWidget(add_button)
+        lay.addLayout(add_row)
+        lay.addWidget(QLabel("Presence"))
+        self.presence_list = QListWidget()
+        self.presence_list.setMaximumHeight(90)
+        lay.addWidget(self.presence_list)
+        self.tabs.addTab(tab, "Roster")
+
+    def _build_settings_tab(self) -> None:
+        tab = QWidget()
+        lay = QVBoxLayout(tab)
+        form = QFormLayout()
+        self.name_field = QLineEdit()
+        form.addRow("Room name", self.name_field)
+        self.policy_combo = QComboBox()
+        for key, label in group_logic.POLICIES:
+            self.policy_combo.addItem(label, key)
+        form.addRow("Who speaks next", self.policy_combo)
+        self.mode_combo = QComboBox()
+        for key, label in group_logic.GENERATION_MODES:
+            self.mode_combo.addItem(label, key)
+        form.addRow("Generation", self.mode_combo)
+        self.self_check = QCheckBox(
+            "A member may answer their own last message"
+        )
+        form.addRow("", self.self_check)
+        self.auto_check = QCheckBox("Auto mode (room runs itself)")
+        form.addRow("", self.auto_check)
+        self.auto_spin = QSpinBox()
+        self.auto_spin.setRange(1, 50)
+        self.auto_spin.setValue(3)
+        form.addRow("Auto mode max turns", self.auto_spin)
+        self.join_prefix = QLineEdit()
+        form.addRow("Join prefix", self.join_prefix)
+        self.join_suffix = QLineEdit()
+        form.addRow("Join suffix", self.join_suffix)
+        self.scenario_field = QLineEdit()
+        self.scenario_field.setPlaceholderText(
+            "Scenario override (blank = none)"
+        )
+        form.addRow("Scenario override", self.scenario_field)
+        lay.addLayout(form)
+        save = QPushButton("Save Room Settings")
+        save.clicked.connect(lambda _c=False: self._save_settings())
+        lay.addWidget(save)
+        lay.addStretch(1)
+        self.tabs.addTab(tab, "Room Settings")
+
+    # -- loading --------------------------------------------------------
+
+    def _fail(self, exc: Exception) -> None:
+        self.status_label.setText(f"Could not do that: {exc}")
+        self.turn_label.setText(f"Could not do that: {exc}")
+
+    def _reload_groups(self, keep_id: str | None = None) -> None:
+        try:
+            groups = self._flow.groups()
+        except Exception as exc:  # noqa: BLE001
+            self._fail(exc)
+            return
+        self.groups_list.blockSignals(True)
+        self.groups_list.clear()
+        row = 0
+        for index, group in enumerate(groups):
+            item = QListWidgetItem(group_logic.group_line(group))
+            item.setData(Qt.ItemDataRole.UserRole, group.id)
+            self.groups_list.addItem(item)
+            if group.id == keep_id:
+                row = index
+        self.groups_list.blockSignals(False)
+        if groups:
+            self.groups_list.setCurrentRow(row)
+        else:
+            self._group = None
+
+    def _load_selected_group(self) -> None:
+        item = self.groups_list.currentItem()
+        if item is None:
+            self._group = None
+            return
+        try:
+            groups = self._flow.groups()
+            self._group = next(
+                (g for g in groups if g.id == item.data(
+                    Qt.ItemDataRole.UserRole)),
+                None,
+            )
+            if self._group is not None:
+                self._group = self._flow.refresh(self._group)
+                self._deepening_doc = self._flow.deepening(self._group)
+        except Exception as exc:  # noqa: BLE001
+            self._fail(exc)
+            return
+        self._fill_group()
+
+    def _fill_group(self) -> None:
+        group = self._group
+        if group is None:
+            return
+        self.name_field.setText(group.name)
+        index = self.policy_combo.findData(group.speaker_policy)
+        self.policy_combo.setCurrentIndex(max(0, index))
+        deep = self._deepening_doc
+        mode_index = self.mode_combo.findData(
+            str(deep.get("generation_mode", "swap"))
+        )
+        self.mode_combo.setCurrentIndex(max(0, mode_index))
+        self.self_check.setChecked(bool(deep.get("allow_self_responses")))
+        auto = deep.get("auto_mode") or {}
+        self.auto_check.setChecked(bool(auto.get("enabled")))
+        self.auto_spin.setValue(int(auto.get("max_turns", 3) or 3))
+        self.join_prefix.setText(str(deep.get("join_prefix", "") or ""))
+        self.join_suffix.setText(str(deep.get("join_suffix", "") or ""))
+        self.scenario_field.setText(str(deep.get("scenario_override") or ""))
+        keep_member = self._selected_member_id()
+        self.members_list.blockSignals(True)
+        self.members_list.clear()
+        for member in group.members:
+            entry = QListWidgetItem(group_logic.member_line(member))
+            entry.setData(Qt.ItemDataRole.UserRole, member.character_id)
+            self.members_list.addItem(entry)
+        self.members_list.blockSignals(False)
+        self.manual_combo.clear()
+        self.manual_combo.addItem("Strategy decides", "")
+        for member in group.members:
+            self.manual_combo.addItem(
+                member.name or member.character_id, member.character_id
+            )
+        member_ids = {m.character_id for m in group.members}
+        self.add_combo.clear()
+        for character in self._characters:
+            if character.id not in member_ids:
+                self.add_combo.addItem(
+                    character.name or character.id, character.id
+                )
+        if group.members:
+            row = 0
+            if keep_member is not None:
+                for i, member in enumerate(group.members):
+                    if member.character_id == keep_member:
+                        row = i
+                        break
+            self.members_list.setCurrentRow(row)
+        self._reload_transcript()
+        self._reload_presence()
+
+    def _selected_member_id(self) -> str | None:
+        item = self.members_list.currentItem()
+        if item is None:
+            return None
+        return str(item.data(Qt.ItemDataRole.UserRole))
+
+    def _load_member(self) -> None:
+        group = self._group
+        cid = self._selected_member_id()
+        if group is None or cid is None:
+            return
+        member = next(
+            (m for m in group.members if m.character_id == cid), None
+        )
+        if member is None:
+            return
+        self.talk_spin.setValue(member.talkativeness)
+        self.muted_check.setChecked(member.muted)
+        try:
+            override = self._flow.member_override(group, cid)
+        except Exception:  # noqa: BLE001 - the form falls back to defaults
+            override = {}
+        index = self.activation_combo.findData(
+            str(override.get("activation", "default"))
+        )
+        self.activation_combo.setCurrentIndex(max(0, index))
+        self.lore_check.setChecked(bool(override.get("lore_enabled", True)))
+        self.persona_override.setPlainText(
+            str(override.get("persona_override") or "")
+        )
+
+    def _reload_transcript(self) -> None:
+        if self._group is None:
+            self.transcript.setPlainText("")
+            return
+        try:
+            messages = self._flow.messages(self._group)
+        except Exception as exc:  # noqa: BLE001
+            self._fail(exc)
+            return
+        self.transcript.setPlainText(
+            "\n".join(group_logic.transcript_lines(messages))
+        )
+
+    def _reload_presence(self) -> None:
+        self.presence_list.clear()
+        if self._group is None:
+            return
+        try:
+            records = self._flow.presence(self._group)
+        except Exception:  # noqa: BLE001 - presence is garnish, not a gate
+            return
+        for line in group_logic.presence_words(records):
+            self.presence_list.addItem(line)
+
+    # -- verbs ----------------------------------------------------------
+
+    def _create(self) -> None:
+        member_ids = [
+            str(self.new_roster.item(i).data(Qt.ItemDataRole.UserRole))
+            for i in range(self.new_roster.count())
+            if self.new_roster.item(i).checkState() == Qt.CheckState.Checked
+        ]
+        try:
+            group = self._flow.create(self.new_name.text(), member_ids)
+        except Exception as exc:  # noqa: BLE001
+            self._fail(exc)
+            return
+        self.new_name.clear()
+        self._reload_groups(keep_id=group.id)
+
+    def _delete(self) -> None:
+        if self._group is None:
+            return
+        answer = QMessageBox.question(
+            self,
+            "Delete room",
+            f"Delete the room “{self._group.name}” and its whole "
+            "transcript? There is no undo.",
+        )
+        if answer != QMessageBox.StandardButton.Yes:
+            return
+        try:
+            self._flow.delete(self._group)
+        except Exception as exc:  # noqa: BLE001
+            self._fail(exc)
+            return
+        self._group = None
+        self._reload_groups()
+
+    def _say(self) -> None:
+        if self._group is None or not self.say_field.text().strip():
+            return
+        try:
+            self._flow.say(self._group, self.say_field.text())
+        except Exception as exc:  # noqa: BLE001
+            self._fail(exc)
+            return
+        self.say_field.clear()
+        self._reload_transcript()
+
+    def _next_turn(self) -> None:
+        if self._group is None:
+            return
+        manual = str(self.manual_combo.currentData() or "") or None
+        try:
+            result = self._flow.next_turn(
+                self._group,
+                manual_speaker_id=manual,
+                generate=self.generate_check.isChecked(),
+            )
+        except Exception as exc:  # noqa: BLE001
+            self._fail(exc)
+            return
+        self.turn_label.setText(group_logic.turn_words(result))
+        self._reload_transcript()
+
+    def _run_turns(self) -> None:
+        if self._group is None:
+            return
+        try:
+            result = self._flow.run_turns(
+                self._group,
+                turns=self.run_spin.value(),
+                generate=self.generate_check.isChecked(),
+            )
+        except Exception as exc:  # noqa: BLE001
+            self._fail(exc)
+            return
+        self.turn_label.setText(group_logic.run_words(result))
+        self._reload_transcript()
+
+    def _save_member(self) -> None:
+        cid = self._selected_member_id()
+        if self._group is None or cid is None:
+            return
+        try:
+            self._group = self._flow.set_member(
+                self._group,
+                cid,
+                talkativeness=float(self.talk_spin.value()),
+                muted=self.muted_check.isChecked(),
+            )
+        except Exception as exc:  # noqa: BLE001
+            self._fail(exc)
+            return
+        self._fill_group()
+
+    def _save_override(self) -> None:
+        cid = self._selected_member_id()
+        if self._group is None or cid is None:
+            return
+        patch = {
+            "activation": str(self.activation_combo.currentData()),
+            "lore_enabled": self.lore_check.isChecked(),
+            "persona_override": (
+                self.persona_override.toPlainText().strip() or None
+            ),
+        }
+        try:
+            self._flow.set_member_override(self._group, cid, patch)
+        except Exception as exc:  # noqa: BLE001
+            self._fail(exc)
+            return
+        self.turn_label.setText("Override saved.")
+        self._load_member()
+
+    def _peek(self) -> None:
+        cid = self._selected_member_id()
+        if self._group is None or cid is None:
+            return
+        try:
+            peek = self._flow.peek(self._group, cid)
+        except Exception as exc:  # noqa: BLE001
+            self._fail(exc)
+            return
+        self.peek_text.setPlainText(group_logic.peek_words(peek))
+
+    def _leave(self) -> None:
+        cid = self._selected_member_id()
+        if self._group is None or cid is None:
+            return
+        try:
+            self._flow.leave(self._group, cid)
+        except Exception as exc:  # noqa: BLE001
+            self._fail(exc)
+            return
+        self._reload_presence()
+
+    def _back(self) -> None:
+        cid = self._selected_member_id()
+        if self._group is None or cid is None:
+            return
+        try:
+            digest = self._flow.back(self._group, cid)
+        except Exception as exc:  # noqa: BLE001
+            self._fail(exc)
+            return
+        self.peek_text.setPlainText(group_logic.digest_words(digest))
+        self._reload_presence()
+
+    def _remove_member(self) -> None:
+        cid = self._selected_member_id()
+        if self._group is None or cid is None:
+            return
+        answer = QMessageBox.question(
+            self,
+            "Remove member",
+            "Remove this member from the room? Their past lines "
+            "stay in the transcript.",
+        )
+        if answer != QMessageBox.StandardButton.Yes:
+            return
+        try:
+            self._group = self._flow.remove_member(self._group, cid)
+        except Exception as exc:  # noqa: BLE001
+            self._fail(exc)
+            return
+        self._fill_group()
+
+    def _add_member(self) -> None:
+        if self._group is None or self.add_combo.count() == 0:
+            return
+        try:
+            self._group = self._flow.add_member(
+                self._group, str(self.add_combo.currentData())
+            )
+        except Exception as exc:  # noqa: BLE001
+            self._fail(exc)
+            return
+        self._fill_group()
+
+    def _save_settings(self) -> None:
+        if self._group is None:
+            return
+        try:
+            self._group = self._flow.rename(self._group, self.name_field.text())
+            self._group = self._flow.set_policy(
+                self._group, str(self.policy_combo.currentData())
+            )
+            document = group_logic.compose_deepening(
+                self._deepening_doc,
+                generation_mode=str(self.mode_combo.currentData()),
+                allow_self_responses=self.self_check.isChecked(),
+                auto_enabled=self.auto_check.isChecked(),
+                auto_max_turns=self.auto_spin.value(),
+                join_prefix=self.join_prefix.text(),
+                join_suffix=self.join_suffix.text(),
+                scenario_override=self.scenario_field.text(),
+            )
+            self._deepening_doc = self._flow.save_deepening(
+                self._group, document
+            )
+        except Exception as exc:  # noqa: BLE001
+            self._fail(exc)
+            return
+        self.turn_label.setText("Room settings saved.")
+        self._reload_groups(keep_id=self._group.id)
+
+
 class PersonaDialog(QDialog):
     """Persona (R-10): the two mechanisms the engine actually
     has — your persisted ``{{user}}`` name, and the open chat's
@@ -3574,6 +4158,8 @@ class MainWindow(QMainWindow):
         self._generation_dialog: GenerationDialog | None = None
         self._persona_flow_instance: PersonaFlow | None = None
         self._lore_flow_instance: LoreFlow | None = None
+        self._group_flow_instance: GroupFlow | None = None
+        self._groups_dialog: GroupsDialog | None = None
         self._persona_dialog: PersonaDialog | None = None
         self._lorebooks_dialog: LorebooksDialog | None = None
 
@@ -4029,6 +4615,11 @@ class MainWindow(QMainWindow):
             lambda _c=False: self.request_stop()
         )
         chat_menu.addAction(self.action_stop_generating)
+        self.action_groups = QAction("Groups…", self)
+        self.action_groups.triggered.connect(
+            lambda _c=False: self.open_groups_dialog()
+        )
+        chat_menu.addAction(self.action_groups)
         self._placeholder(chat_menu, "Prompt Inspector", "R-12")
 
         characters_menu = bar.addMenu("Characters")
@@ -4098,7 +4689,7 @@ class MainWindow(QMainWindow):
         status.addPermanentWidget(self.streaming_status_label)
         status.showMessage(
             "Rúnmál — Characters (R-08) · Connections & Generation (R-09)"
-            " · Persona & Lorebooks (R-10)"
+            " · Persona & Lorebooks (R-10) · Groups (R-11)"
         )
 
     # ------------------------------------------------------------ client
@@ -4136,6 +4727,32 @@ class MainWindow(QMainWindow):
         if self._lore_flow_instance is None:
             self._lore_flow_instance = LoreFlow(self.client())
         return self._lore_flow_instance
+
+    def groups_flow(self) -> GroupFlow:
+        """The window's Groups flow (R-11, over the same client)."""
+        if self._group_flow_instance is None:
+            self._group_flow_instance = GroupFlow(self.client())
+        return self._group_flow_instance
+
+    def open_groups_dialog(self) -> GroupsDialog:
+        """Show the Groups dialog (R-11): the persistent rooms —
+        roster, strategy, deepening, transcript turns."""
+        if (
+            self._groups_dialog is not None
+            and self._groups_dialog.isVisible()
+        ):
+            self._groups_dialog.raise_()
+            self._groups_dialog.activateWindow()
+            return self._groups_dialog
+        dialog = GroupsDialog(
+            self, self.groups_flow(), list(self._characters_cache)
+        )
+        dialog.destroyed.connect(
+            lambda _obj=None: setattr(self, "_groups_dialog", None)
+        )
+        self._groups_dialog = dialog
+        dialog.show()
+        return dialog
 
     # ------------------------------------------- settings dialogs
 

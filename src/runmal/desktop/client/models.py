@@ -1041,3 +1041,91 @@ class EngineSnapshot:
     first_run: FirstRunState = field(
         default_factory=lambda: FirstRunState(True, 0, 0)
     )
+
+
+# -- Groups (R-11) -------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class GroupMemberView:
+    """One roster row (``member_to_dict``, R-11)."""
+
+    character_id: str
+    name: str = ""
+    position: int = 0
+    talkativeness: float = 0.5
+    muted: bool = False
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> GroupMemberView:
+        return cls(
+            character_id=str(payload.get("character_id", "") or ""),
+            name=str(payload.get("name", "") or ""),
+            position=int(payload.get("position", 0) or 0),
+            talkativeness=float(payload.get("talkativeness", 0.5) or 0.0),
+            muted=bool(payload.get("muted", False)),
+        )
+
+
+@dataclass(frozen=True)
+class GroupView:
+    """A persistent group room (``group_to_dict``, R-11). The raw
+    document rides along — ``speaker_config`` (which carries the
+    deepening document) is composed over, never rebuilt."""
+
+    id: str
+    name: str = ""
+    chat_id: str | None = None
+    members: list[GroupMemberView] = field(default_factory=list)
+    member_count: int = 0
+    message_count: int = 0
+    speaker_policy: str = "natural"
+    raw: dict[str, Any] = field(default_factory=dict)
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> GroupView:
+        members = [
+            GroupMemberView.from_dict(m)
+            for m in payload.get("members") or []
+            if isinstance(m, dict)
+        ]
+        return cls(
+            id=str(payload.get("id", "") or ""),
+            name=str(payload.get("name", "") or ""),
+            chat_id=payload.get("chat_id"),
+            members=members,
+            member_count=int(
+                payload.get("member_count", len(members)) or 0
+            ),
+            message_count=int(payload.get("message_count", 0) or 0),
+            speaker_policy=str(
+                payload.get("speaker_policy", "natural") or "natural"
+            ),
+            raw=dict(payload),
+        )
+
+    @property
+    def speaker_config(self) -> dict[str, Any]:
+        config = self.raw.get("speaker_config")
+        return dict(config) if isinstance(config, dict) else {}
+
+
+@dataclass(frozen=True)
+class GroupMessageView:
+    """One room transcript row (``message_to_dict``, R-11)."""
+
+    id: str
+    speaker_id: str | None = None
+    speaker_name: str = ""
+    role: str = ""
+    content: str = ""
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> GroupMessageView:
+        return cls(
+            id=str(payload.get("id", "") or ""),
+            speaker_id=payload.get("speaker_id"),
+            speaker_name=str(payload.get("speaker_name", "") or ""),
+            role=str(payload.get("role", "") or ""),
+            content=str(payload.get("content", "") or ""),
+        )

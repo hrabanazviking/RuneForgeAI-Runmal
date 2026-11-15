@@ -41,6 +41,9 @@ from runmal.desktop.client.models import (
     EngineSnapshot,
     FirstRunState,
     GeneratedReply,
+    GroupMemberView,
+    GroupMessageView,
+    GroupView,
     HealthStatus,
     ImportOutcome,
     LayerScopeSummary,
@@ -1232,6 +1235,222 @@ class RunmalClient:
             for s in (payload.get("shadowed") or [])
         ]
         return rows, summaries, shadowed
+
+    # ---------------------------------------------------------------- groups
+
+    def list_groups(self) -> list[GroupView]:
+        """All persistent group rooms (``GET /api/v1/groups``)."""
+        payload = self._request("GET", "/api/v1/groups")
+        return [
+            GroupView.from_dict(g)
+            for g in (payload or [])
+            if isinstance(g, dict)
+        ]
+
+    def get_group(self, group_id: str) -> GroupView:
+        payload = self._request("GET", f"/api/v1/groups/{group_id}")
+        return GroupView.from_dict(payload if isinstance(payload, dict) else {})
+
+    def create_group(
+        self, name: str, member_character_ids: list[str]
+    ) -> GroupView:
+        """Create a room (``POST /api/v1/groups``, 201)."""
+        payload = self._request(
+            "POST",
+            "/api/v1/groups",
+            json={
+                "name": name,
+                "member_character_ids": list(member_character_ids),
+            },
+        )
+        return GroupView.from_dict(payload if isinstance(payload, dict) else {})
+
+    def update_group(
+        self,
+        group_id: str,
+        *,
+        name: str | None = None,
+        speaker_policy: str | None = None,
+        speaker_config: dict[str, Any] | None = None,
+    ) -> GroupView:
+        """Rename / re-strategise a room (``PATCH /api/v1/groups/{id}``).
+        Only the fields given are sent."""
+        body: dict[str, Any] = {}
+        if name is not None:
+            body["name"] = name
+        if speaker_policy is not None:
+            body["speaker_policy"] = speaker_policy
+        if speaker_config is not None:
+            body["speaker_config"] = speaker_config
+        payload = self._request(
+            "PATCH", f"/api/v1/groups/{group_id}", json=body
+        )
+        return GroupView.from_dict(payload if isinstance(payload, dict) else {})
+
+    def delete_group(self, group_id: str) -> None:
+        self._request("DELETE", f"/api/v1/groups/{group_id}")
+
+    def add_group_member(
+        self, group_id: str, character_id: str
+    ) -> GroupMemberView:
+        payload = self._request(
+            "POST",
+            f"/api/v1/groups/{group_id}/members",
+            json={"character_id": character_id},
+        )
+        return GroupMemberView.from_dict(
+            payload if isinstance(payload, dict) else {}
+        )
+
+    def remove_group_member(self, group_id: str, character_id: str) -> None:
+        self._request(
+            "DELETE", f"/api/v1/groups/{group_id}/members/{character_id}"
+        )
+
+    def update_group_member(
+        self,
+        group_id: str,
+        character_id: str,
+        *,
+        talkativeness: float | None = None,
+        muted: bool | None = None,
+    ) -> GroupMemberView:
+        """Per-member settings (``PATCH …/members/{cid}``)."""
+        body: dict[str, Any] = {}
+        if talkativeness is not None:
+            body["talkativeness"] = talkativeness
+        if muted is not None:
+            body["muted"] = muted
+        payload = self._request(
+            "PATCH",
+            f"/api/v1/groups/{group_id}/members/{character_id}",
+            json=body,
+        )
+        return GroupMemberView.from_dict(
+            payload if isinstance(payload, dict) else {}
+        )
+
+    def list_group_messages(self, group_id: str) -> list[GroupMessageView]:
+        payload = self._request("GET", f"/api/v1/groups/{group_id}/messages")
+        return [
+            GroupMessageView.from_dict(m)
+            for m in (payload or [])
+            if isinstance(m, dict)
+        ]
+
+    def post_group_message(
+        self, group_id: str, speaker: str, content: str
+    ) -> GroupMessageView:
+        """Append a transcript line (``POST …/messages``); speaker
+        is ``"user"`` or a member character id."""
+        payload = self._request(
+            "POST",
+            f"/api/v1/groups/{group_id}/messages",
+            json={"speaker": speaker, "content": content},
+        )
+        return GroupMessageView.from_dict(
+            payload if isinstance(payload, dict) else {}
+        )
+
+    def get_group_deepening(self, group_id: str) -> dict[str, Any]:
+        """The room's deepening document (``GET …/deepening``)."""
+        payload = self._request("GET", f"/api/v1/groups/{group_id}/deepening")
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    def put_group_deepening(
+        self, group_id: str, document: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Replace the deepening document (``PUT …/deepening``);
+        the shell composes over the stored document so engine
+        state and unknown keys survive."""
+        payload = self._request(
+            "PUT", f"/api/v1/groups/{group_id}/deepening", json=document
+        )
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    def patch_group_member_override(
+        self, group_id: str, character_id: str, patch: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Patch one member's override (``PATCH …/override``)."""
+        payload = self._request(
+            "PATCH",
+            f"/api/v1/groups/{group_id}/members/{character_id}/override",
+            json=patch,
+        )
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    def peek_group_member(
+        self, group_id: str, character_id: str
+    ) -> dict[str, Any]:
+        """In-group card peek (``GET …/peek``): member + override +
+        persona source + effective persona. Read-only."""
+        payload = self._request(
+            "GET", f"/api/v1/groups/{group_id}/members/{character_id}/peek"
+        )
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    def leave_group_member(self, group_id: str, character_id: str) -> dict:
+        payload = self._request(
+            "POST",
+            f"/api/v1/groups/{group_id}/members/{character_id}/leave",
+        )
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    def return_group_member(
+        self, group_id: str, character_id: str
+    ) -> dict[str, Any]:
+        """Mark a member returned (``POST …/return``); the engine
+        answers with the digest of what they missed."""
+        payload = self._request(
+            "POST",
+            f"/api/v1/groups/{group_id}/members/{character_id}/return",
+            json={},
+        )
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    def group_member_digest(
+        self, group_id: str, character_id: str
+    ) -> dict[str, Any]:
+        payload = self._request(
+            "GET", f"/api/v1/groups/{group_id}/members/{character_id}/digest"
+        )
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    def group_presence(self, group_id: str) -> list[dict[str, Any]]:
+        payload = self._request("GET", f"/api/v1/groups/{group_id}/presence")
+        return [dict(r) for r in (payload or []) if isinstance(r, dict)]
+
+    def group_next(
+        self,
+        group_id: str,
+        *,
+        user_text: str | None = None,
+        manual_speaker_id: str | None = None,
+        generate: bool = False,
+    ) -> dict[str, Any]:
+        """One activation tick (``POST …/next``): the strategy's
+        pick + reason; with ``generate`` the reply lands in the
+        transcript."""
+        body: dict[str, Any] = {"generate": generate}
+        if user_text:
+            body["user_text"] = user_text
+        if manual_speaker_id:
+            body["manual_speaker_id"] = manual_speaker_id
+        payload = self._request(
+            "POST", f"/api/v1/groups/{group_id}/next", json=body
+        )
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    def group_run(
+        self, group_id: str, *, turns: int = 1, generate: bool = False
+    ) -> dict[str, Any]:
+        """Several ticks at once (``POST …/run``)."""
+        payload = self._request(
+            "POST",
+            f"/api/v1/groups/{group_id}/run",
+            json={"turns": turns, "generate": generate},
+        )
+        return dict(payload) if isinstance(payload, dict) else {}
 
     def import_character_file(self, filename: str, data: bytes) -> ImportOutcome:
         """Import one card file (JSON/PNG) via the bulk library road
