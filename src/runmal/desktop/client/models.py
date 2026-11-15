@@ -1129,3 +1129,69 @@ class GroupMessageView:
             role=str(payload.get("role", "") or ""),
             content=str(payload.get("content", "") or ""),
         )
+
+
+# -- Memory, scenarios, inspector, tools (R-12) --------------------------
+
+
+@dataclass(frozen=True)
+class MemoryView:
+    """One memory row (``memory_to_dict``, S410; R-12). The raw
+    row rides along — sources and graph arrive with the detail
+    read and stay raw dicts."""
+
+    id: str
+    kind: str = ""
+    content: str = ""
+    state: str = ""
+    scope: str = ""
+    subject: str | None = None
+    salience: float = 0.0
+    confidence: float = 0.0
+    pinned: bool = False
+    raw: dict[str, Any] = field(default_factory=dict)
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> MemoryView:
+        return cls(
+            id=str(payload.get("id", "") or ""),
+            kind=str(payload.get("kind", "") or ""),
+            content=str(payload.get("content", "") or ""),
+            state=str(payload.get("state", "") or ""),
+            scope=str(payload.get("scope", "") or ""),
+            subject=payload.get("subject"),
+            salience=float(payload.get("salience", 0.0) or 0.0),
+            confidence=float(payload.get("confidence", 0.0) or 0.0),
+            pinned=bool(payload.get("pinned", False)),
+            raw=dict(payload),
+        )
+
+
+@dataclass(frozen=True)
+class ScenarioView:
+    """A scenario definition record (P-131 ``to_dict`` /
+    enriched summary; R-12). The definition document rides
+    along raw — the editor composes over it."""
+
+    id: str
+    name: str = ""
+    revision: int = 1
+    source_format: str = ""
+    definition: dict[str, Any] = field(default_factory=dict)
+    raw: dict[str, Any] = field(default_factory=dict)
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> ScenarioView:
+        definition = payload.get("definition")
+        return cls(
+            id=str(payload.get("id", "") or ""),
+            name=str(
+                payload.get("name", "")
+                or (definition or {}).get("name", "")
+                or ""
+            ),
+            revision=int(payload.get("revision", 1) or 1),
+            source_format=str(payload.get("source_format", "") or ""),
+            definition=dict(definition) if isinstance(definition, dict) else {},
+            raw=dict(payload),
+        )

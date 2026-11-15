@@ -58,6 +58,19 @@ and the room transcript with strategy turns) through the
 Qt-free ``group_logic`` flow over the S210/S211/P-070
 groupchat roads, no new engine routes.
 
+R-12 adds Memory (the S410 browser — search/filter/detail
+with provenance; read-only because the API is, with the
+embedding note pointing at Connections), Scenarios (the
+P-131 library: authored-field editor carrying structured
+sections verbatim, tags/favourite, chat bindings, import/
+export), the Prompt Inspector bound to the open chat (P-203
+overview, the prompt trace with ledger + per-slot reasons,
+events and reasoning censuses), and the Compose & Macros
+explorer (P-055 registry + expansion, S307 compose preview)
+through the Qt-free ``memory_logic`` / ``scenario_logic`` /
+``inspector_logic`` / ``compose_logic`` flows, no new engine
+routes.
+
 Honesty rule (carried from R-04): an action is REAL only where
 its machinery exists. Later-slice screens stay placeholder
 actions labelled with their slice, never dressed up.
@@ -99,7 +112,13 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from runmal.desktop import group_logic
+from runmal.desktop import (
+    compose_logic,
+    group_logic,
+    inspector_logic,
+    memory_logic,
+    scenario_logic,
+)
 from runmal.desktop.character_logic import (
     CARD_TEXT_FIELDS,
     CharacterFlow,
@@ -128,14 +147,18 @@ from runmal.desktop.client.models import (
     LorebookView,
     LoreEntryView,
     LoreScopeView,
+    MemoryView,
     MessageView,
     PersonaView,
     PresetDetail,
     PreviewRow,
+    ScenarioView,
 )
 from runmal.desktop.client.session import DesktopSession
+from runmal.desktop.compose_logic import ComposeFlow
 from runmal.desktop.engine import EngineHandle, EngineState
 from runmal.desktop.group_logic import GroupFlow
+from runmal.desktop.inspector_logic import InspectorFlow
 from runmal.desktop.lore_logic import (
     KIND_BOOL,
     KIND_INT_OR_NULL,
@@ -154,11 +177,13 @@ from runmal.desktop.lore_logic import (
     text_to_keys,
     verdict_words,
 )
+from runmal.desktop.memory_logic import MemoryFlow
 from runmal.desktop.persona_logic import (
     PersonaFlow,
     UserNameState,
     persona_words,
 )
+from runmal.desktop.scenario_logic import ScenarioFlow
 from runmal.desktop.settings_logic import (
     CHAT_BACKEND_LABELS,
     EMBEDDING_BACKEND_LABELS,
@@ -2681,6 +2706,634 @@ class SchemaFormWidget(QWidget):
         self.set_values({**self.values()[0], name: value})
 
 
+class MemoryDialog(QDialog):
+    """The memory browser (R-12): search + filter the engine's
+    memories and read one with its sources and provenance.
+
+    Read-only because the API is read-only — the dialog says
+    where embedding is configured instead of faking controls
+    (memory_logic.EMBEDDING_NOTE)."""
+
+    def __init__(self, parent: QWidget, flow: MemoryFlow) -> None:
+        super().__init__(parent)
+        self.setWindowTitle("Memory")
+        self.resize(820, 560)
+        self._flow = flow
+        layout = QVBoxLayout(self)
+        filters = QHBoxLayout()
+        self.search_field = QLineEdit()
+        self.search_field.setPlaceholderText("Search memory text…")
+        filters.addWidget(self.search_field, 1)
+        self.state_field = QLineEdit()
+        self.state_field.setPlaceholderText("state")
+        self.state_field.setMaximumWidth(110)
+        filters.addWidget(self.state_field)
+        self.kind_field = QLineEdit()
+        self.kind_field.setPlaceholderText("kind")
+        self.kind_field.setMaximumWidth(110)
+        filters.addWidget(self.kind_field)
+        search_button = QPushButton("Search")
+        search_button.clicked.connect(lambda _c=False: self._search())
+        filters.addWidget(search_button)
+        layout.addLayout(filters)
+        body = QHBoxLayout()
+        self.memories_list = QListWidget()
+        self.memories_list.currentRowChanged.connect(
+            lambda _row: self._load_detail()
+        )
+        body.addWidget(self.memories_list, 1)
+        self.detail_text = QPlainTextEdit()
+        self.detail_text.setReadOnly(True)
+        body.addWidget(self.detail_text, 2)
+        layout.addLayout(body, 1)
+        note = QLabel(memory_logic.EMBEDDING_NOTE)
+        note.setWordWrap(True)
+        layout.addWidget(note)
+        self.status_label = QLabel("")
+        self.status_label.setWordWrap(True)
+        layout.addWidget(self.status_label)
+        self._memories: list[MemoryView] = []
+        self._search()
+
+    def _search(self) -> None:
+        try:
+            self._memories = self._flow.search(
+                q=self.search_field.text().strip(),
+                state=self.state_field.text().strip() or None,
+                kind=self.kind_field.text().strip() or None,
+            )
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not search: {exc}")
+            return
+        self.memories_list.clear()
+        for memory in self._memories:
+            item = QListWidgetItem(memory_logic.memory_line(memory))
+            item.setData(Qt.ItemDataRole.UserRole, memory.id)
+            self.memories_list.addItem(item)
+        if self._memories:
+            self.memories_list.setCurrentRow(0)
+        else:
+            self.detail_text.setPlainText(
+                "No memories match. Memories are formed from chats "
+                "as the engine extracts them."
+            )
+        self.status_label.setText(f"{len(self._memories)} memor(ies).")
+
+    def _load_detail(self) -> None:
+        item = self.memories_list.currentItem()
+        if item is None:
+            return
+        try:
+            detail = self._flow.detail(
+                str(item.data(Qt.ItemDataRole.UserRole))
+            )
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not read it: {exc}")
+            return
+        self.detail_text.setPlainText(memory_logic.detail_words(detail))
+
+
+class ScenariosDialog(QDialog):
+    """The scenario library (R-12): definitions with their
+    authored fields, organisation (tags, favourite), and chat
+    bindings. Structured sections are carried verbatim and
+    named, never silently dropped."""
+
+    def __init__(
+        self,
+        parent: QWidget,
+        flow: ScenarioFlow,
+        *,
+        chat_id: str | None,
+        chat_title: str,
+        on_changed=None,
+    ) -> None:
+        super().__init__(parent)
+        self.setWindowTitle("Scenarios")
+        self.resize(880, 620)
+        self._flow = flow
+        self._chat_id = chat_id
+        self._on_changed = on_changed
+        self._scenario: ScenarioView | None = None
+        self._editors: dict[str, QWidget] = {}
+
+        layout = QHBoxLayout(self)
+        left = QVBoxLayout()
+        self.search_field = QLineEdit()
+        self.search_field.setPlaceholderText("Search the library…")
+        left.addWidget(self.search_field)
+        search_button = QPushButton("Search")
+        search_button.clicked.connect(lambda _c=False: self._reload())
+        left.addWidget(search_button)
+        self.library_list = QListWidget()
+        self.library_list.currentRowChanged.connect(
+            lambda _row: self._load_selected()
+        )
+        left.addWidget(self.library_list, 1)
+        new_button = QPushButton("New Scenario")
+        new_button.clicked.connect(lambda _c=False: self._new())
+        left.addWidget(new_button)
+        layout.addLayout(left, 1)
+
+        right = QVBoxLayout()
+        form = QFormLayout()
+        for key, label, is_long in scenario_logic.AUTHORED_FIELDS:
+            if is_long:
+                editor: QWidget = QPlainTextEdit()
+                editor.setMaximumHeight(64)
+            else:
+                editor = QLineEdit()
+            self._editors[key] = editor
+            form.addRow(label, editor)
+        right.addLayout(form)
+        self.carried_label = QLabel("")
+        self.carried_label.setWordWrap(True)
+        right.addWidget(self.carried_label)
+        org = QFormLayout()
+        self.tags_field = QLineEdit()
+        self.tags_field.setPlaceholderText("comma, separated, tags")
+        org.addRow("Tags", self.tags_field)
+        self.favourite_check = QCheckBox("Favourite")
+        org.addRow("", self.favourite_check)
+        right.addLayout(org)
+        buttons = QHBoxLayout()
+        save_button = QPushButton("Save")
+        save_button.clicked.connect(lambda _c=False: self._save())
+        buttons.addWidget(save_button)
+        duplicate_button = QPushButton("Duplicate")
+        duplicate_button.clicked.connect(lambda _c=False: self._duplicate())
+        buttons.addWidget(duplicate_button)
+        delete_button = QPushButton("Delete…")
+        delete_button.clicked.connect(lambda _c=False: self._delete())
+        buttons.addWidget(delete_button)
+        import_button = QPushButton("Import…")
+        import_button.clicked.connect(lambda _c=False: self._import())
+        buttons.addWidget(import_button)
+        export_button = QPushButton("Export…")
+        export_button.clicked.connect(lambda _c=False: self._export())
+        buttons.addWidget(export_button)
+        right.addLayout(buttons)
+        binding_box = QVBoxLayout()
+        binding_box.addWidget(QLabel("Chat binding"))
+        self.binding_label = QLabel(
+            f"Open chat: {chat_title}" if chat_id else "No chat is open."
+        )
+        self.binding_label.setWordWrap(True)
+        binding_box.addWidget(self.binding_label)
+        bind_row = QHBoxLayout()
+        self.bind_button = QPushButton("Bind to Open Chat")
+        self.bind_button.setEnabled(bool(chat_id))
+        self.bind_button.clicked.connect(lambda _c=False: self._bind())
+        bind_row.addWidget(self.bind_button)
+        self.unbind_button = QPushButton("Unbind Open Chat")
+        self.unbind_button.setEnabled(bool(chat_id))
+        self.unbind_button.clicked.connect(lambda _c=False: self._unbind())
+        bind_row.addWidget(self.unbind_button)
+        binding_box.addLayout(bind_row)
+        self.bindings_list = QListWidget()
+        self.bindings_list.setMaximumHeight(90)
+        binding_box.addWidget(self.bindings_list)
+        right.addLayout(binding_box)
+        self.status_label = QLabel("")
+        self.status_label.setWordWrap(True)
+        right.addWidget(self.status_label)
+        layout.addLayout(right, 2)
+        self._reload()
+
+    # -- loading ----------------------------------------------------
+
+    def _fail(self, exc: Exception) -> None:
+        self.status_label.setText(f"Could not do that: {exc}")
+
+    def _reload(self, keep_id: str | None = None) -> None:
+        try:
+            scenarios = self._flow.library(q=self.search_field.text().strip())
+        except Exception as exc:  # noqa: BLE001
+            self._fail(exc)
+            return
+        self.library_list.blockSignals(True)
+        self.library_list.clear()
+        row = 0
+        for index, scenario in enumerate(scenarios):
+            item = QListWidgetItem(scenario_logic.scenario_line(scenario))
+            item.setData(Qt.ItemDataRole.UserRole, scenario.id)
+            self.library_list.addItem(item)
+            if scenario.id == keep_id:
+                row = index
+        self.library_list.blockSignals(False)
+        if scenarios:
+            self.library_list.setCurrentRow(row)
+        self._reload_bindings()
+
+    def _load_selected(self) -> None:
+        item = self.library_list.currentItem()
+        if item is None:
+            self._scenario = None
+            return
+        try:
+            self._scenario = self._flow.get(
+                str(item.data(Qt.ItemDataRole.UserRole))
+            )
+        except Exception as exc:  # noqa: BLE001
+            self._fail(exc)
+            return
+        definition = self._scenario.definition
+        for key, _label, is_long in scenario_logic.AUTHORED_FIELDS:
+            editor = self._editors[key]
+            value = str(definition.get(key, "") or "")
+            if is_long:
+                editor.setPlainText(value)  # type: ignore[attr-defined]
+            else:
+                editor.setText(value)  # type: ignore[attr-defined]
+        self.carried_label.setText(
+            scenario_logic.carried_words(definition)
+        )
+        tags = self._scenario.raw.get("tags") or []
+        self.tags_field.setText(", ".join(str(t) for t in tags))
+        self.favourite_check.setChecked(
+            bool(self._scenario.raw.get("is_favourite"))
+        )
+        self._show_chat_binding()
+
+    def _reload_bindings(self) -> None:
+        self.bindings_list.clear()
+        try:
+            bindings = self._flow.bindings()
+        except Exception:  # noqa: BLE001 - garnish, not a gate
+            bindings = []
+        for line in scenario_logic.bindings_lines(bindings):
+            self.bindings_list.addItem(line)
+        self._show_chat_binding()
+
+    def _show_chat_binding(self) -> None:
+        if not self._chat_id:
+            return
+        try:
+            binding = self._flow.chat_binding(self._chat_id)
+        except Exception:  # noqa: BLE001
+            binding = {}
+        self.binding_label.setText(
+            scenario_logic.binding_words(binding)
+            if binding
+            else "This chat has no scenario bound."
+        )
+
+    # -- verbs --------------------------------------------------------
+
+    def _values(self) -> dict[str, str]:
+        values: dict[str, str] = {}
+        for key, _label, is_long in scenario_logic.AUTHORED_FIELDS:
+            editor = self._editors[key]
+            values[key] = (
+                editor.toPlainText()  # type: ignore[attr-defined]
+                if is_long
+                else editor.text()  # type: ignore[attr-defined]
+            )
+        return values
+
+    def _new(self) -> None:
+        values = self._values()
+        if not values.get("name", "").strip():
+            self.status_label.setText("Give the new scenario a name first.")
+            return
+        try:
+            created = self._flow.create(
+                scenario_logic.compose_definition({}, values)
+            )
+        except Exception as exc:  # noqa: BLE001
+            self._fail(exc)
+            return
+        self._scenario = created
+        self._reload(keep_id=created.id)
+
+    def _save(self) -> None:
+        if self._scenario is None:
+            self._new()
+            return
+        try:
+            saved = self._flow.save(
+                self._scenario,
+                scenario_logic.compose_definition(
+                    self._scenario.definition, self._values()
+                ),
+            )
+            tags = [
+                t.strip()
+                for t in self.tags_field.text().split(",")
+                if t.strip()
+            ]
+            self._flow.set_tags(saved, tags)
+            self._flow.set_favourite(
+                saved, self.favourite_check.isChecked()
+            )
+            self._scenario = self._flow.get(saved.id)
+        except Exception as exc:  # noqa: BLE001
+            self._fail(exc)
+            return
+        self.status_label.setText("Saved.")
+        self._reload(keep_id=self._scenario.id)
+
+    def _duplicate(self) -> None:
+        if self._scenario is None:
+            return
+        try:
+            clone = self._flow.duplicate(self._scenario)
+        except Exception as exc:  # noqa: BLE001
+            self._fail(exc)
+            return
+        self._reload(keep_id=clone.id)
+
+    def _delete(self) -> None:
+        if self._scenario is None:
+            return
+        answer = QMessageBox.question(
+            self,
+            "Delete scenario",
+            f"Delete “{self._scenario.name}”? Bindings to it go "
+            "stale (the engine names them, never hides them). "
+            "There is no undo.",
+        )
+        if answer != QMessageBox.StandardButton.Yes:
+            return
+        try:
+            self._flow.delete(self._scenario)
+        except Exception as exc:  # noqa: BLE001
+            self._fail(exc)
+            return
+        self._scenario = None
+        self._reload()
+
+    def _bind(self) -> None:
+        if self._scenario is None or not self._chat_id:
+            return
+        try:
+            self._flow.bind(self._scenario, self._chat_id)
+        except Exception as exc:  # noqa: BLE001
+            self._fail(exc)
+            return
+        self.status_label.setText(
+            "Bound. The chat's opening lines were seeded from the "
+            "scenario's bootstrap messages."
+        )
+        if self._on_changed is not None:
+            self._on_changed()
+        self._reload_bindings()
+
+    def _unbind(self) -> None:
+        if not self._chat_id:
+            return
+        try:
+            self._flow.unbind(self._chat_id)
+        except Exception as exc:  # noqa: BLE001
+            self._fail(exc)
+            return
+        if self._on_changed is not None:
+            self._on_changed()
+        self._reload_bindings()
+
+    def _import(self) -> None:
+        path, _filter = QFileDialog.getOpenFileName(
+            self, "Import scenario", "", "Scenario files (*.json);;All files (*)"
+        )
+        if not path:
+            return
+        try:
+            payload = json.loads(Path(path).read_text(encoding="utf-8"))
+            result = self._flow.import_file(payload)
+        except Exception as exc:  # noqa: BLE001
+            self._fail(exc)
+            return
+        created = result.get("record") or result
+        keep = created.get("id") if isinstance(created, dict) else None
+        self.status_label.setText("Imported.")
+        self._reload(keep_id=keep)
+
+    def _export(self) -> None:
+        if self._scenario is None:
+            return
+        path, _filter = QFileDialog.getSaveFileName(
+            self,
+            "Export scenario",
+            f"{self._scenario.name or 'scenario'}.json",
+            "Scenario files (*.json);;All files (*)",
+        )
+        if not path:
+            return
+        try:
+            exported = self._flow.export_file(self._scenario)
+            Path(path).write_text(
+                json.dumps(exported, indent=1, ensure_ascii=False) + "\n",
+                encoding="utf-8",
+            )
+        except Exception as exc:  # noqa: BLE001
+            self._fail(exc)
+            return
+        self.status_label.setText(f"Exported to {path}.")
+
+
+class InspectorDialog(QDialog):
+    """The prompt inspector (R-12), bound to the open chat: the
+    P-203 overview, the prompt trace with its ledger and
+    per-slot explanations, and the events / reasoning censuses,
+    all in words."""
+
+    def __init__(
+        self,
+        parent: QWidget,
+        flow: InspectorFlow,
+        *,
+        chat_id: str,
+        chat_title: str,
+        character_id: str | None,
+        sample_messages: list[str],
+    ) -> None:
+        super().__init__(parent)
+        self.setWindowTitle(f"Prompt Inspector — {chat_title}")
+        self.resize(840, 600)
+        self._flow = flow
+        self._chat_id = chat_id
+        self._character_id = character_id
+        self._sample_messages = list(sample_messages)
+        layout = QVBoxLayout(self)
+        header = QLabel(
+            f"Chat: {chat_title} — the trace shows what the next "
+            "turn's prompt would contain, slot by slot, and why."
+        )
+        header.setWordWrap(True)
+        layout.addWidget(header)
+        self.tabs = QTabWidget()
+        layout.addWidget(self.tabs, 1)
+        # Trace tab.
+        trace_tab = QWidget()
+        trace_lay = QVBoxLayout(trace_tab)
+        run_button = QPushButton("Run the Trace")
+        run_button.clicked.connect(lambda _c=False: self._run_trace())
+        trace_lay.addWidget(run_button)
+        self.ledger_label = QLabel("")
+        self.ledger_label.setWordWrap(True)
+        trace_lay.addWidget(self.ledger_label)
+        self.slots_list = QListWidget()
+        trace_lay.addWidget(self.slots_list, 1)
+        self.lore_text = QPlainTextEdit()
+        self.lore_text.setReadOnly(True)
+        self.lore_text.setMaximumHeight(90)
+        trace_lay.addWidget(self.lore_text)
+        self.tabs.addTab(trace_tab, "Prompt Trace")
+        # Document tabs.
+        self._doc_views: dict[str, QPlainTextEdit] = {}
+        for key, title in (
+            ("overview", "Overview"),
+            ("events", "Events"),
+            ("reasoning", "Reasoning"),
+        ):
+            view = QPlainTextEdit()
+            view.setReadOnly(True)
+            self._doc_views[key] = view
+            self.tabs.addTab(view, title)
+        self.status_label = QLabel("")
+        self.status_label.setWordWrap(True)
+        layout.addWidget(self.status_label)
+        self._load_documents()
+        self._run_trace()
+
+    def _fail(self, exc: Exception) -> None:
+        self.status_label.setText(f"Could not do that: {exc}")
+
+    def _load_documents(self) -> None:
+        for key, verb in (
+            ("overview", self._flow.overview),
+            ("events", self._flow.events),
+            ("reasoning", self._flow.reasoning),
+        ):
+            try:
+                document = verb(self._chat_id)
+                text = "\n".join(inspector_logic.document_words(document))
+            except Exception as exc:  # noqa: BLE001
+                text = f"Could not read: {exc}"
+            self._doc_views[key].setPlainText(text)
+
+    def _run_trace(self) -> None:
+        try:
+            trace = self._flow.trace(
+                self._chat_id,
+                character_id=self._character_id,
+                messages=self._sample_messages,
+            )
+        except Exception as exc:  # noqa: BLE001
+            self._fail(exc)
+            return
+        self.ledger_label.setText(inspector_logic.ledger_words(trace))
+        self.slots_list.clear()
+        for line in inspector_logic.slot_lines(trace):
+            self.slots_list.addItem(line)
+        lore = inspector_logic.lore_account_words(trace)
+        self.lore_text.setPlainText(
+            "\n".join(lore) if lore else "No lore account in this trace."
+        )
+
+
+class ComposeDialog(QDialog):
+    """Compose & macros explorer (R-12): the macro registry, a
+    macro-expansion playground, and the compose preview."""
+
+    def __init__(self, parent: QWidget, flow: ComposeFlow) -> None:
+        super().__init__(parent)
+        self.setWindowTitle("Compose & Macros")
+        self.resize(840, 600)
+        self._flow = flow
+        layout = QVBoxLayout(self)
+        layout.addWidget(QLabel("Macros the engine knows"))
+        self.macros_list = QListWidget()
+        self.macros_list.setMaximumHeight(150)
+        layout.addWidget(self.macros_list)
+        expand_form = QFormLayout()
+        self.expand_text = QLineEdit()
+        self.expand_text.setPlaceholderText(
+            "A line with {{char}} and {{user}} in it…"
+        )
+        expand_form.addRow("Expand", self.expand_text)
+        self.expand_char = QLineEdit()
+        expand_form.addRow("Character name", self.expand_char)
+        self.expand_user = QLineEdit()
+        self.expand_user.setText("User")
+        expand_form.addRow("User name", self.expand_user)
+        layout.addLayout(expand_form)
+        expand_button = QPushButton("Expand Macros")
+        expand_button.clicked.connect(lambda _c=False: self._expand())
+        layout.addWidget(expand_button)
+        self.expand_output = QPlainTextEdit()
+        self.expand_output.setReadOnly(True)
+        self.expand_output.setMaximumHeight(70)
+        layout.addWidget(self.expand_output)
+        layout.addWidget(QLabel("Compose preview"))
+        compose_form = QFormLayout()
+        self.compose_system = QPlainTextEdit()
+        self.compose_system.setMaximumHeight(50)
+        compose_form.addRow("System", self.compose_system)
+        self.compose_persona = QPlainTextEdit()
+        self.compose_persona.setMaximumHeight(50)
+        compose_form.addRow("Persona", self.compose_persona)
+        self.compose_history = QPlainTextEdit()
+        self.compose_history.setMaximumHeight(50)
+        self.compose_history.setPlaceholderText("One history line per line")
+        compose_form.addRow("History", self.compose_history)
+        self.compose_note = QLineEdit()
+        compose_form.addRow("Author's note", self.compose_note)
+        layout.addLayout(compose_form)
+        compose_button = QPushButton("Compose")
+        compose_button.clicked.connect(lambda _c=False: self._compose())
+        layout.addWidget(compose_button)
+        self.compose_output = QPlainTextEdit()
+        self.compose_output.setReadOnly(True)
+        layout.addWidget(self.compose_output, 1)
+        self.status_label = QLabel("")
+        self.status_label.setWordWrap(True)
+        layout.addWidget(self.status_label)
+        self._load_macros()
+
+    def _load_macros(self) -> None:
+        try:
+            macros = self._flow.macros()
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not list macros: {exc}")
+            return
+        self.macros_list.clear()
+        for macro in macros:
+            self.macros_list.addItem(compose_logic.macro_line(macro))
+
+    def _expand(self) -> None:
+        try:
+            result = self._flow.expand(
+                self.expand_text.text(),
+                char=self.expand_char.text(),
+                user=self.expand_user.text() or "User",
+            )
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not expand: {exc}")
+            return
+        self.expand_output.setPlainText(
+            compose_logic.expansion_words(result)
+        )
+
+    def _compose(self) -> None:
+        history = [
+            line
+            for line in self.compose_history.toPlainText().split("\n")
+            if line.strip()
+        ]
+        try:
+            result = self._flow.compose(
+                system=self.compose_system.toPlainText(),
+                persona=self.compose_persona.toPlainText(),
+                history=history,
+                authors_note=self.compose_note.text(),
+            )
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not compose: {exc}")
+            return
+        self.compose_output.setPlainText(compose_logic.compose_words(result))
+
+
 class GroupsDialog(QDialog):
     """Group rooms (R-11): the persistent rooms over the engine's
     groupchat roads — roster editor with per-member settings,
@@ -4160,6 +4813,14 @@ class MainWindow(QMainWindow):
         self._lore_flow_instance: LoreFlow | None = None
         self._group_flow_instance: GroupFlow | None = None
         self._groups_dialog: GroupsDialog | None = None
+        self._memory_flow_instance: MemoryFlow | None = None
+        self._memory_dialog: MemoryDialog | None = None
+        self._scenario_flow_instance: ScenarioFlow | None = None
+        self._scenarios_dialog: ScenariosDialog | None = None
+        self._inspector_flow_instance: InspectorFlow | None = None
+        self._inspector_dialog: InspectorDialog | None = None
+        self._compose_flow_instance: ComposeFlow | None = None
+        self._compose_dialog: ComposeDialog | None = None
         self._persona_dialog: PersonaDialog | None = None
         self._lorebooks_dialog: LorebooksDialog | None = None
 
@@ -4620,7 +5281,11 @@ class MainWindow(QMainWindow):
             lambda _c=False: self.open_groups_dialog()
         )
         chat_menu.addAction(self.action_groups)
-        self._placeholder(chat_menu, "Prompt Inspector", "R-12")
+        self.action_inspector = QAction("Prompt Inspector…", self)
+        self.action_inspector.triggered.connect(
+            lambda _c=False: self.open_inspector_dialog()
+        )
+        chat_menu.addAction(self.action_inspector)
 
         characters_menu = bar.addMenu("Characters")
         self.action_new_character = QAction("New Character…", self)
@@ -4645,8 +5310,16 @@ class MainWindow(QMainWindow):
             lambda _c=False: self.open_lorebooks_dialog()
         )
         world_menu.addAction(self.action_lorebooks)
-        self._placeholder(world_menu, "Scenarios…", "R-12")
-        self._placeholder(world_menu, "Memory…", "R-12")
+        self.action_scenarios = QAction("Scenarios…", self)
+        self.action_scenarios.triggered.connect(
+            lambda _c=False: self.open_scenarios_dialog()
+        )
+        world_menu.addAction(self.action_scenarios)
+        self.action_memory = QAction("Memory…", self)
+        self.action_memory.triggered.connect(
+            lambda _c=False: self.open_memory_dialog()
+        )
+        world_menu.addAction(self.action_memory)
 
         tools_menu = bar.addMenu("Tools")
         connections_action = tools_menu.addAction("Connections…")
@@ -4656,6 +5329,10 @@ class MainWindow(QMainWindow):
         generation_action = tools_menu.addAction("Generation…")
         generation_action.triggered.connect(
             lambda _c=False: self.open_generation_dialog()
+        )
+        compose_action = tools_menu.addAction("Compose & Macros…")
+        compose_action.triggered.connect(
+            lambda _c=False: self.open_compose_dialog()
         )
         self._placeholder(tools_menu, "Plugins…", "R-14")
 
@@ -4690,6 +5367,7 @@ class MainWindow(QMainWindow):
         status.showMessage(
             "Rúnmál — Characters (R-08) · Connections & Generation (R-09)"
             " · Persona & Lorebooks (R-10) · Groups (R-11)"
+            " · Memory, Scenarios, Inspector & Tools (R-12)"
         )
 
     # ------------------------------------------------------------ client
@@ -4727,6 +5405,111 @@ class MainWindow(QMainWindow):
         if self._lore_flow_instance is None:
             self._lore_flow_instance = LoreFlow(self.client())
         return self._lore_flow_instance
+
+    def memory_flow(self) -> MemoryFlow:
+        """The window's Memory flow (R-12, over the same client)."""
+        if self._memory_flow_instance is None:
+            self._memory_flow_instance = MemoryFlow(self.client())
+        return self._memory_flow_instance
+
+    def scenarios_flow(self) -> ScenarioFlow:
+        """The window's Scenarios flow (R-12, over the same client)."""
+        if self._scenario_flow_instance is None:
+            self._scenario_flow_instance = ScenarioFlow(self.client())
+        return self._scenario_flow_instance
+
+    def inspector_flow(self) -> InspectorFlow:
+        """The window's Inspector flow (R-12, over the same client)."""
+        if self._inspector_flow_instance is None:
+            self._inspector_flow_instance = InspectorFlow(self.client())
+        return self._inspector_flow_instance
+
+    def compose_flow(self) -> ComposeFlow:
+        """The window's Compose flow (R-12, over the same client)."""
+        if self._compose_flow_instance is None:
+            self._compose_flow_instance = ComposeFlow(self.client())
+        return self._compose_flow_instance
+
+    def _show_dialog(self, attr: str, dialog: QDialog) -> QDialog:
+        """House dialog lifetime: keep a reference, clear on destroy."""
+        dialog.destroyed.connect(
+            lambda _obj=None, a=attr: setattr(self, a, None)
+        )
+        setattr(self, attr, dialog)
+        dialog.show()
+        return dialog
+
+    def open_memory_dialog(self) -> MemoryDialog:
+        """Show the Memory browser (R-12)."""
+        if self._memory_dialog is not None and self._memory_dialog.isVisible():
+            self._memory_dialog.raise_()
+            self._memory_dialog.activateWindow()
+            return self._memory_dialog
+        dialog = MemoryDialog(self, self.memory_flow())
+        return self._show_dialog("_memory_dialog", dialog)  # type: ignore[return-value]
+
+    def open_scenarios_dialog(self) -> ScenariosDialog:
+        """Show the Scenarios library (R-12)."""
+        if (
+            self._scenarios_dialog is not None
+            and self._scenarios_dialog.isVisible()
+        ):
+            self._scenarios_dialog.raise_()
+            self._scenarios_dialog.activateWindow()
+            return self._scenarios_dialog
+        context = self._settings_context()
+        dialog = ScenariosDialog(
+            self,
+            self.scenarios_flow(),
+            chat_id=context["chat_id"],
+            chat_title=context["chat_title"],
+            on_changed=self._settings_changed,
+        )
+        return self._show_dialog("_scenarios_dialog", dialog)  # type: ignore[return-value]
+
+    def open_inspector_dialog(self) -> InspectorDialog | None:
+        """Show the Prompt Inspector for the open chat (R-12).
+
+        Needs an open chat; with none, the status bar says so."""
+        chat = self.current_chat
+        if chat is None or not self.current_chat_id:
+            self.statusBar().showMessage(
+                "Open a chat first — the Inspector is bound to a chat."
+            )
+            return None
+        if (
+            self._inspector_dialog is not None
+            and self._inspector_dialog.isVisible()
+        ):
+            self._inspector_dialog.raise_()
+            self._inspector_dialog.activateWindow()
+            return self._inspector_dialog
+        samples = [
+            m.content
+            for m in self.current_messages
+            if m.role == "user" and m.content
+        ][-3:]
+        dialog = InspectorDialog(
+            self,
+            self.inspector_flow(),
+            chat_id=self.current_chat_id,
+            chat_title=chat.title or chat.id,
+            character_id=chat.character_id,
+            sample_messages=samples,
+        )
+        return self._show_dialog("_inspector_dialog", dialog)  # type: ignore[return-value]
+
+    def open_compose_dialog(self) -> ComposeDialog:
+        """Show the Compose & Macros explorer (R-12)."""
+        if (
+            self._compose_dialog is not None
+            and self._compose_dialog.isVisible()
+        ):
+            self._compose_dialog.raise_()
+            self._compose_dialog.activateWindow()
+            return self._compose_dialog
+        dialog = ComposeDialog(self, self.compose_flow())
+        return self._show_dialog("_compose_dialog", dialog)  # type: ignore[return-value]
 
     def groups_flow(self) -> GroupFlow:
         """The window's Groups flow (R-11, over the same client)."""

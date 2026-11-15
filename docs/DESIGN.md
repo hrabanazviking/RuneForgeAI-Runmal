@@ -518,3 +518,20 @@ scenario override — composed over the stored document so the
 engine's selection state rides through saves untouched),
 through the Qt-free `desktop/group_logic.py`. Slice contract
 and evidence: `docs/DESKTOP_GROUPS_R11_2026-11-15.md`.
+
+R-12 adds Memory, Scenarios, the Inspector, and Compose &
+Macros: the S410 memory browser as an honest read-only
+dialog (search, filters, provenance detail; embeddings are a
+connection property and the dialog names Connections as
+their home), the scenario library with its authored-fields
+editor composed over the stored definition, tags/favourite,
+import/export, and binding to an empty chat with bootstrap
+seeding, the prompt Inspector bound to the open chat
+(ledger, per-slot status/reason/trigger/provenance, the
+token-counted lore account, and the overview/events/
+reasoning documents in words), and the macro registry with
+an expansion playground and compose preview — through the
+Qt-free `desktop/memory_logic.py`,
+`desktop/scenario_logic.py`, `desktop/inspector_logic.py`,
+and `desktop/compose_logic.py`. Slice contract and evidence:
+`docs/DESKTOP_MEMORY_SCENARIOS_INSPECTOR_R12_2026-11-15.md`.

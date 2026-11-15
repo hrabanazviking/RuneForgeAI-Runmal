@@ -52,6 +52,7 @@ from runmal.desktop.client.models import (
     LorebookView,
     LoreEntryView,
     LoreScopeView,
+    MemoryView,
     MessageView,
     OrganisationView,
     OverrideView,
@@ -59,6 +60,7 @@ from runmal.desktop.client.models import (
     PresetDetail,
     PresetSummary,
     PreviewRow,
+    ScenarioView,
     SearchHitView,
     StreamEvent,
     TagCountView,
@@ -1449,6 +1451,253 @@ class RunmalClient:
             "POST",
             f"/api/v1/groups/{group_id}/run",
             json={"turns": turns, "generate": generate},
+        )
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    # ------------------------------------------------- memory (R-12)
+
+    def list_memories(
+        self,
+        *,
+        q: str = "",
+        state: str | None = None,
+        kind: str | None = None,
+    ) -> list[MemoryView]:
+        """The memory browser list (``GET /api/v1/memories``,
+        S410): provenance-carrying rows, server-filtered."""
+        params: dict[str, Any] = {}
+        if q:
+            params["q"] = q
+        if state:
+            params["state"] = state
+        if kind:
+            params["kind"] = kind
+        payload = self._request("GET", "/api/v1/memories", params=params)
+        rows = payload.get("memories") if isinstance(payload, dict) else None
+        return [
+            MemoryView.from_dict(m)
+            for m in (rows or [])
+            if isinstance(m, dict)
+        ]
+
+    def get_memory(self, memory_id: str) -> dict[str, Any]:
+        """One memory with sources + provenance graph
+        (``GET /api/v1/memories/{id}``)."""
+        payload = self._request("GET", f"/api/v1/memories/{memory_id}")
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    # ------------------------------------------------- scenarios (R-12)
+
+    def list_scenarios(
+        self, *, q: str = "", favourites_only: bool = False
+    ) -> list[ScenarioView]:
+        """The scenario library (``GET /api/v1/scenarios``,
+        enriched summaries)."""
+        params: dict[str, Any] = {}
+        if q:
+            params["q"] = q
+        if favourites_only:
+            params["favourites_only"] = "true"
+        payload = self._request("GET", "/api/v1/scenarios", params=params)
+        rows = payload.get("scenarios") if isinstance(payload, dict) else None
+        return [
+            ScenarioView.from_dict(s)
+            for s in (rows or [])
+            if isinstance(s, dict)
+        ]
+
+    def get_scenario(self, definition_id: str) -> ScenarioView:
+        payload = self._request("GET", f"/api/v1/scenarios/{definition_id}")
+        return ScenarioView.from_dict(
+            payload if isinstance(payload, dict) else {}
+        )
+
+    def create_scenario(self, definition: dict[str, Any]) -> ScenarioView:
+        """Store a scenario file as a definition (``POST
+        /api/v1/scenarios``, 201)."""
+        payload = self._request("POST", "/api/v1/scenarios", json=definition)
+        return ScenarioView.from_dict(
+            payload if isinstance(payload, dict) else {}
+        )
+
+    def update_scenario(
+        self, definition_id: str, definition: dict[str, Any]
+    ) -> ScenarioView:
+        """Replace a definition (``PUT /api/v1/scenarios/{id}``)."""
+        payload = self._request(
+            "PUT", f"/api/v1/scenarios/{definition_id}", json=definition
+        )
+        return ScenarioView.from_dict(
+            payload if isinstance(payload, dict) else {}
+        )
+
+    def delete_scenario(self, definition_id: str) -> None:
+        self._request("DELETE", f"/api/v1/scenarios/{definition_id}")
+
+    def duplicate_scenario(self, definition_id: str) -> ScenarioView:
+        payload = self._request(
+            "POST", f"/api/v1/scenarios/{definition_id}/duplicate"
+        )
+        return ScenarioView.from_dict(
+            payload if isinstance(payload, dict) else {}
+        )
+
+    def set_scenario_favourite(
+        self, definition_id: str, is_favourite: bool
+    ) -> None:
+        self._request(
+            "PUT",
+            f"/api/v1/scenarios/{definition_id}/favourite",
+            json={"is_favourite": is_favourite},
+        )
+
+    def set_scenario_tags(
+        self, definition_id: str, tags: list[str]
+    ) -> None:
+        self._request(
+            "PUT",
+            f"/api/v1/scenarios/{definition_id}/tags",
+            json={"tags": list(tags)},
+        )
+
+    def list_scenario_tags(self) -> list[dict[str, Any]]:
+        payload = self._request("GET", "/api/v1/scenarios/library/tags")
+        rows = payload.get("tags") if isinstance(payload, dict) else payload
+        return [dict(t) for t in (rows or []) if isinstance(t, dict)]
+
+    def bind_scenario(
+        self, definition_id: str, chat_id: str
+    ) -> dict[str, Any]:
+        """Bind a definition to an owned EMPTY chat (``POST
+        /scenarios/{id}/bind``): bootstrap lines seed the chat."""
+        payload = self._request(
+            "POST",
+            f"/api/v1/scenarios/{definition_id}/bind",
+            json={"chat_id": chat_id},
+        )
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    def unbind_scenario(self, chat_id: str) -> None:
+        self._request("DELETE", f"/api/v1/scenarios/bindings/{chat_id}")
+
+    def get_chat_binding(self, chat_id: str) -> dict[str, Any]:
+        payload = self._request(
+            "GET", f"/api/v1/scenarios/bindings/{chat_id}"
+        )
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    def list_scenario_bindings(self) -> list[dict[str, Any]]:
+        payload = self._request("GET", "/api/v1/scenarios/bindings")
+        rows = payload.get("bindings") if isinstance(payload, dict) else None
+        return [dict(b) for b in (rows or []) if isinstance(b, dict)]
+
+    def import_scenario(self, payload: dict[str, Any]) -> dict[str, Any]:
+        """Import a scenario file (``POST /api/v1/scenarios/import``)."""
+        result = self._request(
+            "POST", "/api/v1/scenarios/import", json=payload
+        )
+        return dict(result) if isinstance(result, dict) else {}
+
+    def export_scenario(
+        self, definition: dict[str, Any], *, fmt: str = "native"
+    ) -> dict[str, Any]:
+        """Re-export a scenario file (``POST /api/v1/scenarios/export``
+        ?format=native|voxta)."""
+        result = self._request(
+            "POST",
+            "/api/v1/scenarios/export",
+            params={"format": fmt},
+            json=definition,
+        )
+        return dict(result) if isinstance(result, dict) else {}
+
+    # ------------------------------------------------- inspector (R-12)
+
+    def inspector_overview(self, chat_id: str) -> dict[str, Any]:
+        """The chat's Inspector overview (P-203)."""
+        payload = self._request("GET", f"/api/v1/inspector/chats/{chat_id}")
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    def inspector_events(self, chat_id: str) -> dict[str, Any]:
+        """The chat's Inspector events census (P-204)."""
+        payload = self._request(
+            "GET", f"/api/v1/inspector/chats/{chat_id}/events"
+        )
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    def inspector_reasoning(self, chat_id: str) -> dict[str, Any]:
+        """The chat's Inspector reasoning census (P-210)."""
+        payload = self._request(
+            "GET", f"/api/v1/inspector/chats/{chat_id}/reasoning"
+        )
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    def prompt_inspect(
+        self,
+        *,
+        chat_id: str,
+        character_id: str | None = None,
+        messages: list[str] | None = None,
+    ) -> dict[str, Any]:
+        """The prompt trace for a chat (``POST
+        /api/v1/debug/prompt-inspect``): ledger + slots with
+        statuses and reasons, lore activation inspection on."""
+        body: dict[str, Any] = {
+            "chat_id": chat_id,
+            "include_activation_inspection": True,
+            "messages": list(messages or []),
+        }
+        if character_id:
+            body["character_id"] = character_id
+        payload = self._request(
+            "POST", "/api/v1/debug/prompt-inspect", json=body
+        )
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    # ------------------------------------------------- tools (R-12)
+
+    def list_macros(self) -> list[dict[str, Any]]:
+        """The macro registry (P-055): name/kind/description/
+        syntax/example per macro."""
+        payload = self._request("GET", "/api/v1/tools/macros")
+        rows = payload if isinstance(payload, list) else []
+        return [dict(m) for m in rows if isinstance(m, dict)]
+
+    def expand_macros(
+        self, text: str, *, char: str = "", user: str = "User"
+    ) -> dict[str, Any]:
+        """Expand macros in a text (``POST /tools/macros/expand``)."""
+        payload = self._request(
+            "POST",
+            "/api/v1/tools/macros/expand",
+            json={"text": text, "char": char, "user": user},
+        )
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    def compose_preview(
+        self,
+        *,
+        system: str = "",
+        persona: str = "",
+        history: list[str] | None = None,
+        authors_note: str = "",
+        note_depth: int = 0,
+        context_limit: int = 4096,
+        reserve_response: int = 512,
+    ) -> dict[str, Any]:
+        """The compose preview (``POST /api/v1/tools/compose``)."""
+        payload = self._request(
+            "POST",
+            "/api/v1/tools/compose",
+            json={
+                "system": system,
+                "persona": persona,
+                "history": list(history or []),
+                "authors_note": authors_note,
+                "note_depth": note_depth,
+                "context_limit": context_limit,
+                "reserve_response": reserve_response,
+            },
         )
         return dict(payload) if isinstance(payload, dict) else {}
 
