@@ -23568,3 +23568,37 @@ adapter; the only non-pass is the pre-existing 413-vs-400
 expectation nit in the smoke script, unchanged. End-to-end chat
 through the Aesir adapter is now PROVEN LIVE. D1-D9 closed; D10
 unchanged. Full record: `docs/AESIR_SERVE_SM75_FIX_2026-11-20.md`.
+
+
+## Correction 2026-11-20 (addendum 2) - D10 settled: Ollama adapter num_ctx path PROVEN LIVE
+
+Under Volmarr's order of 2026-11-20 ("now fix the original
+issue"), the correction's last item is settled. The path, read
+from this tree: `SamplingParams.context_length` ->
+`OllamaChatBackend._options` / `_OPTION_NAMES` -> wire
+`options.num_ctx` (`src/runmal/backends/ollama.py:44`), the
+S208 compat profile mapping identically; the control is sent
+only when set, unclamped, with no invented default. No defect
+was found in the code, and no code was changed. Live proof
+(harness `~/runmal-aesir-live-smoke/d10_smoke.py` leg a, result
+`d10_result_a.json`): this branch's Ollama adapter against
+purplelongship's resident real Ollama server (llama3.2:3b) -
+context_length 4096 -> `/api/ps` context_length 4096;
+context_length 16384 -> 16384; unset -> no num_ctx sent, the
+server ran its own default (4096); real streamed generations
+with usage throughout. The Aesir `--ollama`-mode instance leg
+was attempted and is blocked by the machine, not the code:
+the 1B GGUF has no strict native variant profile (`aesir
+inspect`: EXPERIMENTAL, CUDA support no), and the only
+servable models (3B/8B) exceed the ~1.6 GB of VRAM left free
+by the two standing serves this correction may not disturb
+(aesir-brain :18434, team01-e02 :18435); the owed instance
+run stands scripted (`d10_run_b.sh` + leg b) for a card
+window. Binding rule recorded: against an Aesir `--ollama`
+endpoint, set context_length exactly to the serve's loaded
+context (resident catalog: 4096) or leave it unset. Pins
+re-run on purplelongship: S302/S207/S208 fences 23 passed /
+1 skipped; P-021 + P-053 num_ctx pins 92 passed. Full record:
+`docs/D10_OLLAMA_NUM_CTX_LIVE_PROOF_2026-11-20.md`. D1-D10
+are now all closed: the Aesir native generation leg proven
+live in addendum 1, the Ollama leg proven live here.
