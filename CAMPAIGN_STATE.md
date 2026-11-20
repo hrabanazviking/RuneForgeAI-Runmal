@@ -23545,3 +23545,26 @@ through the adapter; systemd restarts it each time). D1-D9
 closed; D10 unchanged (Ollama adapter's path); end-to-end chat
 still NOT PROVEN LIVE, now owed by Aesir, not by the adapter.
 Full record: `docs/AESIR_ADMISSION_REPAIR_AND_LIVE_SMOKE_2026-11-20.md`.
+
+
+## Correction 2026-11-20 (addendum) - Aesir serve generation fault FIXED; generation leg PROVEN LIVE
+
+Under Volmarr's direct order of 2026-11-20 ("fix the fault in
+Project Aesir"), the server bug that blocked the generation leg
+above is diagnosed and fixed. Root cause: the deployed Aesir
+executable (.aesir/launch/aesir, 2026-10-10) was built
+--target-accelerator sm_89 while purplelongship's RTX 2060 Max-Q is
+sm_75; its kernels could never launch, so the first generation
+request failed the CUDA session (HTTP 500, "Native session failed",
+service stop) while reads - which launch no kernels - all passed.
+Fix: rebuilt the same source with the project's documented
+`scripts/launch.py --build --target sm_75` (source fingerprint
+unchanged; no Aesir source files modified; faulty build backed up
+on-device) and restarted aesir-brain.service. Proof, all real:
+direct chat HTTP 200 ("Hello", 0.52 s); full live smoke re-run
+(smoke4_result.json) - chat_stream_text, chat_stream_done and
+chat_with_unserved_sampler_completes all PASS through this branch's
+adapter; the only non-pass is the pre-existing 413-vs-400
+expectation nit in the smoke script, unchanged. End-to-end chat
+through the Aesir adapter is now PROVEN LIVE. D1-D9 closed; D10
+unchanged. Full record: `docs/AESIR_SERVE_SM75_FIX_2026-11-20.md`.
