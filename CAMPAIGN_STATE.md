@@ -23520,3 +23520,28 @@ P-162 BANKED - Character Face History
     remains Volmarr's to
     call and was never
     queued.
+
+
+## Correction 2026-11-20 - Aesir adapter D7 + D5 repairs, live smoke run
+
+Under Volmarr's 2026-11-20 correction order (mock-tainted work
+finished to real), in a purplelongship worktree of this branch:
+D7 (admission bounds) repaired in `src/runmal/backends/aesir.py`
+- `check_admission` refuses over-bound requests with
+`ContextOverflow` before sending (128 messages / 64 KiB field /
+131072-byte body, Aesir's own numbers) - and D5 completed
+(readiness falls back to the legacy `/health` on a 404 from
+`/health/ready`; the deployed Aesir build predates the schema-v1
+routes). Pins: `tests/test_aesir_admission_d7.py`; the six Aesir
+test files run 44 passed. The owed live smoke RAN against the
+real resident Aesir serve (llama3.2:3b on CUDA, :18434): every
+read/admission behavior proven live (D1/D2 premises 400, D7
+bounds 400/413, ghost 404, no-auth 401, wrong key refused,
+readiness live via the fallback, embeddings 404 honest). The
+generation leg is BLOCKED BY AN AESIR SERVER BUG: the serve
+crashes its CUDA session on any chat-completions request
+(500 + "Native session failed", reproduced three times incl.
+through the adapter; systemd restarts it each time). D1-D9
+closed; D10 unchanged (Ollama adapter's path); end-to-end chat
+still NOT PROVEN LIVE, now owed by Aesir, not by the adapter.
+Full record: `docs/AESIR_ADMISSION_REPAIR_AND_LIVE_SMOKE_2026-11-20.md`.

@@ -31,13 +31,26 @@ F-02 follow-on; Aesir's own v1 API matrix is the source):
   raises instead of yielding a fabricated ``Done``.
 - HTTP 422 is Aesir's context/generation admission refusal
   and maps to ``ContextOverflow`` (P-009 D8).
+- Admission bounds are enforced before any byte is sent
+  (P-009 D7, repaired 2026-11-20): at most 128 messages, at
+  most 64 KiB per message text field, at most 131072 bytes
+  per request body. An over-bound request raises
+  ``ContextOverflow`` locally - the same class Aesir's own
+  admission refusal maps to - instead of being sent to draw
+  the server's certain 400. Trimming history to fit is the
+  chat layer's policy, not the adapter's; the adapter's duty
+  is to never pretend an unsendable request was sent.
 - Resident-model readiness is Aesir's ``/health/ready`` truth
   at the server root (native mode), surfaced by
   :meth:`AesirChatBackend.readiness_check` — the narrowed
   VX-19 home from the P-014 gate. Rúnmál estimates no VRAM.
   ``health_check`` stays the ``/models`` reachability probe
   that works in both of Aesir's modes; a listed/catalog model
-  is NOT readiness (P-009 D5).
+  is NOT readiness (P-009 D5). The build actually deployed
+  on purplelongship (2026-10-10) predates the schema-v1
+  readiness routes and serves the same resident truth at the
+  legacy ``/health``; the check falls back to that route on
+  a 404 (live repair, 2026-11-20).
 
 An optional bearer key (from a profile secret reference, resolved
 server-side) is sent only as an Authorization header and never serialized
@@ -136,6 +149,47 @@ UNSUPPORTED_SAMPLERS = frozenset(
 )
 
 
+#: Aesir admission bounds (P-009 D7, from Aesir's own v1
+#: matrix): the chat route admits at most 128 messages, text
+#: fields of at most 64 KiB each, and a POST body of at most
+#: 131072 bytes. Enforced client-side by :func:`check_admission`
+#: before the request is sent.
+ADMISSION_MAX_MESSAGES = 128
+ADMISSION_MAX_FIELD_BYTES = 65536
+ADMISSION_MAX_BODY_BYTES = 131072
+
+
+def check_admission(payload: dict) -> None:
+    """Refuse a chat payload outside Aesir's admission bounds.
+
+    Raises ``ContextOverflow`` - Aesir's admission-refusal
+    class (P-009 D8) - before any byte leaves the machine, so
+    an over-bound history fails with the truth about why
+    instead of a wire 400 after the fact (P-009 D7). The body
+    size is measured on a plain ``json.dumps`` of the payload,
+    which is never smaller than the compact form httpx sends,
+    so the check is conservative in the safe direction.
+    """
+    messages = payload.get("messages") or []
+    if len(messages) > ADMISSION_MAX_MESSAGES:
+        raise ContextOverflow(
+            f"aesir admission: {len(messages)} messages exceeds "
+            f"the {ADMISSION_MAX_MESSAGES}-message bound"
+        )
+    for message in messages:
+        content = message.get("content") if isinstance(message, dict) else None
+        if isinstance(content, str) and len(content.encode("utf-8")) > ADMISSION_MAX_FIELD_BYTES:
+            raise ContextOverflow(
+                "aesir admission: a message field exceeds the 64 KiB bound"
+            )
+    body_bytes = len(json.dumps(payload).encode("utf-8"))
+    if body_bytes > ADMISSION_MAX_BODY_BYTES:
+        raise ContextOverflow(
+            f"aesir admission: request body of {body_bytes} bytes exceeds "
+            f"the {ADMISSION_MAX_BODY_BYTES}-byte bound"
+        )
+
+
 def map_params(params) -> tuple[dict, list[str]]:
     """Canonical SamplingParams -> (Aesir wire dict, warnings).
 
@@ -228,6 +282,7 @@ class AesirChatBackend(ChatBackend):
             "stream": True,
         }
         payload.update(wire_params)
+        check_admission(payload)
         usage: UsageUpdate | None = None
         reason: str | None = None
         saw_terminal_marker = False
@@ -318,23 +373,33 @@ class AesirChatBackend(ChatBackend):
         return HealthStatus(ok=True, detail="aesir reachable", latency_ms=latency)
 
     async def readiness_check(self) -> HealthStatus:
-        """Resident-model readiness from Aesir's ``/health/ready``.
+        """Resident-model readiness from Aesir's own health truth.
 
-        The narrowed VX-19 home (P-014 gate, inside F-02): the
-        catalog a ``/models`` listing shows is not readiness —
+        The narrowed VX-19 home (P-014 gate, inside F-02): a
+        catalog a ``/models`` listing shows is not readiness -
         only the resident model can generate (P-009 D5). Aesir's
-        native serve exposes schema-v1 readiness at the server
-        ROOT (not under ``/v1``), carrying the resident model's
-        identity. This reports that truth and never estimates
-        VRAM or any other quantity Aesir does not serve. In
-        ``--ollama`` mode the native readiness route is not
-        served, and this reports not-ready, honestly.
+        current source serves schema-v1 readiness at the server
+        root, ``GET /health/ready`` (native mode), carrying the
+        resident model's identity. The build actually deployed
+        on purplelongship (2026-10-10) predates those routes and
+        404s them; it serves the same resident truth at the
+        legacy ``GET /health`` - ``status: ready`` plus the
+        resident ``model`` - so on a 404 this falls back to that
+        route and reports what it says. Either way the answer
+        is the server's own resident truth, never an estimate
+        and never the catalog. In ``--ollama`` mode neither
+        native route is served, and this reports not-ready,
+        honestly.
         """
         start = time.monotonic()
         base = str(self._client.base_url).rstrip("/")
         root = base[: -len("/v1")] if base.endswith("/v1") else base
         try:
             resp = await self._client.get(f"{root}/health/ready")
+            if resp.status_code == 404:
+                legacy = await self._client.get(f"{root}/health")
+                if legacy.status_code < 400:
+                    return self._legacy_readiness(legacy, start)
         except Exception as exc:  # readiness reports, never raises
             return HealthStatus(
                 ok=False, detail=f"aesir readiness unreachable: {type(exc).__name__}"
@@ -365,3 +430,26 @@ class AesirChatBackend(ChatBackend):
             if resident:
                 detail = f"aesir resident model ready: {resident}"
         return HealthStatus(ok=True, detail=detail, latency_ms=latency)
+
+    def _legacy_readiness(self, resp, start: float) -> HealthStatus:
+        """Readiness from the legacy ``GET /health`` payload.
+
+        Served by Aesir builds that predate the schema-v1
+        ``/health/ready`` route: ``status`` is the loaded
+        service's own word and ``model`` the resident identity.
+        Anything but an explicit ``ready`` is not readiness.
+        """
+        latency = (time.monotonic() - start) * 1000
+        try:
+            body = resp.json()
+        except ValueError:
+            body = {}
+        if isinstance(body, dict) and body.get("status") == "ready":
+            resident = body.get("model")
+            detail = "aesir resident model ready (legacy /health)"
+            if isinstance(resident, str) and resident:
+                detail = f"aesir resident model ready (legacy /health): {resident}"
+            return HealthStatus(ok=True, detail=detail, latency_ms=latency)
+        return HealthStatus(
+            ok=False, detail="aesir not ready (legacy /health)", latency_ms=latency
+        )
