@@ -198,7 +198,7 @@ def _default_provider_probe(backend: str, base_url: str) -> tuple[bool, str]:
     url = base_url.rstrip("/")
     path = "/api/tags" if backend == "ollama" else "/models"
     try:
-        resp = httpx.get(f"{url}{path}", timeout=2.0)
+        resp = httpx.get(f"{url}{path}", timeout=2.0, trust_env=False)
         return resp.status_code < 500, f"HTTP {resp.status_code} from {url}{path}"
     except Exception as exc:  # report the class, never headers/secrets
         return False, f"unreachable: {type(exc).__name__}"

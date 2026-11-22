@@ -174,7 +174,8 @@ class OllamaEmbeddingBackend(EmbeddingBackend):
     ):
         self._model = model
         self._client = client or httpx.AsyncClient(
-            base_url=base_url.rstrip("/"), timeout=timeout_s, transport=transport
+            base_url=base_url.rstrip("/"), timeout=timeout_s, transport=transport,
+            trust_env=False,
         )
 
     async def embed(self, texts: list[str]) -> EmbeddingResult:
@@ -248,7 +249,8 @@ class AesirEmbeddingBackend(EmbeddingBackend):
         self._model = model
         headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
         self._client = client or httpx.AsyncClient(
-            base_url=base_url.rstrip("/"), timeout=timeout_s, transport=transport, headers=headers
+            base_url=base_url.rstrip("/"), timeout=timeout_s, transport=transport, headers=headers,
+            trust_env=False,
         )
 
     async def embed(self, texts: list[str]) -> EmbeddingResult:
@@ -319,7 +321,8 @@ class OpenAICompatibleEmbeddingBackend(EmbeddingBackend):
         self._model = model
         headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
         self._client = client or httpx.AsyncClient(
-            base_url=base_url.rstrip("/"), timeout=timeout_s, transport=transport, headers=headers
+            base_url=base_url.rstrip("/"), timeout=timeout_s, transport=transport, headers=headers,
+            trust_env=False,
         )
 
     async def embed(self, texts: list[str]) -> EmbeddingResult:

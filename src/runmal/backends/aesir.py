@@ -193,7 +193,8 @@ class AesirChatBackend(ChatBackend):
         self._model = model
         headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
         self._client = client or httpx.AsyncClient(
-            base_url=base_url.rstrip("/"), timeout=timeout_s, transport=transport, headers=headers
+            base_url=base_url.rstrip("/"), timeout=timeout_s, transport=transport, headers=headers,
+            trust_env=False,
         )
         self.default_model = self._model_info(model, model)
 

@@ -85,7 +85,8 @@ class OllamaChatBackend(ChatBackend):
         self._api_key = api_key  # unused by Ollama; never emitted (INV-023)
         self._timeout_s = timeout_s
         self._client = client or httpx.AsyncClient(
-            base_url=self._base_url, timeout=timeout_s, transport=transport)
+            base_url=self._base_url, timeout=timeout_s, transport=transport,
+            trust_env=False)
         self._owns_client = client is None
         self.default_model = self._model_info(model)
 

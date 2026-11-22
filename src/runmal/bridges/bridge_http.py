@@ -41,6 +41,7 @@ class HTTPBridgeSink:
                 "metadata": {"via": self._via},
             },
             timeout=self._timeout,
+            trust_env=False,
         )
         response.raise_for_status()
 
@@ -60,6 +61,7 @@ class HTTPBridgeSource:
             self._url,
             headers={"Authorization": f"Bearer {self._token}"},
             timeout=self._timeout,
+            trust_env=False,
         )
         response.raise_for_status()
         return response.json()

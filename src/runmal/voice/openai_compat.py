@@ -137,6 +137,7 @@ class _SpeechClient:
             timeout=timeout_s,
             transport=transport,
             headers=headers,
+            trust_env=False,
         )
 
     def _post(self, path: str, **kwargs) -> httpx.Response:
