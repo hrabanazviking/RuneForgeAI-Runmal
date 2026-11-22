@@ -94,6 +94,15 @@ one field, and never stored by the window) through the
 Qt-free ``backups_logic`` / ``plugin_logic`` /
 ``library_search_logic`` / ``bridge_logic`` flows.
 
+R-15 adds Appearance: the Appendix-B token theme (dark +
+light variants, quiet / standard / ceremonial ornament, text
+scaling 100-200%, reduced motion) from the Qt-free
+``theme`` module, applied to the whole application at startup
+from the saved prefs and changeable live through the
+Appearance dialog (View menu). The prefs are shell-local:
+they persist on this machine via QSettings and never touch
+engine data.
+
 Honesty rule (carried from R-04): an action is REAL only where
 its machinery exists. Later-slice screens stay placeholder
 actions labelled with their slice, never dressed up.
@@ -105,8 +114,8 @@ import json
 from pathlib import Path
 from typing import Any
 
-from PySide6.QtCore import Qt, QTimer
-from PySide6.QtGui import QAction, QKeySequence, QPixmap
+from PySide6.QtCore import QSettings, Qt, QTimer
+from PySide6.QtGui import QAction, QFont, QKeySequence, QPixmap
 from PySide6.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -241,6 +250,13 @@ from runmal.desktop.settings_logic import (
     validate_bag,
     value_text,
 )
+from runmal.desktop.theme import (
+    BASE_FONT_PX,
+    AppearancePrefs,
+    build_qss,
+    prefs_from_dict,
+    prefs_to_dict,
+)
 from runmal.desktop.vision_logic import VisionFlow
 from runmal.desktop.voice_logic import VoiceFlow
 from runmal.desktop.workers import run_async, run_stream
@@ -252,6 +268,40 @@ MENU_TITLES = [
 ]
 
 _CHAT_ID_ROLE = Qt.ItemDataRole.UserRole
+
+# ---------------------------------------------------------- appearance
+# R-15 persistence glue: theme.py stays Qt-free and owns only
+# the prefs dataclass + dict (de)serialisation; the QSettings
+# read/write lives here. The prefs are stored as one JSON
+# string so the round trip is identical on every platform's
+# QSettings backend. Shell-local state only — engine data is
+# never read or written by this road.
+
+_APPEARANCE_SETTINGS_KEY = "appearance/prefs"
+
+
+def load_appearance_prefs() -> AppearancePrefs:
+    """The saved appearance prefs (defaults when none/invalid)."""
+    settings = QSettings("Runmal", "Runmal Desktop")
+    raw = settings.value(_APPEARANCE_SETTINGS_KEY)
+    data = None
+    if isinstance(raw, str):
+        try:
+            data = json.loads(raw)
+        except ValueError:
+            data = None
+    elif isinstance(raw, dict):
+        data = raw
+    return prefs_from_dict(data)
+
+
+def save_appearance_prefs(prefs: AppearancePrefs) -> None:
+    """Persist the appearance prefs on this machine (QSettings)."""
+    settings = QSettings("Runmal", "Runmal Desktop")
+    settings.setValue(
+        _APPEARANCE_SETTINGS_KEY, json.dumps(prefs_to_dict(prefs))
+    )
+    settings.sync()
 
 
 class NewChatDialog(QDialog):
@@ -6963,6 +7013,142 @@ class LorebooksDialog(QDialog):
         self._run(lambda: self._flow.preview_chat(chat_id, messages), done)
 
 
+class AppearanceDialog(QDialog):
+    """Appearance (R-15): theme variant, ornament density,
+    text scaling, and reduced motion.
+
+    Apply takes effect on the running application immediately
+    and saves the choice. These are shell preferences: they
+    persist on this machine via QSettings, and engine data is
+    untouched by them.
+    """
+
+    PERSISTENCE_NOTE = (
+        "Appearance choices are shell preferences: they are "
+        "saved on this machine (via QSettings) and restored at "
+        "startup. They change only how the window looks — "
+        "engine data is untouched."
+    )
+
+    def __init__(
+        self,
+        parent: QWidget,
+        prefs: AppearancePrefs,
+        apply_callback,
+    ) -> None:
+        super().__init__(parent)
+        self.setWindowTitle("Appearance")
+        self.resize(520, 460)
+        self._apply_callback = apply_callback
+
+        layout = QVBoxLayout(self)
+        form = QFormLayout()
+        self.variant_combo = QComboBox()
+        self.variant_combo.addItem("Dark — the void ladder", "dark")
+        self.variant_combo.addItem("Light — pale iron & paper", "light")
+        self.variant_combo.setCurrentIndex(
+            max(0, self.variant_combo.findData(prefs.variant))
+        )
+        form.addRow("Theme variant", self.variant_combo)
+        variant_note = QLabel(
+            "Dark or Light: the same token ladder and accents in "
+            "both; Light keeps the accent hues, deepened where "
+            "they would fail contrast on pale surfaces."
+        )
+        variant_note.setWordWrap(True)
+        form.addRow("", variant_note)
+        self.ornament_combo = QComboBox()
+        self.ornament_combo.addItem("Quiet — single iron border", "quiet")
+        self.ornament_combo.addItem(
+            "Standard — stepped double-border frames", "standard"
+        )
+        self.ornament_combo.addItem(
+            "Ceremonial — double frames, accent-tipped headers",
+            "ceremonial",
+        )
+        self.ornament_combo.setCurrentIndex(
+            max(0, self.ornament_combo.findData(prefs.ornament))
+        )
+        form.addRow("Ornament", self.ornament_combo)
+        ornament_note = QLabel(
+            "How much frame decoration windows and panels carry. "
+            "Content stays calm at every level — ornament lives "
+            "on frames and headers, never behind working text."
+        )
+        ornament_note.setWordWrap(True)
+        form.addRow("", ornament_note)
+        layout.addLayout(form)
+
+        scale_row = QHBoxLayout()
+        self.scale_slider = QSlider(Qt.Orientation.Horizontal)
+        self.scale_slider.setRange(100, 200)
+        self.scale_slider.setValue(round(prefs.text_scale * 100))
+        scale_row.addWidget(self.scale_slider, 1)
+        self.scale_spin = QSpinBox()
+        self.scale_spin.setRange(100, 200)
+        self.scale_spin.setSuffix("%")
+        self.scale_spin.setValue(round(prefs.text_scale * 100))
+        scale_row.addWidget(self.scale_spin)
+        layout.addLayout(scale_row)
+        scale_note = QLabel(
+            "Text size: scales every font in the window from "
+            "100% to 200%."
+        )
+        scale_note.setWordWrap(True)
+        layout.addWidget(scale_note)
+        self.scale_slider.valueChanged.connect(self.scale_spin.setValue)
+        self.scale_spin.valueChanged.connect(self.scale_slider.setValue)
+
+        self.reduced_motion_check = QCheckBox(
+            "Reduced motion — cut shell animation durations to zero"
+        )
+        self.reduced_motion_check.setChecked(prefs.reduced_motion)
+        layout.addWidget(self.reduced_motion_check)
+        motion_note = QLabel(
+            "For anyone motion makes uncomfortable: the shell's "
+            "animation timings (100-600 ms in the design tokens) "
+            "become instant while this is on."
+        )
+        motion_note.setWordWrap(True)
+        layout.addWidget(motion_note)
+
+        note = QLabel(self.PERSISTENCE_NOTE)
+        note.setWordWrap(True)
+        layout.addWidget(note)
+        buttons = QHBoxLayout()
+        self.apply_button = QPushButton("Apply")
+        self.apply_button.clicked.connect(
+            lambda _c=False: self._apply()
+        )
+        buttons.addWidget(self.apply_button)
+        self.close_button = QPushButton("Close")
+        self.close_button.clicked.connect(lambda _c=False: self.close())
+        buttons.addWidget(self.close_button)
+        layout.addLayout(buttons)
+        self.status_label = QLabel("")
+        self.status_label.setWordWrap(True)
+        layout.addWidget(self.status_label)
+
+    def current_prefs(self) -> AppearancePrefs:
+        """The prefs exactly as the controls now stand."""
+        return AppearancePrefs(
+            variant=str(self.variant_combo.currentData()),
+            ornament=str(self.ornament_combo.currentData()),
+            text_scale=self.scale_spin.value() / 100.0,
+            reduced_motion=self.reduced_motion_check.isChecked(),
+        )
+
+    def _apply(self) -> None:
+        prefs = self.current_prefs()
+        self._apply_callback(prefs)
+        self.status_label.setText(
+            "Applied and saved: "
+            f"{prefs.variant} theme, {prefs.ornament} ornament, "
+            f"text at {round(prefs.text_scale * 100)}%, "
+            f"reduced motion {'on' if prefs.reduced_motion else 'off'}."
+        )
+
+
 class MainWindow(QMainWindow):
     """Rúnmál shell window (engine + client injected)."""
 
@@ -7049,6 +7235,11 @@ class MainWindow(QMainWindow):
         self._library_search_dialog: LibrarySearchDialog | None = None
         self._bridge_flow_instance: BridgeFlow | None = None
         self._bridge_dialog: BridgeDialog | None = None
+        # Appearance (R-15) state: the prefs in force and the
+        # reduced-motion flag other shell code can consult.
+        self._appearance_dialog: AppearanceDialog | None = None
+        self.appearance_prefs = AppearancePrefs()
+        self.reduced_motion = False
         self._chats_cache: list[ChatSummary] = []
         # R-13: an image chosen in the composer, riding with the
         # next message as a (filename, bytes) pair.
@@ -7065,6 +7256,11 @@ class MainWindow(QMainWindow):
         self._build_status_bar()
         self.update_engine_chrome()
         self._update_composer_chrome()
+        # Appearance (R-15): the app is themed out of the box —
+        # saved prefs (or the dark/standard/100% defaults) are
+        # applied before the window is ever shown.
+        self.appearance_prefs = load_appearance_prefs()
+        self.apply_appearance(self.appearance_prefs)
 
     # ------------------------------------------------------------ build
 
@@ -7497,9 +7693,14 @@ class MainWindow(QMainWindow):
         view_menu.addAction(self.library_dock.toggleViewAction())
         view_menu.addAction(self.session_dock.toggleViewAction())
         view_menu.addSeparator()
-        self._placeholder(view_menu, "Theme…", "R-15")
-        self._placeholder(view_menu, "Text Size…", "R-15")
-        self._placeholder(view_menu, "Ornament Density…", "R-15")
+        self.action_appearance = QAction("Appearance…", self)
+        self.action_appearance.setStatusTip(
+            "Theme variant, ornament, text size, reduced motion (R-15)"
+        )
+        self.action_appearance.triggered.connect(
+            lambda _c=False: self.open_appearance_dialog()
+        )
+        view_menu.addAction(self.action_appearance)
 
         chat_menu = bar.addMenu("Chat")
         self.action_regenerate = QAction("Regenerate", self)
@@ -7713,6 +7914,43 @@ class MainWindow(QMainWindow):
         setattr(self, attr, dialog)
         dialog.show()
         return dialog
+
+    # ------------------------------------------------------ appearance
+
+    def apply_appearance(self, prefs: AppearancePrefs) -> None:
+        """Put appearance prefs into force on the running app
+        (R-15): the token stylesheet, the scaled base font, and
+        the reduced-motion flag recorded on this window."""
+        self.appearance_prefs = prefs
+        self.reduced_motion = prefs.reduced_motion
+        app = QApplication.instance()
+        if app is None:
+            return
+        app.setStyleSheet(
+            build_qss(prefs.variant, prefs.ornament, prefs.text_scale)
+        )
+        font = QFont(app.font())
+        font.setPixelSize(round(BASE_FONT_PX * prefs.text_scale))
+        app.setFont(font)
+
+    def _apply_and_save_appearance(self, prefs: AppearancePrefs) -> None:
+        """The Appearance dialog's Apply road: live + persisted."""
+        self.apply_appearance(prefs)
+        save_appearance_prefs(prefs)
+
+    def open_appearance_dialog(self) -> AppearanceDialog:
+        """Show the Appearance dialog (R-15)."""
+        if (
+            self._appearance_dialog is not None
+            and self._appearance_dialog.isVisible()
+        ):
+            self._appearance_dialog.raise_()
+            self._appearance_dialog.activateWindow()
+            return self._appearance_dialog
+        dialog = AppearanceDialog(
+            self, self.appearance_prefs, self._apply_and_save_appearance
+        )
+        return self._show_dialog("_appearance_dialog", dialog)  # type: ignore[return-value]
 
     def open_memory_dialog(self) -> MemoryDialog:
         """Show the Memory browser (R-12)."""
