@@ -535,3 +535,21 @@ Qt-free `desktop/memory_logic.py`,
 `desktop/scenario_logic.py`, `desktop/inspector_logic.py`,
 and `desktop/compose_logic.py`. Slice contract and evidence:
 `docs/DESKTOP_MEMORY_SCENARIOS_INSPECTOR_R12_2026-11-15.md`.
+
+R-13 adds Voice & Vision (Tools ▸ Voice…, Tools ▸ Vision…):
+the voice status/devices/roles surface with the remap
+warning spoken plainly (a saved device gone missing is
+never silently replaced by the OS default), the TTS/STT
+backend registry with its install audit and the defaults
+editor, voice sessions bound to a chat with latency and
+live views, the vision providers pane carrying the
+engine's semantic-caption note verbatim (no semantic
+caption provider exists in-tree; the metadata provider
+sniffs bytes and says so), describe/attachments/watch
+folders with scan-and-ingest, and the composer's image
+attach — a staged image rides the next send onto the user
+message itself, a failed attach is reported in words and
+never costs the message, and the transcript names each
+attachment — through the Qt-free `desktop/voice_logic.py`
+and `desktop/vision_logic.py`. Slice contract and
+evidence: `docs/DESKTOP_VOICE_VISION_R13_2026-11-22.md`.

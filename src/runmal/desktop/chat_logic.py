@@ -31,6 +31,7 @@ no longer exists.
 
 from __future__ import annotations
 
+import base64
 import html
 import json
 from dataclasses import dataclass, field
@@ -50,6 +51,7 @@ from runmal.desktop.client.models import (
     SearchHitView,
     StreamEvent,
     UndoEntryView,
+    VisionAttachmentView,
 )
 
 #: Speaker labels for roles with no recorded speaker name.
@@ -206,6 +208,8 @@ class TurnResult:
     draft: StreamDraft
     user_message: MessageView
     assistant_message: MessageView | None = None
+    attachment: VisionAttachmentView | None = None
+    attachment_error: str = ""
 
     @property
     def landed(self) -> bool:
@@ -283,6 +287,15 @@ def transcript_html(
         if marks:
             who += " · " + html.escape(", ".join(marks))
         body = html.escape(message.content).replace("\n", "<br/>")
+        for attachment in getattr(message, "attachments", None) or []:
+            filename = html.escape(attachment.filename or "(unnamed)")
+            image_format = html.escape(
+                (attachment.image_format or "").upper()
+            )
+            body += (
+                f"<br/><i>[Image attached: {filename} — {image_format}, "
+                f"{attachment.image_width}×{attachment.image_height}]</i>"
+            )
         blocks.append(f"<p><b>{who}</b><br/>{body}</p>")
     if draft is not None and (draft.text or draft.finish or draft.error):
         who = html.escape(draft_speaker or character_name or "Assistant")
@@ -412,6 +425,11 @@ def message_list_label(
         marks.append("pinned")
     if message.swipe_count > 1:
         marks.append(f"swipe {message.swipe_id + 1}/{message.swipe_count}")
+    attachment_count = len(getattr(message, "attachments", None) or [])
+    if attachment_count == 1:
+        marks.append("image attached")
+    elif attachment_count > 1:
+        marks.append(f"{attachment_count} images attached")
     excerpt = " ".join(message.content.split())
     if len(excerpt) > 60:
         excerpt = excerpt[:57] + "…"
@@ -496,11 +514,19 @@ class ChatFlow:
         *,
         on_event=None,
         request_id: str | None = None,
+        image: tuple[str, bytes] | None = None,
     ) -> TurnResult:
         """One composed turn (see the module docstring for the
         landing discipline). ``on_event`` (optional) is called with
         each :class:`StreamEvent` as it arrives, on THIS thread —
         the window's worker forwards them to the GUI thread.
+
+        When ``image`` is set — a ``(filename, bytes)`` pair — it
+        is attached to the user message AFTER that message lands
+        and BEFORE streaming starts. A failed attach never loses
+        the user's message or the turn: the error words ride in
+        the result's ``attachment_error`` and the turn continues
+        without the image.
 
         Raises the typed client errors for pre-stream failures
         (unknown chat, unreachable engine); a stream-level error
@@ -516,8 +542,24 @@ class ChatFlow:
         request_id = request_id or self._client.new_request_id()
         self.active_request_id = request_id
         draft = StreamDraft()
+        attachment: VisionAttachmentView | None = None
+        attachment_error = ""
         try:
             user_message = self._client.append_message(chat_id, "user", cleaned)
+            if image is not None:
+                filename, data = image
+                try:
+                    outcome = self._client.attach_image(
+                        chat_id,
+                        filename,
+                        base64.b64encode(data).decode("ascii"),
+                        message_id=user_message.id,
+                    )
+                    attachment = getattr(outcome, "attachment", None)
+                    if attachment is None and hasattr(outcome, "filename"):
+                        attachment = outcome
+                except Exception as exc:  # noqa: BLE001 - never lose the turn
+                    attachment_error = str(exc)
             for event in self._client.stream_composed(
                 chat_id, request_id=request_id
             ):
@@ -535,6 +577,8 @@ class ChatFlow:
             draft=draft,
             user_message=user_message,
             assistant_message=assistant_message,
+            attachment=attachment,
+            attachment_error=attachment_error,
         )
 
     def cancel_active(self) -> bool:

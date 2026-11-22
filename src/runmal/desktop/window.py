@@ -71,6 +71,18 @@ through the Qt-free ``memory_logic`` / ``scenario_logic`` /
 ``inspector_logic`` / ``compose_logic`` flows, no new engine
 routes.
 
+R-13 adds Voice (devices with explicit role assignment —
+a missing saved device is a remap warning, never a silent
+OS-default switch — backends with install verdicts and
+defaults, and sessions) and Vision (describe an image,
+attachments with thumbnails and custody-honest deletes,
+the description history, and watch folders with scans)
+through the Qt-free ``voice_logic`` / ``vision_logic``
+flows, plus composer image attach in the Chat Stage: a
+chosen image rides with the next message, an attach
+failure is reported in words and the image stays pending
+— the user's message is never lost over an attachment.
+
 Honesty rule (carried from R-04): an action is REAL only where
 its machinery exists. Later-slice screens stay placeholder
 actions labelled with their slice, never dressed up.
@@ -118,6 +130,8 @@ from runmal.desktop import (
     inspector_logic,
     memory_logic,
     scenario_logic,
+    vision_logic,
+    voice_logic,
 )
 from runmal.desktop.character_logic import (
     CARD_TEXT_FIELDS,
@@ -208,7 +222,10 @@ from runmal.desktop.settings_logic import (
     validate_bag,
     value_text,
 )
+from runmal.desktop.vision_logic import VisionFlow
+from runmal.desktop.voice_logic import VoiceFlow
 from runmal.desktop.workers import run_async, run_stream
+from runmal.voice.audio import DeviceRole
 
 MENU_TITLES = [
     "File", "Edit", "View", "Chat", "Characters",
@@ -3334,6 +3351,1163 @@ class ComposeDialog(QDialog):
         self.compose_output.setPlainText(compose_logic.compose_words(result))
 
 
+def _generic_words(value) -> str:
+    """Render a flow's plain-dict verdict generically, in words:
+    every key the engine returned, nothing invented."""
+    if value is None:
+        return ""
+    if isinstance(value, str):
+        return value
+    if isinstance(value, dict):
+        parts = []
+        for key, item in value.items():
+            if isinstance(item, (dict, list)):
+                item = json.dumps(item, ensure_ascii=False, default=str)
+            parts.append(f"{key}: {item}")
+        return "\n".join(parts)
+    if isinstance(value, (list, tuple)):
+        return "\n".join(_generic_words(item) for item in value)
+    return str(value)
+
+
+def _lines_of(value) -> list[str]:
+    """A renderer may hand back one string or a list of lines."""
+    if value is None:
+        return []
+    if isinstance(value, str):
+        return [value] if value else []
+    return [str(item) for item in value]
+
+
+def _role_direction(role: str) -> str:
+    """The direction a voice role needs (DeviceRole is the truth)."""
+    try:
+        return DeviceRole(role).direction
+    except ValueError:
+        return ""
+
+
+class VoiceDialog(QDialog):
+    """Voice (R-13): status + devices with explicit role
+    assignment, backends with install verdicts and defaults,
+    and sessions. A saved device that is gone is a REMAP
+    warning in words — never a silent OS-default switch."""
+
+    def __init__(
+        self,
+        parent: QWidget,
+        flow: VoiceFlow,
+        chats: list[ChatSummary],
+        current_chat_id: str | None,
+    ) -> None:
+        super().__init__(parent)
+        self.setWindowTitle("Voice")
+        self.resize(880, 620)
+        self._flow = flow
+        self._chats = list(chats)
+        self._devices: list = []
+        self._roles_payload: dict = {}
+        self._backends: dict[tuple[str, str], object] = {}
+        self.role_combos: dict[str, QComboBox] = {}
+        self.role_assign_buttons: dict[str, QPushButton] = {}
+
+        layout = QVBoxLayout(self)
+        self.tabs = QTabWidget()
+        layout.addWidget(self.tabs, 1)
+        self.status_label = QLabel("")
+        self.status_label.setWordWrap(True)
+        layout.addWidget(self.status_label)
+        self._build_status_tab()
+        self._build_backends_tab()
+        self._build_sessions_tab(current_chat_id)
+        self._load_status()
+        self._load_backends()
+        self._load_sessions()
+
+    # ------------------------------------------------ status & devices
+
+    def _build_status_tab(self) -> None:
+        tab = QWidget()
+        lay = QVBoxLayout(tab)
+        self.status_text = QPlainTextEdit()
+        self.status_text.setReadOnly(True)
+        self.status_text.setMaximumHeight(110)
+        lay.addWidget(self.status_text)
+        refresh = QPushButton("Refresh")
+        refresh.clicked.connect(lambda _c=False: self._load_status())
+        lay.addWidget(refresh)
+        lay.addWidget(QLabel("Devices"))
+        self.devices_list = QListWidget()
+        lay.addWidget(self.devices_list, 1)
+        lay.addWidget(QLabel("Device roles — pick a device, then Assign"))
+        self.role_warning_label = QLabel("")
+        self.role_warning_label.setWordWrap(True)
+        self.role_warning_label.setVisible(False)
+        lay.addWidget(self.role_warning_label)
+        self._roles_layout = QVBoxLayout()
+        lay.addLayout(self._roles_layout)
+        self.roles_text = QPlainTextEdit()
+        self.roles_text.setReadOnly(True)
+        self.roles_text.setMaximumHeight(110)
+        lay.addWidget(self.roles_text)
+        self.tabs.addTab(tab, "Status & Devices")
+
+    def _load_status(self) -> None:
+        try:
+            status = self._flow.status()
+            provider = self._flow.device_provider()
+            self._devices = list(self._flow.devices())
+            roles = self._flow.roles()
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not read voice state: {exc}")
+            return
+        if isinstance(provider, dict):
+            provider_name = str(
+                provider.get("name")
+                or provider.get("provider")
+                or provider.get("key")
+                or provider
+            )
+        else:
+            provider_name = str(
+                getattr(provider, "name", None)
+                or getattr(provider, "key", None)
+                or provider
+            )
+        words = voice_logic.status_words(status)
+        self.status_text.setPlainText(
+            f"{words}\nDevice provider: {provider_name}"
+        )
+        self.devices_list.clear()
+        for device in self._devices:
+            item = QListWidgetItem(voice_logic.device_line(device))
+            item.setData(Qt.ItemDataRole.UserRole, device.device_id)
+            self.devices_list.addItem(item)
+        self._render_roles(roles)
+        self.status_label.setText(
+            f"{len(self._devices)} device(s) present."
+        )
+
+    def _render_roles(self, roles) -> None:
+        self._roles_payload = roles if isinstance(roles, dict) else {}
+        # Clear the previous role rows.
+        while self._roles_layout.count():
+            item = self._roles_layout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.deleteLater()
+            child = item.layout()
+            if child is not None:
+                while child.count():
+                    sub = child.takeAt(0)
+                    if sub.widget() is not None:
+                        sub.widget().deleteLater()
+        self.role_combos = {}
+        self.role_assign_buttons = {}
+        resolution = self._roles_payload.get("resolution") or {}
+        assignments = self._roles_payload.get("assignments") or {}
+        role_names = list(resolution.keys()) or list(assignments.keys())
+        remap_needed = False
+        for role in role_names:
+            entry = resolution.get(role) or {}
+            if isinstance(entry, dict) and entry.get("status") == "remap_required":
+                remap_needed = True
+            saved = assignments.get(role)
+            saved_id = None
+            if isinstance(entry, dict):
+                saved_id = entry.get("device_id")
+                if saved_id is None and isinstance(entry.get("saved"), dict):
+                    saved_id = entry["saved"].get("device_id")
+            if saved_id is None and isinstance(saved, dict):
+                saved_id = saved.get("device_id")
+            direction = _role_direction(str(role))
+            row = QHBoxLayout()
+            row.addWidget(QLabel(str(role)))
+            combo = QComboBox()
+            for device in self._devices:
+                if direction and device.direction != direction:
+                    continue
+                combo.addItem(
+                    voice_logic.device_line(device), device.device_id
+                )
+            if saved_id is not None:
+                index = combo.findData(saved_id)
+                if index >= 0:
+                    combo.setCurrentIndex(index)
+            row.addWidget(combo, 1)
+            button = QPushButton("Assign")
+            button.clicked.connect(
+                lambda _c=False, r=str(role): self._assign_role(r)
+            )
+            row.addWidget(button)
+            self._roles_layout.addLayout(row)
+            self.role_combos[str(role)] = combo
+            self.role_assign_buttons[str(role)] = button
+        lines = _lines_of(
+            voice_logic.role_lines(self._roles_payload, self._devices)
+        )
+        self.roles_text.setPlainText("\n".join(lines))
+        self.role_warning_label.setVisible(remap_needed)
+        if remap_needed:
+            self.role_warning_label.setText(
+                "Warning: a saved device is missing — that role needs "
+                "remapping. Rúnmál will NOT silently fall back to the "
+                "OS default; pick a device above and Assign it."
+            )
+
+    def _assign_role(self, role: str) -> None:
+        combo = self.role_combos.get(role)
+        if combo is None:
+            return
+        device_id = combo.currentData()
+        if not device_id:
+            self.status_label.setText(
+                f"No device is available for the {role} role."
+            )
+            return
+        try:
+            self._flow.assign_role(role, str(device_id))
+            roles = self._flow.roles()
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not assign: {exc}")
+            return
+        self._render_roles(roles)
+        self.status_label.setText(f"Assigned {role} to {device_id}.")
+
+    # ------------------------------------------------------- backends
+
+    def _build_backends_tab(self) -> None:
+        tab = QWidget()
+        lay = QVBoxLayout(tab)
+        lay.addWidget(QLabel("Text-to-speech backends"))
+        self.tts_backends_list = QListWidget()
+        self.tts_backends_list.currentRowChanged.connect(
+            lambda _row: self._note_backend_list(self.tts_backends_list)
+        )
+        lay.addWidget(self.tts_backends_list, 1)
+        lay.addWidget(QLabel("Speech-to-text backends"))
+        self.stt_backends_list = QListWidget()
+        self.stt_backends_list.currentRowChanged.connect(
+            lambda _row: self._note_backend_list(self.stt_backends_list)
+        )
+        lay.addWidget(self.stt_backends_list, 1)
+        self.backend_detail_text = QPlainTextEdit()
+        self.backend_detail_text.setReadOnly(True)
+        self.backend_detail_text.setMaximumHeight(110)
+        lay.addWidget(self.backend_detail_text)
+        self.install_backend_button = QPushButton("Install Selected")
+        self.install_backend_button.setEnabled(False)
+        self.install_backend_button.clicked.connect(
+            lambda _c=False: self._install_backend()
+        )
+        lay.addWidget(self.install_backend_button)
+        defaults_row = QHBoxLayout()
+        defaults_row.addWidget(QLabel("Default TTS"))
+        self.defaults_tts_combo = QComboBox()
+        defaults_row.addWidget(self.defaults_tts_combo, 1)
+        defaults_row.addWidget(QLabel("Default STT"))
+        self.defaults_stt_combo = QComboBox()
+        defaults_row.addWidget(self.defaults_stt_combo, 1)
+        self.save_defaults_button = QPushButton("Save Defaults")
+        self.save_defaults_button.clicked.connect(
+            lambda _c=False: self._save_defaults()
+        )
+        defaults_row.addWidget(self.save_defaults_button)
+        lay.addLayout(defaults_row)
+        self.tabs.addTab(tab, "Backends")
+
+    def _load_backends(self) -> None:
+        try:
+            payload = self._flow.backends()
+            defaults = self._flow.defaults()
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not read backends: {exc}")
+            return
+        tts_views: list = []
+        stt_views: list = []
+        if isinstance(payload, dict):
+            rows = payload.get("backends")
+            if isinstance(rows, list):
+                payload = rows
+            else:
+                tts_views = list(
+                    payload.get("tts") or payload.get("tts_backends") or []
+                )
+                stt_views = list(
+                    payload.get("stt") or payload.get("stt_backends") or []
+                )
+        if isinstance(payload, (list, tuple)):
+            for view in payload:
+                kind = str(getattr(view, "kind", "") or "").lower()
+                if "stt" in kind or "speech" in kind:
+                    stt_views.append(view)
+                else:
+                    tts_views.append(view)
+        self._backends = {}
+        for kind, views, widget in (
+            ("tts", tts_views, self.tts_backends_list),
+            ("stt", stt_views, self.stt_backends_list),
+        ):
+            widget.clear()
+            for view in views:
+                self._backends[(kind, view.key)] = view
+                item = QListWidgetItem(voice_logic.backend_line(view))
+                item.setData(Qt.ItemDataRole.UserRole, (kind, view.key))
+                widget.addItem(item)
+        if not isinstance(defaults, dict):
+            defaults = {}
+        self.defaults_tts_combo.clear()
+        for view in tts_views:
+            self.defaults_tts_combo.addItem(view.key, view.key)
+        self.defaults_stt_combo.clear()
+        for view in stt_views:
+            self.defaults_stt_combo.addItem(view.key, view.key)
+        tts_default = (
+            defaults.get("tts_backend")
+            or defaults.get("tts")
+            or defaults.get("default_tts_backend")
+        )
+        stt_default = (
+            defaults.get("stt_backend")
+            or defaults.get("stt")
+            or defaults.get("default_stt_backend")
+        )
+        for combo, wanted in (
+            (self.defaults_tts_combo, tts_default),
+            (self.defaults_stt_combo, stt_default),
+        ):
+            if wanted:
+                index = combo.findData(wanted)
+                if index >= 0:
+                    combo.setCurrentIndex(index)
+        if self.tts_backends_list.count():
+            self.tts_backends_list.setCurrentRow(0)
+
+    def _note_backend_list(self, widget) -> None:
+        self._backend_list = widget
+        self._show_backend_detail()
+
+    def _selected_backend(self):
+        widget = getattr(self, "_backend_list", None)
+        widgets = (
+            [widget] if widget is not None else []
+        ) + [
+            w
+            for w in (self.tts_backends_list, self.stt_backends_list)
+            if w is not widget
+        ]
+        for candidate in widgets:
+            item = candidate.currentItem()
+            if item is not None:
+                view = self._backends.get(
+                    item.data(Qt.ItemDataRole.UserRole)
+                )
+                if view is not None:
+                    return view
+        return None
+
+    def _show_backend_detail(self) -> None:
+        view = self._selected_backend()
+        if view is None:
+            self.install_backend_button.setEnabled(False)
+            return
+        words = [voice_logic.audit_words(view)]
+        for attr in ("notice", "note"):
+            extra = getattr(view, attr, "")
+            if extra:
+                words.append(str(extra))
+        self.backend_detail_text.setPlainText("\n".join(words))
+        self.install_backend_button.setEnabled(bool(view.installable))
+
+    def _install_backend(self) -> None:
+        view = self._selected_backend()
+        if view is None:
+            return
+        try:
+            result = self._flow.install_backend(view.kind, view.key)
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not install: {exc}")
+            return
+        # The engine's verdict in its own words — a "refused"
+        # verdict is the engine refusing, not an error here.
+        words = _generic_words(result)
+        self.status_label.setText(words or "Install finished.")
+        self.backend_detail_text.setPlainText(words)
+        self._load_backends()
+
+    def _save_defaults(self) -> None:
+        try:
+            result = self._flow.set_defaults(
+                tts_backend=self.defaults_tts_combo.currentData(),
+                stt_backend=self.defaults_stt_combo.currentData(),
+            )
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not save defaults: {exc}")
+            return
+        words = _generic_words(result)
+        self.status_label.setText(
+            f"Defaults saved. {words}".strip()
+        )
+
+    # ------------------------------------------------------- sessions
+
+    def _build_sessions_tab(self, current_chat_id: str | None) -> None:
+        tab = QWidget()
+        lay = QVBoxLayout(tab)
+        chat_row = QHBoxLayout()
+        chat_row.addWidget(QLabel("Chat"))
+        self.sessions_chat_combo = QComboBox()
+        for chat in self._chats:
+            self.sessions_chat_combo.addItem(chat.title or chat.id, chat.id)
+        if current_chat_id:
+            index = self.sessions_chat_combo.findData(current_chat_id)
+            if index >= 0:
+                self.sessions_chat_combo.setCurrentIndex(index)
+        self.sessions_chat_combo.currentIndexChanged.connect(
+            lambda _i: self._load_sessions()
+        )
+        chat_row.addWidget(self.sessions_chat_combo, 1)
+        refresh = QPushButton("Refresh")
+        refresh.clicked.connect(lambda _c=False: self._load_sessions())
+        chat_row.addWidget(refresh)
+        lay.addLayout(chat_row)
+        self.sessions_list = QListWidget()
+        self.sessions_list.currentRowChanged.connect(
+            lambda _row: self._show_session_detail()
+        )
+        lay.addWidget(self.sessions_list, 1)
+        start_row = QHBoxLayout()
+        self.auto_project_check = QCheckBox("Auto-project turns")
+        start_row.addWidget(self.auto_project_check)
+        self.start_session_button = QPushButton("Start Session")
+        self.start_session_button.clicked.connect(
+            lambda _c=False: self._start_session()
+        )
+        start_row.addWidget(self.start_session_button)
+        self.stop_session_button = QPushButton("Stop Selected")
+        self.stop_session_button.clicked.connect(
+            lambda _c=False: self._stop_session()
+        )
+        start_row.addWidget(self.stop_session_button)
+        lay.addLayout(start_row)
+        self.session_detail_text = QPlainTextEdit()
+        self.session_detail_text.setReadOnly(True)
+        lay.addWidget(self.session_detail_text, 1)
+        self.tabs.addTab(tab, "Sessions")
+
+    def _sessions_chat_id(self) -> str:
+        return str(self.sessions_chat_combo.currentData() or "")
+
+    def _load_sessions(self) -> None:
+        chat_id = self._sessions_chat_id()
+        try:
+            payload = self._flow.sessions(chat_id)
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not list sessions: {exc}")
+            return
+        # The flow answers the client's envelope: the session
+        # views ride under "sessions" beside the active id.
+        sessions = (
+            payload.get("sessions")
+            if isinstance(payload, dict)
+            else payload
+        )
+        self.sessions_list.clear()
+        for session in sessions or []:
+            item = QListWidgetItem(voice_logic.session_line(session))
+            item.setData(Qt.ItemDataRole.UserRole, session.session_id)
+            self.sessions_list.addItem(item)
+        self.status_label.setText(f"{len(sessions)} session(s).")
+
+    def _start_session(self) -> None:
+        chat_id = self._sessions_chat_id()
+        if not chat_id:
+            self.status_label.setText("Pick a chat first.")
+            return
+        try:
+            result = self._flow.start_session(
+                chat_id, auto_project=self.auto_project_check.isChecked()
+            )
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not start a session: {exc}")
+            return
+        words = (
+            voice_logic.session_line(result)
+            if hasattr(result, "session_id")
+            else _generic_words(result)
+        )
+        self.status_label.setText(f"Session started: {words}")
+        self._load_sessions()
+
+    def _selected_session_id(self) -> str | None:
+        item = self.sessions_list.currentItem()
+        if item is None:
+            return None
+        return str(item.data(Qt.ItemDataRole.UserRole))
+
+    def _stop_session(self) -> None:
+        session_id = self._selected_session_id()
+        if not session_id:
+            self.status_label.setText("Select a session first.")
+            return
+        try:
+            result = self._flow.stop_session(session_id)
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not stop it: {exc}")
+            return
+        # Only the active session can stop — the engine's
+        # verdict words say what actually happened.
+        self.status_label.setText(
+            _generic_words(result) or "Stop requested."
+        )
+        self._load_sessions()
+
+    def _show_session_detail(self) -> None:
+        session_id = self._selected_session_id()
+        if not session_id:
+            return
+        try:
+            detail = self._flow.session_detail(session_id)
+            latency = self._flow.session_latency(session_id)
+            live = self._flow.live(session_id)
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not read the session: {exc}")
+            return
+        lines = [
+            voice_logic.session_detail_words(detail),
+            voice_logic.latency_words(latency),
+        ]
+        if isinstance(live, dict):
+            state = live.get("state", "")
+            keys = ", ".join(str(k) for k in live.keys())
+            lines.append(f"Live: state {state or '—'} · keys: {keys}")
+        else:
+            lines.append(f"Live: {_generic_words(live)}")
+        self.session_detail_text.setPlainText("\n".join(lines))
+
+
+class VisionDialog(QDialog):
+    """Vision (R-13): describe images, the chat's attachments
+    with thumbnails, the description history, and watch
+    folders. Deletes say their custody in the confirm words —
+    an attachment takes its derived descriptions with it."""
+
+    def __init__(
+        self,
+        parent: QWidget,
+        flow: VisionFlow,
+        chats: list[ChatSummary],
+        current_chat_id: str | None,
+    ) -> None:
+        super().__init__(parent)
+        self.setWindowTitle("Vision")
+        self.resize(880, 620)
+        self._flow = flow
+        self._chats = list(chats)
+        self._describe_path = ""
+        self._attachments: list = []
+        self._descriptions: list = []
+        self._watch_folders: list = []
+
+        layout = QVBoxLayout(self)
+        chat_row = QHBoxLayout()
+        chat_row.addWidget(QLabel("Chat"))
+        self.chat_combo = QComboBox()
+        for chat in self._chats:
+            self.chat_combo.addItem(chat.title or chat.id, chat.id)
+        if current_chat_id:
+            index = self.chat_combo.findData(current_chat_id)
+            if index >= 0:
+                self.chat_combo.setCurrentIndex(index)
+        self.chat_combo.currentIndexChanged.connect(
+            lambda _i: self._reload_all()
+        )
+        chat_row.addWidget(self.chat_combo, 1)
+        layout.addLayout(chat_row)
+        self.tabs = QTabWidget()
+        layout.addWidget(self.tabs, 1)
+        self.status_label = QLabel("")
+        self.status_label.setWordWrap(True)
+        layout.addWidget(self.status_label)
+        self._build_describe_tab()
+        self._build_attachments_tab()
+        self._build_descriptions_tab()
+        self._build_watch_tab()
+        self._reload_all()
+
+    # ------------------------------------------------------------ util
+
+    def _chat_id(self) -> str:
+        return str(self.chat_combo.currentData() or "")
+
+    def _confirm(self, title: str, text: str) -> bool:
+        answer = QMessageBox.question(self, title, text)
+        return answer == QMessageBox.StandardButton.Yes
+
+    def _reload_all(self) -> None:
+        self._load_providers()
+        self._load_attachments()
+        self._load_descriptions()
+        self._load_watch_folders()
+
+    # --------------------------------------------------------- describe
+
+    def _build_describe_tab(self) -> None:
+        tab = QWidget()
+        lay = QVBoxLayout(tab)
+        choose_row = QHBoxLayout()
+        self.choose_image_button = QPushButton("Choose Image…")
+        self.choose_image_button.clicked.connect(
+            lambda _c=False: self._choose_describe_image()
+        )
+        choose_row.addWidget(self.choose_image_button)
+        self.chosen_path_label = QLabel("No image chosen.")
+        self.chosen_path_label.setWordWrap(True)
+        choose_row.addWidget(self.chosen_path_label, 1)
+        lay.addLayout(choose_row)
+        form = QFormLayout()
+        self.question_edit = QLineEdit()
+        self.question_edit.setPlaceholderText(
+            "Ask about the image (optional)…"
+        )
+        form.addRow("Question", self.question_edit)
+        self.provider_combo = QComboBox()
+        form.addRow("Provider", self.provider_combo)
+        lay.addLayout(form)
+        self.describe_button = QPushButton("Describe")
+        self.describe_button.clicked.connect(
+            lambda _c=False: self._describe()
+        )
+        lay.addWidget(self.describe_button)
+        self.describe_result_text = QPlainTextEdit()
+        self.describe_result_text.setReadOnly(True)
+        lay.addWidget(self.describe_result_text, 1)
+        lay.addWidget(QLabel("Providers"))
+        self.providers_text = QPlainTextEdit()
+        self.providers_text.setReadOnly(True)
+        self.providers_text.setMaximumHeight(90)
+        lay.addWidget(self.providers_text)
+        self.tabs.addTab(tab, "Describe")
+
+    def _load_providers(self) -> None:
+        try:
+            payload = self._flow.providers()
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not list providers: {exc}")
+            return
+        # The flow answers the client's envelope: provider views
+        # ride under "providers" beside the semantic note and the
+        # per-backend truth (which providers_words renders whole).
+        if isinstance(payload, dict):
+            providers = payload.get("providers") or []
+            words_payload: dict = payload
+        else:
+            providers = payload or []
+            words_payload = {"providers": list(providers)}
+        self.provider_combo.clear()
+        self.provider_combo.addItem("Engine default", None)
+        for provider in providers:
+            if isinstance(provider, dict):
+                provider_id = provider.get("provider_id") or provider.get("id")
+            else:
+                provider_id = (
+                    getattr(provider, "provider_id", None)
+                    or getattr(provider, "id", None)
+                )
+            self.provider_combo.addItem(
+                vision_logic.provider_line(provider), provider_id
+            )
+        self.providers_text.setPlainText(
+            "\n".join(_lines_of(vision_logic.providers_words(words_payload)))
+        )
+
+    def _choose_describe_image(self) -> None:
+        path, _filter = QFileDialog.getOpenFileName(
+            self,
+            "Choose image",
+            "",
+            "Images (*.png *.jpg *.jpeg *.gif *.webp *.bmp);;All files (*)",
+        )
+        if path:
+            self._set_describe_path(path)
+
+    def _set_describe_path(self, path: str) -> None:
+        self._describe_path = path
+        self.chosen_path_label.setText(path)
+
+    def _describe(self) -> None:
+        chat_id = self._chat_id()
+        if not chat_id:
+            self.status_label.setText("Pick a chat first.")
+            return
+        if not self._describe_path:
+            self.status_label.setText("Choose an image first.")
+            return
+        try:
+            result = self._flow.describe_file(
+                chat_id,
+                self._describe_path,
+                self.question_edit.text(),
+                self.provider_combo.currentData(),
+            )
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not describe it: {exc}")
+            return
+        self.describe_result_text.setPlainText(
+            vision_logic.description_words(result)
+        )
+        self.status_label.setText("Described.")
+        self._load_descriptions()
+        self._load_attachments()
+
+    # ------------------------------------------------------ attachments
+
+    def _build_attachments_tab(self) -> None:
+        tab = QWidget()
+        lay = QHBoxLayout(tab)
+        left = QVBoxLayout()
+        self.attachments_list = QListWidget()
+        self.attachments_list.currentRowChanged.connect(
+            lambda _row: self._show_thumbnail()
+        )
+        left.addWidget(self.attachments_list, 1)
+        self.attach_file_button = QPushButton("Attach File…")
+        self.attach_file_button.clicked.connect(
+            lambda _c=False: self._attach_file()
+        )
+        left.addWidget(self.attach_file_button)
+        self.describe_selected_button = QPushButton("Describe Selected")
+        self.describe_selected_button.clicked.connect(
+            lambda _c=False: self._describe_selected()
+        )
+        left.addWidget(self.describe_selected_button)
+        self.delete_attachment_button = QPushButton("Delete Selected")
+        self.delete_attachment_button.clicked.connect(
+            lambda _c=False: self._delete_attachment()
+        )
+        left.addWidget(self.delete_attachment_button)
+        lay.addLayout(left, 1)
+        right = QVBoxLayout()
+        right.addWidget(QLabel("Preview"))
+        self.preview_label = QLabel("No attachment selected.")
+        self.preview_label.setWordWrap(True)
+        self.preview_label.setMinimumSize(280, 200)
+        right.addWidget(self.preview_label)
+        self.attachment_result_text = QPlainTextEdit()
+        self.attachment_result_text.setReadOnly(True)
+        right.addWidget(self.attachment_result_text, 1)
+        lay.addLayout(right, 1)
+        self.tabs.addTab(tab, "Attachments")
+
+    def _load_attachments(self) -> None:
+        chat_id = self._chat_id()
+        if not chat_id:
+            self._attachments = []
+            self.attachments_list.clear()
+            return
+        try:
+            self._attachments = list(self._flow.attachments(chat_id))
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not list attachments: {exc}")
+            return
+        self.attachments_list.clear()
+        for attachment in self._attachments:
+            item = QListWidgetItem(vision_logic.attachment_line(attachment))
+            item.setData(Qt.ItemDataRole.UserRole, attachment.id)
+            self.attachments_list.addItem(item)
+
+    def _selected_attachment(self):
+        item = self.attachments_list.currentItem()
+        if item is None:
+            return None
+        wanted = item.data(Qt.ItemDataRole.UserRole)
+        for attachment in self._attachments:
+            if attachment.id == wanted:
+                return attachment
+        return None
+
+    def _show_thumbnail(self) -> None:
+        attachment = self._selected_attachment()
+        if attachment is None:
+            return
+        try:
+            data = self._flow.thumbnail(attachment.id)
+        except Exception as exc:  # noqa: BLE001
+            self.preview_label.setText(f"Could not read a thumbnail: {exc}")
+            return
+        pixmap = QPixmap()
+        if data and pixmap.loadFromData(bytes(data)):
+            self.preview_label.setPixmap(
+                pixmap.scaled(
+                    self.preview_label.size(),
+                    Qt.AspectRatioMode.KeepAspectRatio,
+                    Qt.TransformationMode.SmoothTransformation,
+                )
+            )
+        else:
+            self.preview_label.setText("No thumbnail available.")
+
+    def _attach_file(self) -> None:
+        chat_id = self._chat_id()
+        if not chat_id:
+            self.status_label.setText("Pick a chat first.")
+            return
+        path, _filter = QFileDialog.getOpenFileName(
+            self,
+            "Attach image",
+            "",
+            "Images (*.png *.jpg *.jpeg *.gif *.webp *.bmp);;All files (*)",
+        )
+        if not path:
+            return
+        try:
+            self._flow.attach_file(chat_id, path)
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not attach it: {exc}")
+            return
+        self.status_label.setText(f"Attached {path}.")
+        self._load_attachments()
+
+    def _describe_selected(self) -> None:
+        attachment = self._selected_attachment()
+        chat_id = self._chat_id()
+        if attachment is None or not chat_id:
+            self.status_label.setText("Select an attachment first.")
+            return
+        try:
+            result = self._flow.describe_attachment(
+                chat_id,
+                attachment.id,
+                question=self.question_edit.text(),
+            )
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not describe it: {exc}")
+            return
+        self.attachment_result_text.setPlainText(
+            vision_logic.description_words(result)
+        )
+        self._load_descriptions()
+
+    def _delete_attachment(self) -> None:
+        attachment = self._selected_attachment()
+        if attachment is None:
+            return
+        if not self._confirm(
+            "Delete attachment",
+            f"Delete “{attachment.filename or attachment.id}”? "
+            "Its derived descriptions are deleted with it. "
+            "There is no undo.",
+        ):
+            return
+        try:
+            result = self._flow.delete_attachment(attachment.id)
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not delete it: {exc}")
+            return
+        purged = (
+            result.get("descriptions_purged", 0)
+            if isinstance(result, dict)
+            else 0
+        )
+        self.status_label.setText(
+            f"Attachment deleted — {purged} derived description(s) "
+            "were deleted with it."
+        )
+        self._load_attachments()
+        self._load_descriptions()
+
+    # ----------------------------------------------------- descriptions
+
+    def _build_descriptions_tab(self) -> None:
+        tab = QWidget()
+        lay = QVBoxLayout(tab)
+        search_row = QHBoxLayout()
+        self.desc_search_edit = QLineEdit()
+        self.desc_search_edit.setPlaceholderText("Search descriptions…")
+        search_row.addWidget(self.desc_search_edit, 1)
+        self.desc_search_button = QPushButton("Search")
+        self.desc_search_button.clicked.connect(
+            lambda _c=False: self._search_descriptions()
+        )
+        search_row.addWidget(self.desc_search_button)
+        lay.addLayout(search_row)
+        self.descriptions_list = QListWidget()
+        self.descriptions_list.currentRowChanged.connect(
+            lambda _row: self._show_description_detail()
+        )
+        lay.addWidget(self.descriptions_list, 1)
+        self.description_detail_text = QPlainTextEdit()
+        self.description_detail_text.setReadOnly(True)
+        lay.addWidget(self.description_detail_text, 1)
+        self.delete_description_button = QPushButton("Delete Selected")
+        self.delete_description_button.clicked.connect(
+            lambda _c=False: self._delete_description()
+        )
+        lay.addWidget(self.delete_description_button)
+        self.tabs.addTab(tab, "Descriptions")
+
+    def _load_descriptions(self) -> None:
+        chat_id = self._chat_id()
+        if not chat_id:
+            self._descriptions = []
+            self.descriptions_list.clear()
+            return
+        try:
+            rows = self._flow.chat_descriptions(chat_id)
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not list descriptions: {exc}")
+            return
+        self._fill_descriptions(rows)
+
+    def _fill_descriptions(self, rows) -> None:
+        self._descriptions = list(rows)
+        self.descriptions_list.clear()
+        for description in self._descriptions:
+            item = QListWidgetItem(
+                vision_logic.description_line(description)
+            )
+            item.setData(Qt.ItemDataRole.UserRole, description.id)
+            self.descriptions_list.addItem(item)
+        if self._descriptions:
+            self.descriptions_list.setCurrentRow(0)
+
+    def _search_descriptions(self) -> None:
+        chat_id = self._chat_id()
+        try:
+            payload = self._flow.history(
+                self.desc_search_edit.text().strip(), chat_id=chat_id
+            )
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not search: {exc}")
+            return
+        # The flow answers the client's history envelope: the
+        # description views ride under "descriptions".
+        rows = (
+            payload.get("descriptions")
+            if isinstance(payload, dict)
+            else payload
+        )
+        self._fill_descriptions(rows or [])
+        self.status_label.setText(f"{len(self._descriptions)} match(es).")
+
+    def _selected_description(self):
+        item = self.descriptions_list.currentItem()
+        if item is None:
+            return None
+        wanted = item.data(Qt.ItemDataRole.UserRole)
+        for description in self._descriptions:
+            if description.id == wanted:
+                return description
+        return None
+
+    def _show_description_detail(self) -> None:
+        description = self._selected_description()
+        if description is None:
+            return
+        self.description_detail_text.setPlainText(
+            vision_logic.description_words(description)
+        )
+
+    def _delete_description(self) -> None:
+        description = self._selected_description()
+        if description is None:
+            return
+        try:
+            self._flow.delete_description(description.id)
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not delete it: {exc}")
+            return
+        self.status_label.setText("Description deleted.")
+        self._load_descriptions()
+
+    # ---------------------------------------------------- watch folders
+
+    def _build_watch_tab(self) -> None:
+        tab = QWidget()
+        lay = QVBoxLayout(tab)
+        self.watch_list = QListWidget()
+        self.watch_list.currentRowChanged.connect(
+            lambda _row: self._load_ingested()
+        )
+        lay.addWidget(self.watch_list, 1)
+        add_row = QHBoxLayout()
+        self.watch_path_edit = QLineEdit()
+        self.watch_path_edit.setPlaceholderText("Folder to watch…")
+        add_row.addWidget(self.watch_path_edit, 1)
+        self.watch_browse_button = QPushButton("Browse…")
+        self.watch_browse_button.clicked.connect(
+            lambda _c=False: self._browse_watch_folder()
+        )
+        add_row.addWidget(self.watch_browse_button)
+        self.watch_recursive_check = QCheckBox("Recursive")
+        add_row.addWidget(self.watch_recursive_check)
+        self.add_watch_button = QPushButton("Add Folder")
+        self.add_watch_button.clicked.connect(
+            lambda _c=False: self._add_watch_folder()
+        )
+        add_row.addWidget(self.add_watch_button)
+        lay.addLayout(add_row)
+        buttons = QHBoxLayout()
+        self.toggle_watch_button = QPushButton("Enable/Disable")
+        self.toggle_watch_button.clicked.connect(
+            lambda _c=False: self._toggle_watch_enabled()
+        )
+        buttons.addWidget(self.toggle_watch_button)
+        self.toggle_recursive_button = QPushButton("Toggle Recursive")
+        self.toggle_recursive_button.clicked.connect(
+            lambda _c=False: self._toggle_watch_recursive()
+        )
+        buttons.addWidget(self.toggle_recursive_button)
+        self.scan_watch_button = QPushButton("Scan Now")
+        self.scan_watch_button.clicked.connect(
+            lambda _c=False: self._scan_watch()
+        )
+        buttons.addWidget(self.scan_watch_button)
+        self.remove_watch_button = QPushButton("Remove Folder")
+        self.remove_watch_button.clicked.connect(
+            lambda _c=False: self._remove_watch_folder()
+        )
+        buttons.addWidget(self.remove_watch_button)
+        lay.addLayout(buttons)
+        self.scan_report_text = QPlainTextEdit()
+        self.scan_report_text.setReadOnly(True)
+        self.scan_report_text.setMaximumHeight(90)
+        lay.addWidget(self.scan_report_text)
+        lay.addWidget(QLabel("Ingested"))
+        self.ingested_list = QListWidget()
+        lay.addWidget(self.ingested_list, 1)
+        self.tabs.addTab(tab, "Watch Folders")
+
+    def _load_watch_folders(self) -> None:
+        chat_id = self._chat_id()
+        if not chat_id:
+            self._watch_folders = []
+            self.watch_list.clear()
+            return
+        try:
+            self._watch_folders = list(self._flow.watch_folders(chat_id))
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not list watch folders: {exc}")
+            return
+        self.watch_list.clear()
+        for folder in self._watch_folders:
+            item = QListWidgetItem(vision_logic.watch_line(folder))
+            item.setData(Qt.ItemDataRole.UserRole, folder.id)
+            self.watch_list.addItem(item)
+
+    def _selected_watch_folder(self):
+        item = self.watch_list.currentItem()
+        if item is None:
+            return None
+        wanted = item.data(Qt.ItemDataRole.UserRole)
+        for folder in self._watch_folders:
+            if folder.id == wanted:
+                return folder
+        return None
+
+    def _browse_watch_folder(self) -> None:
+        path = QFileDialog.getExistingDirectory(self, "Watch folder")
+        if path:
+            self.watch_path_edit.setText(path)
+
+    def _add_watch_folder(self) -> None:
+        chat_id = self._chat_id()
+        path = self.watch_path_edit.text().strip()
+        if not chat_id or not path:
+            self.status_label.setText("Pick a chat and a folder first.")
+            return
+        try:
+            self._flow.add_watch_folder(
+                chat_id, path, recursive=self.watch_recursive_check.isChecked()
+            )
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not add the folder: {exc}")
+            return
+        self.status_label.setText(f"Watching {path}.")
+        self._load_watch_folders()
+
+    def _toggle_watch_enabled(self) -> None:
+        folder = self._selected_watch_folder()
+        if folder is None:
+            return
+        try:
+            self._flow.update_watch_folder(
+                folder.id, enabled=not folder.enabled
+            )
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not update it: {exc}")
+            return
+        self._load_watch_folders()
+
+    def _toggle_watch_recursive(self) -> None:
+        folder = self._selected_watch_folder()
+        if folder is None:
+            return
+        try:
+            self._flow.update_watch_folder(
+                folder.id, recursive=not folder.recursive
+            )
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not update it: {exc}")
+            return
+        self._load_watch_folders()
+
+    def _scan_watch(self) -> None:
+        folder = self._selected_watch_folder()
+        if folder is None:
+            self.status_label.setText("Select a watch folder first.")
+            return
+        try:
+            report = self._flow.scan(folder.id)
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not scan: {exc}")
+            return
+        self.scan_report_text.setPlainText(
+            "\n".join(_lines_of(vision_logic.scan_report_words(report)))
+        )
+        self.status_label.setText("Scan finished.")
+        self._load_ingested()
+
+    def _load_ingested(self) -> None:
+        folder = self._selected_watch_folder()
+        self.ingested_list.clear()
+        if folder is None:
+            return
+        try:
+            rows = self._flow.ingested(folder.id)
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not list ingested: {exc}")
+            return
+        for row in rows:
+            self.ingested_list.addItem(vision_logic.ingested_line(row))
+
+    def _remove_watch_folder(self) -> None:
+        folder = self._selected_watch_folder()
+        if folder is None:
+            return
+        if not self._confirm(
+            "Remove watch folder",
+            f"Stop watching “{folder.path}”? Ingested records for "
+            "this folder are removed with it. There is no undo.",
+        ):
+            return
+        try:
+            result = self._flow.delete_watch_folder(folder.id)
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not remove it: {exc}")
+            return
+        removed = (
+            result.get("ingested_records_removed", 0)
+            if isinstance(result, dict)
+            else 0
+        )
+        self.status_label.setText(
+            f"Watch folder removed — {removed} ingested record(s) "
+            "were removed with it."
+        )
+        self._load_watch_folders()
+
+
 class GroupsDialog(QDialog):
     """Group rooms (R-11): the persistent rooms over the engine's
     groupchat roads — roster editor with per-member settings,
@@ -4821,6 +5995,14 @@ class MainWindow(QMainWindow):
         self._inspector_dialog: InspectorDialog | None = None
         self._compose_flow_instance: ComposeFlow | None = None
         self._compose_dialog: ComposeDialog | None = None
+        self._voice_flow_instance: VoiceFlow | None = None
+        self._voice_dialog: VoiceDialog | None = None
+        self._vision_flow_instance: VisionFlow | None = None
+        self._vision_dialog: VisionDialog | None = None
+        self._chats_cache: list[ChatSummary] = []
+        # R-13: an image chosen in the composer, riding with the
+        # next message as a (filename, bytes) pair.
+        self._pending_image: tuple[str, bytes] | None = None
         self._persona_dialog: PersonaDialog | None = None
         self._lorebooks_dialog: LorebooksDialog | None = None
 
@@ -4975,9 +6157,23 @@ class MainWindow(QMainWindow):
         self.stop_button = QPushButton("Stop")
         self.stop_button.clicked.connect(lambda _c=False: self.request_stop())
         buttons.addWidget(self.stop_button)
+        self.attach_image_button = QPushButton("Attach Image…")
+        self.attach_image_button.clicked.connect(
+            lambda _c=False: self._choose_pending_image()
+        )
+        buttons.addWidget(self.attach_image_button)
+        self.clear_image_button = QPushButton("Clear Image")
+        self.clear_image_button.clicked.connect(
+            lambda _c=False: self._clear_pending_image()
+        )
+        self.clear_image_button.setVisible(False)
+        buttons.addWidget(self.clear_image_button)
         buttons.addStretch(1)
         composer_row.addLayout(buttons)
         layout.addLayout(composer_row)
+        self.attach_status_label = QLabel("")
+        self.attach_status_label.setWordWrap(True)
+        layout.addWidget(self.attach_status_label)
         self.setCentralWidget(stage)
 
     def _build_left_dock(self) -> None:
@@ -5334,6 +6530,16 @@ class MainWindow(QMainWindow):
         compose_action.triggered.connect(
             lambda _c=False: self.open_compose_dialog()
         )
+        self.action_voice = QAction("Voice…", self)
+        self.action_voice.triggered.connect(
+            lambda _c=False: self.open_voice_dialog()
+        )
+        tools_menu.addAction(self.action_voice)
+        self.action_vision = QAction("Vision…", self)
+        self.action_vision.triggered.connect(
+            lambda _c=False: self.open_vision_dialog()
+        )
+        tools_menu.addAction(self.action_vision)
         self._placeholder(tools_menu, "Plugins…", "R-14")
 
         window_menu = bar.addMenu("Window")
@@ -5510,6 +6716,68 @@ class MainWindow(QMainWindow):
             return self._compose_dialog
         dialog = ComposeDialog(self, self.compose_flow())
         return self._show_dialog("_compose_dialog", dialog)  # type: ignore[return-value]
+
+    def voice_flow(self) -> VoiceFlow:
+        """The window's Voice flow (R-13, over the same client)."""
+        if self._voice_flow_instance is None:
+            self._voice_flow_instance = VoiceFlow(self.client())
+        return self._voice_flow_instance
+
+    def vision_flow(self) -> VisionFlow:
+        """The window's Vision flow (R-13, over the same client)."""
+        if self._vision_flow_instance is None:
+            self._vision_flow_instance = VisionFlow(self.client())
+        return self._vision_flow_instance
+
+    def _chat_summaries(self) -> list[ChatSummary]:
+        """The window's current chat list for the R-13 dialogs:
+        the last snapshot's chats, with the open chat guaranteed
+        present even before a snapshot lands."""
+        chats = list(self._chats_cache)
+        if not chats:
+            for index in range(self.chats_list.count()):
+                item = self.chats_list.item(index)
+                chat_id = item.data(_CHAT_ID_ROLE)
+                if chat_id:
+                    chats.append(
+                        ChatSummary(id=str(chat_id), title=item.text())
+                    )
+        if self.current_chat is not None and all(
+            chat.id != self.current_chat.id for chat in chats
+        ):
+            chats.insert(0, self.current_chat)
+        return chats
+
+    def open_voice_dialog(self) -> VoiceDialog:
+        """Show the Voice dialog (R-13)."""
+        if self._voice_dialog is not None and self._voice_dialog.isVisible():
+            self._voice_dialog.raise_()
+            self._voice_dialog.activateWindow()
+            return self._voice_dialog
+        dialog = VoiceDialog(
+            self,
+            self.voice_flow(),
+            self._chat_summaries(),
+            self.current_chat_id,
+        )
+        return self._show_dialog("_voice_dialog", dialog)  # type: ignore[return-value]
+
+    def open_vision_dialog(self) -> VisionDialog:
+        """Show the Vision dialog (R-13)."""
+        if (
+            self._vision_dialog is not None
+            and self._vision_dialog.isVisible()
+        ):
+            self._vision_dialog.raise_()
+            self._vision_dialog.activateWindow()
+            return self._vision_dialog
+        dialog = VisionDialog(
+            self,
+            self.vision_flow(),
+            self._chat_summaries(),
+            self.current_chat_id,
+        )
+        return self._show_dialog("_vision_dialog", dialog)  # type: ignore[return-value]
 
     def groups_flow(self) -> GroupFlow:
         """The window's Groups flow (R-11, over the same client)."""
@@ -5735,6 +7003,7 @@ class MainWindow(QMainWindow):
         (see :meth:`_show_session_view`)."""
         self._characters_cache = list(snapshot.characters)
         self._profiles_cache = list(snapshot.profiles)
+        self._chats_cache = list(snapshot.chats)
         self.chats_list.clear()
         for chat in snapshot.chats:
             item = QListWidgetItem(chat.title or chat.id)
@@ -7545,10 +8814,53 @@ class MainWindow(QMainWindow):
 
     # ------------------------------------------------------------ sending
 
+    # ------------------------------------------------- composer image
+
+    def _choose_pending_image(self) -> None:
+        """Pick the image that rides with the next message (R-13).
+        Picking while one is pending replaces it."""
+        path, _filter = QFileDialog.getOpenFileName(
+            self,
+            "Choose image",
+            "",
+            "Images (*.png *.jpg *.jpeg *.gif *.webp *.bmp);;All files (*)",
+        )
+        if not path:
+            return
+        try:
+            data = Path(path).read_bytes()
+        except Exception as exc:  # noqa: BLE001
+            self.attach_status_label.setText(
+                f"Could not read that image: {exc}"
+            )
+            return
+        self._pending_image = (Path(path).name, data)
+        self._refresh_pending_image_chrome()
+
+    def _clear_pending_image(self) -> None:
+        self._pending_image = None
+        self._refresh_pending_image_chrome()
+
+    def _refresh_pending_image_chrome(self) -> None:
+        if self._pending_image is not None:
+            filename = self._pending_image[0]
+            self.attach_status_label.setText(
+                f"Image ready: {filename} — it will ride with "
+                "your next message."
+            )
+            self.clear_image_button.setVisible(True)
+        else:
+            self.attach_status_label.setText("")
+            self.clear_image_button.setVisible(False)
+
     def _update_composer_chrome(self) -> None:
         has_chat = self.current_chat_id is not None
         self.send_button.setEnabled(has_chat and not self._streaming)
         self.composer_edit.setEnabled(has_chat and not self._streaming)
+        self.attach_image_button.setEnabled(
+            has_chat and not self._streaming
+        )
+        self.clear_image_button.setVisible(self._pending_image is not None)
         self.stop_button.setEnabled(self._streaming)
         self.action_stop_generating.setEnabled(self._streaming)
         if not has_chat:
@@ -7596,10 +8908,15 @@ class MainWindow(QMainWindow):
         self._render_transcript()
         flow = self.flow()
         request_id = self._active_request_id
+        pending_image = self._pending_image
 
         def run(emit) -> object:
             return flow.send_turn(
-                chat_id, text, on_event=emit, request_id=request_id
+                chat_id,
+                text,
+                on_event=emit,
+                request_id=request_id,
+                image=pending_image,
             )
 
         worker = run_stream(
@@ -7625,6 +8942,22 @@ class MainWindow(QMainWindow):
         self._streaming = False
         self._active_request_id = None
         words = result.status_words
+        # R-13: the pending image's landing. A landed attachment
+        # clears the pending image; a failed attach is reported
+        # in words and the image STAYS pending for the next try —
+        # the user's message above was never at risk either way.
+        attachment = getattr(result, "attachment", None)
+        attachment_error = getattr(result, "attachment_error", "")
+        if attachment is not None:
+            self._pending_image = None
+            self._refresh_pending_image_chrome()
+        elif attachment_error:
+            words = (
+                f"{words} The image could not be attached: "
+                f"{attachment_error} — it is still ready and will "
+                "ride with your next message."
+            )
+            self.attach_status_label.setText(words)
         draft = result.draft
         self._pending_user_text = ""
         self._draft = None

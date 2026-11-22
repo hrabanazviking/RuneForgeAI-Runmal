@@ -66,6 +66,14 @@ from runmal.desktop.client.models import (
     TagCountView,
     UndoEntryView,
     VersionHistoryView,
+    VisionAttachmentView,
+    VisionAttachOutcome,
+    VisionDescriptionView,
+    VisionProviderView,
+    VoiceBackendView,
+    VoiceDeviceView,
+    VoiceSessionView,
+    WatchFolderView,
     detect_first_run,
 )
 from runmal.desktop.client.session import DesktopSession
@@ -2091,6 +2099,447 @@ class RunmalClient:
             "POST", "/api/v1/generate/cancel", json={"request_id": request_id}
         )
         return bool(isinstance(payload, dict) and payload.get("cancelled"))
+
+    # ------------------------------------------------------- voice (R-13)
+
+    def voice_status(self) -> dict[str, Any]:
+        """Live voice state + metrics report (``GET
+        /api/v1/voice/status``), raw — the logic layer renders it."""
+        payload = self._request("GET", "/api/v1/voice/status")
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    def _voice_devices_payload(self) -> dict[str, Any]:
+        payload = self._request("GET", "/api/v1/voice/devices")
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    def voice_devices(self) -> list[VoiceDeviceView]:
+        """Enumerated audio endpoints (``GET /api/v1/voice/devices``)."""
+        rows = self._voice_devices_payload().get("devices")
+        return [
+            VoiceDeviceView.from_dict(d)
+            for d in (rows or [])
+            if isinstance(d, dict)
+        ]
+
+    def voice_device_provider(self) -> str:
+        """The device provider key behind the enumeration (the
+        same ``GET /api/v1/voice/devices`` payload)."""
+        return str(self._voice_devices_payload().get("provider", "") or "")
+
+    def voice_roles(self) -> dict[str, Any]:
+        """Saved role assignments + their live resolution
+        (``GET /api/v1/voice/roles``), raw."""
+        payload = self._request("GET", "/api/v1/voice/roles")
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    def set_voice_role(self, role: str, device_id: str) -> dict[str, Any]:
+        """Assign one role to one present device (``PUT
+        /api/v1/voice/roles/{role}``)."""
+        payload = self._request(
+            "PUT",
+            f"/api/v1/voice/roles/{role}",
+            json={"device_id": device_id},
+        )
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    def voice_backends(self) -> dict[str, Any]:
+        """Every registered TTS/STT backend's status (``GET
+        /api/v1/voice/backends``): rows parsed to views, the
+        ``defaults`` dict kept raw."""
+        payload = self._request("GET", "/api/v1/voice/backends")
+        payload = payload if isinstance(payload, dict) else {}
+        out: dict[str, Any] = {}
+        for kind in ("tts", "stt"):
+            rows = payload.get(kind)
+            out[kind] = [
+                VoiceBackendView.from_dict(b)
+                for b in (rows or [])
+                if isinstance(b, dict)
+            ]
+        defaults = payload.get("defaults")
+        out["defaults"] = dict(defaults) if isinstance(defaults, dict) else {}
+        return out
+
+    def install_voice_backend(self, kind: str, key: str) -> dict[str, Any]:
+        """The one-button install (``POST
+        /api/v1/voice/backends/{kind}/{key}/install``) — an
+        explicit user action; the engine refuses unverified plans."""
+        payload = self._request(
+            "POST", f"/api/v1/voice/backends/{kind}/{key}/install"
+        )
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    def voice_defaults(self) -> dict[str, Any]:
+        """The default TTS/STT backend keys (``GET
+        /api/v1/voice/settings/defaults``)."""
+        payload = self._request("GET", "/api/v1/voice/settings/defaults")
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    def set_voice_defaults(
+        self,
+        tts_backend: str | None = None,
+        stt_backend: str | None = None,
+    ) -> dict[str, Any]:
+        """Set the default backends (``PUT
+        /api/v1/voice/settings/defaults``); only the keys named
+        are sent."""
+        body: dict[str, Any] = {}
+        if tts_backend is not None:
+            body["tts_backend"] = tts_backend
+        if stt_backend is not None:
+            body["stt_backend"] = stt_backend
+        payload = self._request(
+            "PUT", "/api/v1/voice/settings/defaults", json=body
+        )
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    def list_voice_sessions(self, chat_id: str = "") -> dict[str, Any]:
+        """Voice sessions (``GET /api/v1/voice/sessions``):
+        summaries parsed to views + the active session id."""
+        params: dict[str, Any] = {}
+        if chat_id:
+            params["chat_id"] = chat_id
+        payload = self._request(
+            "GET", "/api/v1/voice/sessions", params=params
+        )
+        payload = payload if isinstance(payload, dict) else {}
+        rows = payload.get("sessions")
+        return {
+            "sessions": [
+                VoiceSessionView.from_dict(s)
+                for s in (rows or [])
+                if isinstance(s, dict)
+            ],
+            "active_session_id": payload.get("active_session_id") or None,
+        }
+
+    def start_voice_session(
+        self, chat_id: str, auto_project: bool = False
+    ) -> VoiceSessionView:
+        """Start a voice session on a chat (``POST
+        /api/v1/voice/sessions``, 201; the full session shape
+        parses into the summary view)."""
+        payload = self._request(
+            "POST",
+            "/api/v1/voice/sessions",
+            json={"chat_id": chat_id, "auto_project": auto_project},
+        )
+        return VoiceSessionView.from_dict(
+            payload if isinstance(payload, dict) else {}
+        )
+
+    def get_voice_session(self, session_id: str) -> dict[str, Any]:
+        """One voice session, full shape with its turns (``GET
+        /api/v1/voice/sessions/{id}``), raw."""
+        payload = self._request("GET", f"/api/v1/voice/sessions/{session_id}")
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    def stop_voice_session(
+        self, session_id: str, note: str = ""
+    ) -> VoiceSessionView:
+        """Stop a voice session (``POST
+        /api/v1/voice/sessions/{id}/stop``)."""
+        payload = self._request(
+            "POST",
+            f"/api/v1/voice/sessions/{session_id}/stop",
+            json={"note": note},
+        )
+        return VoiceSessionView.from_dict(
+            payload if isinstance(payload, dict) else {}
+        )
+
+    def voice_session_latency(self, session_id: str) -> dict[str, Any]:
+        """Per-turn latency evidence + aggregate (``GET
+        /api/v1/voice/sessions/{id}/latency``), raw."""
+        payload = self._request(
+            "GET", f"/api/v1/voice/sessions/{session_id}/latency"
+        )
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    def voice_live(self, session_id: str) -> dict[str, Any]:
+        """The session's live-orchestrator state (``GET
+        /api/v1/voice/sessions/{id}/live``), raw."""
+        payload = self._request(
+            "GET", f"/api/v1/voice/sessions/{session_id}/live"
+        )
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    # ------------------------------------------------------ vision (R-13)
+
+    def vision_providers(self) -> dict[str, Any]:
+        """The vision provider truth surface (``GET
+        /api/v1/vision/providers``): ``providers`` parsed to
+        views, every other key kept raw."""
+        payload = self._request("GET", "/api/v1/vision/providers")
+        payload = payload if isinstance(payload, dict) else {}
+        out = dict(payload)
+        rows = payload.get("providers")
+        out["providers"] = [
+            VisionProviderView.from_dict(p)
+            for p in (rows or [])
+            if isinstance(p, dict)
+        ]
+        return out
+
+    def describe_image(
+        self,
+        chat_id: str,
+        *,
+        image_b64: str | None = None,
+        attachment_id: str | None = None,
+        asset_id: str | None = None,
+        question: str = "",
+        provider: str | None = None,
+        require_semantic: bool = False,
+    ) -> VisionDescriptionView:
+        """Describe one image for a chat (``POST
+        /api/v1/vision/describe``). Exactly one source should be
+        named; source keys and ``provider`` travel only when set."""
+        body: dict[str, Any] = {
+            "chat_id": chat_id,
+            "question": question,
+            "require_semantic": require_semantic,
+        }
+        if image_b64 is not None:
+            body["image_b64"] = image_b64
+        if attachment_id is not None:
+            body["attachment_id"] = attachment_id
+        if asset_id is not None:
+            body["asset_id"] = asset_id
+        if provider is not None:
+            body["provider"] = provider
+        payload = self._request("POST", "/api/v1/vision/describe", json=body)
+        return VisionDescriptionView.from_dict(
+            payload if isinstance(payload, dict) else {}
+        )
+
+    def list_chat_descriptions(
+        self, chat_id: str
+    ) -> list[VisionDescriptionView]:
+        """A chat's descriptions (``GET
+        /api/v1/vision/descriptions?chat_id=``)."""
+        payload = self._request(
+            "GET", "/api/v1/vision/descriptions", params={"chat_id": chat_id}
+        )
+        rows = payload.get("descriptions") if isinstance(payload, dict) else None
+        return [
+            VisionDescriptionView.from_dict(d)
+            for d in (rows or [])
+            if isinstance(d, dict)
+        ]
+
+    def vision_history(
+        self,
+        q: str = "",
+        *,
+        chat_id: str | None = None,
+        source_kind: str | None = None,
+        provider_road: str | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> dict[str, Any]:
+        """Owner-scoped description history (``GET
+        /api/v1/vision/history``): ``descriptions`` parsed to
+        views, ``total`` and the rest kept raw."""
+        params: dict[str, Any] = {"limit": limit, "offset": offset}
+        if q:
+            params["q"] = q
+        if chat_id is not None:
+            params["chat_id"] = chat_id
+        if source_kind is not None:
+            params["source_kind"] = source_kind
+        if provider_road is not None:
+            params["provider_road"] = provider_road
+        payload = self._request(
+            "GET", "/api/v1/vision/history", params=params
+        )
+        payload = payload if isinstance(payload, dict) else {}
+        out = dict(payload)
+        rows = payload.get("descriptions")
+        out["descriptions"] = [
+            VisionDescriptionView.from_dict(d)
+            for d in (rows or [])
+            if isinstance(d, dict)
+        ]
+        return out
+
+    def delete_description(self, description_id: str) -> bool:
+        """Delete one description (``DELETE
+        /api/v1/vision/descriptions/{id}``); True when the engine
+        reports the deletion."""
+        payload = self._request(
+            "DELETE", f"/api/v1/vision/descriptions/{description_id}"
+        )
+        return bool(isinstance(payload, dict) and payload.get("deleted"))
+
+    def attach_image(
+        self,
+        chat_id: str,
+        filename: str,
+        image_b64: str,
+        *,
+        message_id: str | None = None,
+        describe: bool = False,
+        describe_question: str = "",
+        describe_provider: str | None = None,
+        require_semantic: bool = False,
+    ) -> VisionAttachOutcome:
+        """Attach image bytes to a chat (``POST
+        /api/v1/vision/attachments``, 201), optionally describing
+        them in the same act."""
+        body: dict[str, Any] = {
+            "chat_id": chat_id,
+            "filename": filename,
+            "image_b64": image_b64,
+            "describe": describe,
+            "describe_question": describe_question,
+            "require_semantic": require_semantic,
+        }
+        if message_id is not None:
+            body["message_id"] = message_id
+        if describe_provider is not None:
+            body["describe_provider"] = describe_provider
+        payload = self._request(
+            "POST", "/api/v1/vision/attachments", json=body
+        )
+        payload = payload if isinstance(payload, dict) else {}
+        description = payload.get("description")
+        return VisionAttachOutcome(
+            attachment=VisionAttachmentView.from_dict(payload),
+            description=(
+                VisionDescriptionView.from_dict(description)
+                if isinstance(description, dict)
+                else None
+            ),
+        )
+
+    def list_attachments(self, chat_id: str) -> list[VisionAttachmentView]:
+        """A chat's attachments (``GET
+        /api/v1/vision/attachments?chat_id=``)."""
+        payload = self._request(
+            "GET", "/api/v1/vision/attachments", params={"chat_id": chat_id}
+        )
+        rows = payload.get("attachments") if isinstance(payload, dict) else None
+        return [
+            VisionAttachmentView.from_dict(a)
+            for a in (rows or [])
+            if isinstance(a, dict)
+        ]
+
+    def attachment_thumbnail(
+        self, attachment_id: str, max_dim: int | None = None
+    ) -> bytes:
+        """One attachment's PNG thumbnail (``GET
+        /api/v1/vision/attachments/{id}/thumbnail``)."""
+        params: dict[str, Any] = {}
+        if max_dim is not None:
+            params["max_dim"] = max_dim
+        content, _media = self._request_bytes(
+            "GET",
+            f"/api/v1/vision/attachments/{attachment_id}/thumbnail",
+            params=params,
+        )
+        return content
+
+    def delete_attachment(self, attachment_id: str) -> dict[str, Any]:
+        """Delete one attachment (``DELETE
+        /api/v1/vision/attachments/{id}``) — the engine purges
+        its derived descriptions and reports the counts."""
+        payload = self._request(
+            "DELETE", f"/api/v1/vision/attachments/{attachment_id}"
+        )
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    def list_watch_folders(self, chat_id: str) -> list[WatchFolderView]:
+        """A chat's watch folders (``GET
+        /api/v1/vision/watch-folders?chat_id=``)."""
+        payload = self._request(
+            "GET", "/api/v1/vision/watch-folders", params={"chat_id": chat_id}
+        )
+        rows = payload.get("watch_folders") if isinstance(payload, dict) else None
+        return [
+            WatchFolderView.from_dict(w)
+            for w in (rows or [])
+            if isinstance(w, dict)
+        ]
+
+    def create_watch_folder(
+        self, chat_id: str, path: str, recursive: bool = False
+    ) -> WatchFolderView:
+        """Register a watch folder for a chat (``POST
+        /api/v1/vision/watch-folders``, 201)."""
+        payload = self._request(
+            "POST",
+            "/api/v1/vision/watch-folders",
+            json={"chat_id": chat_id, "path": path, "recursive": recursive},
+        )
+        return WatchFolderView.from_dict(
+            payload if isinstance(payload, dict) else {}
+        )
+
+    def update_watch_folder(
+        self,
+        watch_id: str,
+        *,
+        enabled: bool | None = None,
+        recursive: bool | None = None,
+    ) -> WatchFolderView:
+        """Patch a watch folder's flags (``PATCH
+        /api/v1/vision/watch-folders/{id}``); only the flags
+        named are sent."""
+        body: dict[str, Any] = {}
+        if enabled is not None:
+            body["enabled"] = enabled
+        if recursive is not None:
+            body["recursive"] = recursive
+        payload = self._request(
+            "PATCH", f"/api/v1/vision/watch-folders/{watch_id}", json=body
+        )
+        return WatchFolderView.from_dict(
+            payload if isinstance(payload, dict) else {}
+        )
+
+    def delete_watch_folder(self, watch_id: str) -> dict[str, Any]:
+        """Delete a watch folder (``DELETE
+        /api/v1/vision/watch-folders/{id}``); the engine reports
+        how many ingested records died with it."""
+        payload = self._request(
+            "DELETE", f"/api/v1/vision/watch-folders/{watch_id}"
+        )
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    def scan_watch_folder(
+        self,
+        watch_id: str,
+        *,
+        describe: bool = False,
+        describe_question: str = "",
+        describe_provider: str | None = None,
+        require_semantic: bool = False,
+    ) -> dict[str, Any]:
+        """Scan a watch folder once (``POST
+        /api/v1/vision/watch-folders/{id}/scan``) — the scan
+        report, raw."""
+        body: dict[str, Any] = {
+            "describe": describe,
+            "describe_question": describe_question,
+            "require_semantic": require_semantic,
+        }
+        if describe_provider is not None:
+            body["describe_provider"] = describe_provider
+        payload = self._request(
+            "POST", f"/api/v1/vision/watch-folders/{watch_id}/scan", json=body
+        )
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    def list_watch_ingested(self, watch_id: str) -> list[dict[str, Any]]:
+        """A watch folder's ingested records (``GET
+        /api/v1/vision/watch-folders/{id}/ingested``), raw rows."""
+        payload = self._request(
+            "GET", f"/api/v1/vision/watch-folders/{watch_id}/ingested"
+        )
+        rows = payload.get("ingested") if isinstance(payload, dict) else None
+        return [dict(r) for r in (rows or []) if isinstance(r, dict)]
 
     # ------------------------------------------------------------ first run
 

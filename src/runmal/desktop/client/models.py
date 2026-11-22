@@ -699,6 +699,7 @@ class MessageView:
     swipes: list[str] = field(default_factory=list)
     swipe_id: int = 0
     pinned: bool = False
+    attachments: list[VisionAttachmentView] = field(default_factory=list)
 
     @classmethod
     def from_dict(cls, payload: dict[str, Any]) -> MessageView:
@@ -709,6 +710,7 @@ class MessageView:
             else []
         )
         swipe_id = payload.get("swipe_id", 0)
+        rows = payload.get("attachments")
         return cls(
             id=str(payload.get("id", "")),
             role=str(payload.get("role", "")),
@@ -717,6 +719,15 @@ class MessageView:
             swipes=swipes,
             swipe_id=swipe_id if isinstance(swipe_id, int) else 0,
             pinned=bool(payload.get("pinned", False)),
+            attachments=(
+                [
+                    VisionAttachmentView.from_dict(r)
+                    for r in rows
+                    if isinstance(r, dict)
+                ]
+                if isinstance(rows, list)
+                else []
+            ),
         )
 
     @property
@@ -1194,4 +1205,262 @@ class ScenarioView:
             source_format=str(payload.get("source_format", "") or ""),
             definition=dict(definition) if isinstance(definition, dict) else {},
             raw=dict(payload),
+        )
+
+
+# -- Voice & vision (R-13) ------------------------------------------------
+
+
+def _int_list(value: Any) -> list[int]:
+    if isinstance(value, list):
+        return [v for v in value if isinstance(v, int)]
+    return []
+
+
+def _image_parts(payload: dict[str, Any]) -> tuple[str, int | None, int | None, int]:
+    """The nested ``image`` dict both vision records carry
+    (``{format, width, height, bytes, sha256}``)."""
+    image = payload.get("image")
+    if not isinstance(image, dict):
+        return "", None, None, 0
+    width = image.get("width")
+    height = image.get("height")
+    return (
+        str(image.get("format", "") or ""),
+        width if isinstance(width, int) else None,
+        height if isinstance(height, int) else None,
+        _int_or(image.get("bytes"), 0),
+    )
+
+
+@dataclass(frozen=True)
+class VoiceDeviceView:
+    """One enumerated audio endpoint (``AudioDevice.to_dict``)."""
+
+    device_id: str
+    name: str = ""
+    direction: str = ""
+    host_api: str = ""
+    max_channels: int = 1
+    sample_rates: list[int] = field(default_factory=list)
+    is_system_default: bool = False
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> VoiceDeviceView:
+        return cls(
+            device_id=str(payload.get("device_id", "") or ""),
+            name=str(payload.get("name", "") or ""),
+            direction=str(payload.get("direction", "") or ""),
+            host_api=str(payload.get("host_api", "") or ""),
+            max_channels=_int_or(payload.get("max_channels"), 1),
+            sample_rates=_int_list(payload.get("sample_rates")),
+            is_system_default=bool(payload.get("is_system_default", False)),
+        )
+
+
+@dataclass(frozen=True)
+class VoiceBackendView:
+    """One registered voice backend's status (``backend_status``
+    + the router's ``display_name`` / ``selected`` additions)."""
+
+    key: str
+    kind: str = ""
+    display_name: str = ""
+    default_shipped: bool = False
+    verified: bool = False
+    installed: bool = False
+    install_status: str = ""
+    install_step: str = ""
+    install_error: str = ""
+    installable: bool = False
+    selected: bool = False
+    unverified_label: str = ""
+    notice: str = ""
+    note: str = ""
+    audit: dict[str, Any] | None = None
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> VoiceBackendView:
+        audit = payload.get("audit")
+        return cls(
+            key=str(payload.get("key", "") or ""),
+            kind=str(payload.get("kind", "") or ""),
+            display_name=str(payload.get("display_name", "") or ""),
+            default_shipped=bool(payload.get("default_shipped", False)),
+            verified=bool(payload.get("verified", False)),
+            installed=bool(payload.get("installed", False)),
+            install_status=str(payload.get("install_status", "") or ""),
+            install_step=str(payload.get("install_step", "") or ""),
+            install_error=str(payload.get("install_error", "") or ""),
+            installable=bool(payload.get("installable", False)),
+            selected=bool(payload.get("selected", False)),
+            unverified_label=str(payload.get("unverified_label", "") or ""),
+            notice=str(payload.get("notice", "") or ""),
+            note=str(payload.get("note", "") or ""),
+            audit=dict(audit) if isinstance(audit, dict) else None,
+        )
+
+
+@dataclass(frozen=True)
+class VoiceSessionView:
+    """One voice session (``VoiceSession.summary_dict``; the full
+    ``to_dict`` shape parses too — its extra ``turns`` are ignored
+    here and read raw through the detail road)."""
+
+    session_id: str
+    chat_id: str = ""
+    character_id: str | None = None
+    state: str = ""
+    created_at: str = ""
+    stopped_at: str = ""
+    stop_note: str = ""
+    turn_count: int = 0
+    auto_project: bool = False
+    settings: dict[str, Any] = field(default_factory=dict)
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> VoiceSessionView:
+        settings = payload.get("settings")
+        return cls(
+            session_id=str(payload.get("session_id", "") or ""),
+            chat_id=str(payload.get("chat_id", "") or ""),
+            character_id=payload.get("character_id") or None,
+            state=str(payload.get("state", "") or ""),
+            created_at=str(payload.get("created_at", "") or ""),
+            stopped_at=str(payload.get("stopped_at", "") or ""),
+            stop_note=str(payload.get("stop_note", "") or ""),
+            turn_count=_int_or(payload.get("turn_count"), 0),
+            auto_project=bool(payload.get("auto_project", False)),
+            settings=dict(settings) if isinstance(settings, dict) else {},
+        )
+
+
+@dataclass(frozen=True)
+class VisionProviderView:
+    """One vision provider's truth row (``ProviderRow.to_dict``)."""
+
+    provider_id: str
+    model: str = ""
+    road: str = ""
+    semantic: bool = False
+    available: bool = False
+    note: str = ""
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> VisionProviderView:
+        return cls(
+            provider_id=str(payload.get("provider_id", "") or ""),
+            model=str(payload.get("model", "") or ""),
+            road=str(payload.get("road", "") or ""),
+            semantic=bool(payload.get("semantic", False)),
+            available=bool(payload.get("available", False)),
+            note=str(payload.get("note", "") or ""),
+        )
+
+
+@dataclass(frozen=True)
+class VisionDescriptionView:
+    """One persisted vision description (``VisionDescription.to_dict``:
+    provider and image are nested dicts)."""
+
+    id: str
+    chat_id: str = ""
+    source_kind: str = ""
+    source_ref: str = ""
+    question: str = ""
+    description: str = ""
+    provider_id: str = ""
+    provider_model: str = ""
+    provider_road: str = ""
+    image_format: str = ""
+    image_width: int | None = None
+    image_height: int | None = None
+    image_size: int = 0
+    created_at: str = ""
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> VisionDescriptionView:
+        provider = payload.get("provider")
+        provider = provider if isinstance(provider, dict) else {}
+        fmt, width, height, size = _image_parts(payload)
+        return cls(
+            id=str(payload.get("id", "") or ""),
+            chat_id=str(payload.get("chat_id", "") or ""),
+            source_kind=str(payload.get("source_kind", "") or ""),
+            source_ref=str(payload.get("source_ref", "") or ""),
+            question=str(payload.get("question", "") or ""),
+            description=str(payload.get("description", "") or ""),
+            provider_id=str(provider.get("provider_id", "") or ""),
+            provider_model=str(provider.get("model", "") or ""),
+            provider_road=str(provider.get("road", "") or ""),
+            image_format=fmt,
+            image_width=width,
+            image_height=height,
+            image_size=size,
+            created_at=str(payload.get("created_at", "") or ""),
+        )
+
+
+@dataclass(frozen=True)
+class VisionAttachmentView:
+    """One persisted image attachment (``ImageAttachment.to_dict``:
+    the image facts are the same nested dict)."""
+
+    id: str
+    chat_id: str = ""
+    message_id: str | None = None
+    filename: str = ""
+    media_type: str = ""
+    image_format: str = ""
+    image_width: int | None = None
+    image_height: int | None = None
+    image_size: int = 0
+    created_at: str = ""
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> VisionAttachmentView:
+        fmt, width, height, size = _image_parts(payload)
+        return cls(
+            id=str(payload.get("id", "") or ""),
+            chat_id=str(payload.get("chat_id", "") or ""),
+            message_id=payload.get("message_id") or None,
+            filename=str(payload.get("filename", "") or ""),
+            media_type=str(payload.get("media_type", "") or ""),
+            image_format=fmt,
+            image_width=width,
+            image_height=height,
+            image_size=size,
+            created_at=str(payload.get("created_at", "") or ""),
+        )
+
+
+@dataclass(frozen=True)
+class VisionAttachOutcome:
+    """The attach road's result: the stored attachment, plus the
+    description when the caller opted into describe-on-attach."""
+
+    attachment: VisionAttachmentView
+    description: VisionDescriptionView | None = None
+
+
+@dataclass(frozen=True)
+class WatchFolderView:
+    """One registered watch folder (``WatchFolder.to_dict``)."""
+
+    id: str
+    chat_id: str = ""
+    path: str = ""
+    recursive: bool = False
+    enabled: bool = False
+    created_at: str = ""
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> WatchFolderView:
+        return cls(
+            id=str(payload.get("id", "") or ""),
+            chat_id=str(payload.get("chat_id", "") or ""),
+            path=str(payload.get("path", "") or ""),
+            recursive=bool(payload.get("recursive", False)),
+            enabled=bool(payload.get("enabled", False)),
+            created_at=str(payload.get("created_at", "") or ""),
         )
