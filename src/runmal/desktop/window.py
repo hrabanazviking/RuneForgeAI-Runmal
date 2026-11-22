@@ -83,6 +83,17 @@ chosen image rides with the next message, an attach
 failure is reported in words and the image stays pending
 — the user's message is never lost over an attachment.
 
+R-14 adds Backups & Data (the backup list, fresh backups,
+archive import, and STAGED restores — staging prepares a
+restore for review and never overwrites the live data),
+Plugins (manager with permission cards and install verdicts,
+quick replies, expression sets, failure reports), Library
+Search (one query across hub, workspaces, and faces), and
+Bridge (credentials whose token is shown exactly once, in
+one field, and never stored by the window) through the
+Qt-free ``backups_logic`` / ``plugin_logic`` /
+``library_search_logic`` / ``bridge_logic`` flows.
+
 Honesty rule (carried from R-04): an action is REAL only where
 its machinery exists. Later-slice screens stay placeholder
 actions labelled with their slice, never dressed up.
@@ -125,14 +136,20 @@ from PySide6.QtWidgets import (
 )
 
 from runmal.desktop import (
+    backups_logic,
+    bridge_logic,
     compose_logic,
     group_logic,
     inspector_logic,
+    library_search_logic,
     memory_logic,
+    plugin_logic,
     scenario_logic,
     vision_logic,
     voice_logic,
 )
+from runmal.desktop.backups_logic import BackupFlow
+from runmal.desktop.bridge_logic import BridgeFlow
 from runmal.desktop.character_logic import (
     CARD_TEXT_FIELDS,
     CharacterFlow,
@@ -173,6 +190,7 @@ from runmal.desktop.compose_logic import ComposeFlow
 from runmal.desktop.engine import EngineHandle, EngineState
 from runmal.desktop.group_logic import GroupFlow
 from runmal.desktop.inspector_logic import InspectorFlow
+from runmal.desktop.library_search_logic import LibrarySearchFlow
 from runmal.desktop.lore_logic import (
     KIND_BOOL,
     KIND_INT_OR_NULL,
@@ -197,6 +215,7 @@ from runmal.desktop.persona_logic import (
     UserNameState,
     persona_words,
 )
+from runmal.desktop.plugin_logic import PluginFlow
 from runmal.desktop.scenario_logic import ScenarioFlow
 from runmal.desktop.settings_logic import (
     CHAT_BACKEND_LABELS,
@@ -3379,6 +3398,51 @@ def _lines_of(value) -> list[str]:
     return [str(item) for item in value]
 
 
+def _renderer_words(value) -> str:
+    """Join a logic renderer's answer (one string or a list of
+    lines) into plain text."""
+    return "\n".join(_lines_of(value))
+
+
+def _object_words(value) -> str:
+    """Render a flow payload or view in words: dicts and plain
+    values go through ``_generic_words``; a dataclass view is
+    rendered field by field, nothing invented."""
+    if value is None:
+        return ""
+    if isinstance(value, (str, dict, list, tuple)):
+        return _generic_words(value)
+    fields = getattr(value, "__dataclass_fields__", None)
+    if fields:
+        return "\n".join(
+            f"{name}: {getattr(value, name, '')}" for name in fields
+        )
+    return str(value)
+
+
+def _rows_of(payload, *keys: str) -> list:
+    """A flow may answer a bare list or an envelope dict; pull
+    the rows out by the first key that carries a list."""
+    if payload is None:
+        return []
+    if isinstance(payload, dict):
+        for key in keys:
+            rows = payload.get(key)
+            if isinstance(rows, (list, tuple)):
+                return list(rows)
+        return []
+    return list(payload)
+
+
+def _view_id(view, *names: str) -> str:
+    """The first non-empty id-ish attribute a view carries."""
+    for name in names:
+        value = getattr(view, name, None)
+        if value:
+            return str(value)
+    return ""
+
+
 def _role_direction(role: str) -> str:
     """The direction a voice role needs (DeviceRole is the truth)."""
     try:
@@ -4506,6 +4570,984 @@ class VisionDialog(QDialog):
             "were removed with it."
         )
         self._load_watch_folders()
+
+
+class BackupsDialog(QDialog):
+    """Backups & Data (R-14): the backup list, fresh backups,
+    archive import, and STAGED restores. Staging only prepares
+    a restore for review — it never overwrites the live data;
+    applying a staged restore is a later, separate step, and
+    the dialog's words say so wherever staging is offered."""
+
+    STAGING_NOTE = (
+        "Staging prepares a restore for review — it does NOT "
+        "overwrite the live data. Nothing is restored until a "
+        "later, separate step applies the staged restore."
+    )
+
+    def __init__(self, parent: QWidget, flow: BackupFlow) -> None:
+        super().__init__(parent)
+        self.setWindowTitle("Backups & Data")
+        self.resize(780, 540)
+        self._flow = flow
+        self._backups: list = []
+        # Full bundles never appear in the engine's backup
+        # listing (its filename law lists database backups
+        # only), so full backups created in THIS visit are
+        # remembered here and listed from memory — the name
+        # their creation returned is their staging key.
+        self._session_full: list = []
+
+        layout = QVBoxLayout(self)
+        note = QLabel(self.STAGING_NOTE)
+        note.setWordWrap(True)
+        layout.addWidget(note)
+        self.backups_list = QListWidget()
+        self.backups_list.currentRowChanged.connect(
+            lambda _row: self._show_backup_detail()
+        )
+        layout.addWidget(self.backups_list, 1)
+        buttons = QHBoxLayout()
+        self.create_backup_button = QPushButton("Create Backup")
+        self.create_backup_button.clicked.connect(
+            lambda _c=False: self._create_backup(full=False)
+        )
+        buttons.addWidget(self.create_backup_button)
+        self.create_full_backup_button = QPushButton("Create Full Backup")
+        self.create_full_backup_button.clicked.connect(
+            lambda _c=False: self._create_backup(full=True)
+        )
+        buttons.addWidget(self.create_full_backup_button)
+        self.stage_backup_button = QPushButton("Stage Restore")
+        self.stage_backup_button.clicked.connect(
+            lambda _c=False: self._stage_backup(full=False)
+        )
+        buttons.addWidget(self.stage_backup_button)
+        self.stage_full_backup_button = QPushButton("Stage Full Restore")
+        self.stage_full_backup_button.clicked.connect(
+            lambda _c=False: self._stage_backup(full=True)
+        )
+        buttons.addWidget(self.stage_full_backup_button)
+        self.import_archive_button = QPushButton("Import Archive…")
+        self.import_archive_button.clicked.connect(
+            lambda _c=False: self._import_archive()
+        )
+        buttons.addWidget(self.import_archive_button)
+        layout.addLayout(buttons)
+        self.detail_text = QPlainTextEdit()
+        self.detail_text.setReadOnly(True)
+        layout.addWidget(self.detail_text, 1)
+        self.status_label = QLabel("")
+        self.status_label.setWordWrap(True)
+        layout.addWidget(self.status_label)
+        self._load_backups()
+
+    # ------------------------------------------------------------ util
+
+    def _confirm(self, title: str, text: str) -> bool:
+        answer = QMessageBox.question(self, title, text)
+        return answer == QMessageBox.StandardButton.Yes
+
+    def _selected_backup(self):
+        item = self.backups_list.currentItem()
+        if item is None:
+            return None
+        wanted = item.data(Qt.ItemDataRole.UserRole)
+        for backup in self._backups:
+            if _view_id(backup, "filename", "name", "id") == wanted:
+                return backup
+        return None
+
+    # ------------------------------------------------------------ list
+
+    def _load_backups(self) -> None:
+        try:
+            views = self._flow.list_backups()
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not list backups: {exc}")
+            return
+        self._backups = _rows_of(views, "backups", "items")
+        listed = {
+            _view_id(b, "filename", "name", "id") for b in self._backups
+        }
+        for view in self._session_full:
+            if _view_id(view, "filename", "name", "id") not in listed:
+                self._backups.append(view)
+        self.backups_list.clear()
+        for backup in self._backups:
+            item = QListWidgetItem(
+                _renderer_words(backups_logic.backup_line(backup))
+            )
+            item.setData(
+                Qt.ItemDataRole.UserRole,
+                _view_id(backup, "filename", "name", "id"),
+            )
+            self.backups_list.addItem(item)
+        self.detail_text.setPlainText(
+            _renderer_words(backups_logic.backups_words(self._backups))
+        )
+        if self._backups:
+            self.backups_list.setCurrentRow(0)
+
+    def _show_backup_detail(self) -> None:
+        backup = self._selected_backup()
+        if backup is None:
+            return
+        words = _renderer_words(backups_logic.backups_words(self._backups))
+        detail = _object_words(backup)
+        self.detail_text.setPlainText(
+            "\n\n".join(part for part in (words, detail) if part)
+        )
+
+    # ---------------------------------------------------------- actions
+
+    def _create_backup(self, *, full: bool) -> None:
+        try:
+            if full:
+                result = self._flow.create_full_backup()
+            else:
+                result = self._flow.create_backup()
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not create the backup: {exc}")
+            return
+        if full and hasattr(result, "name"):
+            self._session_full.append(result)
+        words = _object_words(result)
+        self.status_label.setText(
+            words or ("Full backup created." if full else "Backup created.")
+        )
+        self._load_backups()
+
+    def _stage_backup(self, *, full: bool) -> None:
+        backup = self._selected_backup()
+        if backup is None:
+            self.status_label.setText("Select a backup first.")
+            return
+        kind = str(getattr(backup, "kind", "") or "")
+        if full and kind != "full":
+            self.status_label.setText(
+                "That row is a database backup — Stage Restore is "
+                "its road. Full bundles are staged by the name "
+                "their creation returned; ones made in this visit "
+                "are listed here."
+            )
+            return
+        if not full and kind == "full":
+            self.status_label.setText(
+                "That row is a full bundle — Stage Full Restore "
+                "is its road."
+            )
+            return
+        filename = _view_id(backup, "filename", "name", "id")
+        title = "Stage full restore" if full else "Stage restore"
+        if not self._confirm(
+            title,
+            f"Stage a restore of “{filename}”? {self.STAGING_NOTE} "
+            "The staged copy waits in the restore area, under your "
+            "custody, until you choose to apply it.",
+        ):
+            return
+        try:
+            if full:
+                result = self._flow.stage_full_backup(filename)
+            else:
+                result = self._flow.stage_backup(filename)
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not stage the restore: {exc}")
+            return
+        words = _renderer_words(backups_logic.stage_words(result))
+        self.detail_text.setPlainText(words)
+        self.status_label.setText(
+            f"Restore of {filename} staged for review — "
+            "the live data was NOT overwritten."
+        )
+
+    def _import_archive(self) -> None:
+        path, _filter = QFileDialog.getOpenFileName(
+            self,
+            "Import backup archive",
+            "",
+            "Backup archives (*.zip *.tar *.tar.gz *.tgz);;All files (*)",
+        )
+        if not path:
+            return
+        if not self._confirm(
+            "Import archive",
+            f"Import “{path}” as a backup archive? It joins the "
+            "backup list under the backup store's custody; "
+            "importing alone does not restore anything over the "
+            "live data.",
+        ):
+            return
+        try:
+            result = self._flow.import_archive(path)
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not import it: {exc}")
+            return
+        words = _object_words(result)
+        self.detail_text.setPlainText(words)
+        self.status_label.setText(words or f"Imported {path}.")
+        self._load_backups()
+
+
+class PluginsDialog(QDialog):
+    """Plugins (R-14): the manager (list, detail + permission
+    card, enable/disable/update/uninstall/acknowledge, and
+    install with the engine's preview verdict), quick replies,
+    expression sets, and failure reports — four tabs over the
+    Qt-free plugin flow."""
+
+    def __init__(self, parent: QWidget, flow: PluginFlow) -> None:
+        super().__init__(parent)
+        self.setWindowTitle("Plugins")
+        self.resize(880, 620)
+        self._flow = flow
+        self._plugins: list = []
+        self._quick_replies: list = []
+        self._expression_sets: list = []
+        self._failures: list = []
+
+        layout = QVBoxLayout(self)
+        self.tabs = QTabWidget()
+        layout.addWidget(self.tabs, 1)
+        self.status_label = QLabel("")
+        self.status_label.setWordWrap(True)
+        layout.addWidget(self.status_label)
+        self._build_manager_tab()
+        self._build_quick_replies_tab()
+        self._build_expressions_tab()
+        self._build_failures_tab()
+        self._load_plugins()
+        self._load_quick_replies()
+        self._load_expression_sets()
+        self._load_failures()
+
+    # ------------------------------------------------------------ util
+
+    def _confirm(self, title: str, text: str) -> bool:
+        answer = QMessageBox.question(self, title, text)
+        return answer == QMessageBox.StandardButton.Yes
+
+    # ---------------------------------------------------------- manager
+
+    def _build_manager_tab(self) -> None:
+        tab = QWidget()
+        lay = QVBoxLayout(tab)
+        self.manager_text = QPlainTextEdit()
+        self.manager_text.setReadOnly(True)
+        self.manager_text.setMaximumHeight(60)
+        lay.addWidget(self.manager_text)
+        body = QHBoxLayout()
+        left = QVBoxLayout()
+        self.plugins_list = QListWidget()
+        self.plugins_list.currentRowChanged.connect(
+            lambda _row: self._show_plugin_detail()
+        )
+        left.addWidget(self.plugins_list, 1)
+        buttons = QHBoxLayout()
+        self.enable_plugin_button = QPushButton("Enable")
+        self.enable_plugin_button.clicked.connect(
+            lambda _c=False: self._plugin_action("enable")
+        )
+        buttons.addWidget(self.enable_plugin_button)
+        self.disable_plugin_button = QPushButton("Disable")
+        self.disable_plugin_button.clicked.connect(
+            lambda _c=False: self._plugin_action("disable")
+        )
+        buttons.addWidget(self.disable_plugin_button)
+        self.update_plugin_button = QPushButton("Update")
+        self.update_plugin_button.clicked.connect(
+            lambda _c=False: self._plugin_action("update")
+        )
+        buttons.addWidget(self.update_plugin_button)
+        self.uninstall_plugin_button = QPushButton("Uninstall")
+        self.uninstall_plugin_button.clicked.connect(
+            lambda _c=False: self._uninstall_plugin()
+        )
+        buttons.addWidget(self.uninstall_plugin_button)
+        self.acknowledge_plugin_button = QPushButton("Acknowledge")
+        self.acknowledge_plugin_button.clicked.connect(
+            lambda _c=False: self._plugin_action("acknowledge")
+        )
+        buttons.addWidget(self.acknowledge_plugin_button)
+        left.addLayout(buttons)
+        body.addLayout(left, 1)
+        right = QVBoxLayout()
+        right.addWidget(QLabel("Detail & permissions"))
+        self.plugin_detail_text = QPlainTextEdit()
+        self.plugin_detail_text.setReadOnly(True)
+        right.addWidget(self.plugin_detail_text, 1)
+        body.addLayout(right, 1)
+        lay.addLayout(body, 1)
+        install_row = QHBoxLayout()
+        self.install_source_edit = QLineEdit()
+        self.install_source_edit.setPlaceholderText(
+            "Plugin source or path to install…"
+        )
+        install_row.addWidget(self.install_source_edit, 1)
+        self.install_preview_button = QPushButton("Preview Install")
+        self.install_preview_button.clicked.connect(
+            lambda _c=False: self._install_preview()
+        )
+        install_row.addWidget(self.install_preview_button)
+        self.install_button = QPushButton("Install")
+        self.install_button.clicked.connect(
+            lambda _c=False: self._install()
+        )
+        install_row.addWidget(self.install_button)
+        lay.addLayout(install_row)
+        self.install_result_text = QPlainTextEdit()
+        self.install_result_text.setReadOnly(True)
+        self.install_result_text.setMaximumHeight(90)
+        lay.addWidget(self.install_result_text)
+        self.tabs.addTab(tab, "Manager")
+
+    def _load_plugins(self) -> None:
+        try:
+            self.manager_text.setPlainText(
+                _object_words(self._flow.manager())
+            )
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not read the manager: {exc}")
+        try:
+            payload = self._flow.plugins()
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not list plugins: {exc}")
+            return
+        self._plugins = _rows_of(payload, "plugins", "items")
+        self.plugins_list.clear()
+        for plugin in self._plugins:
+            item = QListWidgetItem(
+                _renderer_words(plugin_logic.plugin_line(plugin))
+            )
+            item.setData(
+                Qt.ItemDataRole.UserRole,
+                _view_id(plugin, "plugin_id", "id"),
+            )
+            self.plugins_list.addItem(item)
+        if self._plugins:
+            self.plugins_list.setCurrentRow(0)
+
+    def _selected_plugin(self):
+        item = self.plugins_list.currentItem()
+        if item is None:
+            return None
+        wanted = item.data(Qt.ItemDataRole.UserRole)
+        for plugin in self._plugins:
+            if _view_id(plugin, "plugin_id", "id") == wanted:
+                return plugin
+        return None
+
+    def _show_plugin_detail(self) -> None:
+        plugin = self._selected_plugin()
+        if plugin is None:
+            return
+        plugin_id = _view_id(plugin, "plugin_id", "id")
+        parts: list[str] = []
+        try:
+            detail = self._flow.detail(plugin_id)
+            parts.append(
+                _renderer_words(plugin_logic.plugin_detail_words(detail))
+            )
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not read the detail: {exc}")
+        try:
+            card = self._flow.permission_card(plugin_id)
+            parts.append(
+                _renderer_words(plugin_logic.permission_words(card))
+            )
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(
+                f"Could not read the permission card: {exc}"
+            )
+        self.plugin_detail_text.setPlainText(
+            "\n\n".join(part for part in parts if part)
+        )
+
+    def _plugin_action(self, action: str) -> None:
+        plugin = self._selected_plugin()
+        if plugin is None:
+            self.status_label.setText("Select a plugin first.")
+            return
+        plugin_id = _view_id(plugin, "plugin_id", "id")
+        try:
+            if action == "update":
+                source = self.install_source_edit.text().strip()
+                if source:
+                    result = self._flow.update(
+                        plugin_id, {"source": source}
+                    )
+                else:
+                    result = self._flow.update(plugin_id)
+            else:
+                result = getattr(self._flow, action)(plugin_id)
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not {action} it: {exc}")
+            return
+        words = _object_words(result)
+        self.status_label.setText(words or f"Plugin {action} done.")
+        self._load_plugins()
+
+    def _uninstall_plugin(self) -> None:
+        plugin = self._selected_plugin()
+        if plugin is None:
+            self.status_label.setText("Select a plugin first.")
+            return
+        plugin_id = _view_id(plugin, "plugin_id", "id")
+        name = getattr(plugin, "name", "") or plugin_id
+        if not self._confirm(
+            "Uninstall plugin",
+            f"Uninstall “{name}”? The plugin leaves the plugin "
+            "store's custody — its files and data are removed, "
+            "and anything it provided stops working. "
+            "There is no undo.",
+        ):
+            return
+        try:
+            result = self._flow.uninstall(plugin_id)
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not uninstall it: {exc}")
+            return
+        words = _object_words(result)
+        self.status_label.setText(words or f"Uninstalled {name}.")
+        self._load_plugins()
+
+    def _install_payload(self) -> dict | None:
+        source = self.install_source_edit.text().strip()
+        if not source:
+            self.status_label.setText(
+                "Type a plugin source or path first."
+            )
+            return None
+        # The source is named both ways; the flow keeps the
+        # spelling its engine road expects.
+        return {"source": source, "path": source}
+
+    def _install_preview(self) -> None:
+        payload = self._install_payload()
+        if payload is None:
+            return
+        try:
+            result = self._flow.install_preview(payload)
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not preview it: {exc}")
+            return
+        self.install_result_text.setPlainText(_object_words(result))
+        self.status_label.setText("Install preview rendered above.")
+
+    def _install(self) -> None:
+        payload = self._install_payload()
+        if payload is None:
+            return
+        if not self._confirm(
+            "Install plugin",
+            f"Install the plugin from “{payload['source']}”? It "
+            "joins the plugin store under the permissions its "
+            "card declares — preview it first if you have not.",
+        ):
+            return
+        try:
+            result = self._flow.install(payload)
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not install it: {exc}")
+            return
+        self.install_result_text.setPlainText(_object_words(result))
+        self.status_label.setText("Install finished — verdict above.")
+        self._load_plugins()
+
+    # ----------------------------------------------------- quick replies
+
+    def _build_quick_replies_tab(self) -> None:
+        tab = QWidget()
+        lay = QVBoxLayout(tab)
+        self.quick_replies_list = QListWidget()
+        lay.addWidget(self.quick_replies_list, 1)
+        form = QFormLayout()
+        self.qr_name_edit = QLineEdit()
+        form.addRow("Name", self.qr_name_edit)
+        self.qr_text_edit = QPlainTextEdit()
+        self.qr_text_edit.setMaximumHeight(70)
+        form.addRow("Text", self.qr_text_edit)
+        lay.addLayout(form)
+        buttons = QHBoxLayout()
+        self.qr_create_button = QPushButton("Create Quick Reply")
+        self.qr_create_button.clicked.connect(
+            lambda _c=False: self._create_quick_reply()
+        )
+        buttons.addWidget(self.qr_create_button)
+        self.qr_execute_button = QPushButton("Execute Selected")
+        self.qr_execute_button.clicked.connect(
+            lambda _c=False: self._execute_quick_reply()
+        )
+        buttons.addWidget(self.qr_execute_button)
+        self.qr_delete_button = QPushButton("Delete Selected")
+        self.qr_delete_button.clicked.connect(
+            lambda _c=False: self._delete_quick_reply()
+        )
+        buttons.addWidget(self.qr_delete_button)
+        lay.addLayout(buttons)
+        self.tabs.addTab(tab, "Quick Replies")
+
+    def _load_quick_replies(self) -> None:
+        try:
+            payload = self._flow.quick_replies()
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(
+                f"Could not list quick replies: {exc}"
+            )
+            return
+        self._quick_replies = _rows_of(
+            payload, "quick_replies", "replies", "items"
+        )
+        self.quick_replies_list.clear()
+        for reply in self._quick_replies:
+            item = QListWidgetItem(
+                _renderer_words(plugin_logic.quick_reply_line(reply))
+            )
+            item.setData(
+                Qt.ItemDataRole.UserRole,
+                _view_id(reply, "id", "quick_reply_id"),
+            )
+            self.quick_replies_list.addItem(item)
+        if self._quick_replies:
+            self.quick_replies_list.setCurrentRow(0)
+
+    def _selected_quick_reply(self):
+        item = self.quick_replies_list.currentItem()
+        if item is None:
+            return None
+        wanted = item.data(Qt.ItemDataRole.UserRole)
+        for reply in self._quick_replies:
+            if _view_id(reply, "id", "quick_reply_id") == wanted:
+                return reply
+        return None
+
+    def _create_quick_reply(self) -> None:
+        name = self.qr_name_edit.text().strip()
+        text = self.qr_text_edit.toPlainText().strip()
+        if not name or not text:
+            self.status_label.setText(
+                "Give the quick reply a name and a text first."
+            )
+            return
+        try:
+            result = self._flow.create_quick_reply(
+                {"name": name, "text": text}
+            )
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(
+                f"Could not create the quick reply: {exc}"
+            )
+            return
+        words = _object_words(result)
+        self.status_label.setText(words or f"Quick reply “{name}” created.")
+        self.qr_name_edit.clear()
+        self.qr_text_edit.clear()
+        self._load_quick_replies()
+
+    def _execute_quick_reply(self) -> None:
+        reply = self._selected_quick_reply()
+        if reply is None:
+            self.status_label.setText("Select a quick reply first.")
+            return
+        reply_id = _view_id(reply, "id", "quick_reply_id")
+        try:
+            result = self._flow.execute_quick_reply(reply_id)
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not execute it: {exc}")
+            return
+        words = _object_words(result)
+        self.status_label.setText(words or "Quick reply executed.")
+
+    def _delete_quick_reply(self) -> None:
+        reply = self._selected_quick_reply()
+        if reply is None:
+            self.status_label.setText("Select a quick reply first.")
+            return
+        reply_id = _view_id(reply, "id", "quick_reply_id")
+        name = getattr(reply, "name", "") or reply_id
+        if not self._confirm(
+            "Delete quick reply",
+            f"Delete the quick reply “{name}”? It leaves the "
+            "quick-reply store's custody. There is no undo.",
+        ):
+            return
+        try:
+            result = self._flow.delete_quick_reply(reply_id)
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not delete it: {exc}")
+            return
+        words = _object_words(result)
+        self.status_label.setText(words or f"Quick reply “{name}” deleted.")
+        self._load_quick_replies()
+
+    # ------------------------------------------------------- expressions
+
+    def _build_expressions_tab(self) -> None:
+        tab = QWidget()
+        lay = QVBoxLayout(tab)
+        lay.addWidget(QLabel("Current expressions"))
+        self.expression_current_text = QPlainTextEdit()
+        self.expression_current_text.setReadOnly(True)
+        self.expression_current_text.setMaximumHeight(90)
+        lay.addWidget(self.expression_current_text)
+        body = QHBoxLayout()
+        self.expression_sets_list = QListWidget()
+        self.expression_sets_list.currentRowChanged.connect(
+            lambda _row: self._show_expression_set()
+        )
+        body.addWidget(self.expression_sets_list, 1)
+        self.expression_detail_text = QPlainTextEdit()
+        self.expression_detail_text.setReadOnly(True)
+        body.addWidget(self.expression_detail_text, 1)
+        lay.addLayout(body, 1)
+        self.tabs.addTab(tab, "Expressions")
+
+    def _load_expression_sets(self) -> None:
+        try:
+            current = self._flow.expressions_current()
+            self.expression_current_text.setPlainText(
+                _object_words(current)
+            )
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(
+                f"Could not read the current expressions: {exc}"
+            )
+        try:
+            payload = self._flow.expression_sets()
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(
+                f"Could not list expression sets: {exc}"
+            )
+            return
+        self._expression_sets = _rows_of(
+            payload, "expression_sets", "sets", "items"
+        )
+        self.expression_sets_list.clear()
+        for expression_set in self._expression_sets:
+            item = QListWidgetItem(
+                _renderer_words(
+                    plugin_logic.expression_set_line(expression_set)
+                )
+            )
+            item.setData(
+                Qt.ItemDataRole.UserRole,
+                _view_id(expression_set, "character_id", "id"),
+            )
+            self.expression_sets_list.addItem(item)
+        if self._expression_sets:
+            self.expression_sets_list.setCurrentRow(0)
+
+    def _show_expression_set(self) -> None:
+        item = self.expression_sets_list.currentItem()
+        if item is None:
+            return
+        character_id = item.data(Qt.ItemDataRole.UserRole)
+        if not character_id:
+            return
+        try:
+            result = self._flow.expression_set(character_id)
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(
+                f"Could not read the expression set: {exc}"
+            )
+            return
+        self.expression_detail_text.setPlainText(_object_words(result))
+
+    # ---------------------------------------------------------- failures
+
+    def _build_failures_tab(self) -> None:
+        tab = QWidget()
+        lay = QVBoxLayout(tab)
+        self.failures_list = QListWidget()
+        self.failures_list.currentRowChanged.connect(
+            lambda _row: self._show_failure_detail()
+        )
+        lay.addWidget(self.failures_list, 1)
+        self.failure_detail_text = QPlainTextEdit()
+        self.failure_detail_text.setReadOnly(True)
+        lay.addWidget(self.failure_detail_text, 1)
+        self.tabs.addTab(tab, "Failures")
+
+    def _load_failures(self) -> None:
+        try:
+            payload = self._flow.failure_reports()
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(
+                f"Could not list failure reports: {exc}"
+            )
+            return
+        self._failures = _rows_of(payload, "failures", "reports", "items")
+        self.failures_list.clear()
+        for report in self._failures:
+            item = QListWidgetItem(
+                _renderer_words(plugin_logic.failure_line(report))
+            )
+            self.failures_list.addItem(item)
+        if self._failures:
+            self.failures_list.setCurrentRow(0)
+
+    def _show_failure_detail(self) -> None:
+        row = self.failures_list.currentRow()
+        if row < 0 or row >= len(self._failures):
+            return
+        report = self._failures[row]
+        line = _renderer_words(plugin_logic.failure_line(report))
+        detail = _object_words(report)
+        self.failure_detail_text.setPlainText(
+            "\n\n".join(part for part in (line, detail) if part)
+        )
+
+
+class LibrarySearchDialog(QDialog):
+    """Library Search (R-14): one query across the hub, the
+    workspaces, and the faces; results grouped by source with
+    the logic layer's own summary words — including its honest
+    empty state."""
+
+    def __init__(
+        self, parent: QWidget, flow: LibrarySearchFlow
+    ) -> None:
+        super().__init__(parent)
+        self.setWindowTitle("Library Search")
+        self.resize(760, 540)
+        self._flow = flow
+
+        layout = QVBoxLayout(self)
+        search_row = QHBoxLayout()
+        self.query_edit = QLineEdit()
+        self.query_edit.setPlaceholderText(
+            "Search hub, workspaces, and faces…"
+        )
+        self.query_edit.returnPressed.connect(lambda: self._search())
+        search_row.addWidget(self.query_edit, 1)
+        self.search_button = QPushButton("Search")
+        self.search_button.clicked.connect(lambda _c=False: self._search())
+        search_row.addWidget(self.search_button)
+        layout.addLayout(search_row)
+        self.summary_label = QLabel("")
+        self.summary_label.setWordWrap(True)
+        layout.addWidget(self.summary_label)
+        self.results_list = QListWidget()
+        layout.addWidget(self.results_list, 1)
+        self.status_label = QLabel("")
+        self.status_label.setWordWrap(True)
+        layout.addWidget(self.status_label)
+
+    def _search(self) -> None:
+        query = self.query_edit.text().strip()
+        if not query:
+            self.status_label.setText("Type a query first.")
+            return
+        try:
+            results = self._flow.search(query)
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not search: {exc}")
+            return
+        if not isinstance(results, dict):
+            results = {"results": _rows_of(results, "results", "hits")}
+        self.summary_label.setText(
+            _renderer_words(library_search_logic.results_words(results))
+        )
+        self.results_list.clear()
+        for source, hits in results.items():
+            rows = _rows_of(hits, "hits", "results")
+            if not rows:
+                continue
+            header = QListWidgetItem(f"{source}:")
+            header.setFlags(Qt.ItemFlag.NoItemFlags)
+            self.results_list.addItem(header)
+            for hit in rows:
+                self.results_list.addItem(
+                    QListWidgetItem(
+                        _renderer_words(
+                            library_search_logic.hit_line(source, hit)
+                        )
+                    )
+                )
+        self.status_label.setText(f"Searched for “{query}”.")
+
+
+class BridgeDialog(QDialog):
+    """Bridge (R-14): the bridge credentials. A created
+    credential's token is shown exactly ONCE, in the one-time
+    field below — it is never written to the status label, any
+    other widget, or any persistent state, and this window
+    does not store it."""
+
+    TOKEN_NOTE = (
+        "A new credential's token is shown here once — copy it "
+        "now. It will not be shown again, and this window does "
+        "not store it."
+    )
+
+    def __init__(self, parent: QWidget, flow: BridgeFlow) -> None:
+        super().__init__(parent)
+        self.setWindowTitle("Bridge")
+        self.resize(760, 540)
+        self._flow = flow
+        self._credentials: list = []
+
+        layout = QVBoxLayout(self)
+        self.summary_text = QPlainTextEdit()
+        self.summary_text.setReadOnly(True)
+        self.summary_text.setMaximumHeight(80)
+        layout.addWidget(self.summary_text)
+        self.credentials_list = QListWidget()
+        layout.addWidget(self.credentials_list, 1)
+        form = QFormLayout()
+        self.credential_label_edit = QLineEdit()
+        form.addRow("Label", self.credential_label_edit)
+        self.credential_scopes_edit = QLineEdit()
+        self.credential_scopes_edit.setPlaceholderText(
+            "Comma-separated scopes, e.g. read, write"
+        )
+        form.addRow("Scopes", self.credential_scopes_edit)
+        layout.addLayout(form)
+        note = QLabel(self.TOKEN_NOTE)
+        note.setWordWrap(True)
+        layout.addWidget(note)
+        self.token_field = QLineEdit()
+        self.token_field.setReadOnly(True)
+        self.token_field.setPlaceholderText(
+            "A new token appears here, once."
+        )
+        layout.addWidget(self.token_field)
+        buttons = QHBoxLayout()
+        self.create_credential_button = QPushButton("Create Credential")
+        self.create_credential_button.clicked.connect(
+            lambda _c=False: self._create_credential()
+        )
+        buttons.addWidget(self.create_credential_button)
+        self.revoke_credential_button = QPushButton("Revoke Selected")
+        self.revoke_credential_button.clicked.connect(
+            lambda _c=False: self._revoke_credential()
+        )
+        buttons.addWidget(self.revoke_credential_button)
+        layout.addLayout(buttons)
+        self.status_label = QLabel("")
+        self.status_label.setWordWrap(True)
+        layout.addWidget(self.status_label)
+        self._load_credentials()
+
+    # ------------------------------------------------------------ util
+
+    def _confirm(self, title: str, text: str) -> bool:
+        answer = QMessageBox.question(self, title, text)
+        return answer == QMessageBox.StandardButton.Yes
+
+    def _selected_credential(self):
+        item = self.credentials_list.currentItem()
+        if item is None:
+            return None
+        wanted = item.data(Qt.ItemDataRole.UserRole)
+        for credential in self._credentials:
+            if _view_id(credential, "credential_id", "id") == wanted:
+                return credential
+        return None
+
+    # ------------------------------------------------------------ list
+
+    def _load_credentials(self) -> None:
+        try:
+            payload = self._flow.credentials()
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(
+                f"Could not list credentials: {exc}"
+            )
+            return
+        self._credentials = _rows_of(payload, "credentials", "items")
+        self.credentials_list.clear()
+        for credential in self._credentials:
+            item = QListWidgetItem(
+                _renderer_words(bridge_logic.credential_line(credential))
+            )
+            item.setData(
+                Qt.ItemDataRole.UserRole,
+                _view_id(credential, "credential_id", "id"),
+            )
+            self.credentials_list.addItem(item)
+        self.summary_text.setPlainText(
+            _renderer_words(
+                bridge_logic.bridge_status_words(self._credentials)
+            )
+        )
+        if self._credentials:
+            self.credentials_list.setCurrentRow(0)
+
+    # ---------------------------------------------------------- actions
+
+    def _create_credential(self) -> None:
+        label = self.credential_label_edit.text().strip()
+        scopes = [
+            part.strip()
+            for part in self.credential_scopes_edit.text().split(",")
+            if part.strip()
+        ]
+        if not label:
+            self.status_label.setText(
+                "Give the credential a label first."
+            )
+            return
+        try:
+            result = self._flow.create_credential(
+                {"label": label, "scopes": scopes}
+            )
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(
+                f"Could not create the credential: {exc}"
+            )
+            return
+        token = ""
+        if isinstance(result, dict):
+            token = str(result.get("token") or result.get("secret") or "")
+            nested = result.get("credential")
+            if not token and isinstance(nested, dict):
+                token = str(nested.get("token") or "")
+        # Reload first: the one-time field is filled afterwards,
+        # so nothing in the reload can clear or copy it.
+        self._load_credentials()
+        self.token_field.setText(token)
+        if token:
+            self.status_label.setText(
+                "Credential created. Its token is in the one-time "
+                "field above — copy it now; it will not be shown "
+                "again and is not stored by this window."
+            )
+        else:
+            self.status_label.setText(
+                "Credential created; the engine returned no token "
+                "to show."
+            )
+
+    def _revoke_credential(self) -> None:
+        credential = self._selected_credential()
+        if credential is None:
+            self.status_label.setText("Select a credential first.")
+            return
+        credential_id = _view_id(credential, "credential_id", "id")
+        name = (
+            getattr(credential, "label", "")
+            or getattr(credential, "name", "")
+            or credential_id
+        )
+        if not self._confirm(
+            "Revoke credential",
+            f"Revoke the credential “{name}”? It is held by the "
+            "bridge's credential store; anything using its token "
+            "stops working at once. The token itself is never "
+            "shown here. There is no undo.",
+        ):
+            return
+        try:
+            result = self._flow.revoke(credential_id)
+        except Exception as exc:  # noqa: BLE001
+            self.status_label.setText(f"Could not revoke it: {exc}")
+            return
+        self.token_field.clear()
+        words = _object_words(result)
+        self.status_label.setText(words or f"Credential “{name}” revoked.")
+        self._load_credentials()
 
 
 class GroupsDialog(QDialog):
@@ -5999,6 +7041,14 @@ class MainWindow(QMainWindow):
         self._voice_dialog: VoiceDialog | None = None
         self._vision_flow_instance: VisionFlow | None = None
         self._vision_dialog: VisionDialog | None = None
+        self._backups_flow_instance: BackupFlow | None = None
+        self._backups_dialog: BackupsDialog | None = None
+        self._plugins_flow_instance: PluginFlow | None = None
+        self._plugins_dialog: PluginsDialog | None = None
+        self._library_search_flow_instance: LibrarySearchFlow | None = None
+        self._library_search_dialog: LibrarySearchDialog | None = None
+        self._bridge_flow_instance: BridgeFlow | None = None
+        self._bridge_dialog: BridgeDialog | None = None
         self._chats_cache: list[ChatSummary] = []
         # R-13: an image chosen in the composer, riding with the
         # next message as a (filename, bytes) pair.
@@ -6540,7 +7590,26 @@ class MainWindow(QMainWindow):
             lambda _c=False: self.open_vision_dialog()
         )
         tools_menu.addAction(self.action_vision)
-        self._placeholder(tools_menu, "Plugins…", "R-14")
+        self.action_backups = QAction("Backups & Data…", self)
+        self.action_backups.triggered.connect(
+            lambda _c=False: self.open_backups_dialog()
+        )
+        tools_menu.addAction(self.action_backups)
+        self.action_plugins = QAction("Plugins…", self)
+        self.action_plugins.triggered.connect(
+            lambda _c=False: self.open_plugins_dialog()
+        )
+        tools_menu.addAction(self.action_plugins)
+        self.action_library_search = QAction("Library Search…", self)
+        self.action_library_search.triggered.connect(
+            lambda _c=False: self.open_library_search_dialog()
+        )
+        tools_menu.addAction(self.action_library_search)
+        self.action_bridge = QAction("Bridge…", self)
+        self.action_bridge.triggered.connect(
+            lambda _c=False: self.open_bridge_dialog()
+        )
+        tools_menu.addAction(self.action_bridge)
 
         window_menu = bar.addMenu("Window")
         self._placeholder(window_menu, "Quick Switcher…", "a later slice")
@@ -6778,6 +7847,80 @@ class MainWindow(QMainWindow):
             self.current_chat_id,
         )
         return self._show_dialog("_vision_dialog", dialog)  # type: ignore[return-value]
+
+    def backups_flow(self) -> BackupFlow:
+        """The window's Backups flow (R-14, over the same client)."""
+        if self._backups_flow_instance is None:
+            self._backups_flow_instance = BackupFlow(self.client())
+        return self._backups_flow_instance
+
+    def plugins_flow(self) -> PluginFlow:
+        """The window's Plugins flow (R-14, over the same client)."""
+        if self._plugins_flow_instance is None:
+            self._plugins_flow_instance = PluginFlow(self.client())
+        return self._plugins_flow_instance
+
+    def library_search_flow(self) -> LibrarySearchFlow:
+        """The window's Library Search flow (R-14, same client)."""
+        if self._library_search_flow_instance is None:
+            self._library_search_flow_instance = LibrarySearchFlow(
+                self.client()
+            )
+        return self._library_search_flow_instance
+
+    def bridge_flow(self) -> BridgeFlow:
+        """The window's Bridge flow (R-14, over the same client)."""
+        if self._bridge_flow_instance is None:
+            self._bridge_flow_instance = BridgeFlow(self.client())
+        return self._bridge_flow_instance
+
+    def open_backups_dialog(self) -> BackupsDialog:
+        """Show the Backups & Data dialog (R-14)."""
+        if (
+            self._backups_dialog is not None
+            and self._backups_dialog.isVisible()
+        ):
+            self._backups_dialog.raise_()
+            self._backups_dialog.activateWindow()
+            return self._backups_dialog
+        dialog = BackupsDialog(self, self.backups_flow())
+        return self._show_dialog("_backups_dialog", dialog)  # type: ignore[return-value]
+
+    def open_plugins_dialog(self) -> PluginsDialog:
+        """Show the Plugins dialog (R-14)."""
+        if (
+            self._plugins_dialog is not None
+            and self._plugins_dialog.isVisible()
+        ):
+            self._plugins_dialog.raise_()
+            self._plugins_dialog.activateWindow()
+            return self._plugins_dialog
+        dialog = PluginsDialog(self, self.plugins_flow())
+        return self._show_dialog("_plugins_dialog", dialog)  # type: ignore[return-value]
+
+    def open_library_search_dialog(self) -> LibrarySearchDialog:
+        """Show the Library Search dialog (R-14)."""
+        if (
+            self._library_search_dialog is not None
+            and self._library_search_dialog.isVisible()
+        ):
+            self._library_search_dialog.raise_()
+            self._library_search_dialog.activateWindow()
+            return self._library_search_dialog
+        dialog = LibrarySearchDialog(self, self.library_search_flow())
+        return self._show_dialog("_library_search_dialog", dialog)  # type: ignore[return-value]
+
+    def open_bridge_dialog(self) -> BridgeDialog:
+        """Show the Bridge dialog (R-14)."""
+        if (
+            self._bridge_dialog is not None
+            and self._bridge_dialog.isVisible()
+        ):
+            self._bridge_dialog.raise_()
+            self._bridge_dialog.activateWindow()
+            return self._bridge_dialog
+        dialog = BridgeDialog(self, self.bridge_flow())
+        return self._show_dialog("_bridge_dialog", dialog)  # type: ignore[return-value]
 
     def groups_flow(self) -> GroupFlow:
         """The window's Groups flow (R-11, over the same client)."""

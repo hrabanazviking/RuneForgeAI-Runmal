@@ -1464,3 +1464,329 @@ class WatchFolderView:
             enabled=bool(payload.get("enabled", False)),
             created_at=str(payload.get("created_at", "") or ""),
         )
+
+
+# -- Backups, plugins, library search, bridge admin (R-14) ---------------
+
+
+@dataclass(frozen=True)
+class BackupView:
+    """One backup row, from either backup shape the engine returns.
+
+    ``POST /backups`` / ``POST /backups/full`` answer the verified
+    info document (``BackupInfo.to_dict`` / ``FullBackupInfo
+    .to_dict``: name, path, sha256, schema revision, and — full
+    bundles only — ``asset_files``); ``GET /backups`` answers the
+    lighter filesystem listing (name, size, ``modified_at`` only).
+    Both parse here; fields a shape does not carry stay empty.
+    ``kind`` is read off the engine's own filename law
+    (``runmal-full-backup-*`` vs ``runmal-backup-*``)."""
+
+    name: str
+    kind: str = "database"
+    path: str = ""
+    sha256: str = ""
+    size_bytes: int = 0
+    created_at: str = ""
+    modified_at: str = ""
+    schema_revision: str = ""
+    app_version: str = ""
+    secrets_included: bool = False
+    asset_files: int | None = None
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> BackupView:
+        name = str(payload.get("name", "") or "")
+        asset_files = payload.get("asset_files")
+        return cls(
+            name=name,
+            kind=(
+                "full"
+                if name.startswith("runmal-full-backup-")
+                else "database"
+            ),
+            path=str(payload.get("path", "") or ""),
+            sha256=str(payload.get("sha256", "") or ""),
+            size_bytes=_int_or(payload.get("size_bytes"), 0),
+            created_at=str(payload.get("created_at", "") or ""),
+            modified_at=str(payload.get("modified_at", "") or ""),
+            schema_revision=str(payload.get("schema_revision", "") or ""),
+            app_version=str(payload.get("app_version", "") or ""),
+            secrets_included=bool(payload.get("secrets_included", False)),
+            asset_files=(
+                asset_files if isinstance(asset_files, int) else None
+            ),
+        )
+
+
+@dataclass(frozen=True)
+class PluginView:
+    """One row of ``GET /api/v1/plugins`` (``record_to_dict``):
+    manifest identity + lifecycle state + failure counters.
+    ``last_error`` is the engine's metadata-only projection
+    (surface/hook/error_type/at — never a message, PLG-05)."""
+
+    id: str
+    name: str = ""
+    version: str = ""
+    api_version: int = 0
+    state: str = ""
+    capabilities: list[str] = field(default_factory=list)
+    permissions: list[str] = field(default_factory=list)
+    events: list[str] = field(default_factory=list)
+    prompt_hooks: int = 0
+    ui_slots: int = 0
+    consecutive_failures: int = 0
+    last_error: dict[str, Any] | None = None
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> PluginView:
+        last_error = payload.get("last_error")
+        return cls(
+            id=str(payload.get("id", "") or ""),
+            name=str(payload.get("name", "") or ""),
+            version=str(payload.get("version", "") or ""),
+            api_version=_int_or(payload.get("api_version"), 0),
+            state=str(payload.get("state", "") or ""),
+            capabilities=_str_list(payload.get("capabilities")),
+            permissions=_str_list(payload.get("permissions")),
+            events=_str_list(payload.get("events")),
+            prompt_hooks=_int_or(payload.get("prompt_hooks"), 0),
+            ui_slots=_int_or(payload.get("ui_slots"), 0),
+            consecutive_failures=_int_or(
+                payload.get("consecutive_failures"), 0
+            ),
+            last_error=(
+                dict(last_error) if isinstance(last_error, dict) else None
+            ),
+        )
+
+
+@dataclass(frozen=True)
+class PluginFailureReportView:
+    """One row of ``GET /api/v1/plugins/failure-reports``
+    (``FailureReport.to_dict``, P-099): the inspectable failure
+    truth for one plugin, its own plain-words summary included."""
+
+    plugin_id: str
+    state: str = ""
+    enabled: bool = False
+    self_disabled: bool = False
+    consecutive_failures: int = 0
+    failure_limit: int = 0
+    total_recorded: int = 0
+    plain: str = ""
+    last_failure: dict[str, Any] | None = None
+    failures: list[dict[str, Any]] = field(default_factory=list)
+
+    @classmethod
+    def from_dict(
+        cls, payload: dict[str, Any]
+    ) -> PluginFailureReportView:
+        last_failure = payload.get("last_failure")
+        rows = payload.get("failures")
+        return cls(
+            plugin_id=str(payload.get("plugin_id", "") or ""),
+            state=str(payload.get("state", "") or ""),
+            enabled=bool(payload.get("enabled", False)),
+            self_disabled=bool(payload.get("self_disabled", False)),
+            consecutive_failures=_int_or(
+                payload.get("consecutive_failures"), 0
+            ),
+            failure_limit=_int_or(payload.get("failure_limit"), 0),
+            total_recorded=_int_or(payload.get("total_recorded"), 0),
+            plain=str(payload.get("plain", "") or ""),
+            last_failure=(
+                dict(last_failure)
+                if isinstance(last_failure, dict)
+                else None
+            ),
+            failures=(
+                [dict(r) for r in rows if isinstance(r, dict)]
+                if isinstance(rows, list)
+                else []
+            ),
+        )
+
+
+@dataclass(frozen=True)
+class QuickReplyView:
+    """One row of ``GET /api/v1/quick-replies`` (``reply_to_data``,
+    P-089). ``steps`` stays the engine's raw step dicts — the
+    step shape is a strict validated document the editor composes
+    over, not a set of fields the shell re-models."""
+
+    id: str
+    name: str = ""
+    steps: list[dict[str, Any]] = field(default_factory=list)
+    scope: str = ""
+    chat_id: str | None = None
+    enabled: bool = True
+    created_at: str = ""
+    updated_at: str = ""
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> QuickReplyView:
+        rows = payload.get("steps")
+        return cls(
+            id=str(payload.get("id", "") or ""),
+            name=str(payload.get("name", "") or ""),
+            steps=(
+                [dict(r) for r in rows if isinstance(r, dict)]
+                if isinstance(rows, list)
+                else []
+            ),
+            scope=str(payload.get("scope", "") or ""),
+            chat_id=payload.get("chat_id") or None,
+            enabled=bool(payload.get("enabled", True)),
+            created_at=str(payload.get("created_at", "") or ""),
+            updated_at=str(payload.get("updated_at", "") or ""),
+        )
+
+    @property
+    def step_count(self) -> int:
+        return len(self.steps)
+
+    @property
+    def first_text(self) -> str:
+        """The first step's text, for one-line previews."""
+        if self.steps:
+            return str(self.steps[0].get("text", "") or "")
+        return ""
+
+
+@dataclass(frozen=True)
+class ExpressionSetView:
+    """One row of ``GET /api/v1/expressions/sets`` (``set_to_data``,
+    P-092): a character's declared expression set. ``entries``
+    stays the engine's raw entry dicts (name/label/asset_id/
+    notes) — a genuinely free-form declaration list the editor
+    composes over."""
+
+    character_id: str
+    entries: list[dict[str, Any]] = field(default_factory=list)
+    default: str | None = None
+    created_at: str = ""
+    updated_at: str = ""
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> ExpressionSetView:
+        rows = payload.get("entries")
+        return cls(
+            character_id=str(payload.get("character_id", "") or ""),
+            entries=(
+                [dict(r) for r in rows if isinstance(r, dict)]
+                if isinstance(rows, list)
+                else []
+            ),
+            default=payload.get("default") or None,
+            created_at=str(payload.get("created_at", "") or ""),
+            updated_at=str(payload.get("updated_at", "") or ""),
+        )
+
+    @property
+    def entry_count(self) -> int:
+        return len(self.entries)
+
+    @property
+    def entry_names(self) -> list[str]:
+        return [
+            str(e.get("name", "") or "")
+            for e in self.entries
+            if e.get("name")
+        ]
+
+
+@dataclass(frozen=True)
+class BridgeCredentialView:
+    """One row of ``GET /api/v1/bridge/credentials``
+    (``credential_to_dict``, S601).
+
+    INV-023: this view carries id/name/scopes/state ONLY. The
+    token plaintext exists exactly once — in the creation
+    response, which the client returns raw to the caller and
+    never parses into a view — and its hash never leaves the
+    engine at all. A ``token`` key in a payload handed here is
+    ignored by construction."""
+
+    id: str
+    name: str = ""
+    scopes: list[str] = field(default_factory=list)
+    created_at: str = ""
+    revoked_at: str | None = None
+    last_used_at: str | None = None
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> BridgeCredentialView:
+        return cls(
+            id=str(payload.get("id", "") or ""),
+            name=str(payload.get("name", "") or ""),
+            scopes=_str_list(payload.get("scopes")),
+            created_at=str(payload.get("created_at", "") or ""),
+            revoked_at=payload.get("revoked_at") or None,
+            last_used_at=payload.get("last_used_at") or None,
+        )
+
+    @property
+    def label(self) -> str:
+        """The credential's display label (its engine ``name``)."""
+        return self.name or self.id
+
+    @property
+    def state(self) -> str:
+        """``revoked`` once the engine stamps ``revoked_at``,
+        else ``active`` — the only two states the surface has."""
+        return "revoked" if self.revoked_at else "active"
+
+
+@dataclass(frozen=True)
+class LibraryHitView:
+    """One hit of the R-14 library search, whichever source
+    produced it. The two real search documents differ — hub hits
+    are pack entries (id/title/kind/locator), workspace hits are
+    files (name/path/kind) — so this view normalises the display
+    fields and keeps the source row verbatim in ``raw``."""
+
+    source: str
+    id: str = ""
+    title: str = ""
+    kind: str = ""
+    matched_by: str = ""
+    excerpt: str | None = None
+    locator: str = ""
+    occurrences: int | None = None
+    raw: dict[str, Any] = field(default_factory=dict)
+
+    @classmethod
+    def from_dict(
+        cls, payload: dict[str, Any], source: str = ""
+    ) -> LibraryHitView:
+        """Generic parse: hub rows carry ``title``/``locator``,
+        workspace rows ``name``/``path``; both are honoured."""
+        occurrences = payload.get("occurrences")
+        excerpt = payload.get("excerpt")
+        return cls(
+            source=source,
+            id=str(payload.get("id", "") or ""),
+            title=str(
+                payload.get("title") or payload.get("name") or ""
+            ),
+            kind=str(payload.get("kind", "") or ""),
+            matched_by=str(payload.get("matched_by", "") or ""),
+            excerpt=excerpt if isinstance(excerpt, str) else None,
+            locator=str(
+                payload.get("locator") or payload.get("path") or ""
+            ),
+            occurrences=(
+                occurrences if isinstance(occurrences, int) else None
+            ),
+            raw=dict(payload),
+        )
+
+    @classmethod
+    def from_hub(cls, payload: dict[str, Any]) -> LibraryHitView:
+        return cls.from_dict(payload, source="hub")
+
+    @classmethod
+    def from_workspace(cls, payload: dict[str, Any]) -> LibraryHitView:
+        return cls.from_dict(payload, source="workspaces")

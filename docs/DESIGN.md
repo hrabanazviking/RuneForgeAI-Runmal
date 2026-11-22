@@ -553,3 +553,24 @@ never costs the message, and the transcript names each
 attachment — through the Qt-free `desktop/voice_logic.py`
 and `desktop/vision_logic.py`. Slice contract and
 evidence: `docs/DESKTOP_VOICE_VISION_R13_2026-11-22.md`.
+
+R-14 adds Backups, Plugins, Library Search, and Bridge
+(Tools ▸ Backups & Data…, Plugins…, Library Search…,
+Bridge…): the backup list with create/stage for database
+backups and full bundles (staging prepares a restore for
+review and never overwrites the live data; full bundles
+are staged by the name their creation returned, since the
+engine's listing carries database backups only), the
+plugin manager (registry, permission cards, failure
+reports, install from a local pack file with the declared
+permissions granted, lifecycle verbs, quick replies,
+expression sets, chat variables), one search box over the
+hub and — when a chat is named — its bound workspace
+(faces has no search route and none is fabricated), and
+the bridge credential desk (create/list/revoke; a token
+is shown exactly once, in a one-time field, and no view
+or words function can carry it) — through the Qt-free
+`desktop/backups_logic.py`, `desktop/plugin_logic.py`,
+`desktop/library_search_logic.py`, and
+`desktop/bridge_logic.py`. Slice contract and evidence:
+`docs/DESKTOP_BACKUPS_PLUGINS_SEARCH_BRIDGE_R14_2026-11-22.md`.

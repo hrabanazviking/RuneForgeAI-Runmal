@@ -32,13 +32,16 @@ from runmal.desktop.client.models import (
     AssetView,
     AuthorsNoteView,
     BackendProfile,
+    BackupView,
     BindingView,
+    BridgeCredentialView,
     BundleView,
     CharacterCardView,
     CharacterSummary,
     ChatSummary,
     CheckpointView,
     EngineSnapshot,
+    ExpressionSetView,
     FirstRunState,
     GeneratedReply,
     GroupMemberView,
@@ -48,6 +51,7 @@ from runmal.desktop.client.models import (
     ImportOutcome,
     LayerScopeSummary,
     LibraryCardView,
+    LibraryHitView,
     LorebookSummary,
     LorebookView,
     LoreEntryView,
@@ -57,9 +61,12 @@ from runmal.desktop.client.models import (
     OrganisationView,
     OverrideView,
     PersonaView,
+    PluginFailureReportView,
+    PluginView,
     PresetDetail,
     PresetSummary,
     PreviewRow,
+    QuickReplyView,
     ScenarioView,
     SearchHitView,
     StreamEvent,
@@ -2540,6 +2547,524 @@ class RunmalClient:
         )
         rows = payload.get("ingested") if isinstance(payload, dict) else None
         return [dict(r) for r in (rows or []) if isinstance(r, dict)]
+
+    # ----------------------------------------------------- backups (R-14)
+
+    def list_backups(self) -> list[BackupView]:
+        """Database backups present on disk (``GET
+        /api/v1/backups``, S114): the filesystem listing shape
+        — name, size, modified time. The engine's listing law
+        matches only ``runmal-backup-*.db``; full bundles are
+        NOT listed here and are staged by the name their
+        create road returned."""
+        payload = self._request("GET", "/api/v1/backups")
+        rows = payload if isinstance(payload, list) else []
+        return [BackupView.from_dict(r) for r in rows if isinstance(r, dict)]
+
+    def create_backup(self) -> BackupView:
+        """Take an online database backup (``POST
+        /api/v1/backups``, 201): the verified info document.
+        Secrets are never in a backup (``secrets_included`` is
+        always False, S114)."""
+        payload = self._request("POST", "/api/v1/backups")
+        return BackupView.from_dict(payload if isinstance(payload, dict) else {})
+
+    def create_full_backup(self) -> BackupView:
+        """Take a full backup bundle — database + assets, one
+        sealed ZIP (``POST /api/v1/backups/full``, 201, S802)."""
+        payload = self._request("POST", "/api/v1/backups/full")
+        return BackupView.from_dict(payload if isinstance(payload, dict) else {})
+
+    def stage_backup(self, filename: str) -> dict[str, Any]:
+        """Stage-restore a database backup (``POST
+        /api/v1/backups/{filename}/stage``): the staged copy's
+        verified info document, raw. The live database is never
+        touched by staging."""
+        payload = self._request(
+            "POST", f"/api/v1/backups/{filename}/stage"
+        )
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    def stage_full_backup(self, filename: str) -> dict[str, Any]:
+        """Stage a full backup bundle (``POST
+        /api/v1/backups/full/{filename}/stage``): the restore
+        report document (checks, counts, warnings), raw. The
+        live installation is never touched by staging."""
+        payload = self._request(
+            "POST", f"/api/v1/backups/full/{filename}/stage"
+        )
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    def import_archive(self, path: str) -> dict[str, Any]:
+        """Import a portable ``.runmal`` archive into a fresh
+        staging directory (``POST /api/v1/archive/import``):
+        the import report document, raw."""
+        payload = self._request(
+            "POST", "/api/v1/archive/import", json={"path": path}
+        )
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    # ----------------------------------------------------- plugins (R-14)
+
+    def plugin_manager(self) -> dict[str, Any]:
+        """The plugin manager ledger view (``GET
+        /api/v1/plugins/manager``, P-083): ``installed`` rows +
+        ``rehydration_problems``, raw — the ledger row shape is
+        the manager's own document."""
+        payload = self._request("GET", "/api/v1/plugins/manager")
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    def list_plugins(self) -> list[PluginView]:
+        """Every registered plugin (``GET /api/v1/plugins``,
+        P-081 list-row shape)."""
+        payload = self._request("GET", "/api/v1/plugins")
+        rows = payload if isinstance(payload, list) else []
+        return [PluginView.from_dict(r) for r in rows if isinstance(r, dict)]
+
+    def plugin_detail(self, plugin_id: str) -> dict[str, Any]:
+        """One plugin's detail document (``GET
+        /api/v1/plugins/{id}``): the list row + manifest
+        verbatim + failure log + UI contributions, raw."""
+        payload = self._request("GET", f"/api/v1/plugins/{plugin_id}")
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    def plugin_permission_card(self, plugin_id: str) -> dict[str, Any]:
+        """The permission card for an installed or in-tree
+        plugin (``GET /api/v1/plugins/{id}/permission-card``,
+        P-083), raw — the logic layer renders its words."""
+        payload = self._request(
+            "GET", f"/api/v1/plugins/{plugin_id}/permission-card"
+        )
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    def plugin_failure_reports(self) -> list[PluginFailureReportView]:
+        """Every plugin's failure report (``GET
+        /api/v1/plugins/failure-reports``, P-099), in
+        registration order."""
+        payload = self._request("GET", "/api/v1/plugins/failure-reports")
+        rows = payload if isinstance(payload, list) else []
+        return [
+            PluginFailureReportView.from_dict(r)
+            for r in rows
+            if isinstance(r, dict)
+        ]
+
+    def plugin_failure_report(
+        self, plugin_id: str
+    ) -> PluginFailureReportView:
+        """One plugin's failure report (``GET
+        /api/v1/plugins/{id}/failure-report``, P-099)."""
+        payload = self._request(
+            "GET", f"/api/v1/plugins/{plugin_id}/failure-report"
+        )
+        return PluginFailureReportView.from_dict(
+            payload if isinstance(payload, dict) else {}
+        )
+
+    def plugin_install_preview(
+        self, payload: dict[str, Any]
+    ) -> dict[str, Any]:
+        """The permission-card verdict for a pack, writing
+        nothing (``POST /api/v1/plugins/install/preview``).
+        The body carries the pack under ``pack``."""
+        result = self._request(
+            "POST", "/api/v1/plugins/install/preview", json=payload
+        )
+        return dict(result) if isinstance(result, dict) else {}
+
+    def install_plugin(self, payload: dict[str, Any]) -> dict[str, Any]:
+        """Install a local pack (``POST /api/v1/plugins/install``,
+        201; 200 for an exact duplicate): the outcome document
+        (outcome + plugin detail + manager row + card), raw.
+        The body carries ``pack`` + ``granted_permissions``."""
+        result = self._request(
+            "POST", "/api/v1/plugins/install", json=payload
+        )
+        return dict(result) if isinstance(result, dict) else {}
+
+    def update_plugin(
+        self, plugin_id: str, payload: dict[str, Any]
+    ) -> dict[str, Any]:
+        """The versioned swap for one plugin (``POST
+        /api/v1/plugins/{id}/update``): the outcome document,
+        raw. The body carries ``pack`` + ``granted_permissions``."""
+        result = self._request(
+            "POST", f"/api/v1/plugins/{plugin_id}/update", json=payload
+        )
+        return dict(result) if isinstance(result, dict) else {}
+
+    def uninstall_plugin(self, plugin_id: str) -> dict[str, Any]:
+        """Remove a pack-managed plugin (``POST
+        /api/v1/plugins/{id}/uninstall``): outcome + plugin id
+        + the card that was in force, raw."""
+        result = self._request(
+            "POST", f"/api/v1/plugins/{plugin_id}/uninstall"
+        )
+        return dict(result) if isinstance(result, dict) else {}
+
+    def enable_plugin(self, plugin_id: str) -> dict[str, Any]:
+        """Enable one plugin (``POST /api/v1/plugins/{id}/enable``):
+        the detail document after the transition, raw. An
+        ``on_enable`` failure answers 200 with the ERRORED
+        record — the record IS the report (PLG-01)."""
+        result = self._request(
+            "POST", f"/api/v1/plugins/{plugin_id}/enable"
+        )
+        return dict(result) if isinstance(result, dict) else {}
+
+    def disable_plugin(self, plugin_id: str) -> dict[str, Any]:
+        """Disable one plugin (``POST
+        /api/v1/plugins/{id}/disable``): the detail document
+        after the transition, raw."""
+        result = self._request(
+            "POST", f"/api/v1/plugins/{plugin_id}/disable"
+        )
+        return dict(result) if isinstance(result, dict) else {}
+
+    def acknowledge_plugin(self, plugin_id: str) -> dict[str, Any]:
+        """Acknowledge an errored plugin (``POST
+        /api/v1/plugins/{id}/acknowledge``): the detail
+        document after the transition, raw."""
+        result = self._request(
+            "POST", f"/api/v1/plugins/{plugin_id}/acknowledge"
+        )
+        return dict(result) if isinstance(result, dict) else {}
+
+    # ---------------------------------------------- quick replies (R-14)
+
+    def list_quick_replies(
+        self, chat_id: str | None = None
+    ) -> list[QuickReplyView]:
+        """Quick-reply definitions (``GET /api/v1/quick-replies``,
+        P-089), optionally narrowed to one chat's scope."""
+        params: dict[str, Any] = {}
+        if chat_id:
+            params["chat_id"] = chat_id
+        payload = self._request(
+            "GET", "/api/v1/quick-replies", params=params
+        )
+        rows = payload if isinstance(payload, list) else []
+        return [
+            QuickReplyView.from_dict(r) for r in rows if isinstance(r, dict)
+        ]
+
+    def create_quick_reply(
+        self, payload: dict[str, Any]
+    ) -> QuickReplyView:
+        """Create a quick reply (``POST /api/v1/quick-replies``,
+        201). The body is the engine's reply document (``name``
+        + ``text`` or ``steps``, scope, optional ``chat_id``)."""
+        result = self._request(
+            "POST", "/api/v1/quick-replies", json=payload
+        )
+        return QuickReplyView.from_dict(
+            result if isinstance(result, dict) else {}
+        )
+
+    def get_quick_reply(self, reply_id: str) -> QuickReplyView:
+        """One quick reply (``GET /api/v1/quick-replies/{id}``)."""
+        payload = self._request("GET", f"/api/v1/quick-replies/{reply_id}")
+        return QuickReplyView.from_dict(
+            payload if isinstance(payload, dict) else {}
+        )
+
+    def update_quick_reply(
+        self, reply_id: str, payload: dict[str, Any]
+    ) -> QuickReplyView:
+        """Replace a quick reply (``PUT
+        /api/v1/quick-replies/{id}``)."""
+        result = self._request(
+            "PUT", f"/api/v1/quick-replies/{reply_id}", json=payload
+        )
+        return QuickReplyView.from_dict(
+            result if isinstance(result, dict) else {}
+        )
+
+    def delete_quick_reply(self, reply_id: str) -> bool:
+        """Delete a quick reply (``DELETE
+        /api/v1/quick-replies/{id}``)."""
+        payload = self._request(
+            "DELETE", f"/api/v1/quick-replies/{reply_id}"
+        )
+        return bool(isinstance(payload, dict) and payload.get("deleted"))
+
+    def execute_quick_reply(
+        self, reply_id: str, payload: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
+        """Execute a quick reply into a chat (``POST
+        /api/v1/quick-replies/{id}/execute``): the execution
+        record, raw. The body must carry ``chat_id``."""
+        result = self._request(
+            "POST",
+            f"/api/v1/quick-replies/{reply_id}/execute",
+            json=payload or {},
+        )
+        return dict(result) if isinstance(result, dict) else {}
+
+    def quick_reply_executions(self) -> list[dict[str, Any]]:
+        """Past quick-reply execution records (``GET
+        /api/v1/quick-replies/executions``), raw rows."""
+        payload = self._request("GET", "/api/v1/quick-replies/executions")
+        rows = payload if isinstance(payload, list) else []
+        return [dict(r) for r in rows if isinstance(r, dict)]
+
+    # ----------------------------------------------- expressions (R-14)
+
+    def list_expression_sets(self) -> list[ExpressionSetView]:
+        """All declared expression sets (``GET
+        /api/v1/expressions/sets``, P-092)."""
+        payload = self._request("GET", "/api/v1/expressions/sets")
+        rows = payload if isinstance(payload, list) else []
+        return [
+            ExpressionSetView.from_dict(r)
+            for r in rows
+            if isinstance(r, dict)
+        ]
+
+    def get_expression_set(self, character_id: str) -> ExpressionSetView:
+        """One character's expression set (``GET
+        /api/v1/expressions/sets/{character_id}``)."""
+        payload = self._request(
+            "GET", f"/api/v1/expressions/sets/{character_id}"
+        )
+        return ExpressionSetView.from_dict(
+            payload if isinstance(payload, dict) else {}
+        )
+
+    def create_expression_set(
+        self, payload: dict[str, Any]
+    ) -> ExpressionSetView:
+        """Declare a character's expression set (``POST
+        /api/v1/expressions/sets``, 201). Refused by the engine
+        when a set for that character already exists — replace
+        via :meth:`update_expression_set`."""
+        result = self._request(
+            "POST", "/api/v1/expressions/sets", json=payload
+        )
+        return ExpressionSetView.from_dict(
+            result if isinstance(result, dict) else {}
+        )
+
+    def update_expression_set(
+        self, character_id: str, payload: dict[str, Any]
+    ) -> ExpressionSetView:
+        """Replace a character's expression set (``PUT
+        /api/v1/expressions/sets/{character_id}``); the body
+        must name the same character."""
+        result = self._request(
+            "PUT",
+            f"/api/v1/expressions/sets/{character_id}",
+            json=payload,
+        )
+        return ExpressionSetView.from_dict(
+            result if isinstance(result, dict) else {}
+        )
+
+    def delete_expression_set(self, character_id: str) -> bool:
+        """Delete a character's expression set (``DELETE
+        /api/v1/expressions/sets/{character_id}``)."""
+        payload = self._request(
+            "DELETE", f"/api/v1/expressions/sets/{character_id}"
+        )
+        return bool(isinstance(payload, dict) and payload.get("deleted"))
+
+    def expression_bindings(self, character_id: str) -> dict[str, Any]:
+        """A set's asset-binding report (``GET
+        /api/v1/expressions/sets/{character_id}/bindings``),
+        raw."""
+        payload = self._request(
+            "GET", f"/api/v1/expressions/sets/{character_id}/bindings"
+        )
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    def derive_expression_set(self, character_id: str) -> dict[str, Any]:
+        """Derive a draft set from a character's assets (``POST
+        /api/v1/expressions/sets/{character_id}/derive``): the
+        draft document, raw — nothing is saved by deriving."""
+        payload = self._request(
+            "POST", f"/api/v1/expressions/sets/{character_id}/derive"
+        )
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    def expressions_current(self, chat_id: str) -> dict[str, Any]:
+        """A chat's current expression selection (``GET
+        /api/v1/expressions/current?chat_id=...``): the
+        selection document with its provenance, raw. The
+        engine 404s when nothing is selected — that absence is
+        the honest answer, surfaced as :class:`NotFoundError`."""
+        payload = self._request(
+            "GET", "/api/v1/expressions/current", params={"chat_id": chat_id}
+        )
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    # --------------------------------------------- chat variables (R-14)
+
+    def chat_variables(self, chat_id: str) -> dict[str, Any]:
+        """A chat's shared variables/flags snapshot (``GET
+        /api/v1/chat-variables?chat_id=...``, P-093), raw."""
+        payload = self._request(
+            "GET", "/api/v1/chat-variables", params={"chat_id": chat_id}
+        )
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    def set_chat_variable(
+        self,
+        chat_id: str,
+        key: str,
+        *,
+        value: Any = None,
+        flag: bool | None = None,
+    ) -> dict[str, Any]:
+        """Set one chat variable (or, with ``flag``, one chat
+        flag) (``POST /api/v1/chat-variables/set``, P-093).
+        Exactly one of ``value`` / ``flag`` is sent."""
+        body: dict[str, Any] = {"chat_id": chat_id, "key": key}
+        if flag is not None:
+            body["flag"] = flag
+        else:
+            body["value"] = value
+        payload = self._request(
+            "POST", "/api/v1/chat-variables/set", json=body
+        )
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    def unset_chat_variable(self, chat_id: str, key: str) -> bool:
+        """Remove one chat variable (``POST
+        /api/v1/chat-variables/unset``, P-093)."""
+        payload = self._request(
+            "POST",
+            "/api/v1/chat-variables/unset",
+            json={"chat_id": chat_id, "key": key},
+        )
+        return bool(isinstance(payload, dict) and payload.get("deleted"))
+
+    def clear_chat_variables(self, chat_id: str) -> dict[str, Any]:
+        """Clear all of a chat's variables (``POST
+        /api/v1/chat-variables/clear``, P-093): the verdict
+        document with the removed count, raw."""
+        payload = self._request(
+            "POST",
+            "/api/v1/chat-variables/clear",
+            json={"chat_id": chat_id},
+        )
+        return dict(payload) if isinstance(payload, dict) else {}
+
+    # -------------------------------------------- library search (R-14)
+
+    def search_hub(
+        self, query: str, *, kind: str | None = None
+    ) -> tuple[list[LibraryHitView], dict[str, Any]]:
+        """Search the hub (``GET /api/v1/hub/unified-search``,
+        P-192): one query over entry metadata AND verified pack
+        contents, merged by entry. Returns the typed hits plus
+        the raw document (totals, coverage, skips) for display
+        words. An empty query is refused by the engine (422) —
+        never treated as match-everything."""
+        params: dict[str, Any] = {"q": query}
+        if kind:
+            params["kind"] = kind
+        payload = self._request(
+            "GET", "/api/v1/hub/unified-search", params=params
+        )
+        document = payload if isinstance(payload, dict) else {}
+        rows = document.get("matches")
+        hits = (
+            [LibraryHitView.from_hub(r) for r in rows if isinstance(r, dict)]
+            if isinstance(rows, list)
+            else []
+        )
+        return hits, document
+
+    def search_workspaces(
+        self, query: str, chat_id: str, *, subpath: str = ""
+    ) -> tuple[list[LibraryHitView], dict[str, Any]]:
+        """Search one chat's bound workspace folder (``GET
+        /api/v1/workspaces/unified-search``, P-182): entry
+        names AND file contents over the bound tree, merged by
+        path. Workspace search is chat-scoped by the engine's
+        own law — there is no owner-wide workspace search.
+        Returns the typed hits plus the raw document."""
+        params: dict[str, Any] = {"chat_id": chat_id, "q": query}
+        if subpath:
+            params["subpath"] = subpath
+        payload = self._request(
+            "GET", "/api/v1/workspaces/unified-search", params=params
+        )
+        document = payload if isinstance(payload, dict) else {}
+        rows = document.get("matches")
+        hits = (
+            [
+                LibraryHitView.from_workspace(r)
+                for r in rows
+                if isinstance(r, dict)
+            ]
+            if isinstance(rows, list)
+            else []
+        )
+        return hits, document
+
+    def search_library(
+        self, query: str, *, chat_id: str | None = None
+    ) -> dict[str, list[LibraryHitView]]:
+        """The R-14 fan-out: one query over every source that
+        HAS a real search route. ``hub`` is always searched;
+        ``workspaces`` joins only when ``chat_id`` names the
+        chat whose bound folder is meant (its route is
+        chat-scoped). Faces has NO search route in the engine
+        (its routers are presentation/roster/census only), so
+        no ``faces`` key is ever fabricated."""
+        results: dict[str, list[LibraryHitView]] = {}
+        hits, _document = self.search_hub(query)
+        results["hub"] = hits
+        if chat_id:
+            ws_hits, _ws_document = self.search_workspaces(query, chat_id)
+            results["workspaces"] = ws_hits
+        return results
+
+    # ------------------------------------------------ bridge admin (R-14)
+
+    def list_bridge_credentials(self) -> list[BridgeCredentialView]:
+        """Bridge credentials (``GET /api/v1/bridge/credentials``,
+        S601 admin road): id/name/scopes/state only — the list
+        payload never carries a token or its hash (INV-023)."""
+        payload = self._request("GET", "/api/v1/bridge/credentials")
+        rows = payload if isinstance(payload, list) else []
+        return [
+            BridgeCredentialView.from_dict(r)
+            for r in rows
+            if isinstance(r, dict)
+        ]
+
+    def create_bridge_credential(
+        self, payload: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Create a bridge credential (``POST
+        /api/v1/bridge/credentials``, 201). The body carries
+        ``name`` + ``scopes``.
+
+        INV-023: the response is the ONE place the token
+        plaintext ever appears. It is returned raw to the
+        caller — the window shows it once — and is never
+        parsed into a view, never logged, and never retained
+        by this client."""
+        result = self._request(
+            "POST", "/api/v1/bridge/credentials", json=payload
+        )
+        return dict(result) if isinstance(result, dict) else {}
+
+    def revoke_bridge_credential(
+        self, credential_id: str
+    ) -> BridgeCredentialView:
+        """Revoke a bridge credential (``POST
+        /api/v1/bridge/credentials/{id}/revoke``): the
+        credential view with its revoked stamp. Idempotent in
+        the engine — re-revoking keeps the first stamp."""
+        payload = self._request(
+            "POST", f"/api/v1/bridge/credentials/{credential_id}/revoke"
+        )
+        return BridgeCredentialView.from_dict(
+            payload if isinstance(payload, dict) else {}
+        )
 
     # ------------------------------------------------------------ first run
 
