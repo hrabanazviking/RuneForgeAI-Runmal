@@ -133,7 +133,7 @@ def main() -> int:
         str(prefs0),
     )
 
-    snapshot = window.start_engine_blocking()
+    window.start_engine_blocking()
     app.processEvents()
     status = engine.status()
     check("engine_running", status.state is EngineState.RUNNING,
