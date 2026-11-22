@@ -120,14 +120,3 @@ def test_unknown_participant_and_strategy_rejected(tmp_path, monkeypatch) -> Non
     assert resp.status_code == 422
 
 
-def test_group_ui_page(tmp_path, monkeypatch) -> None:
-    client = make_client(tmp_path, monkeypatch)
-    page = client.get("/group")
-    assert page.status_code == 200
-    for marker in ('id="roster"', 'id="strategy"', 'id="group-thread"',
-                   'id="group-input"', "group.js"):
-        assert marker in page.text, marker
-    js = client.get("/static/group.js")
-    assert js.status_code == 200
-    assert "/api/v1/group/turn" in js.text
-    assert "typing" in js.text

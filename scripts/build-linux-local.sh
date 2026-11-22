@@ -39,11 +39,6 @@ if ! command -v dpkg-deb >/dev/null 2>&1; then
   exit 1
 fi
 
-if ! "$PYTHON" -c 'import tkinter' >/dev/null 2>&1; then
-  echo "Python tkinter is required. On Debian/Ubuntu/Kubuntu install python3-tk, then run this builder again." >&2
-  exit 1
-fi
-
 case "$(uname -m)" in
   x86_64|amd64) ARCH="amd64" ;;
   aarch64|arm64) ARCH="arm64" ;;
@@ -71,9 +66,6 @@ VERSION="$($VPY -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb
 echo "Building standalone Linux application..."
 "$PYINSTALLER" --noconfirm --clean --onedir \
   --name runmal \
-  --hidden-import tkinter \
-  --hidden-import tkinter.messagebox \
-  --hidden-import tkinter.scrolledtext \
   --hidden-import aiosqlite \
   --collect-all sqlite_vec \
   --collect-all runmal \

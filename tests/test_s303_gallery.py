@@ -82,14 +82,3 @@ def test_delete_is_soft_and_restorable(tmp_path, monkeypatch) -> None:
     assert client.post("/api/v1/characters/ghost/restore").status_code == 404
 
 
-def test_gallery_ui_page(tmp_path, monkeypatch) -> None:
-    client, _ = make_client(tmp_path, monkeypatch)
-    page = client.get("/gallery")
-    assert page.status_code == 200
-    for marker in ('id="gallery-grid"', 'id="search"', 'id="dropzone"',
-                   'id="import-file"', 'id="undo-banner"', "gallery.js"):
-        assert marker in page.text, marker
-    js = client.get("/static/gallery.js")
-    assert js.status_code == 200
-    for needle in ("/duplicate", "/restore", "dataTransfer", "/api/v1/characters"):
-        assert needle in js.text, needle

@@ -1,6 +1,8 @@
-"""S511 — Voice UI island + campaign hardening: device selector, role
-assignment with REMAP surfacing, status/waveform endpoints, the page,
-and the license scan staying green over the declared voice tree."""
+"""S511 — Voice API + campaign hardening: device selector, role
+assignment with REMAP surfacing, status/waveform endpoints, and the
+license scan staying green over the declared voice tree.
+(R-16: the server-rendered /voice page tests are scrapped with the
+web shell; the API tests below are the surviving contract.)"""
 
 from __future__ import annotations
 
@@ -13,7 +15,7 @@ from runmal.app import create_app
 from runmal.auth import get_or_create_credential
 from runmal.db.base import create_db_engine, create_session_factory
 from runmal.db.migrate import migrate_to_head
-from runmal.voice.audio import AudioDevice, FixtureDeviceProvider, RingBuffer
+from runmal.voice.audio import FixtureDeviceProvider, RingBuffer
 from runmal.voice.install import InstallPlan, is_installed, run_install
 from runmal.voice.license_audit import FORBIDDEN_DISTRIBUTIONS, audit_distributions
 from runmal.voice.router import waveform_levels
@@ -63,7 +65,7 @@ def test_role_assignment_rejects_absent_and_wrong_direction(tmp_path, monkeypatc
     assert unknown.status_code == 404
 
 
-def test_missing_saved_device_surfaces_remap_in_api_and_page(tmp_path, monkeypatch):
+def test_missing_saved_device_surfaces_remap_in_api(tmp_path, monkeypatch):
     provider = FixtureDeviceProvider()
     client = make_client(tmp_path, monkeypatch, provider)
     assert client.put("/api/v1/voice/roles/user_mic",
@@ -73,20 +75,6 @@ def test_missing_saved_device_surfaces_remap_in_api_and_page(tmp_path, monkeypat
     resolution = client.get("/api/v1/voice/roles").json()["resolution"]
     assert resolution["user_mic"]["status"] == "remap_required"
     assert resolution["user_mic"]["device_id"] is None
-    page = client.get("/voice").text
-    assert "remap-warning" in page and "hidden" not in page.split(
-        'id="remap-warning"')[1].split(">")[0]
-
-
-def test_voice_page_renders_selectors_and_waveform(tmp_path, monkeypatch):
-    client = make_client(tmp_path, monkeypatch)
-    page = client.get("/voice")
-    assert page.status_code == 200
-    for role in ("user_mic", "user_playback", "companion_output",
-                 "room_capture", "monitor"):
-        assert f'name="{role}"' in page.text
-    assert 'id="waveform"' in page.text
-    assert "Fixture Microphone" in page.text
 
 
 def test_status_endpoint_reports_state_and_waveform(tmp_path, monkeypatch):
@@ -130,17 +118,6 @@ def test_voice_api_requires_auth(tmp_path, monkeypatch):
     client = make_client(tmp_path, monkeypatch)
     client.headers.clear()
     assert client.get("/api/v1/voice/devices").status_code == 401
-    # The page itself is public (loopback boundary), like /memories.
-    assert client.get("/voice").status_code == 200
-
-
-def test_extra_device_directions_kept_straight(tmp_path, monkeypatch):
-    provider = FixtureDeviceProvider(devices=[
-        AudioDevice("only-in", "Solo Mic", "input", "fixture")])
-    client = make_client(tmp_path, monkeypatch, provider)
-    page = client.get("/voice").text
-    # No output devices exist: output selects render empty, not faked.
-    assert "Solo Mic" in page
 
 
 # ------------------------------------------------- backends (ADR-0005/6)
@@ -237,15 +214,6 @@ def test_settings_defaults_round_trip_and_validation(tmp_path, monkeypatch):
     bad = client.put("/api/v1/voice/settings/defaults",
                      json={"tts_backend": "kokoro-onnx"})
     assert bad.status_code == 400  # the removed engine is not selectable
-
-
-def test_voice_page_renders_backends_panel_with_notices(tmp_path, monkeypatch):
-    client = make_client(tmp_path, monkeypatch)
-    page = client.get("/voice").text
-    assert 'id="voice-backends"' in page
-    assert "CosyVoice" in page and "Kitten" in page
-    assert "Not shipped with Rúnmál" in page
-    assert "user-installed — not forge-verified" in page
 
 
 def test_voice_settings_store_tolerant_load(tmp_path, monkeypatch):

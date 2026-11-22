@@ -32,7 +32,7 @@ Source: "..\..\dist\Runmal\*"; DestDir: "{app}"; Flags: ignoreversion recursesub
 
 [Icons]
 Name: "{autoprograms}\Rúnmál"; Filename: "{app}\{#MyAppExeName}"; Parameters: "open"; WorkingDir: "{app}"; Comment: "Open Rúnmál"
-Name: "{autoprograms}\Rúnmál Control Center"; Filename: "{app}\{#MyAppExeName}"; Parameters: "control"; WorkingDir: "{app}"; Comment: "Manage the local Rúnmál service"
+Name: "{autoprograms}\Rúnmál Control Center"; Filename: "{app}\{#MyAppExeName}"; Parameters: "open"; WorkingDir: "{app}"; Comment: "Open Rúnmál (the desktop app is the control centre)"
 Name: "{autodesktop}\Rúnmál"; Filename: "{app}\{#MyAppExeName}"; Parameters: "open"; WorkingDir: "{app}"; Tasks: desktopicon
 
 [Run]

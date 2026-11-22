@@ -112,19 +112,3 @@ def test_inspector_unknown_ids_404(tmp_path, monkeypatch) -> None:
     assert response.status_code == 404
 
 
-def test_inspector_page_renders(tmp_path, monkeypatch) -> None:
-    client = make_client(tmp_path, monkeypatch)
-    page = client.get("/inspector")
-    assert page.status_code == 200
-    for element_id in (
-        "inspector-main",
-        "inspect-form",
-        "inspect-character",
-        "inspect-lorebook",
-        "inspect-messages",
-        "ledger-summary",
-        "trace-table",
-        "trace-rows",
-    ):
-        assert f'id="{element_id}"' in page.text, element_id
-    assert "/static/inspector.js" in page.text

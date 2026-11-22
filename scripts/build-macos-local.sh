@@ -60,9 +60,6 @@ echo "Building standalone macOS application..."
 "$PYINSTALLER" --noconfirm --clean --windowed \
   --name Runmal \
   --icon docs/images/runmal-emblem.png \
-  --hidden-import tkinter \
-  --hidden-import tkinter.messagebox \
-  --hidden-import tkinter.scrolledtext \
   --hidden-import aiosqlite \
   --collect-all sqlite_vec \
   --collect-all runmal \

@@ -9,9 +9,8 @@ from __future__ import annotations
 import hmac
 
 from fastapi import Depends, FastAPI, HTTPException, Query, Request, status
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import RedirectResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from fastapi.staticfiles import StaticFiles
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from runmal import __version__
@@ -40,7 +39,6 @@ from runmal.hub.router import router as hub_router
 from runmal.inspector.router import router as inspector_router
 from runmal.library.router import router as library_router
 from runmal.lorebooks.router import router as lorebooks_router
-from runmal.memory.router import memories_browser_page
 from runmal.memory.router import router as memories_router
 from runmal.persona.router import router as persona_router
 from runmal.plugins import service as plugin_service
@@ -56,7 +54,6 @@ from runmal.voice.projection_router import router as projection_router
 from runmal.voice.autoproject_router import router as autoproject_router
 from runmal.voice.mishearing_router import router as mishearing_router
 from runmal.voice.repeat_router import router as repeat_router
-from runmal.voice.router import voice_page
 from runmal.vision.router import router as vision_router
 from runmal.faces.router import router as faces_router
 from runmal.faces.roster_router import router as faces_roster_router
@@ -85,8 +82,6 @@ from runmal.workspaces.tree_census_router import router as workspaces_tree_censu
 from runmal.workspaces.unified_search_router import router as workspaces_unified_search_router
 from runmal.workspaces.content_census_router import router as workspaces_content_census_router
 from runmal.workspaces.unified_search_census_router import router as workspaces_unified_search_census_router
-from runmal.web.router import _HERE as _WEB_DIR
-from runmal.web.router import router as web_router
 
 bearer_scheme = HTTPBearer(auto_error=False)
 _UNSAFE_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
@@ -163,7 +158,8 @@ def create_app(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Invalid or expired launcher bootstrap",
             )
-        response = RedirectResponse(url="/chat", status_code=status.HTTP_303_SEE_OTHER)
+        response = RedirectResponse(
+            url="/api/v1/status", status_code=status.HTTP_303_SEE_OTHER)
         response.set_cookie(
             key=SESSION_COOKIE_NAME,
             value=create_browser_session(),
@@ -262,13 +258,11 @@ def create_app(
         prefix="/api/v1",
         dependencies=[Depends(require_local_auth)],
     )
-    app.get("/memories", response_class=HTMLResponse)(memories_browser_page)
     app.include_router(
         voice_router,
         prefix="/api/v1",
         dependencies=[Depends(require_local_auth)],
     )
-    app.get("/voice", response_class=HTMLResponse)(voice_page)
     app.include_router(
         live_router,
         prefix="/api/v1",
@@ -447,7 +441,6 @@ def create_app(
     # Bridge-facing API: authenticated by scoped bridge tokens only,
     # never by the local credential (S601, INV-029).
     app.include_router(bridge_router, prefix="/api/v1")
-    # Browser UI pages contain no permanent secret. API calls remain auth-gated.
-    app.include_router(web_router)
-    app.mount("/static", StaticFiles(directory=_WEB_DIR / "static"), name="static")
+    # R-16: the web shell is scrapped — the desktop app (runmal.desktop)
+    # is the only front end; this app serves the API alone.
     return app

@@ -373,8 +373,12 @@ def test_15_route_census_equals_p206_census(tmp_path, monkeypatch):
     # P-210 heal: 355 / 438 since P-210's one new road;
     # the P-206 census this pin was written against was
     # 354 / 437; P-207 itself added no road.)
-    assert len(paths) == 365
-    assert operations == 455
+    # R-16 heal: 354 / 444 — the web shell is scrapped:
+    # the 8 in-schema web page paths, /voice, /memories
+    # and /api/v1/memories-browser are gone (-11 paths /
+    # -11 operations; "/" was schema-excluded, never counted).
+    assert len(paths) == 354
+    assert operations == 444
 
 
 async def test_16_declined_family_still_not_recorded(tmp_path):

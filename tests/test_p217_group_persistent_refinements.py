@@ -41,7 +41,6 @@ source and segment assertions, never by importing it.
 
 import asyncio
 import os
-import re
 from pathlib import Path
 
 from fastapi.testclient import TestClient
@@ -144,133 +143,6 @@ def submit_segment():
 # -- Static-source pins over group.js --------------------------------------
 
 
-def test_01_disable_on_open_sits_on_success_path():
-    segment = open_segment()
-    strategy_off = '$("strategy").disabled = true;'
-    roster_off = "box.disabled = true;"
-    assert strategy_off in segment
-    assert 'document.querySelectorAll(".roster-check")' in segment
-    assert roster_off in segment
-    set_at = segment.index("openGroupId = groupId;")
-    mode_at = segment.index('"Saved group mode"')
-    assert set_at < segment.index(strategy_off)
-    assert mode_at < segment.index(strategy_off)
-    assert set_at < segment.index(roster_off)
-    assert mode_at < segment.index(roster_off)
-    catch = segment[segment.index("} catch (err)"):]
-    assert "showError" in catch
-    assert strategy_off not in catch
-    assert roster_off not in catch
-    assert "disabled" not in catch
-
-
-def test_02_reenable_on_close_after_the_guard():
-    segment = close_segment()
-    guard_at = segment.index("if (!openGroupId) return;")
-    strategy_on = '$("strategy").disabled = false;'
-    roster_on = "box.disabled = false;"
-    assert strategy_on in segment
-    assert 'document.querySelectorAll(".roster-check")' in segment
-    assert roster_on in segment
-    assert guard_at < segment.index(strategy_on)
-    assert guard_at < segment.index(roster_on)
-
-
-def test_03_close_reload_equivalence_restated_and_extended():
-    segment = close_segment()
-    assert "openGroupId = null;" in segment
-    assert '$("group-thread").textContent = "";' in segment
-    assert "history = [];" in segment
-    assert "rrCursor = 0;" in segment
-    assert ('$("group-mode").textContent = "Stateless room";'
-            in segment)
-    assert '$("close-group").disabled = true;' in segment
-    assert '$("strategy").disabled = false;' in segment
-    assert "box.disabled = false;" in segment
-
-
-def test_04_close_stays_network_and_storage_free():
-    segment = close_segment()
-    for fenced in ("api(", "fetch", "POST", "localStorage",
-                   "sessionStorage"):
-        assert fenced not in segment, fenced
-
-
-def test_05_loader_fence_restated_at_p217():
-    segment = open_segment()
-    assert "history.push" not in segment
-    assert "sentHistory" not in segment
-    assert "localStorage" not in segment
-    assert "sessionStorage" not in segment
-
-
-def test_06_refresh_placement_after_post_and_render():
-    segment = persistent_segment()
-    post_at = segment.index(
-        '"/api/v1/groups/" + openGroupId + "/next"')
-    render_at = segment.index(
-        'addBubble(m.speaker_name || "user", m.content)')
-    refresh_at = segment.index("await loadSavedGroups();")
-    value_at = segment.index('$("saved-group").value = openGroupId;')
-    assert post_at < refresh_at
-    assert post_at < value_at
-    assert render_at < refresh_at
-    assert refresh_at < value_at
-
-
-def test_07_refresh_runs_on_the_null_path_too():
-    segment = persistent_segment()
-    assert "if (!m) return;" not in segment
-    guard_at = segment.index("if (m) {")
-    assert guard_at < segment.index(
-        'addBubble(m.speaker_name || "user", m.content)')
-    assert segment.index("await loadSavedGroups();") \
-        > segment.index("if (m) {")
-
-
-def test_08_no_refresh_on_failure():
-    segment = persistent_segment()
-    catch = segment[segment.index("} catch (err)"):]
-    assert "showError" in catch
-    assert "loadSavedGroups" not in catch
-    assert '$("saved-group").value' not in catch
-
-
-def test_09_persistent_fence_restated():
-    segment = persistent_segment()
-    for fenced in ("history", "sentHistory", "rrCursor",
-                   "selectedIds", "strategy",
-                   "/api/v1/group/turn", "localStorage",
-                   "sessionStorage"):
-        assert fenced not in segment, fenced
-    assert segment.count("loadSavedGroups()") == 1
-
-
-def test_10_composer_toggle_and_creation_truth_restated():
-    submit = submit_segment()
-    assert submit.index("if (openGroupId)") \
-        < submit.index("sentHistory")
-    assert "await sendPersistent(text);" in submit
-    persistent = persistent_segment()
-    assert '"/api/v1/groups/" + openGroupId + "/next"' in persistent
-    assert "generate: true" in persistent
-    assert 'api("/api/v1/group/turn"' in submit
-    assert "participant_ids: selectedIds()" in submit
-    assert "history: sentHistory" in submit
-    assert "strategy:" in submit
-    assert "rr_cursor: rrCursor" in submit
-    js = GROUP_JS.read_text()
-    assert '"Stateless room"' in js
-    assert '"Saved group mode"' in js
-    created = create_segment()
-    assert 'api("/api/v1/groups"' in created
-    assert "member_character_ids: selectedIds()" in created
-
-
-def test_11_textcontent_only_no_innerhtml():
-    assert "innerHTML" not in GROUP_JS.read_text()
-
-
 # -- API-truth pins (backend unchanged, seeded store) -----------------------
 
 
@@ -344,23 +216,17 @@ def test_14_census_head_and_exact_control_census(
         len([k for k in methods
              if k in ("get", "post", "put", "delete", "patch")])
         for methods in paths.values())
-    assert len(paths) == 365
-    assert operations == 455
+    # R-16 heal: 354 / 444 — the web shell is scrapped:
+    # the 8 in-schema web page paths, /voice, /memories
+    # and /api/v1/memories-browser are gone (-11 paths /
+    # -11 operations; "/" was schema-excluded, never counted).
+    assert len(paths) == 354
+    assert operations == 444
     assert MIGRATIONS[-1][0] == "0042"
     assert current_revision(client.db_path) == "0042"
     assert all(rev != "0043" for rev, _desc, _mod in MIGRATIONS)
     import runmal.db.migrations as migrations_pkg
     names = os.listdir(os.path.dirname(migrations_pkg.__file__))
     assert not any(name.startswith("m0043") for name in names)
-    html = GROUP_HTML.read_text()
-    ids = set(re.findall(r'id="([^"]+)"', html))
-    assert ids == {
-        "group-main", "error-banner", "error-text",
-        "error-dismiss", "group-layout", "saved-group",
-        "open-group", "close-group", "group-mode",
-        "new-group-name", "create-group", "roster",
-        "strategy", "group-thread", "group-form", "group-input",
-        "palette", "palette-card", "palette-input", "palette-list",
-    }
-    assert (html.index('/static/renderer.js')
-            < html.index('/static/group.js'))
+    # R-16: the group.html control census leg is scrapped
+    # with the web shell; census + head fences above stand.

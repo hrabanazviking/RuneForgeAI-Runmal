@@ -344,9 +344,12 @@ The architecture remains API-first so future clients/features can attach without
 
 When two documents disagree, resolve the contradiction rather than choosing whichever wording is convenient.
 
-## 18. Hearth UI design system (S301, Campaign III)
+## 18. Hearth UI design system (S301, Campaign III) — REMOVED in R-16
 
-The web UI ("Hearth") is styled by a single token layer in
+The web UI ("Hearth") was removed in slice R-16 (2026-11-22,
+ADR-0011): `src/runmal/web/` no longer ships and the desktop shell
+(§19) is the only front end. What follows is the historical record
+of the removed system. It was styled by a single token layer in
 `src/runmal/web/static/style.css`:
 
 - **Design tokens** are CSS custom properties. Color tokens are defined
@@ -388,6 +391,13 @@ per the interface-redo plan §2.2:
   never appear in reprs, errors, or logs (INV-023).
 
 Slice contract and evidence: `docs/DESKTOP_SHELL_R04_2026-11-14.md`.
+
+R-16 (2026-11-22, ADR-0011) removes the web shell entirely: the
+`web/` package, `voice_page`, and `memories_browser_page` are gone,
+the frozen entry and launcher repoint to this desktop shell, and a
+standing parse/launch smoke gate (`tests/test_r16_desktop_smoke.py`)
+guards every shipped front-end file. Slice docs:
+`docs/DESKTOP_WEB_REMOVAL_R16_2026-11-22.md`.
 
 R-05 adds the First-Run Setup wizard on the same boundaries: Qt
 widgets in `desktop/wizard.py` hold no decisions — the flow lives
@@ -589,3 +599,13 @@ shell prefs persisted via QSettings and applied before
 first show, so the app is themed out of the box. Slice
 contract and evidence:
 `docs/DESKTOP_APPEARANCE_R15_2026-11-22.md`.
+
+R-16 removes the web shell entirely (ADR-0011): `src/runmal/web/`,
+the two stray server-rendered pages (`/voice`, `/memories`), the Tk
+Control Center, and the launcher's browser road are deleted; the
+desktop shell is the only shipped front end, the launcher's open
+road spawns it, and `/launcher/bootstrap` redirects to
+`/api/v1/status`. The route census drops to 354 paths / 444
+operations, and a standing gate (`tests/test_r16_desktop_smoke.py`)
+keeps the removed shell from rotting back. Slice contract and
+evidence: `docs/DESKTOP_WEB_REMOVAL_R16_2026-11-22.md`.

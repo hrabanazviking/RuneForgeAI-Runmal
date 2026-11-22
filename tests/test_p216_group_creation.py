@@ -47,7 +47,6 @@ inside createGroup's block.
 
 import asyncio
 import os
-import re
 from pathlib import Path
 
 from fastapi.testclient import TestClient
@@ -146,111 +145,6 @@ def persistent_segment():
 # -- Static-source pins over group.html / group.js --------------------------
 
 
-def test_01_creation_pair_in_saved_groups_block():
-    html = GROUP_HTML.read_text()
-    assert ('<input id="new-group-name" type="text" '
-            'aria-label="New group name">') in html
-    assert ('<button id="create-group" type="button">'
-            'Create group</button>') in html
-    aside_open = html.index("<aside")
-    mode_at = html.index('id="group-mode"')
-    name_at = html.index('id="new-group-name"')
-    create_at = html.index('id="create-group"')
-    roster_at = html.index("<h2>Roster</h2>")
-    aside_close = html.index("</aside>")
-    assert aside_open < mode_at < name_at < create_at < roster_at
-    assert create_at < aside_close
-    assert (html.index('/static/renderer.js')
-            < html.index('/static/group.js'))
-
-
-def test_02_create_declared_and_wired_on_domcontentloaded():
-    js = GROUP_JS.read_text()
-    assert "async function createGroup()" in js
-    wire_at = js.index('document.addEventListener("DOMContentLoaded"')
-    wiring = js[wire_at:]
-    assert '$("create-group").addEventListener("click"' in wiring
-    assert "createGroup();" in wiring
-    assert wiring.index('$("open-group").addEventListener') \
-        < wiring.index('$("create-group").addEventListener')
-
-
-def test_03_create_posts_the_banked_creation_road():
-    segment = create_segment()
-    assert 'api("/api/v1/groups"' in segment
-    assert 'method: "POST"' in segment
-    assert "name: name" in segment
-    assert "member_character_ids: selectedIds()" in segment
-
-
-def test_04_empty_name_fence_precedes_the_post():
-    segment = create_segment()
-    assert '$("new-group-name").value.trim()' in segment
-    guard_at = segment.index("if (!name)")
-    assert guard_at < segment.index('method: "POST"')
-    fence = segment[guard_at:segment.index('method: "POST"')]
-    assert "showError(" in fence
-    assert "return;" in fence
-
-
-def test_05_success_ordering_post_clear_refresh_select():
-    segment = create_segment()
-    post_at = segment.index('method: "POST"')
-    clear_at = segment.index('$("new-group-name").value = "";')
-    refresh_at = segment.index("await loadSavedGroups();")
-    select_at = segment.index('$("saved-group").value = group.id;')
-    assert post_at < clear_at < refresh_at < select_at
-
-
-def test_06_selected_never_opened_fence():
-    segment = create_segment()
-    assert "openSavedGroup" not in segment
-    assert "openGroupId" not in segment
-    assert "/messages" not in segment
-
-
-def test_07_failure_path_leaves_page_state_untouched():
-    segment = create_segment()
-    catch = segment[segment.index("} catch (err)"):]
-    assert "showError(String(err))" in catch
-    assert "loadSavedGroups" not in catch
-    assert '.value = ""' not in catch
-
-
-def test_08_banked_loader_and_close_fences_restated():
-    opened = open_segment()
-    assert "POST" not in opened
-    assert "history.push" not in opened
-    assert "sentHistory" not in opened
-    assert "localStorage" not in opened
-    assert "sessionStorage" not in opened
-    closed = close_segment()
-    for fenced in ("api(", "fetch", "POST"):
-        assert fenced not in closed, fenced
-
-
-def test_09_composer_and_toggle_truth_restated():
-    submit = submit_segment()
-    assert submit.index("if (openGroupId)") \
-        < submit.index("const sentHistory")
-    assert "await sendPersistent(text);" in submit
-    persistent = persistent_segment()
-    assert '"/api/v1/groups/" + openGroupId + "/next"' in persistent
-    assert "generate: true" in persistent
-    assert 'api("/api/v1/group/turn"' in submit
-    assert "participant_ids: selectedIds()" in submit
-    assert "history: sentHistory" in submit
-    assert "strategy:" in submit
-    assert "rr_cursor: rrCursor" in submit
-    js = GROUP_JS.read_text()
-    assert '"Stateless room"' in js
-    assert '"Saved group mode"' in js
-
-
-def test_10_textcontent_only_no_innerhtml():
-    assert "innerHTML" not in GROUP_JS.read_text()
-
-
 # -- API-truth pins (backend unchanged, seeded store) -----------------------
 
 
@@ -303,8 +197,12 @@ def test_13_route_census_unchanged(tmp_path, monkeypatch):
         len([k for k in methods
              if k in ("get", "post", "put", "delete", "patch")])
         for methods in paths.values())
-    assert len(paths) == 365
-    assert operations == 455
+    # R-16 heal: 354 / 444 — the web shell is scrapped:
+    # the 8 in-schema web page paths, /voice, /memories
+    # and /api/v1/memories-browser are gone (-11 paths /
+    # -11 operations; "/" was schema-excluded, never counted).
+    assert len(paths) == 354
+    assert operations == 444
 
 
 def test_14_head_and_exact_control_census(tmp_path, monkeypatch):
@@ -315,13 +213,5 @@ def test_14_head_and_exact_control_census(tmp_path, monkeypatch):
     import runmal.db.migrations as migrations_pkg
     names = os.listdir(os.path.dirname(migrations_pkg.__file__))
     assert not any(name.startswith("m0043") for name in names)
-    html = GROUP_HTML.read_text()
-    ids = set(re.findall(r'id="([^"]+)"', html))
-    assert ids == {
-        "group-main", "error-banner", "error-text",
-        "error-dismiss", "group-layout", "saved-group",
-        "open-group", "close-group", "group-mode",
-        "new-group-name", "create-group", "roster",
-        "strategy", "group-thread", "group-form", "group-input",
-        "palette", "palette-card", "palette-input", "palette-list",
-    }
+    # R-16: the group.html control census leg is scrapped
+    # with the web shell; census + head fences above stand.

@@ -35,7 +35,6 @@ A4 proves the restatements agree).
 
 from __future__ import annotations
 
-import hashlib
 import importlib.util
 import re
 import subprocess
@@ -341,26 +340,6 @@ def build_world(client):
     return world
 
 
-def group_js_segment(name):
-    text = GROUP_JS.read_text(encoding="utf-8")
-    start = text.index(f"function {name}(")
-    boundaries = [
-        text.find("\nfunction ", start + 1),
-        text.find("\nasync function ", start + 1),
-        text.find('\n$("group-form")', start + 1),
-    ]
-    ends = [b for b in boundaries if b > start]
-    end = min(ends) if ends else len(text)
-    return text[start:end]
-
-
-def submit_segment():
-    text = GROUP_JS.read_text(encoding="utf-8")
-    start = text.index('$("group-form")')
-    end = text.index("\nloadRoster()", start)
-    return text[start:end]
-
-
 # -- Area A: Census x10 -----------------------------------------------------
 
 
@@ -489,8 +468,12 @@ def test_a8_matrix_doc_structure():
 def test_a9_standing_census(tmp_path, monkeypatch):
     client = make_client(tmp_path, monkeypatch)
     paths, operations = census(client)
-    assert len(paths) == 365
-    assert operations == 455
+    # R-16 heal: 354 / 444 — the web shell is scrapped:
+    # the 8 in-schema web page paths, /voice, /memories
+    # and /api/v1/memories-browser are gone (-11 paths /
+    # -11 operations; "/" was schema-excluded, never counted).
+    assert len(paths) == 354
+    assert operations == 444
     assert MIGRATIONS[-1][0] == "0042"
     migrations_dir = SRC / "db" / "migrations"
     assert not [p.name for p in migrations_dir.glob("m0043*")]
@@ -873,17 +856,21 @@ def test_d1_d1_fence_stands(tmp_path, monkeypatch):
     # failed-generation turn is honest, and the ruling
     # stays Volmarr's / the keeper's, outstanding. The
     # S305 contract battery itself stands as neighbour.
-    submit = submit_segment()
-    handled = set(re.findall(r'event\.type === "(\w+)"', submit))
-    assert handled == {
-        "typing", "reasoning", "token", "message", "turn_end"}
+    # R-16: the page submit-segment leg is scrapped with the
+    # web shell, and the S305 battery's page test went with
+    # it (5 -> 4 tests); the road fence above stands.
     s305 = (TESTS / "test_s305_group_ui.py").read_text(
         encoding="utf-8")
-    assert len(re.findall(r"def test_", s305)) == 5
+    assert len(re.findall(r"def test_", s305)) == 4
 
 
 def test_d2_per_swipe_browsing_absent(tmp_path, monkeypatch):
+    # R-16: the web files are scrapped — absence of the markers
+    # now holds by the files' own absence; any file that still
+    # exists is still checked at full strength.
     for path in (GROUP_JS, APP_JS, RENDERER_JS, GROUP_HTML):
+        if not path.exists():
+            continue
         text = path.read_text(encoding="utf-8")
         for marker in ("show-all-swipes", "show_all_swipes",
                        "showAllSwipes"):
@@ -1000,17 +987,10 @@ def test_d8_sitting_absent_and_live_sse_excluded(
         for p in paths)
     assert not any("sitting" in p.name.lower()
                    for p in SRC.rglob("*.py"))
-    # Web /generate live-SSE reasoning wiring stays
-    # excluded (P-206 / P-209): the chats stream path
-    # collects reasoning for STORAGE only and renders
-    # nothing live.
-    app_js = APP_JS.read_text(encoding="utf-8")
-    stream = app_js.split("async function streamGeneration", 1)[1]
-    stream = stream.split("async function sendMessage", 1)[0]
-    assert 'event.type === "reasoning"' in stream
-    assert "reasoningParts.push(event.text)" in stream
-    assert "reasoningView" not in stream
-    assert "reasoningPanel" not in stream
+    # R-16: the web /generate live-SSE leg (app.js) is
+    # scrapped with the web shell — the exclusion holds by
+    # the page's own absence; the road/module absence
+    # assertions above stand at full strength.
 
 
 # -- Hygiene x2 ---------------------------------------------------------------
@@ -1053,10 +1033,13 @@ def test_h1_tree_law_footprint():
 
 
 def test_h2_goldens_unmoved():
+    # R-16 heal: the UI goldens pinned above (GOLDEN_SHA256)
+    # were the web pages' rendered signatures; they are
+    # scrapped with the web shell along with the fixtures
+    # directory itself. The pin now stands at equal strength
+    # in its R-16 form: none of the banked goldens may exist
+    # (a silent return of the web shell would fail here).
     golden_dir = TESTS / "fixtures" / "ui"
-    assert {p.name for p in golden_dir.glob("*.golden.txt")} == (
-        set(GOLDEN_SHA256))
-    for name, expected in GOLDEN_SHA256.items():
-        digest = hashlib.sha256(
-            (golden_dir / name).read_bytes()).hexdigest()
-        assert digest == expected, name
+    assert not golden_dir.exists()
+    for name in GOLDEN_SHA256:
+        assert not (golden_dir / name).exists(), name

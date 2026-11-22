@@ -12,7 +12,6 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
-import webbrowser
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -297,18 +296,51 @@ def bootstrap_url(port: int = DEFAULT_PORT) -> str:
     return f"http://{DEFAULT_HOST}:{port}/launcher/bootstrap?{query}"
 
 
-def open_runmal(port: int = DEFAULT_PORT, *, browser: bool = True) -> str:
-    """Ensure Rúnmál is running and open an authenticated local browser session."""
-    start_server(port)
-    url = bootstrap_url(port)
-    if browser:
-        opened = webbrowser.open(url, new=2)
-        if not opened:
-            raise LauncherError(
-                "Rúnmál started, but the default browser could not be opened. "
-                f"Open this local address manually: {url}"
-            )
-    return url
+def desktop_command() -> list[str]:
+    """The command that launches the desktop app (R-16).
+
+    The Qt desktop shell runs its engine in-process, so launching it
+    needs no separate server or browser dance; frozen builds re-enter
+    this executable with the ``_desktop`` command instead.
+    """
+    if getattr(sys, "frozen", False):
+        return [sys.executable, "_desktop"]
+    return [sys.executable, "-m", "runmal.desktop"]
+
+
+def launch_desktop(*, runner: Any = None) -> list[str]:
+    """Spawn the desktop app without blocking the launcher process.
+
+    ``runner`` is the spawn seam (tests inject a stub): it receives
+    the desktop command and returns the spawned handle. The default
+    runner is :func:`subprocess.Popen` with the same child-process
+    discipline as the managed server.
+    """
+    command = desktop_command()
+    spawn = runner if runner is not None else subprocess.Popen
+    spawn(
+        command,
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        close_fds=os.name != "nt",
+        **_child_process_kwargs(),
+    )
+    return command
+
+
+def open_runmal(port: int = DEFAULT_PORT, *, runner: Any = None) -> list[str]:
+    """Open Rúnmál: launch the desktop app (R-16 successor of the
+    browser road).
+
+    The desktop shell is the control centre now (plan §2.4) and runs
+    its engine in-process, so ``port`` is accepted only for call-site
+    compatibility with the retired browser road — no server is
+    started and no browser is opened. The headless server lifecycle
+    (``start_server`` / ``stop_server`` / ``bootstrap_url``) remains
+    available as its own feature for bridge/headless use.
+    """
+    return launch_desktop(runner=runner)
 
 
 def diagnostics_text(port: int = DEFAULT_PORT) -> str:

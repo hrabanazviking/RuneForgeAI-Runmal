@@ -136,94 +136,7 @@ def loader_segment():
 # -- Static-source pins over group.html -----------------------------------
 
 
-def test_01_picker_markup_in_aside_and_script_order():
-    html = GROUP_HTML.read_text()
-    assert '<select id="saved-group"' in html
-    assert 'id="open-group" type="button">Open</button>' in html
-    aside_open = html.index("<aside")
-    picker = html.index('id="saved-group"')
-    aside_close = html.index("</aside>")
-    roster = html.index("<h2>Roster</h2>")
-    assert aside_open < picker < aside_close
-    assert picker < roster  # the block sits above the Roster heading
-    assert (html.index('/static/renderer.js')
-            < html.index('/static/group.js'))
-
-
-def test_14_page_integrity_theme_palette_composer_strategy():
-    html = GROUP_HTML.read_text()
-    assert "/static/theme.js" in html
-    assert "/static/palette.js" in html
-    assert '<form id="group-form">' in html
-    assert '<select id="strategy"' in html
-    assert 'id="group-input"' in html
-
-
 # -- Static-source pins over group.js --------------------------------------
-
-
-def test_02_loader_fetches_the_banked_roads():
-    segment = loader_segment()
-    assert 'api("/api/v1/groups")' in segment
-    assert '"/api/v1/groups/" + groupId + "/messages"' in segment
-
-
-def test_03_loader_renders_via_the_banked_view_pair():
-    js = GROUP_JS.read_text()
-    segment = loader_segment()
-    assert "function reasoningPanel(view)" in js  # the P-212 panel
-    assert ("window.RunmalRenderer.reasoningView(m.reasoning)"
-            in segment)
-    assert "reasoningPanel(" in segment
-
-
-def test_04_bubbles_authored_from_stored_fields():
-    segment = loader_segment()
-    assert 'addBubble(m.speaker_name || "user", m.content)' in segment
-
-
-def test_05_display_only_fence():
-    # P-215 heal (design section 5 contingency for P-213
-    # pins asserting group.js contents the toggle
-    # restates): the loader block proper is loadSavedGroups
-    # + openSavedGroup; closeSavedGroup is a NEW segment
-    # after it which BY DESIGN resets the stateless state
-    # on close, so the fence is asserted over the loader
-    # block itself, at equal strength - the loader still
-    # holds no reference to the turn state at all.
-    js = GROUP_JS.read_text()
-    start = js.index("async function loadSavedGroups")
-    end = js.index("function closeSavedGroup()")
-    segment = js[start:end]
-    assert "sentHistory" not in segment
-    assert "history" not in segment  # no reference to the turn state
-    assert "POST" not in segment
-    assert "localStorage" not in segment
-    assert "sessionStorage" not in segment
-
-
-def test_06_failure_path_clear_after_successful_fetch():
-    js = GROUP_JS.read_text()
-    start = js.index("async function openSavedGroup")
-    end = js.index("function selectedIds()")
-    segment = js[start:end]
-    assert "showError(String(err))" in segment
-    fetch_at = segment.index('"/messages"')
-    clear_at = segment.index('thread.textContent = ""')
-    assert fetch_at < clear_at  # clear only after the fetch resolves
-
-
-def test_07_p212_stream_branch_untouched_in_shape():
-    js = GROUP_JS.read_text()
-    for branch in ("typing", "reasoning", "token", "message",
-                   "turn_end"):
-        assert f'event.type === "{branch}"' in js
-    assert "reasoningByAuthor[event.author].push(event.text)" in js
-    assert "window.RunmalRenderer.reasoningView(view)" in js
-
-
-def test_08_no_innerhtml_in_loader_code():
-    assert "innerHTML" not in loader_segment()
 
 
 # -- API-truth pins (backend unchanged, seeded store) -----------------------
@@ -297,8 +210,12 @@ def test_12_route_census_unchanged(tmp_path, monkeypatch):
         for methods in paths.values())
     # No road is added, moved or removed by P-213: the census
     # stands at the P-212 census and NO pin is healed.
-    assert len(paths) == 365
-    assert operations == 455
+    # R-16 heal: 354 / 444 — the web shell is scrapped:
+    # the 8 in-schema web page paths, /voice, /memories
+    # and /api/v1/memories-browser are gone (-11 paths /
+    # -11 operations; "/" was schema-excluded, never counted).
+    assert len(paths) == 354
+    assert operations == 444
 
 
 def test_13_migration_head_stays_0042(tmp_path, monkeypatch):

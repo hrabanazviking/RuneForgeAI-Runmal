@@ -177,18 +177,6 @@ def branch_segment(handler, kind, next_kind=None):
 # -- 1. Page wiring ------------------------------------------------------------
 
 
-def test_01_page_loads_renderer_before_group_js(tmp_path, monkeypatch):
-    client = make_client(tmp_path, monkeypatch)
-    page = client.get("/group")
-    assert page.status_code == 200, page.text
-    assert page.text.index("/static/theme.js") < page.text.index(
-        "/static/renderer.js")  # theme stays first
-    assert page.text.index("/static/renderer.js") < page.text.index(
-        "/static/group.js")  # the model lands BEFORE its consumer
-    assert client.get("/static/renderer.js").status_code == 200
-    assert client.get("/static/group.js").status_code == 200
-
-
 # -- 2. Shared model, unchanged -------------------------------------------------
 
 
@@ -209,125 +197,7 @@ needs_node = pytest.mark.skipif(
     shutil.which("node") is None, reason="node not available")
 
 
-@needs_node
-def test_02_shared_reasoning_view_model_unchanged():
-    source = RENDERER.read_text()
-    assert "reasoningView" in source  # exported via RunmalRenderer
-    assert "RunmalRenderer" in source
-    recorded, not_present = run_view_model([
-        "{status: 'recorded', text: 'deep thought'}",
-        "{status: 'not_present'}",
-    ])
-    # The two shapes P-212 builds, read by the BANKED model -
-    # the group page's model is that model, not a copy.
-    assert recorded == {"kind": "recorded", "label": "Thinking",
-                        "text": "deep thought"}
-    assert not_present == {"kind": "status",
-                           "text": "No thinking was returned for this reply."}
-
-
 # -- 3-10. group.js wiring pins ---------------------------------------------------
-
-
-def test_03_reasoning_branch_collects_only():
-    handler = handler_segment(group_source())
-    branch = branch_segment(handler, "reasoning", "token")
-    assert "reasoningByAuthor[event.author] = []" in branch  # first sight
-    assert "reasoningByAuthor[event.author].push(event.text)" in branch
-    assert "addBubble" not in branch  # creates NO bubble
-    assert "reasoningPanel" not in branch  # renders NOTHING mid-stream
-    assert "history" not in branch  # touches no history
-
-
-def test_04_collector_is_per_turn_inside_submit_handler():
-    source = group_source()
-    prefix, handler = source.split('addEventListener("submit"', 1)
-    assert "reasoningByAuthor" not in prefix  # no module-level state
-    assert "let bubbles = {};" in handler
-    assert "let typing = {};" in handler
-    assert "let reasoningByAuthor = {};" in handler
-    # Declared beside bubbles / typing, before the read loop:
-    # the per-turn reset is the declaration's position.
-    assert handler.index("let bubbles") < handler.index(
-        "let reasoningByAuthor") < handler.index("for (;;)")
-
-
-def test_05_render_is_completion_only_in_message_branch():
-    handler = handler_segment(group_source())
-    message = branch_segment(handler, "message", "turn_end")
-    assert "window.RunmalRenderer.reasoningView(view)" in message
-    assert "reasoningPanel(" in message
-    for kind, nxt in (("typing", "reasoning"), ("reasoning", "token"),
-                      ("token", "message"), ("turn_end", None)):
-        branch = branch_segment(handler, kind, nxt)
-        assert "reasoningView" not in branch, kind
-        assert "reasoningPanel" not in branch, kind
-    # The panel is appended only AFTER the banked history.push.
-    assert message.index("history.push") < message.index("reasoningPanel(")
-    assert handler.count("reasoningPanel(") == 1  # one render site
-
-
-def test_06_recorded_construction_from_collected_parts():
-    handler = handler_segment(group_source())
-    message = branch_segment(handler, "message", "turn_end")
-    assert 'status: "recorded"' in message
-    assert 'reasoningByAuthor[event.author].join("")' in message
-    assert "(reasoningByAuthor[event.author] || []).length" in message
-
-
-def test_07_not_present_construction_and_no_other_status():
-    source = group_source()
-    handler = handler_segment(source)
-    message = branch_segment(handler, "message", "turn_end")
-    assert '{ status: "not_present" }' in message
-    # not_recorded and unknown are STORAGE states; this surface
-    # stores nothing, so group.js constructs neither, anywhere.
-    assert "not_recorded" not in source
-    assert 'status: "unknown"' not in source
-
-
-def test_08_panel_dom_safety_textcontent_only():
-    source = group_source()
-    panel = source.split("function reasoningPanel(view)", 1)[1].split(
-        "async function loadRoster", 1)[0]
-    assert "body.textContent = view.text" in panel
-    assert "line.textContent = view.text" in panel
-    assert "summary.textContent = view.label" in panel
-    assert "innerHTML" not in panel  # never innerHTML
-    assert "renderMarkdown" not in panel  # never the markdown road
-    assert 'createElement("details")' in panel  # native disclosure
-    assert "details.open" not in panel  # collapsed by default
-    assert 'setAttribute("open"' not in panel
-    assert "if (!view) return null;" in panel  # the banked null fence
-
-
-def test_09_panel_placement_and_user_bubble_untouched():
-    source = group_source()
-    handler = handler_segment(source)
-    message = branch_segment(handler, "message", "turn_end")
-    # Appended to the author's .gmsg container: the parent of
-    # the body element addBubble returned and bubbles holds.
-    assert "bubbles[event.author].parentElement.appendChild(panel)" in message
-    assert "if (panel && bubbles[event.author])" in message  # no bubble, no panel
-    # The user bubble: banked call site, no reasoning, no panel.
-    assert "function addBubble(author, content)" in source
-    assert 'addBubble("user", text);' in handler
-    before_fetch = handler.split('"/api/v1/group/turn"', 1)[0]
-    assert "reasoningPanel" not in before_fetch
-    assert "reasoningView" not in before_fetch
-
-
-def test_10_history_law_and_request_body_keys():
-    source = group_source()
-    handler = handler_segment(source)
-    assert 'history.push({ author: "user", content: text });' in handler
-    assert ("history.push({ author: event.author, content: event.content });"
-            in handler)  # entries stay exactly {author, content}
-    body = handler.split("JSON.stringify({", 1)[1].split("})", 1)[0]
-    for key in ("participant_ids", "history: sentHistory", "user_text",
-                "strategy", "rr_cursor"):
-        assert key in body, key  # the banked S305 request set
-    assert "reasoning" not in body  # never sent back to the server
 
 
 # -- 11-12. Server truth / storage honesty (behaviour) ---------------------------
@@ -407,11 +277,17 @@ def test_13_route_census_unchanged_no_heal(tmp_path, monkeypatch):
         for methods in paths.values())
     # No road is added, moved or removed by P-212: the census
     # stands at the P-211 census and NO pin is healed.
-    assert len(paths) == 365
-    assert operations == 455
+    # R-16 heal: 354 / 444 — the web shell is scrapped:
+    # the 8 in-schema web page paths, /voice, /memories
+    # and /api/v1/memories-browser are gone (-11 paths /
+    # -11 operations; "/" was schema-excluded, never counted).
+    assert len(paths) == 354
+    assert operations == 444
 
 
-def test_14_migration_head_and_chat_wiring_fences(tmp_path, monkeypatch):
+def test_14_migration_head_fence(tmp_path, monkeypatch):
+    # R-16: this fence's chat-page wiring leg is scrapped with the
+    # web shell; the migration-head fence below is the surviving part.
     client = make_client(tmp_path, monkeypatch)
     assert MIGRATIONS[-1][0] == "0042"
     assert current_revision(client.db_path) == "0042"
@@ -419,14 +295,3 @@ def test_14_migration_head_and_chat_wiring_fences(tmp_path, monkeypatch):
     import runmal.db.migrations as migrations_pkg
     names = os.listdir(os.path.dirname(migrations_pkg.__file__))
     assert not any(name.startswith("m0043") for name in names)
-    # The chat surface (P-206 test_14's assertions) still holds:
-    # the group render moved nothing it did not own.
-    page = client.get("/chat")
-    assert page.status_code == 200, page.text
-    assert "renderer.js" in page.text and "app.js" in page.text
-    app = APP_JS.read_text()
-    assert "function reasoningPanel(view)" in app
-    assert "RunmalRenderer.reasoningView(reasoning)" in app
-    assert "m.reasoning || null" in app
-    assert ("function appendMessage(role, text, rendered, marking, "
-            "reasoning)") in app

@@ -36,12 +36,10 @@ import hashlib
 import json
 import re
 import sqlite3
-import subprocess
 from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import select
 
 from runmal.app import create_app
 from runmal.auth import get_or_create_credential
@@ -53,7 +51,7 @@ from runmal.chats import service as svc
 from runmal.db.base import create_db_engine, create_session_factory
 from runmal.db.migrate import migrate_to_head
 from runmal.db.migrations import MIGRATIONS
-from runmal.db.models import Message, User
+from runmal.db.models import User
 from runmal.db.owners import get_or_create_owner
 from runmal.generation import service as gen_service
 from runmal.groupchat import store as group_store
@@ -168,29 +166,6 @@ def census(client):
         for methods in paths.values()
     )
     return paths, operations
-
-
-def group_js_segment(name):
-    """One top-level function segment of group.js, in the
-    banked citizen form (split on the next top-level
-    declaration or the submit wiring)."""
-    text = GROUP_JS.read_text(encoding="utf-8")
-    start = text.index(f"function {name}(")
-    boundaries = [
-        text.find("\nfunction ", start + 1),
-        text.find("\nasync function ", start + 1),
-        text.find('\n$("group-form")', start + 1),
-    ]
-    ends = [b for b in boundaries if b > start]
-    end = min(ends) if ends else len(text)
-    return text[start:end]
-
-
-def submit_segment():
-    text = GROUP_JS.read_text(encoding="utf-8")
-    start = text.index('$("group-form")')
-    end = text.index("\nloadRoster()", start)
-    return text[start:end]
 
 
 # -- The gate world -------------------------------------------------------
@@ -338,18 +313,18 @@ CITIZEN_BATTERIES = {
     "P-203": ("test_p203_inspector_overview.py", 11),
     "P-204": ("test_p204_inspector_events.py", 15),
     "P-205": ("test_p205_reasoning_record.py", 23),
-    "P-206": ("test_p206_assistant_view.py", 18),
+    "P-206": ("test_p206_assistant_view.py", 9),  # R-16: -9 web page/JS tests
     "P-207": ("test_p207_continue_impersonate_reasoning.py", 16),
     "P-208": ("test_p208_groupchat_reasoning.py", 18),
-    "P-209": ("test_p209_swipe_generate_reasoning.py", 16),
+    "P-209": ("test_p209_swipe_generate_reasoning.py", 14),  # R-16: -2 web JS tests
     "P-210": ("test_p210_inspector_reasoning.py", 14),
     "P-211": ("test_p211_inspector_group_reasoning.py", 15),
-    "P-212": ("test_p212_group_assistant_view.py", 14),
-    "P-213": ("test_p213_group_transcript_loader.py", 14),
-    "P-214": ("test_p214_group_composer_wiring.py", 14),
-    "P-215": ("test_p215_group_mode_toggle.py", 14),
-    "P-216": ("test_p216_group_creation.py", 14),
-    "P-217": ("test_p217_group_persistent_refinements.py", 14),
+    "P-212": ("test_p212_group_assistant_view.py", 4),  # R-16: -10 web page/JS tests
+    "P-213": ("test_p213_group_transcript_loader.py", 5),  # R-16: -9 web page/JS tests
+    "P-214": ("test_p214_group_composer_wiring.py", 4),  # R-16: -10 web JS tests
+    "P-215": ("test_p215_group_mode_toggle.py", 4),  # R-16: -10 web JS tests
+    "P-216": ("test_p216_group_creation.py", 4),  # R-16: -10 web JS tests
+    "P-217": ("test_p217_group_persistent_refinements.py", 3),  # R-16: -11 web JS tests
 }
 
 SLICE_DOCS = {
@@ -379,7 +354,7 @@ def test_a1_slice_continuity_battery_counts():
         count = len(re.findall(r"def test_", path.read_text(encoding="utf-8")))
         assert count == expected, (slice_id, count, expected)
         total += count
-    assert total == 230
+    assert total == 159  # R-16 heal: 230 - 71 web-shell tests removed above
 
 
 def test_a2_slice_docs_exactly_one_and_p209_gap():
@@ -448,8 +423,12 @@ def test_a6_schema_tags_exactly_five_verbatim():
 def test_a7_census_migration_and_part_delta(tmp_path, monkeypatch):
     client = make_client(tmp_path, monkeypatch)
     paths, operations = census(client)
-    assert len(paths) == 365
-    assert operations == 455
+    # R-16 heal: 354 / 444 — the web shell is scrapped:
+    # the 8 in-schema web page paths, /voice, /memories
+    # and /api/v1/memories-browser are gone (-11 paths /
+    # -11 operations; "/" was schema-excluded, never counted).
+    assert len(paths) == 354
+    assert operations == 444
     assert MIGRATIONS[-1][0] == "0042"
     migrations_dir = SRC / "db" / "migrations"
     assert not [p.name for p in migrations_dir.glob("m0043*")]
@@ -465,25 +444,10 @@ def test_a7_census_migration_and_part_delta(tmp_path, monkeypatch):
         "/api/v1/inspector/groups/{group_id}/reasoning",
     }
     assert reasoning_paths <= set(paths)
-    assert len(paths) - len(reasoning_paths) == 363
-    assert operations - 2 == 453
-
-
-def test_a8_group_page_census_twenty_ids():
-    html = GROUP_HTML.read_text(encoding="utf-8")
-    ids = re.findall(r'id="([^"]+)"', html)
-    assert set(ids) == {
-        "close-group", "create-group", "error-banner",
-        "error-dismiss", "error-text", "group-form",
-        "group-input", "group-layout", "group-main",
-        "group-mode", "group-thread", "new-group-name",
-        "open-group", "palette", "palette-card",
-        "palette-input", "palette-list", "roster",
-        "saved-group", "strategy",
-    }
-    assert len(ids) == 20
-    # Script order as banked: renderer.js before group.js.
-    assert html.index("/static/renderer.js") < html.index("/static/group.js")
+    # R-16: the remainder pins move with the scrapped web
+    # shell (-11 / -11 against the R-03-healed remainder).
+    assert len(paths) - len(reasoning_paths) == 352
+    assert operations - 2 == 442
 
 
 def test_a9_reasoning_record_shape_one_law():
@@ -507,26 +471,9 @@ def test_a9_reasoning_record_shape_one_law():
     ci_text = (SRC / "chats" / "continue_impersonate.py").read_text(encoding="utf-8")
     assert "from runmal.chats import reasoning" in ci_text or \
         "from runmal.chats.reasoning import" in ci_text
-    # Both Assistant Views resolve through the one shared
-    # renderer model, whose status vocabulary is exactly
-    # the four statuses and three honest status lines.
-    renderer = RENDERER_JS.read_text(encoding="utf-8")
-    # The model names three statuses in comparisons; the
-    # fourth (unknown) is its fall-through line, never a
-    # named comparison - the banked P-206 form (its own
-    # battery pins unrecognised statuses landing there).
-    for status in ("recorded", "not_present", "not_recorded"):
-        assert f'"{status}"' in renderer
-    view_segment = renderer.split("function reasoningView", 1)[1].split(
-        "var api", 1)[0]
-    assert view_segment.count("status ===") == 3
-    assert '"unknown"' not in view_segment
-    for line in ("No thinking was returned for this reply.",
-                 "Thinking was not recorded for this reply.",
-                 "Thinking record state is unknown for this reply."):
-        assert line in renderer
-    group_js = GROUP_JS.read_text(encoding="utf-8")
-    assert "window.RunmalRenderer.reasoningView" in group_js
+    # R-16: the shared-renderer-model leg (renderer.js /
+    # group.js) is scrapped with the web shell; the record
+    # module law above is the surviving part of this pin.
 
 
 def test_a10_no_bots_census(tmp_path, monkeypatch):
@@ -798,22 +745,6 @@ def test_b5_cross_join_agreement(tmp_path, monkeypatch):
     assert pair_chat_doc["summary"] == pair_group_doc["summary"]
 
 
-def _run_view_model(views):
-    """The P-206 renderer model, run the banked way
-    (node over renderer.js, as test_p206 does)."""
-    calls = ", ".join(
-        "r.reasoningView(" + json.dumps(view) + ")" for view in views)
-    script = (
-        "const r = require(" + repr(str(RENDERER_JS)) + ");"
-        "const out = [" + calls + "];"
-        "console.log(JSON.stringify(out));"
-    )
-    proc = subprocess.run(
-        ["node", "-e", script], capture_output=True, text=True, timeout=60)
-    assert proc.returncode == 0, proc.stderr
-    return json.loads(proc.stdout.strip())
-
-
 def test_b6_assistant_view_agreement(tmp_path, monkeypatch):
     client = make_client(tmp_path, monkeypatch)
     world = build_world(client)
@@ -831,20 +762,11 @@ def test_b6_assistant_view_agreement(tmp_path, monkeypatch):
     for view in views:
         tally[view["reasoning_status"]] += 1
     assert tally == doc["summary"]["active_by_status"]
-    # And the P-206 renderer model over those stored views
-    # produces the panel models for exactly those views.
-    models = _run_view_model(views)
-    for view, model in zip(views, models):
-        if view["reasoning_status"] == "recorded":
-            assert model == {
-                "kind": "recorded", "label": "Thinking",
-                "text": view["text"]}
-        else:
-            assert model["kind"] == "status"
-            assert "text" in model
-    # The recorded panel model itself, over the stored
-    # swipe-0 view of the recorded message (its active
-    # view is the not_present swipe, counted above).
+    # R-16: the renderer.js model legs are scrapped with
+    # the web shell; the API agreement stands. The stored
+    # swipe-0 view of the recorded message (its active view
+    # is the not_present swipe, counted above) still reads
+    # recorded, asserted below without the JS model.
     uid = owner_id(client)
 
     async def recorded_view():
@@ -856,9 +778,7 @@ def test_b6_assistant_view_agreement(tmp_path, monkeypatch):
 
     stored = run(recorded_view())
     assert stored["reasoning_status"] == "recorded"
-    (model,) = _run_view_model([stored])
-    assert model == {
-        "kind": "recorded", "label": "Thinking", "text": THINK_A}
+    assert stored["text"] == THINK_A
 
 
 def test_b7_group_stored_view_agreement(tmp_path, monkeypatch):
@@ -980,17 +900,8 @@ def test_c1_create_substrate_and_js_leg(tmp_path, monkeypatch):
     mine = [g for g in listed.json() if g["id"] == created["id"]]
     assert len(mine) == 1
     assert mine[0]["message_count"] == 0
-    # JS leg: createGroup posts exactly there with the
-    # roster selection, refreshes the picker, selects the
-    # new group - and never opens it.
-    segment = group_js_segment("createGroup")
-    assert 'api("/api/v1/groups"' in segment
-    assert 'method: "POST"' in segment
-    assert "member_character_ids: selectedIds()" in segment
-    assert "await loadSavedGroups();" in segment
-    assert '$("saved-group").value = group.id;' in segment
-    assert "openSavedGroup" not in segment
-    assert "openGroupId" not in segment
+    # R-16: the JS leg is scrapped with the web shell;
+    # the substrate assertions above stand.
 
 
 def test_c2_open_substrate_and_js_leg(tmp_path, monkeypatch):
@@ -998,19 +909,8 @@ def test_c2_open_substrate_and_js_leg(tmp_path, monkeypatch):
     created, _a, _b = _scenario_create(client)
     # Substrate: the empty group reads an empty transcript.
     assert group_transcript(client, created["id"]) == []
-    # JS leg: openSavedGroup's success path alone sets
-    # openGroupId, restates the mode line and enables
-    # close - the P-215 segment, failure catch clean.
-    segment = group_js_segment("openSavedGroup")
-    fetch_at = segment.index('"/messages"')
-    set_at = segment.index("openGroupId = groupId;")
-    assert fetch_at < set_at
-    assert segment.index("addBubble(m.speaker_name") < set_at
-    assert '$("group-mode").textContent = "Saved group mode";' in segment
-    assert '$("close-group").disabled = false;' in segment
-    catch = segment[segment.index("catch"):]
-    assert "showError" in catch
-    assert "openGroupId" not in catch
+    # R-16: the JS leg is scrapped with the web shell;
+    # the substrate assertions above stand.
 
 
 def test_c3_persistent_send_substrate_and_js_leg(tmp_path, monkeypatch):
@@ -1031,15 +931,8 @@ def test_c3_persistent_send_substrate_and_js_leg(tmp_path, monkeypatch):
     reply = transcript[1]
     assert reply["reasoning"]["reasoning_status"] == "recorded"
     assert reply["reasoning"]["text"] == GROUP_THINK_TEXT
-    # JS leg: sendPersistent posts exactly there and
-    # renders via the banked addBubble + reasoningPanel
-    # pair over the shared view model.
-    segment = group_js_segment("sendPersistent")
-    assert '"/api/v1/groups/" + openGroupId + "/next"' in segment
-    assert "generate: true" in segment
-    assert "addBubble(m.speaker_name" in segment
-    assert "reasoningPanel(" in segment
-    assert "window.RunmalRenderer.reasoningView(m.reasoning)" in segment
+    # R-16: the JS leg is scrapped with the web shell;
+    # the substrate assertions above stand.
 
 
 def test_c4_counts_refresh_substrate_and_js_leg(tmp_path, monkeypatch):
@@ -1055,41 +948,8 @@ def test_c4_counts_refresh_substrate_and_js_leg(tmp_path, monkeypatch):
     count = [g for g in after if g["id"] == created["id"]][0]["message_count"]
     # Risen by exactly the stored turns (user + reply).
     assert count == len(stored) == 2
-    # JS leg: P-217's success-tail refresh - loadSavedGroups
-    # re-run and the picker value set to openGroupId, after
-    # the send, in the success path only, never on failure.
-    segment = group_js_segment("sendPersistent")
-    send_at = segment.index("/next")
-    refresh_at = segment.index("await loadSavedGroups();")
-    assert send_at < refresh_at
-    assert '$("saved-group").value = openGroupId;' in segment
-    catch = segment[segment.index("catch"):]
-    assert "loadSavedGroups" not in catch
-
-
-def test_c5_controls_disabled_js_source_contract():
-    js = GROUP_JS.read_text(encoding="utf-8")
-    # Exactly six disabled writes in the whole page: the
-    # P-215 enable of close, the P-217 disable pair on the
-    # open success path, and their re-enable pair plus the
-    # close disable inside closeSavedGroup.
-    assert js.count(".disabled =") == 6
-    open_segment = group_js_segment("openSavedGroup")
-    assert '$("strategy").disabled = true;' in open_segment
-    assert "box.disabled = true" in open_segment
-    close_segment = group_js_segment("closeSavedGroup")
-    guard_at = close_segment.index("if (!openGroupId) return;")
-    strategy_at = close_segment.index('$("strategy").disabled = false;')
-    roster_at = close_segment.index("box.disabled = false")
-    assert guard_at < strategy_at
-    assert guard_at < roster_at
-    # No other segment writes disabled state; the stateless
-    # branch reads the controls live.
-    submit = submit_segment()
-    assert ".disabled" not in submit
-    for name in ("loadRoster", "loadSavedGroups", "createGroup",
-                 "sendPersistent", "addBubble"):
-        assert ".disabled" not in group_js_segment(name), name
+    # R-16: the JS leg is scrapped with the web shell;
+    # the substrate assertions above stand.
 
 
 def test_c6_close_substrate_and_js_leg(tmp_path, monkeypatch):
@@ -1100,13 +960,7 @@ def test_c6_close_substrate_and_js_leg(tmp_path, monkeypatch):
     before = group_transcript(client, created["id"])
     before_bytes = json.dumps(before, sort_keys=True)
     described_before = client.get(f"/api/v1/groups/{created['id']}").json()
-    # JS leg: close is client-side - the closeSavedGroup
-    # segment holds no fetch, no api call, no POST and no
-    # web storage.
-    segment = group_js_segment("closeSavedGroup")
-    for forbidden in ("fetch", "api(", "POST",
-                      "localStorage", "sessionStorage"):
-        assert forbidden not in segment, forbidden
+    # R-16: the JS leg is scrapped with the web shell.
     # Substrate: re-reading the transcript over HTTP after
     # a close reads it byte-identical, group untouched.
     after = group_transcript(client, created["id"])
@@ -1117,18 +971,7 @@ def test_c6_close_substrate_and_js_leg(tmp_path, monkeypatch):
 
 def test_c7_stateless_truth_restored(tmp_path, monkeypatch):
     client = make_client(tmp_path, monkeypatch)
-    # JS leg: after close the page's resting state is the
-    # reload-equivalent - openGroupId null, the mode line
-    # "Stateless room", close disabled, controls live, the
-    # stateless turn state reset.
-    segment = group_js_segment("closeSavedGroup")
-    assert "openGroupId = null;" in segment
-    assert '$("group-mode").textContent = "Stateless room";' in segment
-    assert '$("close-group").disabled = true;' in segment
-    assert '$("strategy").disabled = false;' in segment
-    assert "box.disabled = false" in segment
-    assert "history = [];" in segment
-    assert "rrCursor = 0;" in segment
+    # R-16: the JS leg is scrapped with the web shell.
     # Substrate: the stateless road the page returns to is
     # the banked S305-shaped POST /group/turn.
     paths, _operations = census(client)
@@ -1160,22 +1003,20 @@ def test_d1_d1_fence_stands(tmp_path, monkeypatch):
     client = make_client(tmp_path, monkeypatch)
     paths, _operations = census(client)
     assert "post" in paths["/api/v1/group/turn"]
-    # The stateless SSE loop's banked shape is unchanged:
-    # the page's submit segment handles exactly the five
-    # banked event types and reads no error / done dict -
-    # the fence is measured here; no gate pin asserts the
-    # failed-generation turn is honest, and the ruling
-    # stays Volmarr's / the keeper's, outstanding. The
-    # S305 contract battery itself stands as neighbour.
-    submit = submit_segment()
-    handled = set(re.findall(r'event\.type === "(\w+)"', submit))
-    assert handled == {"typing", "reasoning", "token", "message", "turn_end"}
+    # R-16: the page submit-segment leg is scrapped with
+    # the web shell, and the S305 battery's page test went
+    # with it (5 -> 4 tests); the road fence above stands.
     s305 = (REPO / "tests" / "test_s305_group_ui.py").read_text(encoding="utf-8")
-    assert len(re.findall(r"def test_", s305)) == 5
+    assert len(re.findall(r"def test_", s305)) == 4
 
 
 def test_d2_per_swipe_browsing_absent(tmp_path, monkeypatch):
+    # R-16: the web files are scrapped — absence of the markers
+    # now holds by the files' own absence; any file that still
+    # exists is still checked at full strength.
     for path in (GROUP_JS, APP_JS, RENDERER_JS, GROUP_HTML):
+        if not path.exists():
+            continue
         text = path.read_text(encoding="utf-8")
         for marker in ("show-all-swipes", "show_all_swipes", "showAllSwipes"):
             assert marker not in text, (marker, path.name)
@@ -1254,28 +1095,9 @@ def test_d6_kc_stands_open(tmp_path, monkeypatch):
 
 
 def test_d7_stored_only_stands(tmp_path, monkeypatch):
-    # The chats stream path (app.js streamGeneration)
-    # collects reasoning for STORAGE only and renders
-    # nothing live - the P-206 / P-209 banked pin,
-    # restated at the gate at equal strength.
-    app_js = APP_JS.read_text(encoding="utf-8")
-    stream = app_js.split("async function streamGeneration", 1)[1].split(
-        "async function sendMessage", 1)[0]
-    assert 'event.type === "reasoning"' in stream  # the collector
-    assert "reasoningParts.push(event.text)" in stream
-    assert 'reasoningParts.join("")' in stream
-    assert "reasoningView" not in stream  # no live rendering
-    assert "reasoningPanel" not in stream
-    # The group page's one transient exception is the
-    # P-212 panel: built ONLY from this turn's forwarded
-    # reasoning events (turn-local state), at completion,
-    # never from a stored road and never persisted.
-    submit = submit_segment()
-    assert "reasoningByAuthor[event.author]" in submit
-    assert submit.count("reasoningPanel(") == 1
-    panel_at = submit.index("reasoningPanel(")
-    message_at = submit.index('event.type === "message"')
-    assert message_at < panel_at
+    # R-16: the app.js / group.js stored-only legs are
+    # scrapped with the web shell; the stored-roads part
+    # of this pin (below) stands at full strength.
     # Stored roads serve the stored record only: the
     # gate world's transcript view IS the stored row's
     # active view, byte for byte.
@@ -1388,16 +1210,9 @@ def test_d8_honest_limitations_hold(tmp_path, monkeypatch):
     client = make_client(tmp_path, monkeypatch)
     paths, _operations = census(client)
     assert not any("rollup" in p or "roll-up" in p for p in paths)
-    group_js = GROUP_JS.read_text(encoding="utf-8")
-    # The /run decline is a PAGE decline (P-214's ruling:
-    # no /run or raw-append wiring from this page); the
-    # banked backend road itself is not the page's to
-    # remove. The page never names it.
-    assert "/run" not in group_js
-    assert group_js.count('method: "POST"') == 3
-    assert "DELETE" not in group_js
-    assert "PATCH" not in group_js
-    assert "manual_speaker_id" not in group_js
+    # R-16: the group.js leg (the /run page decline) is
+    # scrapped with the web shell — the page itself is
+    # gone, so the decline holds by absence.
 
 
 # -- Hygiene x2 ---------------------------------------------------------------

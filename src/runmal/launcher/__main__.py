@@ -18,15 +18,21 @@ def build_parser() -> argparse.ArgumentParser:
         "command",
         nargs="?",
         default="open",
-        choices=("open", "start", "stop", "restart", "status", "control", "doctor", "_serve"),
+        choices=("open", "start", "stop", "restart", "status", "doctor", "_serve", "_desktop"),
     )
     parser.add_argument("--port", type=int, default=core.DEFAULT_PORT)
     parser.add_argument(
-        "--no-browser",
+        "--no-launch",
         action="store_true",
-        help="Start/authenticate without opening the default browser (testing/automation).",
+        help="Print the desktop launch command without spawning it (testing/automation).",
     )
     return parser
+
+
+def _desktop() -> int:
+    from runmal.desktop.app import main as desktop_main
+
+    return desktop_main([])
 
 
 def _serve(port: int) -> int:
@@ -48,10 +54,13 @@ def main(argv: list[str] | None = None) -> int:
     try:
         if args.command == "_serve":
             return _serve(args.port)
+        if args.command == "_desktop":
+            return _desktop()
         if args.command == "open":
-            url = core.open_runmal(args.port, browser=not args.no_browser)
-            if args.no_browser:
-                print(url)
+            if args.no_launch:
+                print(" ".join(core.desktop_command()))
+            else:
+                core.open_runmal(args.port)
             return 0
         if args.command == "start":
             info = core.start_server(args.port)
@@ -71,24 +80,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "doctor":
             print(core.diagnostics_text(args.port))
             return 0
-        if args.command == "control":
-            from runmal.launcher.gui import run_control_center
-
-            run_control_center(args.port)
-            return 0
     except core.LauncherError as exc:
-        # Packaged GUI builds have no terminal, so make failures visible there.
-        if getattr(sys, "frozen", False):
-            try:
-                import tkinter as tk
-                from tkinter import messagebox
-
-                root = tk.Tk()
-                root.withdraw()
-                messagebox.showerror("Rúnmál", str(exc), parent=root)
-                root.destroy()
-            except Exception:
-                pass
         print(f"Rúnmál launcher: {exc}", file=sys.stderr)
         return 1
     return 0

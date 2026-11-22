@@ -1,8 +1,8 @@
-"""Voice UI island (S511): mic/status/waveform/device selector.
+"""Voice API (S511): mic/status/waveform/device selector.
 
-JSON API under ``/api/v1/voice`` (bearer-gated like every API) plus a
-server-rendered page at ``/voice`` (public page, loopback boundary per
-ADR-0003 — same pattern as the S410 memory browser).
+JSON API under ``/api/v1/voice`` (bearer-gated like every API).
+(R-16: the server-rendered ``/voice`` page is scrapped with the web
+shell; the desktop voice panel consumes this API.)
 
 The island is a CONTROL SURFACE over the S501 plumbing: it enumerates
 devices through the app provider, persists role selection through
@@ -17,12 +17,10 @@ tests inject their own fixture provider to simulate unplug/remap.
 
 from __future__ import annotations
 
-import html
 import os
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, Request, status
-from fastapi.responses import HTMLResponse
 
 from runmal.voice.audio import (
     DeviceProvider,
@@ -230,111 +228,6 @@ async def set_defaults(payload: dict, request: Request) -> dict:
         "stt_backend": settings.stt_backend,
         "status": "ok",
     }
-
-
-_PAGE = """<!doctype html>
-<html lang="en"><head><meta charset="utf-8">
-<title>Rúnmál — Voice</title></head>
-<body>
-<h1>Voice</h1>
-<p id="voice-state">State: {state}</p>
-<canvas id="waveform" width="480" height="80" aria-label="microphone waveform"></canvas>
-<section id="device-selectors">
-{selectors}
-</section>
-<p id="remap-warning" hidden>⚠ A saved device is missing — remap it above.
-Rúnmál never substitutes the OS default silently.</p>
-<section id="voice-backends">
-<h2>Voice backends</h2>
-<!-- BACKENDS -->
-</section>
-<script>
-async function refresh() {{
-  const res = await fetch('/api/v1/voice/status');
-  if (!res.ok) return;
-  const data = await res.json();
-  document.getElementById('voice-state').textContent = 'State: ' + data.state;
-  const canvas = document.getElementById('waveform');
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const levels = data.waveform || [];
-  levels.forEach((v, i) => {{
-    const h = Math.max(1, v * canvas.height);
-    ctx.fillRect(i * 10, (canvas.height - h) / 2, 6, h);
-  }});
-}}
-setInterval(refresh, 500); refresh();
-</script>
-</body></html>"""
-
-
-def _backends_panel() -> str:
-    """Server-rendered backends panel: admission class, install state,
-    the honest user-install notice, and the audit verdict (binding
-    only for default-shipped backends; information otherwise)."""
-    payload = _backends_payload()
-    rows: list[str] = []
-    for kind in ("tts", "stt"):
-        for entry in payload[kind]:
-            classes = ["shipped by default" if entry["default_shipped"] else "user-installed"]
-            if entry["unverified_label"]:
-                classes.append(entry["unverified_label"])
-            audit = entry["audit"]
-            if audit is None:
-                audit_line = "license audit: not installed yet"
-            elif audit["passed"]:
-                audit_line = f"license audit: PASS ({audit['checked']} distributions checked)"
-            else:
-                audit_line = "license audit: " + "; ".join(audit["violations"])
-            if audit is not None and not audit["binding"]:
-                audit_line += " (information only — your choice, your terms)"
-            notice = (
-                f'<p class="user-install-notice">{html.escape(entry["notice"])}</p>'
-                if entry["notice"]
-                else ""
-            )
-            rows.append(
-                f'<div class="backend" data-key="{html.escape(entry["key"])}">'
-                f"<h3>{html.escape(entry['display_name'])}</h3>"
-                f"<p>{html.escape(' · '.join(classes))}</p>"
-                f"<p>installed: {'yes' if entry['installed'] else 'no'}"
-                f" · selected default: {'yes' if entry['selected'] else 'no'}</p>"
-                f"<p>{html.escape(audit_line)}</p>{notice}</div>"
-            )
-    return "\n".join(rows)
-
-
-async def voice_page(request: Request) -> HTMLResponse:
-    provider = get_provider(request)
-    roles = load_roles(request)
-    resolved = roles.resolve(provider)
-    devices = provider.list_devices()
-    selectors: list[str] = []
-    any_remap = False
-    for role in DeviceRole:
-        entry = resolved[role]
-        if entry.status.value == "remap_required":
-            any_remap = True
-        options = []
-        for device in devices:
-            if device.direction != role.direction:
-                continue
-            selected = ""
-            if entry.device and entry.device.device_id == device.device_id:
-                selected = " selected"
-            options.append(
-                f'<option value="{html.escape(device.device_id)}"{selected}>'
-                f"{html.escape(device.name)}</option>"
-            )
-        selectors.append(
-            f"<label>{role.value} [{html.escape(entry.status.value)}] "
-            f'<select name="{role.value}">{"".join(options)}</select></label>'
-        )
-    page = _PAGE.format(state="LISTENING", selectors="\n".join(selectors))
-    page = page.replace("<!-- BACKENDS -->", _backends_panel())
-    if any_remap:
-        page = page.replace('id="remap-warning" hidden', 'id="remap-warning"')
-    return HTMLResponse(page)
 
 
 # ------------------------------------------------- sessions (P-101)

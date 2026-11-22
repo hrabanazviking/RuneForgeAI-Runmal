@@ -510,8 +510,12 @@ def test_13_route_census_grows_by_exactly_one_road(tmp_path, monkeypatch):
     )
     # P-211 heal: 356 / 439 since P-211's one new road
     # (the Inspector group reasoning road).
-    assert len(paths) == 365  # 354 at P-209 + P-210/P-211 roads
-    assert operations == 455
+    # R-16 heal: 354 / 444 — the web shell is scrapped:
+    # the 8 in-schema web page paths, /voice, /memories
+    # and /api/v1/memories-browser are gone (-11 paths /
+    # -11 operations; "/" was schema-excluded, never counted).
+    assert len(paths) == 354
+    assert operations == 444
     assert "/api/v1/inspector/chats/{chat_id}/reasoning" in paths
 
 

@@ -121,14 +121,3 @@ def test_session_errors_are_visible(tmp_path, monkeypatch) -> None:
     assert weird.status_code == 422
 
 
-def test_tools_ui_page(tmp_path, monkeypatch) -> None:
-    client = make_client(tmp_path, monkeypatch)
-    page = client.get("/tools")
-    assert page.status_code == 200
-    for marker in ('id="compose-panel"', 'id="session-panel"', 'id="c-depth"',
-                   'id="s-mode"', 'id="error-banner"', "tools.js"):
-        assert marker in page.text, marker
-    js = client.get("/static/tools.js")
-    assert js.status_code == 200
-    assert "/api/v1/tools/compose" in js.text
-    assert "/api/v1/tools/session" in js.text

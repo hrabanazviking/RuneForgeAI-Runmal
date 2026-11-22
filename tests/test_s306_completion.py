@@ -124,14 +124,3 @@ def test_preset_apply_errors(tmp_path, monkeypatch) -> None:
     assert resp.status_code == 404
 
 
-def test_ui_completion_markers(tmp_path, monkeypatch) -> None:
-    client = make_client(tmp_path, monkeypatch)
-    page = client.get("/connections")
-    assert 'id="health-models"' in page.text  # model picker
-    assert 'id="apply-model"' in page.text
-    js = client.get("/static/connections.js")
-    assert "PATCH" in js.text and "models" in js.text
-    chat = client.get("/chat")
-    assert 'id="preset-select"' in chat.text  # preset picker
-    app = client.get("/static/app.js")
-    assert "loadPresets" in app.text and "/preset" in app.text

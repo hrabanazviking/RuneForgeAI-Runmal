@@ -332,33 +332,6 @@ def test_11_post_message_text_on_not_present_422(tmp_path, monkeypatch):
 # -- Web half: app.js (the P-206 source-inspection method) ------------------
 
 
-def _stream_source():
-    source = APP_JS.read_text()
-    return source.split("async function streamGeneration", 1)[1].split(
-        "async function sendMessage", 1)[0]
-
-
-def test_12_stream_generation_collects_reasoning_for_the_append():
-    stream = _stream_source()
-    assert 'event.type === "token"' in stream
-    assert 'event.type === "done"' in stream
-    assert 'event.type === "reasoning"' in stream  # handled, not discarded
-    assert "reasoningParts.push(event.text)" in stream  # arrival order
-    assert "reasoning: reasoningParts.length" in stream
-    assert "reasoningParts.join(\"\")" in stream  # verbatim concatenation
-    assert 'status: "recorded"' in stream
-    assert 'status: "not_present"' in stream  # the seam ran, no thinking
-    assert stream.count("state.allMessages.push") == 1  # one append only
-
-
-def test_13_stream_generation_renders_nothing_live():
-    stream = _stream_source()
-    assert "reasoningView" not in stream  # P-206 stored-only rendering
-    assert "reasoningPanel" not in stream
-    assert "bubble.textContent = full" in stream
-    assert stream.count("full +=") == 1  # only token text joins the answer
-
-
 # -- Fences ------------------------------------------------------------------
 
 
@@ -381,8 +354,12 @@ def test_15_route_census_stays_354_437(tmp_path, monkeypatch):
     # P-210 heal: 355 / 438 - exactly one new road since
     # this pin was written (P-210's Inspector reasoning
     # road); P-209 itself added no road.
-    assert len(paths) == 365
-    assert operations == 455
+    # R-16 heal: 354 / 444 — the web shell is scrapped:
+    # the 8 in-schema web page paths, /voice, /memories
+    # and /api/v1/memories-browser are gone (-11 paths /
+    # -11 operations; "/" was schema-excluded, never counted).
+    assert len(paths) == 354
+    assert operations == 444
 
 
 async def test_16_content_law_on_both_new_seams(tmp_path, monkeypatch):

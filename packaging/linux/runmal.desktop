@@ -11,4 +11,4 @@ Actions=ControlCenter;
 
 [Desktop Action ControlCenter]
 Name=Rúnmál Control Center
-Exec=/opt/runmal/runmal control
+Exec=/opt/runmal/runmal open

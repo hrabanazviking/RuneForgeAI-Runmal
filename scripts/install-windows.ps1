@@ -129,7 +129,7 @@ try {
     New-Shortcut `
         -Path (Join-Path $startMenu "Rúnmál Control Center.lnk") `
         -Target $pythonw `
-        -Arguments "-m runmal.launcher control" `
+        -Arguments "-m runmal.launcher open" `
         -WorkingDirectory $InstallRoot
 
     if ($DesktopShortcut) {

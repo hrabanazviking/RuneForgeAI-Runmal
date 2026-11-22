@@ -125,14 +125,3 @@ def test_editor_unknown_character_404(tmp_path, monkeypatch) -> None:
     ).status_code == 404
 
 
-def test_editor_ui_page(tmp_path, monkeypatch) -> None:
-    client, _ = make_client(tmp_path, monkeypatch)
-    page = client.get("/editor")
-    assert page.status_code == 200
-    for marker in ('id="editor-form"', 'id="f-description"', 'id="f-personality"',
-                   'id="f-scenario"', 'id="f-first-mes"', 'id="greetings-list"',
-                   'id="error-banner"', "editor.js"):
-        assert marker in page.text, marker
-    js = client.get("/static/editor.js")
-    assert js.status_code == 200
-    assert "/editor" in js.text and "alternate_greetings" in js.text

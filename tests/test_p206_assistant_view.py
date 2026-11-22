@@ -25,12 +25,8 @@ migration, no server change):
 Fixtures mirror test_p205_reasoning_record.py.
 """
 
-import json
-import shutil
-import subprocess
 from pathlib import Path
 
-import pytest
 from fastapi.testclient import TestClient
 
 from runmal.app import create_app
@@ -173,135 +169,8 @@ async def test_07_full_document_reasoning_endpoint_unchanged(
 
 
 # -- View-model pins (renderer.js under node) --------------------------------
-
-
-def run_view_model(calls):
-    script = (
-        "const r = require(" + repr(str(RENDERER)) + ");"
-        "const out = [" + ", ".join(
-            "r.reasoningView(" + c + ")" for c in calls) + "];"
-        "console.log(JSON.stringify(out));"
-    )
-    proc = subprocess.run(["node", "-e", script],
-                          capture_output=True, text=True, timeout=60)
-    assert proc.returncode == 0, proc.stderr  # never throws
-    return json.loads(proc.stdout.strip())
-
-
-needs_node = pytest.mark.skipif(
-    shutil.which("node") is None, reason="node not available")
-
-
-@needs_node
-def test_08_recorded_with_text_gives_recorded_model():
-    (model,) = run_view_model(
-        ["{status: 'recorded', text: 'deep thought'}"])
-    assert model == {"kind": "recorded", "label": "Thinking",
-                     "text": "deep thought"}
-
-
-@needs_node
-def test_09_not_present_gives_its_status_line():
-    (model,) = run_view_model(["{status: 'not_present'}"])
-    assert model == {"kind": "status",
-                     "text": "No thinking was returned for this reply."}
-    assert "text" not in model or model["kind"] == "status"
-
-
-@needs_node
-def test_10_not_recorded_gives_its_status_line():
-    (model,) = run_view_model(["{status: 'not_recorded'}"])
-    assert model == {"kind": "status",
-                     "text": "Thinking was not recorded for this reply."}
-
-
-@needs_node
-def test_11_unknown_gives_its_status_line():
-    (model,) = run_view_model(["{status: 'unknown'}"])
-    assert model == {"kind": "status", "text":
-                     "Thinking record state is unknown for this reply."}
-    # the three status lines are distinct (pins 09/10/11 together)
-    lines = run_view_model(["{status: 'not_present'}",
-                            "{status: 'not_recorded'}",
-                            "{status: 'unknown'}"])
-    assert len({m["text"] for m in lines}) == 3
-    assert all("label" not in m for m in lines)  # status models carry no text payload
-
-
-@needs_node
-def test_12_null_and_missing_reasoning_give_no_panel():
-    assert run_view_model(["null", "undefined", "42", "'junk'"]) == [
-        None, None, None, None]
-
-
-@needs_node
-def test_13_unusable_recorded_and_unrecognised_status_give_unknown():
-    models = run_view_model([
-        "{status: 'recorded'}",                 # recorded, text missing
-        "{status: 'recorded', text: ''}",       # recorded, text empty
-        "{status: 'recorded', text: 7}",        # recorded, text not a string
-        "{status: 'telepathic', text: 'boo'}",  # unrecognised status
-    ])
-    for model in models:
-        assert model == {"kind": "status", "text":
-                         "Thinking record state is unknown for this reply."}
-
-
-# -- Wiring / safety pins ------------------------------------------------------
-
-
-def test_14_chat_page_and_wiring(tmp_path, monkeypatch):
-    client = make_client(tmp_path, monkeypatch)
-    page = client.get("/chat")
-    assert page.status_code == 200, page.text
-    assert "renderer.js" in page.text and "app.js" in page.text
-    renderer = client.get("/static/renderer.js").text
-    assert "reasoningView" in renderer  # exported via RunmalRenderer
-    app = client.get("/static/app.js").text
-    assert "function reasoningPanel(view)" in app
-    assert "RunmalRenderer.reasoningView(reasoning)" in app
-    assert "m.reasoning || null" in app  # renderThread passes it through
-    assert ("appendMessage(m.role, m.content, true, "
-            "m.voice_marking || null, m.reasoning || null)") in app
-    assert ("function appendMessage(role, text, rendered, marking, "
-            "reasoning)") in app  # one trailing parameter
-
-
-def test_15_thinking_text_set_via_textcontent_only():
-    source = APP_JS.read_text()
-    panel = source.split("function reasoningPanel(view)", 1)[1].split(
-        "function appendMessage", 1)[0]
-    assert "textContent" in panel
-    assert "body.textContent = view.text" in panel
-    assert "line.textContent = view.text" in panel
-    assert "innerHTML" not in panel  # never innerHTML
-    assert "renderMarkdownLite" not in panel  # never the markdown road
-    assert 'createElement("details")' in panel  # native disclosure
-    assert "details.open" not in panel and ".setAttribute(\"open\"" not in panel
-
-
-def test_16_stream_generation_collects_for_storage_renders_nothing_live():
-    # Restated by P-209 (the one named heal; P-207 test_e3
-    # precedent): streamGeneration now COLLECTS reasoning
-    # dicts for storage only, so the old '"reasoning" not in
-    # stream' sentence is false BY DESIGN. The new truth, at
-    # equal-or-greater strength: the collector is present,
-    # token / done handling is intact, and NOTHING in the
-    # stream path renders live thinking -- the panel still
-    # renders the STORED record at thread read time.
-    source = APP_JS.read_text()
-    stream = source.split("async function streamGeneration", 1)[1].split(
-        "async function sendMessage", 1)[0]
-    assert 'event.type === "token"' in stream
-    assert 'event.type === "done"' in stream
-    assert 'event.type === "reasoning"' in stream  # the collector
-    assert "reasoningParts.push(event.text)" in stream
-    assert 'reasoningParts.join("")' in stream  # built for the append
-    assert 'status: "recorded"' in stream
-    assert 'status: "not_present"' in stream
-    assert "reasoningView" not in stream  # no live rendering
-    assert "reasoningPanel" not in stream  # no live panel
-    assert "bubble.textContent = full" in stream  # tokens only
+# R-16: the renderer.js view-model pins are scrapped with the web
+# shell; the API pins above and the fence pins below stand.
 
 
 # -- Fence pins ------------------------------------------------------------------
@@ -324,5 +193,9 @@ def test_18_route_census_equals_p205_census(tmp_path, monkeypatch):
     # (P-210 heal: 355 / 438 since P-210's one new road;
     # the P-205 census this pin was written against was
     # 354 / 437; P-206 itself added no road).
-    assert len(paths) == 365
-    assert operations == 455
+    # R-16 heal: 354 / 444 — the web shell is scrapped:
+    # the 8 in-schema web page paths, /voice, /memories
+    # and /api/v1/memories-browser are gone (-11 paths /
+    # -11 operations; "/" was schema-excluded, never counted).
+    assert len(paths) == 354
+    assert operations == 444

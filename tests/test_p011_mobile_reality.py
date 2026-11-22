@@ -35,36 +35,6 @@ def _all_web_text() -> str:
     return "\n".join(parts)
 
 
-def test_every_templated_page_carries_the_viewport() -> None:
-    assert len(TEMPLATES) == 8
-    for name in TEMPLATES:
-        text = (WEB / "templates" / name).read_text(encoding="utf-8")
-        assert VIEWPORT in text, name
-
-
-def test_responsive_pass_markers_present() -> None:
-    css = (WEB / "static" / "style.css").read_text(encoding="utf-8")
-    assert "@media (max-width: 1024px)" in css
-    assert "@media (max-width: 720px)" in css
-    assert "@media (pointer: coarse)" in css
-    assert "--touch-target: 44px" in css
-    assert "env(safe-area-inset-bottom)" in css
-
-
-def test_no_pwa_layer_exists_yet() -> None:
-    # D2's premise: no manifest, service worker, theme-color or
-    # install icons anywhere in the web layer today.
-    static_names = {p.name for p in (WEB / "static").iterdir()}
-    assert "manifest.json" not in static_names
-    assert "manifest.webmanifest" not in static_names
-    assert not any("service" in n and "worker" in n for n in static_names)
-    assert not any(n.startswith("sw.") for n in static_names)
-    assert not any("icon" in n for n in static_names)
-    text = _all_web_text()
-    assert "serviceWorker" not in text
-    assert "theme-color" not in text
-
-
 def test_server_default_bind_is_loopback() -> None:
     # ADR-0003 / D3: phone reach is an explicit --host act, never
     # the default.

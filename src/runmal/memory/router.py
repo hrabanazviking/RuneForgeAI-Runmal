@@ -1,19 +1,15 @@
-"""Memory browser (S410): inspect/search memories with provenance.
+"""Memory browser API (S410): inspect/search memories with provenance.
 
-JSON API under ``/api/v1/memories`` plus a server-rendered browser page
-at ``/memories`` (public page, loopback boundary per ADR-0003; the API
-stays bearer-gated). Every row shows provenance (sources + extractor),
-witness/scope, and temporal state — the MEMORY_ARCHITECTURE.md §12
-browser contract in minimal form.
+JSON API under ``/api/v1/memories`` (bearer-gated). Every row shows
+provenance (sources + extractor), witness/scope, and temporal state —
+the MEMORY_ARCHITECTURE.md §12 browser contract in minimal form.
+(R-16: the server-rendered ``/memories`` page is scrapped with the web
+shell; the desktop memory panel consumes this API.)
 """
 
 from __future__ import annotations
 
-import html
-import json
-
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from fastapi.responses import HTMLResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from runmal.db.deps import get_owner_id, get_session
@@ -58,34 +54,3 @@ async def get_memory(
     data = await _describe(session, memory)
     data["graph"] = await provenance_graph(session, owner_id, memory_id)
     return data
-
-
-@router.get("/memories-browser", response_class=HTMLResponse)
-async def memories_browser_page(
-    session: AsyncSession = Depends(get_session),
-) -> HTMLResponse:
-    """Server-rendered browser page (owner-local; shows latest memories)."""
-    from runmal.db.owners import get_or_create_owner
-
-    owner = await get_or_create_owner(session)
-    memories = await service.list_memories(session, owner.id)
-    rows = []
-    for m in memories:
-        witnesses = html.escape(json.loads(m.witnesses_json or "[]").__str__())
-        rows.append(
-            "<tr>"
-            f"<td>{html.escape(m.id[:8])}</td>"
-            f"<td>{html.escape(m.kind)}</td>"
-            f"<td>{html.escape(m.content)}</td>"
-            f"<td>{html.escape(m.state)}</td>"
-            f"<td>{html.escape(m.scope)}</td>"
-            f"<td>{witnesses}</td>"
-            f"<td>{html.escape(m.subject)}</td>"
-            "</tr>")
-    body = (
-        "<!doctype html><html><head><title>Rúnmál — Memory Browser</title></head>"
-        "<body><h1>Memory Browser</h1>"
-        "<table><thead><tr><th>id</th><th>kind</th><th>content</th><th>state</th>"
-        "<th>scope</th><th>witnesses</th><th>subject</th></tr></thead>"
-        f"<tbody>{''.join(rows)}</tbody></table></body></html>")
-    return HTMLResponse(body)

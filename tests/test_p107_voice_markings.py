@@ -18,11 +18,8 @@ words renders plain). No network. Migration head stays 0041.
 
 from __future__ import annotations
 
-import shutil
-import subprocess
 from pathlib import Path
 
-import pytest
 from fastapi.testclient import TestClient
 
 from runmal.app import create_app
@@ -245,37 +242,9 @@ def test_http_chat_without_voice_has_no_markings(tmp_path, monkeypatch):
 # ------------------------------------------------------------- node
 
 
-@pytest.mark.skipif(shutil.which("node") is None, reason="node not available")
-def test_renderer_marks_low_words_under_node():
-    script = (
-        "const r = require(" + repr(str(RENDERER)) + ");"
-        "const a = r.renderMarkedTranscript('the lift, please', ['lift']);"
-        "const b = r.renderMarkedTranscript('a <script> lift', ['lift']);"
-        "const c = r.renderMarkedTranscript('plain words', []);"
-        "console.log(a); console.log(b); console.log(c);"
-    )
-    proc = subprocess.run(["node", "-e", script],
-                          capture_output=True, text=True, timeout=60)
-    assert proc.returncode == 0, proc.stderr
-    wrapped, xss, plain = proc.stdout.strip().splitlines()
-    assert '<span class="stt-low"' in wrapped
-    assert '>lift</span>,' in wrapped  # punctuation outside the span
-    assert "<script>" not in xss and "&lt;script&gt;" in xss  # escaped first
-    assert '<span class="stt-low"' in xss  # the clean token still marked
-    assert "stt-low" not in plain and plain == "plain words"
-
-
 def test_migration_head_stays_0041(tmp_path, monkeypatch):
     _client, _f, db_path = make_client(tmp_path, monkeypatch)
     assert MIGRATIONS[-1][0] == "0042"
     assert current_revision(db_path) == "0042"
 
 
-def test_css_marking_colour_flows_from_a_token():
-    # S301 law, pinned for this slice's own rule: the .stt-low
-    # tint is a design token, never a raw colour in the rule.
-    css = (REPO / "src" / "runmal" / "web" / "static" / "style.css").read_text()
-    rule = css.split(".stt-low {", 1)[1].split("}", 1)[0]
-    assert "var(--stt-low-tint)" in rule
-    assert "rgba(" not in rule and "#" not in rule
-    assert "--stt-low-tint:" in css  # defined in the token blocks

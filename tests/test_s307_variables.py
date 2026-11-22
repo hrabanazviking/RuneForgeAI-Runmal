@@ -79,13 +79,3 @@ def test_variables_api_and_preview(tmp_path, monkeypatch) -> None:
     assert body["unknown"] == ["nope"]
 
 
-def test_tools_ui_has_helper(tmp_path, monkeypatch) -> None:
-    client = make_client(tmp_path, monkeypatch)
-    page = client.get("/tools")
-    for marker in ('id="variable-chips"', 'id="resolve-btn"',
-                   'id="unknown-vars"', 'id="v-char"', 'id="v-user"'):
-        assert marker in page.text, marker
-    js = client.get("/static/tools.js")
-    assert "/api/v1/tools/variables" in js.text
-    assert "/api/v1/tools/resolve" in js.text
-    assert "var-chip" in js.text

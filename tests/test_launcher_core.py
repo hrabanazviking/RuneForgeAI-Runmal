@@ -17,26 +17,29 @@ def test_bootstrap_url_contains_only_disposable_nonce(tmp_path, monkeypatch) -> 
     assert "local_credential" not in url
 
 
-def test_open_reuses_running_server_and_opens_browser(tmp_path, monkeypatch) -> None:
-    monkeypatch.setenv("RUNMAL_DATA_DIR", str(tmp_path))
-    calls = {"started": 0, "opened": []}
+def test_open_launches_desktop_without_server_or_browser(monkeypatch) -> None:
+    # R-16: the open road launches the desktop app (in-process
+    # engine) — no managed server is started and no browser opens.
+    calls = {"spawned": []}
 
-    def fake_start(port: int):
-        calls["started"] += 1
-        return core.LaunchStatus(running=True, managed=False, port=port)
+    def fake_spawn(command, **kwargs):
+        calls["spawned"].append((command, kwargs))
+        return object()
 
-    monkeypatch.setattr(core, "start_server", fake_start)
-    monkeypatch.setattr(core, "create_bootstrap_nonce", lambda: "one-use")
-    monkeypatch.setattr(
-        core.webbrowser,
-        "open",
-        lambda url, new=0: calls["opened"].append((url, new)) or True,
-    )
+    def fail_start(port: int):
+        raise AssertionError("open must not start the headless server")
 
-    url = core.open_runmal(18098)
-    assert calls["started"] == 1
-    assert calls["opened"] == [(url, 2)]
-    assert "one-use" in url
+    monkeypatch.setattr(core, "start_server", fail_start)
+    monkeypatch.delattr(sys, "frozen", raising=False)
+
+    command = core.open_runmal(18098, runner=fake_spawn)
+    assert command == [sys.executable, "-m", "runmal.desktop"]
+    assert calls["spawned"][0][0] == command
+
+
+def test_desktop_command_frozen_mode(monkeypatch) -> None:
+    monkeypatch.setattr(sys, "frozen", True, raising=False)
+    assert core.desktop_command() == [sys.executable, "_desktop"]
 
 
 def test_start_does_not_spawn_duplicate_when_healthy(monkeypatch) -> None:

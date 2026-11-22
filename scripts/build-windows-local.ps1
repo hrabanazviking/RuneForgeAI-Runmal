@@ -58,9 +58,6 @@ Write-Host "Building standalone Windows Rúnmál application..."
 & $VenvPyInstaller --noconfirm --clean --onedir --windowed `
     --name Runmal `
     --icon build/runmal.ico `
-    --hidden-import tkinter `
-    --hidden-import tkinter.messagebox `
-    --hidden-import tkinter.scrolledtext `
     --hidden-import aiosqlite `
     --collect-all sqlite_vec `
     --collect-all runmal `

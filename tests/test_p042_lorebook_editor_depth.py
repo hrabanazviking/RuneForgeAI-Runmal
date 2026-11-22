@@ -190,33 +190,6 @@ def _page_and_js(client):
     return page.text, js.text
 
 
-def test_editor_page_has_an_element_for_every_census_field(tmp_path, monkeypatch) -> None:
-    client = make_client(tmp_path, monkeypatch)
-    html, _js = _page_and_js(client)
-    for fields in census.SURFACES.values():
-        for f in fields:
-            assert f'id="{f.element_id}"' in html, f
-            if f.kind == "select":
-                for opt in f.options:
-                    assert f'value="{opt}"' in html, (f, opt)
-
-
-def test_editor_js_wires_every_census_field(tmp_path, monkeypatch) -> None:
-    client = make_client(tmp_path, monkeypatch)
-    _html, js = _page_and_js(client)
-    for fields in census.SURFACES.values():
-        for f in fields:
-            # The element is read or written by the script...
-            assert f'"{f.element_id}"' in js, f
-            # ...and authored fields travel under their API name.
-            if f.kind != "derived":
-                assert f.name in js, f
-    # Entry fields are both filled from API dicts and sent as payloads.
-    for f in census.ENTRY_FIELDS:
-        if f.kind != "derived":
-            assert js.count(f.name) >= 2, f
-
-
 # -- Round-trips: reachability is real --------------------------------
 
 BOOK_PAYLOAD = {

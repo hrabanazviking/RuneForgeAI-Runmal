@@ -118,13 +118,3 @@ def test_health_default_probe_fake_backend(tmp_path, monkeypatch) -> None:
     assert result.latency_ms >= 0
 
 
-def test_connections_ui_page(tmp_path, monkeypatch) -> None:
-    client = make_client(tmp_path, monkeypatch)
-    page = client.get("/connections")
-    assert page.status_code == 200
-    assert 'id="connection-list"' in page.text
-    assert 'id="create-form"' in page.text
-    assert "connections.js" in page.text
-    js = client.get("/static/connections.js")
-    assert js.status_code == 200
-    assert "/api/v1/connections" in js.text

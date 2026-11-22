@@ -110,15 +110,3 @@ def test_editor_crud_flow(tmp_path, monkeypatch) -> None:
     assert client.get(f"/api/v1/lorebooks/{book['id']}/entries").json() == []
 
 
-def test_lorebooks_ui_page(tmp_path, monkeypatch) -> None:
-    client = make_client(tmp_path, monkeypatch)
-    page = client.get("/lorebooks")
-    assert page.status_code == 200
-    for marker in ('id="book-select"', 'id="entry-table"', 'id="entry-form"',
-                   'id="e-keys"', 'id="import-file"', 'id="export-link"',
-                   "lorebooks.js"):
-        assert marker in page.text, marker
-    js = client.get("/static/lorebooks.js")
-    assert js.status_code == 200
-    assert "/api/v1/lorebooks/import" in js.text
-    assert "/export" in js.text

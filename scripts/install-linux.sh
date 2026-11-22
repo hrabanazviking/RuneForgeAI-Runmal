@@ -79,7 +79,7 @@ Actions=ControlCenter;
 
 [Desktop Action ControlCenter]
 Name=Rúnmál Control Center
-Exec=$VENV/bin/python -m runmal.launcher control
+Exec=$VENV/bin/python -m runmal.launcher open
 EOF
 chmod 644 "$APPLICATIONS_DIR/runmal.desktop"
 

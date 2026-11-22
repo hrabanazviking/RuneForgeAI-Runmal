@@ -677,8 +677,12 @@ def test_15_census_migration_and_p210_document_unmoved(
         )
         for methods in paths.values()
     )
-    assert len(paths) == 365
-    assert operations == 455
+    # R-16 heal: 354 / 444 — the web shell is scrapped:
+    # the 8 in-schema web page paths, /voice, /memories
+    # and /api/v1/memories-browser are gone (-11 paths /
+    # -11 operations; "/" was schema-excluded, never counted).
+    assert len(paths) == 354
+    assert operations == 444
     assert "/api/v1/inspector/groups/{group_id}/reasoning" in paths
     assert "/api/v1/inspector/chats/{chat_id}/reasoning" in paths
     # Migration head stays 0042; no 0043 file exists.

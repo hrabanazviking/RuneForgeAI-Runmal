@@ -72,16 +72,6 @@ def test_browser_api_lists_with_provenance_witness_status(tmp_path, monkeypatch)
     assert client.get("/api/v1/memories/nope").status_code == 404
 
 
-def test_browser_page_renders_status_and_scope(tmp_path, monkeypatch):
-    client, factory = make_client(tmp_path, monkeypatch)
-    seed(factory)
-    page = client.get("/memories")
-    assert page.status_code == 200
-    assert "Memory Browser" in page.text
-    assert "Volmarr lives in Schenectady." in page.text
-    assert "disputed" in page.text and "witnesses" in page.text
-
-
 def test_browser_requires_auth(tmp_path, monkeypatch):
     client, _ = make_client(tmp_path, monkeypatch)
     client.headers.pop("Authorization")

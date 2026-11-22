@@ -53,7 +53,6 @@ importing it.
 
 import asyncio
 import os
-import re
 from pathlib import Path
 
 from fastapi.testclient import TestClient
@@ -143,92 +142,6 @@ def persistent_segment():
 # -- Static-source pins over group.js --------------------------------------
 
 
-def test_01_open_group_state_declared_null():
-    js = GROUP_JS.read_text()
-    assert "let openGroupId = null;" in js
-
-
-def test_02_loader_sets_open_group_on_success_only():
-    segment = loader_segment()
-    assert "openGroupId = groupId;" in segment
-    set_at = segment.index("openGroupId = groupId;")
-    assert segment.index('"/messages"') < set_at
-    assert segment.index("addBubble(m.speaker_name") < set_at
-    assert set_at < segment.index("} catch (err)")
-
-
-def test_03_loader_fence_restated_in_true_form():
-    segment = loader_segment()
-    assert "history.push" not in segment
-    assert "sentHistory" not in segment
-    assert "localStorage" not in segment
-    assert "sessionStorage" not in segment
-
-
-def test_04_submit_branches_before_stateless_state():
-    segment = submit_segment()
-    branch_at = segment.index("if (openGroupId)")
-    assert branch_at < segment.index("const sentHistory")
-    assert "await sendPersistent(text);" in segment
-    assert segment.index("await sendPersistent(text);") \
-        < segment.index("const sentHistory")
-
-
-def test_05_persistent_branch_posts_the_banked_next_road():
-    segment = persistent_segment()
-    assert '"/api/v1/groups/" + openGroupId + "/next"' in segment
-    assert 'method: "POST"' in segment
-    assert "user_text: text" in segment
-    assert "generate: true" in segment
-
-
-def test_06_persistent_branch_touches_no_stateless_state():
-    segment = persistent_segment()
-    for fenced in ("history", "sentHistory", "rrCursor",
-                   "selectedIds", "strategy", "localStorage",
-                   "sessionStorage", "/api/v1/group/turn"):
-        assert fenced not in segment, fenced
-
-
-def test_07_reply_renders_via_the_p213_pair():
-    segment = persistent_segment()
-    assert "const m = result.message;" in segment
-    assert 'addBubble(m.speaker_name || "user", m.content)' in segment
-    assert "reasoningPanel(" in segment
-    assert ("window.RunmalRenderer.reasoningView(m.reasoning)"
-            in segment)
-
-
-def test_08_null_message_renders_nothing():
-    # P-217 heal (named in advance in the P-217 design,
-    # section 5): the early-return form this pin asserted
-    # is replaced BY DESIGN with the guarded render, so a
-    # null message renders nothing AND reaches the P-217
-    # picker-refresh tail - the same null-message truth,
-    # restated at equal-or-greater strength in its true
-    # P-217 form; the P-217 battery pin 7 asserts exactly
-    # this form.
-    segment = persistent_segment()
-    assert "if (!m) return;" not in segment
-    guard_at = segment.index("if (m) {")
-    assert guard_at < segment.index("addBubble(m.speaker_name")
-    assert segment.index("addBubble(m.speaker_name") \
-        < segment.index("await loadSavedGroups();")
-
-
-def test_09_stateless_body_intact():
-    segment = submit_segment()
-    assert 'api("/api/v1/group/turn"' in segment
-    assert "participant_ids: selectedIds()" in segment
-    assert "history: sentHistory" in segment
-    assert "strategy:" in segment
-    assert "rr_cursor: rrCursor" in segment
-
-
-def test_10_textcontent_only_no_innerhtml():
-    assert "innerHTML" not in GROUP_JS.read_text()
-
-
 # -- API-truth pins (backend unchanged, seeded store) -----------------------
 
 
@@ -303,40 +216,17 @@ def test_14_census_head_and_page_integrity(tmp_path, monkeypatch):
         for methods in paths.values())
     # No road is added, moved or removed by P-214: the census
     # stands at the P-213 census and NO pin is healed.
-    assert len(paths) == 365
-    assert operations == 455
+    # R-16 heal: 354 / 444 — the web shell is scrapped:
+    # the 8 in-schema web page paths, /voice, /memories
+    # and /api/v1/memories-browser are gone (-11 paths /
+    # -11 operations; "/" was schema-excluded, never counted).
+    assert len(paths) == 354
+    assert operations == 444
     assert MIGRATIONS[-1][0] == "0042"
     assert current_revision(client.db_path) == "0042"
     assert all(rev != "0043" for rev, _desc, _mod in MIGRATIONS)
     import runmal.db.migrations as migrations_pkg
     names = os.listdir(os.path.dirname(migrations_pkg.__file__))
     assert not any(name.startswith("m0043") for name in names)
-    # P-215 heal (named in advance in the P-215 design,
-    # section 5): group.html now carries exactly the
-    # P-213/P-214 control set PLUS the two ids P-215 adds
-    # by design (close-group, group-mode) and no others -
-    # the same exact-census assertion, restated at equal
-    # strength in its true P-215 form; the P-215 battery
-    # pin 14 asserts this same census.
-    # P-216 heal (named in advance in the P-216 design,
-    # section 5): group.html now carries exactly that set
-    # PLUS the two ids P-216 adds by design (new-group-name,
-    # create-group) and no others - the same exact-census
-    # assertion, restated at equal strength in its true
-    # P-216 form; the P-216 battery pin 14 asserts this
-    # same census.
-    html = GROUP_HTML.read_text()
-    assert '<select id="saved-group"' in html
-    assert 'id="open-group" type="button">Open</button>' in html
-    ids = set(re.findall(r'id="([^"]+)"', html))
-    assert ids == {
-        "group-main", "error-banner", "error-text",
-        "error-dismiss", "group-layout", "saved-group",
-        "open-group", "close-group", "group-mode",
-        "new-group-name", "create-group", "roster",
-        "strategy", "group-thread",
-        "group-form", "group-input", "palette",
-        "palette-card", "palette-input", "palette-list",
-    }
-    assert (html.index('/static/renderer.js')
-            < html.index('/static/group.js'))
+    # R-16: the group.html control census leg is scrapped
+    # with the web shell; census + head fences above stand.

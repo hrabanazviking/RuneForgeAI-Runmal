@@ -37,7 +37,6 @@ and segment assertions, never by importing it.
 
 import asyncio
 import os
-import re
 from pathlib import Path
 
 from fastapi.testclient import TestClient
@@ -141,110 +140,6 @@ def persistent_segment():
 # -- Static-source pins over group.html / group.js --------------------------
 
 
-def test_01_toggle_pair_in_saved_groups_block():
-    html = GROUP_HTML.read_text()
-    assert ('<button id="close-group" type="button" disabled>'
-            'Close group</button>') in html
-    assert ('<p id="group-mode" aria-live="polite">'
-            'Stateless room</p>') in html
-    aside_open = html.index("<aside")
-    open_at = html.index('id="open-group"')
-    close_at = html.index('id="close-group"')
-    mode_at = html.index('id="group-mode"')
-    roster_at = html.index("<h2>Roster</h2>")
-    aside_close = html.index("</aside>")
-    assert aside_open < open_at < close_at < mode_at < roster_at
-    assert mode_at < aside_close
-    assert (html.index('/static/renderer.js')
-            < html.index('/static/group.js'))
-
-
-def test_02_close_declared_and_wired_on_domcontentloaded():
-    js = GROUP_JS.read_text()
-    assert "function closeSavedGroup()" in js
-    wire_at = js.index('document.addEventListener("DOMContentLoaded"')
-    wiring = js[wire_at:]
-    assert '$("close-group").addEventListener("click"' in wiring
-    assert "closeSavedGroup();" in wiring
-    assert wiring.index('$("open-group").addEventListener') \
-        < wiring.index('$("close-group").addEventListener')
-
-
-def test_03_open_restatement_on_success_path_only():
-    segment = open_segment()
-    mode_set = '$("group-mode").textContent = "Saved group mode";'
-    enable = '$("close-group").disabled = false;'
-    assert mode_set in segment
-    assert enable in segment
-    set_at = segment.index("openGroupId = groupId;")
-    assert segment.index('"/messages"') < set_at
-    assert segment.index("addBubble(m.speaker_name") < set_at
-    assert set_at < segment.index(mode_set)
-    assert set_at < segment.index(enable)
-    catch = segment[segment.index("} catch (err)"):]
-    assert mode_set not in catch
-    assert enable not in catch
-
-
-def test_04_close_sets_open_group_id_null():
-    assert "openGroupId = null;" in close_segment()
-
-
-def test_05_close_reload_equivalence_restatements():
-    segment = close_segment()
-    assert '$("group-thread").textContent = "";' in segment
-    assert "history = [];" in segment
-    assert "rrCursor = 0;" in segment
-    assert ('$("group-mode").textContent = "Stateless room";'
-            in segment)
-    assert '$("close-group").disabled = true;' in segment
-
-
-def test_06_close_is_network_and_storage_free():
-    segment = close_segment()
-    for fenced in ("api(", "fetch", "POST", "localStorage",
-                   "sessionStorage"):
-        assert fenced not in segment, fenced
-
-
-def test_07_close_guard_precedes_every_mutation():
-    segment = close_segment()
-    guard_at = segment.index("if (!openGroupId) return;")
-    for mutation in ("openGroupId = null;",
-                     '$("group-thread").textContent = "";',
-                     "history = [];", "rrCursor = 0;",
-                     '$("group-mode").textContent',
-                     '$("close-group").disabled = true;'):
-        assert guard_at < segment.index(mutation), mutation
-
-
-def test_08_loader_fence_restated_at_p215():
-    segment = loader_segment()
-    assert "history.push" not in segment
-    assert "sentHistory" not in segment
-    assert "localStorage" not in segment
-    assert "sessionStorage" not in segment
-
-
-def test_09_both_composer_branches_intact():
-    submit = submit_segment()
-    assert submit.index("if (openGroupId)") \
-        < submit.index("const sentHistory")
-    assert "await sendPersistent(text);" in submit
-    persistent = persistent_segment()
-    assert '"/api/v1/groups/" + openGroupId + "/next"' in persistent
-    assert "generate: true" in persistent
-    assert 'api("/api/v1/group/turn"' in submit
-    assert "participant_ids: selectedIds()" in submit
-    assert "history: sentHistory" in submit
-    assert "strategy:" in submit
-    assert "rr_cursor: rrCursor" in submit
-
-
-def test_10_textcontent_only_no_innerhtml():
-    assert "innerHTML" not in GROUP_JS.read_text()
-
-
 # -- API-truth pins (backend unchanged, seeded store) -----------------------
 
 
@@ -308,8 +203,12 @@ def test_13_route_census_unchanged(tmp_path, monkeypatch):
         len([k for k in methods
              if k in ("get", "post", "put", "delete", "patch")])
         for methods in paths.values())
-    assert len(paths) == 365
-    assert operations == 455
+    # R-16 heal: 354 / 444 — the web shell is scrapped:
+    # the 8 in-schema web page paths, /voice, /memories
+    # and /api/v1/memories-browser are gone (-11 paths /
+    # -11 operations; "/" was schema-excluded, never counted).
+    assert len(paths) == 354
+    assert operations == 444
 
 
 def test_14_head_and_exact_control_census(tmp_path, monkeypatch):
@@ -320,19 +219,5 @@ def test_14_head_and_exact_control_census(tmp_path, monkeypatch):
     import runmal.db.migrations as migrations_pkg
     names = os.listdir(os.path.dirname(migrations_pkg.__file__))
     assert not any(name.startswith("m0043") for name in names)
-    # P-216 heal (named in advance in the P-216 design,
-    # section 5): the exact census is restated in its true
-    # P-216 form - every prior id PLUS the two ids P-216
-    # adds by design (new-group-name, create-group), no
-    # others - at equal strength; the P-216 battery pin 14
-    # asserts this same census.
-    html = GROUP_HTML.read_text()
-    ids = set(re.findall(r'id="([^"]+)"', html))
-    assert ids == {
-        "group-main", "error-banner", "error-text",
-        "error-dismiss", "group-layout", "saved-group",
-        "open-group", "close-group", "group-mode",
-        "new-group-name", "create-group", "roster",
-        "strategy", "group-thread", "group-form", "group-input",
-        "palette", "palette-card", "palette-input", "palette-list",
-    }
+    # R-16: the group.html control census leg is scrapped
+    # with the web shell; census + head fences above stand.

@@ -56,7 +56,7 @@ def test_launcher_bootstrap_sets_httponly_session_not_bearer(tmp_path, monkeypat
         follow_redirects=False,
     )
     assert response.status_code == 303
-    assert response.headers["location"] == "/chat"
+    assert response.headers["location"] == "/api/v1/status"  # R-16: no /chat page remains (ADR-0011)
     cookie = response.headers.get("set-cookie", "")
     assert SESSION_COOKIE_NAME in cookie
     assert "HttpOnly" in cookie

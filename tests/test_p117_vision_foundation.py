@@ -76,28 +76,6 @@ def make_client(tmp_path, monkeypatch):
     return client, factory, db_path
 
 
-def test_openapi_succeeds_and_names_html_pages(tmp_path, monkeypatch):
-    client, _f, _db = make_client(tmp_path, monkeypatch)
-    res = client.get("/openapi.json")
-    assert res.status_code == 200
-    paths = res.json()["paths"]
-    assert "/voice" in paths
-    assert "/memories" in paths
-    assert "200" in paths["/voice"]["get"]["responses"]
-    assert "200" in paths["/memories"]["get"]["responses"]
-    assert "/api/v1/vision/describe" in paths
-
-
-def test_html_pages_still_serve(tmp_path, monkeypatch):
-    client, _f, _db = make_client(tmp_path, monkeypatch)
-    voice = client.get("/voice")
-    assert voice.status_code == 200
-    assert "text/html" in voice.headers["content-type"]
-    memories = client.get("/memories")
-    assert memories.status_code == 200
-    assert "text/html" in memories.headers["content-type"]
-
-
 # --------------------------------------------------- provider seam
 
 

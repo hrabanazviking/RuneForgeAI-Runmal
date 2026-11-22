@@ -215,18 +215,3 @@ def test_preview_scan_depth_override(tmp_path, monkeypatch) -> None:
     assert by_name["Dragon"]["status"] == "included"
 
 
-def test_editor_page_has_preview_panel(tmp_path, monkeypatch) -> None:
-    client = make_client(tmp_path, monkeypatch)
-    page = client.get("/lorebooks")
-    assert page.status_code == 200
-    for marker in (
-        'id="preview-panel"',
-        'id="p-messages"',
-        'id="p-run"',
-        'id="p-results"',
-        'id="p-summary"',
-    ):
-        assert marker in page.text
-    js = client.get("/static/lorebooks.js")
-    assert js.status_code == 200
-    assert "/preview" in js.text
