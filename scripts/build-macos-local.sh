@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 # Rúnmál local macOS package builder
 # Builds entirely on the current Mac. No GitHub Actions or hosted CI.
+#
+# STATUS: UNPROVEN (plan §2.5). No Mac exists in the fleet, so this
+# script is kept current by inspection only — nothing here is claimed
+# to work until it has actually run on a Mac. Refreshed at R-17
+# (2026-11-22) to match the Linux builder: the desktop extra is
+# installed and PySide6 is collected, because since R-16 the frozen
+# entry's `open` road launches the Qt desktop shell.
 
 set -euo pipefail
 
@@ -43,7 +50,7 @@ PYINSTALLER="$BUILD_VENV/bin/pyinstaller"
 
 echo "Installing Rúnmál build dependencies locally..."
 "$VPY" -m pip install --upgrade pip
-"$VPY" -m pip install -e . pyinstaller pillow
+"$VPY" -m pip install -e ".[desktop]" pyinstaller pillow
 
 VERSION="$($VPY -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")"
 
@@ -63,6 +70,7 @@ echo "Building standalone macOS application..."
   --hidden-import aiosqlite \
   --collect-all sqlite_vec \
   --collect-all runmal \
+  --collect-all PySide6 \
   src/runmal/launcher/frozen_entry.py
 
 RUNMAL_BIN="$REPO_ROOT/dist/Runmal.app/Contents/MacOS/Runmal"

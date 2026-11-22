@@ -609,3 +609,14 @@ road spawns it, and `/launcher/bootstrap` redirects to
 operations, and a standing gate (`tests/test_r16_desktop_smoke.py`)
 keeps the removed shell from rotting back. Slice contract and
 evidence: `docs/DESKTOP_WEB_REMOVAL_R16_2026-11-22.md`.
+
+R-17 closes the campaign with platform proof and installers: every
+platform builder now installs the `desktop` extra and collects
+PySide6 into the frozen bundle (without it the frozen `open` road's
+desktop shell could not start), the Linux builder smoke-tests the
+desktop entry offscreen as a build gate, and fresh debs were built
+and install-proven on Linux x86-64 (VM + purplelongship proofs)
+and ARM (Mimir). Windows installer proof stays deferred (the F15's
+road runs through the paused purpleraider) and macOS stays
+explicitly UNPROVEN. Slice contract and evidence:
+`docs/DESKTOP_PLATFORM_PROOF_R17_2026-11-22.md`.

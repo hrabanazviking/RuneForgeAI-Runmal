@@ -45,7 +45,9 @@ if (-not (Test-Path $VenvPython)) {
 
 Write-Host "Installing Rúnmál build dependencies locally..."
 & $VenvPython -m pip install --upgrade pip
-& $VenvPython -m pip install -e . pyinstaller pillow
+# The desktop extra is required: since R-16 the frozen entry's `open`
+# road launches the Qt desktop shell, so PySide6 must be in the bundle.
+& $VenvPython -m pip install -e ".[desktop]" pyinstaller pillow
 
 $Version = (& $VenvPython -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])").Trim()
 
@@ -61,6 +63,7 @@ Write-Host "Building standalone Windows Rúnmál application..."
     --hidden-import aiosqlite `
     --collect-all sqlite_vec `
     --collect-all runmal `
+    --collect-all PySide6 `
     src/runmal/launcher/frozen_entry.py
 
 $RunmalExe = Join-Path $RepoRoot "dist\Runmal\Runmal.exe"

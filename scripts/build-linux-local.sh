@@ -59,7 +59,9 @@ PYINSTALLER="$BUILD_VENV/bin/pyinstaller"
 
 echo "Installing Rúnmál build dependencies locally..."
 "$VPY" -m pip install --upgrade pip
-"$VPY" -m pip install -e . pyinstaller
+# The desktop extra is required: since R-16 the frozen entry's `open`
+# road launches the Qt desktop shell, so PySide6 must be in the bundle.
+"$VPY" -m pip install -e ".[desktop]" pyinstaller
 
 VERSION="$($VPY -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")"
 
@@ -69,6 +71,7 @@ echo "Building standalone Linux application..."
   --hidden-import aiosqlite \
   --collect-all sqlite_vec \
   --collect-all runmal \
+  --collect-all PySide6 \
   src/runmal/launcher/frozen_entry.py
 
 RUNMAL_BIN="$REPO_ROOT/dist/runmal/runmal"
@@ -109,6 +112,37 @@ kill "$PID" 2>/dev/null || true
 wait "$PID" 2>/dev/null || true
 trap - EXIT
 rm -f "$LOG"
+
+echo "Smoke-testing desktop entry (offscreen Qt)..."
+# The desktop shell is the shipped front end (R-16): the frozen binary
+# must actually open it. Launch `_desktop` offscreen on a throwaway
+# data dir; a healthy shell reaches its event loop and stays up with
+# no traceback. Exiting early or tracebacking fails the build.
+DESK_LOG="$(mktemp)"
+DESK_DATA="$(mktemp -d)"
+QT_QPA_PLATFORM=offscreen RUNMAL_DATA_DIR="$DESK_DATA" \
+  "$RUNMAL_BIN" _desktop >"$DESK_LOG" 2>&1 &
+DESK_PID=$!
+sleep 10
+DESK_OK=1
+if ! kill -0 "$DESK_PID" 2>/dev/null; then
+  DESK_OK=0
+fi
+if grep -q "Traceback" "$DESK_LOG"; then
+  DESK_OK=0
+fi
+kill "$DESK_PID" 2>/dev/null || true
+wait "$DESK_PID" 2>/dev/null || true
+if [[ "$DESK_OK" -ne 1 ]]; then
+  cat "$DESK_LOG" >&2
+  rm -f "$DESK_LOG"
+  rm -rf "$DESK_DATA"
+  echo "Frozen desktop entry failed its offscreen launch smoke test." >&2
+  exit 1
+fi
+rm -f "$DESK_LOG"
+rm -rf "$DESK_DATA"
+echo "Desktop entry smoke test passed (stayed up offscreen, no traceback)."
 
 PACKAGE_ROOT="$(mktemp -d)"
 trap 'rm -rf "$PACKAGE_ROOT"' EXIT

@@ -7,8 +7,3 @@ Icon=runmal
 Terminal=false
 Categories=Utility;Education;
 StartupNotify=true
-Actions=ControlCenter;
-
-[Desktop Action ControlCenter]
-Name=Rúnmál Control Center
-Exec=/opt/runmal/runmal open
