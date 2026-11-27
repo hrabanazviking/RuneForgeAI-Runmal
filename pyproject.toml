@@ -130,6 +130,7 @@ voice-chatterbox = [
 [project.scripts]
 runmal = "runmal.__main__:main"
 runmal-launcher = "runmal.launcher.__main__:main"
+runmal-webface = "runmal.webface.__main__:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/runmal"]

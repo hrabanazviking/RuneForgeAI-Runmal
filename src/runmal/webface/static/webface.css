@@ -1,0 +1,95 @@
+/* Rúnmál web face — Visual Design Doctrine Appendix B tokens.
+   Darkness ladder: void-000 page, void-100 header, panel cards,
+   panel-raised raised surfaces. Chamfered corners throughout. */
+:root {
+  --void-000: #05080D;
+  --void-100: #081019;
+  --panel: #0B1620;
+  --panel-raised: #101F2A;
+  --iron: #24313A;
+  --silver: #CCD6DF;
+  --muted: #8CA0AE;
+  --bifrost: #42DDF5;
+  --rune: #5AA8FF;
+  --seidr: #9B70FF;
+  --forge: #E3B75B;
+  --aurora: #59DFAE;
+  --ember: #F36A62;
+  --chamfer: polygon(10px 0, 100% 0, 100% calc(100% - 10px),
+    calc(100% - 10px) 100%, 0 100%, 0 10px);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--void-000); color: var(--silver);
+  font-family: "Segoe UI", system-ui, sans-serif; line-height: 1.5;
+}
+.wrap { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+.face-head { background: var(--void-100); border-bottom: 1px solid var(--iron); }
+.face-head .wrap { display: flex; flex-wrap: wrap; align-items: center;
+  gap: 10px 18px; padding-top: 10px; padding-bottom: 10px; }
+.brand { color: var(--forge); font-size: 1.3rem; font-weight: 700;
+  text-decoration: none; letter-spacing: .04em; }
+.tabs { display: flex; flex-wrap: wrap; gap: 2px; flex: 1 1 auto; }
+.tab { color: var(--muted); text-decoration: none; padding: 6px 10px;
+  border-bottom: 2px solid transparent; font-size: .95rem; }
+.tab:hover { color: var(--silver); }
+.tab.active { color: var(--bifrost); border-bottom-color: var(--bifrost); }
+.who { color: var(--muted); font-size: .9rem; }
+.tag { color: var(--seidr); border: 1px solid var(--seidr);
+  padding: 0 6px; font-size: .78rem; clip-path: var(--chamfer); }
+main.wrap { padding-top: 22px; padding-bottom: 30px; }
+.face-foot { color: var(--muted); font-size: .85rem; padding-bottom: 24px; }
+.card { background: var(--panel); border: 1px solid var(--iron);
+  clip-path: var(--chamfer); padding: 20px; margin-bottom: 18px; }
+.hero { text-align: center; padding: 28px 10px 6px; }
+.hero h1 { color: var(--forge); font-size: 2.4rem; margin: 0 0 8px; }
+.auth { max-width: 430px; margin: 18px auto; }
+.auth label { display: block; margin: 12px 0; color: var(--muted); }
+.auth input { width: 100%; margin-top: 4px; padding: 9px;
+  background: var(--panel-raised); color: var(--silver);
+  border: 1px solid var(--iron); }
+.btn { background: var(--bifrost); color: var(--void-000); border: none;
+  padding: 9px 18px; font-weight: 600; cursor: pointer;
+  clip-path: var(--chamfer); }
+.btn:hover { background: var(--rune); }
+.btn.ghost { background: transparent; color: var(--bifrost);
+  border: 1px solid var(--bifrost); }
+.btn.small { padding: 3px 10px; font-size: .85rem; }
+.btn:disabled { opacity: .45; cursor: default; }
+form.inline { display: inline; }
+.flash { background: var(--panel-raised); border-left: 3px solid var(--aurora);
+  padding: 10px 14px; margin-bottom: 16px; }
+.flash.err { border-left-color: var(--ember); color: var(--ember); }
+.muted { color: var(--muted); }
+.center { text-align: center; }
+a { color: var(--rune); }
+.chat-shell { display: flex; gap: 16px; align-items: flex-start; }
+.chat-side { flex: 0 0 250px; display: flex; flex-direction: column; gap: 10px; }
+.chat-side select { width: 100%; margin-top: 4px; padding: 8px;
+  background: var(--panel-raised); color: var(--silver);
+  border: 1px solid var(--iron); }
+.chat-list { list-style: none; margin: 0; padding: 0; overflow-y: auto;
+  max-height: 55vh; }
+.chat-list li { padding: 8px 10px; cursor: pointer; color: var(--muted);
+  border-bottom: 1px solid var(--iron); }
+.chat-list li:hover { color: var(--silver); }
+.chat-list li.active { color: var(--bifrost);
+  background: var(--panel-raised); }
+.chat-main { flex: 1 1 auto; display: flex; flex-direction: column; }
+.messages { overflow-y: auto; max-height: 58vh; min-height: 220px;
+  display: flex; flex-direction: column; gap: 10px; padding-bottom: 12px; }
+.msg { max-width: 82%; padding: 10px 14px; white-space: pre-wrap;
+  clip-path: var(--chamfer); background: var(--panel-raised); }
+.msg.user { align-self: flex-end; border-right: 3px solid var(--bifrost); }
+.msg.assistant { align-self: flex-start; border-left: 3px solid var(--forge); }
+.msg .role { display: block; font-size: .75rem; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .08em; margin-bottom: 4px; }
+.composer { display: flex; gap: 10px; align-items: flex-end; }
+.composer textarea { flex: 1 1 auto; padding: 9px;
+  background: var(--panel-raised); color: var(--silver);
+  border: 1px solid var(--iron); resize: vertical; }
+@media (max-width: 720px) {
+  .chat-shell { flex-direction: column; }
+  .chat-side { flex: 1 1 auto; width: 100%; }
+  .msg { max-width: 95%; }
+}
