@@ -13,8 +13,8 @@ import html
 TABS: list[tuple[str, str, str | None]] = [
     ("chat", "Chat", None),
     ("groups", "Groups", "W-03"),
-    ("characters", "Characters", "W-02"),
-    ("library", "Library", "W-02"),
+    ("characters", "Characters", None),
+    ("library", "Library", None),
     ("personas", "Personas", "W-05"),
     ("lorebooks", "Lorebooks", "W-05"),
     ("connections", "Connections", "W-04"),
@@ -157,3 +157,41 @@ def chat_page(user):
             "</section></div>"
             "<script src=\"/static/chat.js\"></script>")
     return layout("Chat", body, user=user, active_tab="chat")
+
+
+def characters_page(user):
+    body = ("<section class=\"card\"><h1>Characters</h1>"
+            "<div class=\"row\">"
+            "<label>Search<input id=\"c-search\"></label>"
+            "<label>Tag<select id=\"c-tag\"><option value=\"\">All tags</option></select></label>"
+            "<label class=\"check\"><input type=\"checkbox\" id=\"c-fav\"> Favourites only</label>"
+            "<button id=\"c-new\" class=\"btn\" type=\"button\">New character</button></div>"
+            "<p id=\"c-census\" class=\"muted\"></p>"
+            "<ul id=\"c-roster\" class=\"roster\"></ul>"
+            "<p id=\"c-status\" class=\"muted\"></p></section>"
+            "<section class=\"card\" id=\"c-editor\" hidden></section>"
+            "<script src=\"/static/characters.js\"></script>")
+    return layout("Characters", body, user=user, active_tab="characters")
+
+
+def library_page(user):
+    body = ("<section class=\"card\"><h1>Library</h1>"
+            "<h2>Import character cards</h2>"
+            "<p>Import JSON or PNG character cards. The file you pick is "
+            "read as-is and handed to the engine; the web face never "
+            "deletes it.</p>"
+            "<label>Card files<input id=\"l-files\" type=\"file\" "
+            "multiple accept=\".json,.png\"></label>"
+            "<button id=\"l-import\" class=\"btn\" type=\"button\">Import</button>"
+            "<p id=\"l-result\" class=\"muted\"></p>"
+            "<ul id=\"l-lines\"></ul>"
+            "<h2>Cards</h2>"
+            "<div class=\"row\"><label>Search<input id=\"l-search\"></label>"
+            "<label>Tag<select id=\"l-tag\"><option value=\"\">All tags</option></select></label>"
+            "<label class=\"check\"><input type=\"checkbox\" id=\"l-fav\"> "
+            "Favourites only</label></div>"
+            "<p id=\"l-census\" class=\"muted\"></p>"
+            "<ul id=\"l-roster\" class=\"roster\"></ul>"
+            "<p id=\"l-status\" class=\"muted\"></p></section>"
+            "<script src=\"/static/library.js\"></script>")
+    return layout("Library", body, user=user, active_tab="library")

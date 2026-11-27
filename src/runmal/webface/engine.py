@@ -92,6 +92,48 @@ class EngineClient:
         except ValueError:
             return None
 
+
+    # -- W-02: generic plumbing for characters/library ----------------
+
+    def request(self, method, path, json_body=None, params=None,
+                files=None, data=None):
+        try:
+            response = self._http.request(
+                method, path, json=json_body, params=params,
+                files=files, data=data)
+        except httpx.HTTPError as exc:
+            raise EngineError(
+                f"engine unreachable: {exc.__class__.__name__}") from exc
+        if response.status_code >= 400:
+            detail = ""
+            try:
+                payload = response.json()
+                if isinstance(payload, dict):
+                    detail = str(payload.get("detail") or "")
+            except ValueError:
+                detail = ""
+            raise EngineError(
+                detail or f"engine answered {response.status_code}",
+                status=response.status_code)
+        if not response.content:
+            return None
+        try:
+            return response.json()
+        except ValueError:
+            return None
+
+    def request_bytes(self, method, path):
+        try:
+            response = self._http.request(method, path)
+        except httpx.HTTPError as exc:
+            raise EngineError(
+                f"engine unreachable: {exc.__class__.__name__}") from exc
+        if response.status_code >= 400:
+            raise EngineError(f"engine answered {response.status_code}",
+                              status=response.status_code)
+        return response.content, response.headers.get(
+            "content-type", "application/octet-stream")
+
     # -- reads --------------------------------------------------------------
 
     def status(self) -> Any:

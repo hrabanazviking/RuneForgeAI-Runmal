@@ -31,7 +31,8 @@ from http.server import BaseHTTPRequestHandler
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-from . import templates
+from . import templates, w02
+from .cards import import_report_words
 from .engine import EngineError
 from .security import hash_password, verify_password
 from .store import SESSION_TTL_SECONDS
@@ -155,12 +156,23 @@ def make_handler(app: WebfaceApp):
                 if self._user() is not None:
                     return self._redirect("/chat")
                 return self._html(200, templates.register_page())
-            if path in ("/static/webface.css", "/static/chat.js"):
+            if path in ("/static/webface.css", "/static/chat.js",
+                    "/static/characters.js", "/static/library.js"):
                 return self._static(path)
             if path == "/chat":
                 user = self._require_user_page()
                 if user is not None:
                     return self._html(200, templates.chat_page(user))
+                return
+            if path == "/characters":
+                user = self._require_user_page()
+                if user is not None:
+                    return self._html(200, templates.characters_page(user))
+                return
+            if path == "/library":
+                user = self._require_user_page()
+                if user is not None:
+                    return self._html(200, templates.library_page(user))
                 return
             if path == "/account":
                 user = self._require_user_page()
@@ -190,10 +202,26 @@ def make_handler(app: WebfaceApp):
             self._send(200, file_path.read_bytes(), content_type,
                        extra_headers={"Cache-Control": "no-cache"})
 
+        def _send_bytes(self, status, data, content_type, filename=None):
+            extra = {}
+            if filename:
+                extra["Content-Disposition"] = (
+                    f'attachment; filename="{filename}"')
+            self._send(status, data, content_type, extra_headers=extra)
+
+        def _multipart(self):
+            body = self._read_body()
+            return w02.parse_multipart(
+                body, self.headers.get("Content-Type") or "")
+
         def _api_get(self, path):
             user = self._require_user_api()
             if user is None:
                 return
+            query = parse_qs(urlparse(self.path).query)
+            def q1(name, default=""):
+                values = query.get(name)
+                return values[0] if values else default
             try:
                 if path == "/webface/characters":
                     return self._json(200, app.engine.list_characters())
@@ -203,9 +231,143 @@ def make_handler(app: WebfaceApp):
                 if match:
                     return self._json(
                         200, app.engine.list_messages(match.group(1)))
+                if path == "/webface/library/cards":
+                    params = {"tag_mode": "any", "sort": "name",
+                              "limit": 200, "offset": 0,
+                              "favourites_only": q1("favourites_only", "false")}
+                    if q1("q"):
+                        params["q"] = q1("q")
+                    tags = query.get("tag") or []
+                    if tags:
+                        params["tag"] = tags
+                    return self._json(200, app.engine.request(
+                        "GET", "/api/v1/library/cards", params=params))
+                if path == "/webface/library/tags":
+                    return self._json(200, app.engine.request(
+                        "GET", "/api/v1/library/tags"))
+                if path == "/webface/lorebooks":
+                    return self._json(200, app.engine.request(
+                        "GET", "/api/v1/lorebooks"))
+                match = re.fullmatch(
+                    r"/webface/characters/([^/]+)/editor", path)
+                if match:
+                    return self._json(
+                        200, w02.editor_bundle(app.engine, match.group(1)))
+                match = re.fullmatch(
+                    r"/webface/characters/([^/]+)/export", path)
+                if match:
+                    cid = match.group(1)
+                    text = w02.export_text(app.engine, cid)
+                    return self._send_bytes(
+                        200, text.encode(), "application/json",
+                        filename=f"runmal-character-{cid}.json")
+                match = re.fullmatch(
+                    r"/webface/characters/([^/]+)/avatar", path)
+                if match:
+                    data, ctype = app.engine.request_bytes(
+                        "GET", f"/api/v1/characters/{match.group(1)}/avatar")
+                    return self._send_bytes(200, data, ctype)
+                match = re.fullmatch(
+                    r"/webface/characters/([^/]+)/assets/([^/]+)/content", path)
+                if match:
+                    data, ctype = app.engine.request_bytes(
+                        "GET", f"/api/v1/characters/{match.group(1)}"
+                        f"/assets/{match.group(2)}/content")
+                    return self._send_bytes(200, data, ctype)
             except EngineError as exc:
                 return self._json(exc.status, {"error": exc.message})
             return self._json(404, {"error": "no such road"})
+
+        def _api_write(self, method):
+            """W-02 write roads (POST/PUT/PATCH/DELETE under /webface/)."""
+            user = self._require_user_api()
+            if user is None:
+                return
+            path = urlparse(self.path).path
+            try:
+                if method == "POST" and path == "/webface/characters":
+                    return self._json(200, w02.create_character(
+                        app.engine, self._json_body()))
+                if method == "POST" and path == "/webface/library/imports":
+                    _fields, files = self._multipart()
+                    if not files:
+                        return self._json(422, {"error": "pick at least one card file"})
+                    report = app.engine.request(
+                        "POST", "/api/v1/library/imports",
+                        files=[("files", (name, data))
+                               for _f, name, data in files],
+                        data={"dry_run": "false"})
+                    return self._json(200, import_report_words(
+                        report if isinstance(report, dict) else {}))
+                match = re.fullmatch(
+                    r"/webface/characters/([^/]+)", path)
+                if match and method == "PATCH":
+                    return self._json(200, w02.save_character(
+                        app.engine, match.group(1), self._json_body()))
+                match = re.fullmatch(
+                    r"/webface/characters/([^/]+)/(duplicate|restore)", path)
+                if match and method == "POST":
+                    return self._json(200, app.engine.request(
+                        "POST", f"/api/v1/characters/{match.group(1)}"
+                        f"/{match.group(2)}", json_body={}))
+                match = re.fullmatch(r"/webface/characters/([^/]+)", path)
+                if match and method == "DELETE":
+                    return self._json(200, app.engine.request(
+                        "DELETE", f"/api/v1/characters/{match.group(1)}"))
+                match = re.fullmatch(
+                    r"/webface/characters/([^/]+)/versions/(\d+)/restore", path)
+                if match and method == "POST":
+                    return self._json(200, w02.restore_version(
+                        app.engine, match.group(1), int(match.group(2))))
+                match = re.fullmatch(
+                    r"/webface/characters/([^/]+)/avatar", path)
+                if match and method == "POST":
+                    _fields, files = self._multipart()
+                    if not files:
+                        return self._json(422, {"error": "pick an avatar file"})
+                    _f, name, data = files[0]
+                    return self._json(200, app.engine.request(
+                        "POST", f"/api/v1/characters/{match.group(1)}/avatar",
+                        files=[("file", (name, data))]))
+                match = re.fullmatch(
+                    r"/webface/characters/([^/]+)/assets", path)
+                if match and method == "POST":
+                    fields, files = self._multipart()
+                    if not files:
+                        return self._json(422, {"error": "pick an asset file"})
+                    _f, name, data = files[0]
+                    return self._json(200, app.engine.request(
+                        "POST", f"/api/v1/characters/{match.group(1)}/assets",
+                        files=[("file", (name, data))],
+                        data={"kind": fields.get("kind", "embedded"),
+                              "name": fields.get("name", name)}))
+                match = re.fullmatch(
+                    r"/webface/characters/([^/]+)/binding", path)
+                if match and method in ("PUT", "PATCH", "DELETE"):
+                    road = f"/api/v1/characters/{match.group(1)}/lorebook-binding"
+                    if method == "DELETE":
+                        return self._json(200, app.engine.request("DELETE", road))
+                    return self._json(200, app.engine.request(
+                        method, road, json_body=self._json_body()))
+                match = re.fullmatch(
+                    r"/webface/library/cards/([^/]+)/(tags|favourite)", path)
+                if match and method == "PUT":
+                    return self._json(200, app.engine.request(
+                        "PUT", f"/api/v1/library/cards/{match.group(1)}"
+                        f"/{match.group(2)}", json_body=self._json_body()))
+            except EngineError as exc:
+                return self._json(exc.status, {"error": exc.message})
+            return self._json(404, {"error": "no such road"})
+
+        def do_PUT(self):  # noqa: N802 - stdlib name
+            return self._api_write("PUT")
+
+        def do_PATCH(self):  # noqa: N802 - stdlib name
+            return self._api_write("PATCH")
+
+        def do_DELETE(self):  # noqa: N802 - stdlib name
+            return self._api_write("DELETE")
+
 
         # -- POST -------------------------------------------------------------
 
@@ -228,6 +390,8 @@ def make_handler(app: WebfaceApp):
             match = re.fullmatch(r"/webface/chats/([^/]+)/cancel", path)
             if match:
                 return self._cancel(match.group(1))
+            if path.startswith("/webface/"):
+                return self._api_write("POST")
             return self._json(404, {"error": "no such road"})
 
         def _register(self):
