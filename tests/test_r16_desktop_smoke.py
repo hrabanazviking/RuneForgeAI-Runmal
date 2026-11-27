@@ -11,6 +11,12 @@ must never rot silently again):
     desktop client layer pulls in no PySide6 (the R-04 pattern);
 (d) the launcher's open road targets the desktop module, with the
     actual spawn stubbed through the launcher's runner seam.
+
+W-01 amendment (ADR-0012, Volmarr's order 2026-11-27): the NEW
+web face lives in its own package, ``runmal.webface`` — a
+separate process over the same HTTP API. The old ``runmal.web``
+package stays buried exactly as this gate asserts; the
+sanctioned ``runmal.webface`` package is not a violation.
 """
 
 from __future__ import annotations
@@ -66,6 +72,10 @@ def make_client(tmp_path, monkeypatch):
 def test_web_package_not_importable_and_tree_absent():
     assert importlib.util.find_spec("runmal.web") is None
     assert not (SRC / "runmal" / "web").exists()
+    # ADR-0012: the sanctioned web face is a DIFFERENT package
+    # (runmal.webface, a separate process); its presence is the
+    # W-01 order, not the buried shell rotting back.
+    assert (SRC / "runmal" / "webface").is_dir()
     with pytest.raises(ModuleNotFoundError):
         __import__("runmal.web")
 
