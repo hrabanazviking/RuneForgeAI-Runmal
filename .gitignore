@@ -23,3 +23,27 @@ htmlcov/
 .DS_Store
 .idea/
 .vscode/
+
+# --- user-data guard (Volmarr ecosystem law, 2026-11-26: user data is never committed) ---
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+credentials.*
+*secret*
+*.token
+intake.token
+.vault_key
+vault.json.enc
+vault_meta.json
+.kista/
+*.sqlite
+chat-logs/
+chat_logs/
+transcripts/
+sessions/
+saves/
+*.log
