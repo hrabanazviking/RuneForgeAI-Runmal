@@ -21,8 +21,8 @@ TABS: list[tuple[str, str, str | None]] = [
     ("generation", "Generation", None),
     ("memory", "Memory", None),
     ("scenarios", "Scenarios", None),
-    ("inspector", "Inspector", "W-07"),
-    ("tools", "Tools", "W-07"),
+    ("inspector", "Inspector", None),
+    ("tools", "Tools", None),
     ("voice", "Voice", "W-08"),
     ("vision", "Vision", "W-08"),
     ("backups", "Backups", "W-09"),
@@ -430,3 +430,88 @@ def scenarios_page(user):
             "<div id=\"s-import-out\"></div></section>"
             "<script src=\"/static/scenarios.js\"></script>")
     return layout("Scenarios", body, user=user, active_tab="scenarios")
+
+
+def inspector_page(user):
+    body = ("<section class=\"card\"><h1>Inspector</h1>"
+            "<p>For the chat you pick: what the next turn's prompt "
+            "would contain, slot by slot, and why - plus the "
+            "chat's overview, events and reasoning records, and "
+            "the recorded provenance of any landed reply.</p>"
+            "<div class=\"row\"><label>Chat<select id=\"i-chat\"></select></label>"
+            "<button id=\"i-load\" class=\"btn\" type=\"button\">Inspect</button>"
+            "<button id=\"i-trace\" class=\"btn ghost\" type=\"button\">"
+            "Run the trace</button></div>"
+            "<p id=\"i-note\" class=\"muted\"></p>"
+            "<p id=\"i-status\" class=\"muted\"></p></section>"
+            "<section class=\"card\" id=\"i-trace-box\" hidden><h2>Prompt trace</h2>"
+            "<p id=\"i-ledger\"></p><ul id=\"i-slots\" class=\"roster\"></ul>"
+            "<pre id=\"i-lore\" class=\"words\"></pre>"
+            "<p id=\"i-content-note\" class=\"muted\"></p>"
+            "<h3>Composed sections (from the preview payload)</h3>"
+            "<div id=\"i-sections\"></div>"
+            "<pre id=\"i-preview-words\" class=\"words\"></pre></section>"
+            "<section class=\"card\" id=\"i-docs\" hidden><h2>Overview</h2>"
+            "<pre id=\"i-overview\" class=\"words\"></pre>"
+            "<h2>Events</h2><pre id=\"i-events\" class=\"words\"></pre>"
+            "<h2>Reasoning</h2><pre id=\"i-reasoning\" class=\"words\"></pre></section>"
+            "<section class=\"card\"><h2>Reply provenance</h2>"
+            "<p>Pick a landed reply to see the provenance the "
+            "engine recorded for it.</p>"
+            "<ul id=\"i-messages\" class=\"roster\"></ul>"
+            "<pre id=\"i-prov\" class=\"words\"></pre></section>"
+            "<script src=\"/static/inspector.js\"></script>")
+    return layout("Inspector", body, user=user, active_tab="inspector")
+
+
+def tools_page(user):
+    body = ("<section class=\"card\"><h1>Tools</h1>"
+            "<p id=\"t-scope\" class=\"muted\"></p>"
+            "<h2>Macros the engine knows</h2>"
+            "<ul id=\"t-macros\" class=\"roster\"></ul>"
+            "<p id=\"t-status\" class=\"muted\"></p></section>"
+            "<section class=\"card\"><h2>Expand macros</h2>"
+            "<p>Expansion runs the engine's own macro road - the "
+            "result below is the engine's answer, never a local "
+            "re-implementation. Give a seed to make random macros "
+            "reproducible.</p>"
+            "<label>Text<input id=\"t-x-text\" class=\"entry-box\" "
+            "placeholder=\"A line with {{char}} and {{user}} in it...\"></label>"
+            "<div class=\"row\"><label>Character name"
+            "<input id=\"t-x-char\" class=\"entry-box\"></label>"
+            "<label>Your name<input id=\"t-x-user\" class=\"entry-box\" value=\"User\"></label>"
+            "<label>Seed (optional)<input id=\"t-x-seed\" class=\"entry-box\"></label>"
+            "<button id=\"t-expand\" class=\"btn\" type=\"button\">Expand macros</button></div>"
+            "<pre id=\"t-x-out\" class=\"words\"></pre>"
+            "<pre id=\"t-x-report\" class=\"words\"></pre></section>"
+            "<section class=\"card\"><h2>Variables</h2>"
+            "<p id=\"t-var-note\" class=\"muted\"></p>"
+            "<ul id=\"t-vars\" class=\"roster\"></ul>"
+            "<label>Text to resolve<input id=\"t-r-text\" class=\"entry-box\"></label>"
+            "<div class=\"row\"><button id=\"t-resolve\" class=\"btn ghost\" "
+            "type=\"button\">Resolve variables</button></div>"
+            "<pre id=\"t-r-out\" class=\"words\"></pre></section>"
+            "<section class=\"card\"><h2>Compose preview</h2>"
+            "<p>Compose a prompt from parts, under a token budget, "
+            "and see the messages it would send plus its token "
+            "account - the engine composes; nothing is sent.</p>"
+            "<label>System<textarea id=\"t-c-system\" class=\"entry-box\" "
+            "rows=\"2\"></textarea></label>"
+            "<label>Persona<textarea id=\"t-c-persona\" class=\"entry-box\" "
+            "rows=\"2\"></textarea></label>"
+            "<label>History (one line per line)"
+            "<textarea id=\"t-c-history\" class=\"entry-box\" rows=\"3\"></textarea></label>"
+            "<div class=\"row\"><label>Author's note"
+            "<input id=\"t-c-note\" class=\"entry-box\"></label>"
+            "<label>Note depth<input id=\"t-c-depth\" class=\"entry-box\" "
+            "value=\"0\"></label>"
+            "<label>Context limit<input id=\"t-c-limit\" class=\"entry-box\" "
+            "value=\"4096\"></label>"
+            "<label>Reserve for reply"
+            "<input id=\"t-c-reserve\" class=\"entry-box\" value=\"512\"></label>"
+            "<button id=\"t-compose\" class=\"btn\" type=\"button\">Compose</button></div>"
+            "<pre id=\"t-c-out\" class=\"words\"></pre>"
+            "<pre id=\"t-c-manifest\" class=\"words\"></pre>"
+            "<p id=\"t-c-status\" class=\"muted\"></p></section>"
+            "<script src=\"/static/tools.js\"></script>")
+    return layout("Tools", body, user=user, active_tab="tools")

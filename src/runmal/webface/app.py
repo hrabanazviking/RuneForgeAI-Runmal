@@ -31,7 +31,7 @@ from http.server import BaseHTTPRequestHandler
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-from . import stub_guard, templates, w02, w03, w04, w05, w06
+from . import stub_guard, templates, w02, w03, w04, w05, w06, w07
 from .cards import import_report_words
 from .engine import EngineError
 from .security import hash_password, verify_password
@@ -169,6 +169,7 @@ def make_handler(app: WebfaceApp):
                     "/static/generation.js", "/static/firstrun.js",
                     "/static/personas.js", "/static/lorebooks.js",
                     "/static/memory.js", "/static/scenarios.js",
+                    "/static/inspector.js", "/static/tools.js",
                     "/static/pwtoggle.js"):
                 return self._static(path)
             if path == "/chat":
@@ -215,6 +216,16 @@ def make_handler(app: WebfaceApp):
                 user = self._require_user_page()
                 if user is not None:
                     return self._html(200, templates.scenarios_page(user))
+                return
+            if path == "/inspector":
+                user = self._require_user_page()
+                if user is not None:
+                    return self._html(200, templates.inspector_page(user))
+                return
+            if path == "/tools":
+                user = self._require_user_page()
+                if user is not None:
+                    return self._html(200, templates.tools_page(user))
                 return
             if path == "/firstrun":
                 user = self._require_user_page()
@@ -461,6 +472,19 @@ def make_handler(app: WebfaceApp):
                 if match:
                     return self._json(200, w06.scenario_detail(
                         app.engine, match.group(1)))
+                match = re.fullmatch(
+                    r"/webface/inspector/chats/([^/]+)/messages/([^/]+)/provenance", path)
+                if match:
+                    return self._json(200, w07.message_provenance(
+                        app.engine, match.group(1), match.group(2)))
+                match = re.fullmatch(r"/webface/inspector/chats/([^/]+)", path)
+                if match:
+                    return self._json(200, w07.inspector_documents(
+                        app.engine, match.group(1)))
+                if path == "/webface/tools/macros":
+                    return self._json(200, w07.list_macros(app.engine))
+                if path == "/webface/tools/variables":
+                    return self._json(200, w07.list_variables(app.engine))
                 if path == "/webface/lorebooks/schema":
                     return self._json(200, w05.census(app.engine))
                 match = re.fullmatch(
@@ -964,6 +988,20 @@ def make_handler(app: WebfaceApp):
                 if match and method == "DELETE":
                     return self._json(200, w06.unbind_scenario(
                         app.engine, match.group(1)))
+                # ---- W-07 inspector trace + tools ----
+                match = re.fullmatch(r"/webface/inspector/chats/([^/]+)/trace", path)
+                if match and method == "POST":
+                    return self._json(200, w07.inspector_trace(
+                        app.engine, match.group(1)))
+                if method == "POST" and path == "/webface/tools/macros/expand":
+                    return self._json(200, w07.expand_macros(
+                        app.engine, self._json_body()))
+                if method == "POST" and path == "/webface/tools/resolve":
+                    return self._json(200, w07.resolve_variables(
+                        app.engine, self._json_body()))
+                if method == "POST" and path == "/webface/tools/compose":
+                    return self._json(200, w07.compose_preview(
+                        app.engine, self._json_body()))
                 # ---- W-05 lorebooks ----
                 if method == "POST" and path == "/webface/lorebooks":
                     return self._json(200, w05.save_book(
