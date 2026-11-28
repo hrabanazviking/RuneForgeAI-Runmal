@@ -12,7 +12,7 @@ import html
 # (slug, label, slice that builds it; None = built in W-01)
 TABS: list[tuple[str, str, str | None]] = [
     ("chat", "Chat", None),
-    ("groups", "Groups", "W-03"),
+    ("groups", "Groups", None),
     ("characters", "Characters", None),
     ("library", "Library", None),
     ("personas", "Personas", "W-05"),
@@ -154,11 +154,52 @@ def chat_page(user):
             "disabled>Stop</button>"
             "</div>"
             "<p id=\"chat-status\" class=\"muted\"></p>"
+            "<h2>Message actions</h2>"
+            "<p class=\"muted\">Pick a message, then act on it. Swipe "
+            "position and pin state are written on each row.</p>"
+            "<ul id=\"msg-list\" class=\"chat-list\"></ul>"
+            "<div class=\"row\">"
+            "<button id=\"m-edit\" class=\"btn small\" type=\"button\">Edit…</button>"
+            "<button id=\"m-delete\" class=\"btn small ghost\" type=\"button\">Delete</button>"
+            "<button id=\"m-prev\" class=\"btn small ghost\" type=\"button\">◀ Swipe</button>"
+            "<button id=\"m-next\" class=\"btn small ghost\" type=\"button\">Swipe ▶</button>"
+            "<button id=\"m-swipes\" class=\"btn small ghost\" type=\"button\">Swipes…</button>"
+            "<button id=\"m-branch\" class=\"btn small ghost\" type=\"button\">Branch…</button>"
+            "<button id=\"m-pin\" class=\"btn small ghost\" type=\"button\">Pin/Unpin</button>"
+            "<button id=\"m-copy\" class=\"btn small ghost\" type=\"button\">Copy</button>"
+            "</div>"
+            "<div id=\"msg-panel\"></div>"
+            "<h2>Chat actions</h2>"
+            "<div class=\"row\">"
+            "<button id=\"a-regen\" class=\"btn small\" type=\"button\">Regenerate</button>"
+            "<button id=\"a-continue\" class=\"btn small ghost\" type=\"button\">Continue</button>"
+            "<button id=\"a-impersonate\" class=\"btn small ghost\" "
+            "type=\"button\">Impersonate…</button>"
+            "<button id=\"a-note\" class=\"btn small ghost\" "
+            "type=\"button\">Author's Note…</button>"
+            "<button id=\"a-search\" class=\"btn small ghost\" "
+            "type=\"button\">Search Chats…</button>"
+            "<button id=\"a-checkpoints\" class=\"btn small ghost\" "
+            "type=\"button\">Checkpoints &amp; Undo…</button>"
+            "</div>"
+            "<div id=\"chat-panel\"></div>"
             "</section></div>"
             "<script src=\"/static/chat.js\"></script>")
     return layout("Chat", body, user=user, active_tab="chat")
 
 
+def groups_page(user):
+    body = ("<section class=\"card\"><h1>Groups</h1>"
+            "<div class=\"row\">"
+            "<label>Room name<input id=\"g-name\"></label>"
+            "<button id=\"g-create\" class=\"btn\" type=\"button\">Create room</button></div>"
+            "<p class=\"muted\">Tick the roster for the new room:</p>"
+            "<div id=\"g-roster-pick\"></div>"
+            "<ul id=\"g-list\" class=\"roster\"></ul>"
+            "<p id=\"g-status\" class=\"muted\"></p></section>"
+            "<section class=\"card\" id=\"g-room\" hidden></section>"
+            "<script src=\"/static/groups.js\"></script>")
+    return layout("Groups", body, user=user, active_tab="groups")
 def characters_page(user):
     body = ("<section class=\"card\"><h1>Characters</h1>"
             "<div class=\"row\">"

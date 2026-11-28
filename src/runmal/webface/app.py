@@ -31,7 +31,7 @@ from http.server import BaseHTTPRequestHandler
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-from . import templates, w02
+from . import templates, w02, w03
 from .cards import import_report_words
 from .engine import EngineError
 from .security import hash_password, verify_password
@@ -101,14 +101,20 @@ def make_handler(app: WebfaceApp):
             return {k: v[0] for k, v in parse_qs(raw).items()}
 
         def _json_body(self) -> dict:
+            cached = getattr(self, "_json_cache", None)
+            if cached is not None:
+                return cached
             raw = self._read_body()
-            if not raw:
-                return {}
-            try:
-                payload = json.loads(raw.decode("utf-8"))
-            except ValueError:
-                return {}
-            return payload if isinstance(payload, dict) else {}
+            payload: dict = {}
+            if raw:
+                try:
+                    parsed = json.loads(raw.decode("utf-8"))
+                    if isinstance(parsed, dict):
+                        payload = parsed
+                except ValueError:
+                    payload = {}
+            self._json_cache = payload
+            return payload
 
         def _session_token(self):
             cookie = SimpleCookie(self.headers.get("Cookie") or "")
@@ -143,6 +149,7 @@ def make_handler(app: WebfaceApp):
         # -- GET ------------------------------------------------------------
 
         def do_GET(self):  # noqa: N802 - stdlib name
+            self._json_cache = None
             path = urlparse(self.path).path
             if path == "/":
                 if self._user() is not None:
@@ -157,12 +164,18 @@ def make_handler(app: WebfaceApp):
                     return self._redirect("/chat")
                 return self._html(200, templates.register_page())
             if path in ("/static/webface.css", "/static/chat.js",
-                    "/static/characters.js", "/static/library.js"):
+                    "/static/characters.js", "/static/library.js",
+                    "/static/groups.js"):
                 return self._static(path)
             if path == "/chat":
                 user = self._require_user_page()
                 if user is not None:
                     return self._html(200, templates.chat_page(user))
+                return
+            if path == "/groups":
+                user = self._require_user_page()
+                if user is not None:
+                    return self._html(200, templates.groups_page(user))
                 return
             if path == "/characters":
                 user = self._require_user_page()
@@ -248,6 +261,81 @@ def make_handler(app: WebfaceApp):
                 if path == "/webface/lorebooks":
                     return self._json(200, app.engine.request(
                         "GET", "/api/v1/lorebooks"))
+                if path == "/webface/chats/search":
+                    params = {"q": q1("q"), "limit": 20}
+                    if q1("chat_id"):
+                        params["chat_id"] = q1("chat_id")
+                    return self._json(200, app.engine.request(
+                        "GET", "/api/v1/chats/search", params=params))
+                match = re.fullmatch(
+                    r"/webface/chats/([^/]+)/pinned", path)
+                if match:
+                    return self._json(200, app.engine.request(
+                        "GET", f"/api/v1/chats/{match.group(1)}"
+                        "/pinned-messages"))
+                match = re.fullmatch(
+                    r"/webface/chats/([^/]+)/authors-note", path)
+                if match:
+                    return self._json(200, app.engine.request(
+                        "GET", f"/api/v1/chats/{match.group(1)}"
+                        "/authors-note"))
+                match = re.fullmatch(
+                    r"/webface/chats/([^/]+)/checkpoints", path)
+                if match:
+                    return self._json(200, app.engine.request(
+                        "GET", f"/api/v1/chats/{match.group(1)}"
+                        "/checkpoints"))
+                match = re.fullmatch(r"/webface/chats/([^/]+)/undo", path)
+                if match:
+                    return self._json(200, app.engine.request(
+                        "GET", f"/api/v1/chats/{match.group(1)}/undo"))
+                if path == "/webface/groups":
+                    return self._json(200, app.engine.request(
+                        "GET", "/api/v1/groups"))
+                match = re.fullmatch(r"/webface/groups/([^/]+)", path)
+                if match:
+                    return self._json(200, app.engine.request(
+                        "GET", f"/api/v1/groups/{match.group(1)}"))
+                match = re.fullmatch(
+                    r"/webface/groups/([^/]+)/messages", path)
+                if match:
+                    rows = app.engine.request(
+                        "GET", f"/api/v1/groups/{match.group(1)}/messages")
+                    rows = rows if isinstance(rows, list) else []
+                    return self._json(200, {
+                        "messages": rows,
+                        "lines": w03.transcript_lines(rows)})
+                match = re.fullmatch(
+                    r"/webface/groups/([^/]+)/deepening", path)
+                if match:
+                    return self._json(200, app.engine.request(
+                        "GET", f"/api/v1/groups/{match.group(1)}/deepening"))
+                match = re.fullmatch(
+                    r"/webface/groups/([^/]+)/presence", path)
+                if match:
+                    rows = app.engine.request(
+                        "GET", f"/api/v1/groups/{match.group(1)}/presence")
+                    rows = rows if isinstance(rows, list) else []
+                    return self._json(200, {
+                        "records": rows, "lines": w03.presence_words(rows)})
+                match = re.fullmatch(
+                    r"/webface/groups/([^/]+)/members/([^/]+)/peek", path)
+                if match:
+                    peek = app.engine.request(
+                        "GET", f"/api/v1/groups/{match.group(1)}/members"
+                        f"/{match.group(2)}/peek")
+                    peek = peek if isinstance(peek, dict) else {}
+                    return self._json(200, {
+                        "peek": peek, "words": w03.peek_words(peek)})
+                match = re.fullmatch(
+                    r"/webface/groups/([^/]+)/members/([^/]+)/digest", path)
+                if match:
+                    digest = app.engine.request(
+                        "GET", f"/api/v1/groups/{match.group(1)}/members"
+                        f"/{match.group(2)}/digest")
+                    digest = digest if isinstance(digest, dict) else {}
+                    return self._json(200, {
+                        "digest": digest, "words": w03.digest_words(digest)})
                 match = re.fullmatch(
                     r"/webface/characters/([^/]+)/editor", path)
                 if match:
@@ -284,7 +372,286 @@ def make_handler(app: WebfaceApp):
             if user is None:
                 return
             path = urlparse(self.path).path
+            # Drain the request body up front (cached for the
+            # branches): a body left unread corrupts the next
+            # request on this keep-alive connection. Multipart
+            # roads read their own body via _multipart().
+            if not (path.endswith("/imports") or "/avatar" in path
+                    or path.endswith("/assets")):
+                self._json_body()
             try:
+                # ---- W-03 chat actions ----
+                match = re.fullmatch(
+                    r"/webface/chats/([^/]+)/messages/([^/]+)", path)
+                if match and method == "PATCH":
+                    body = self._json_body()
+                    content = str(body.get("content") or "").strip()
+                    if not content:
+                        return self._json(422, {
+                            "error": "a message cannot be emptied by editing"})
+                    return self._json(200, app.engine.request(
+                        "PATCH", f"/api/v1/chats/{match.group(1)}/messages"
+                        f"/{match.group(2)}", json_body={"content": content}))
+                if match and method == "DELETE":
+                    return self._json(200, app.engine.request(
+                        "DELETE", f"/api/v1/chats/{match.group(1)}/messages"
+                        f"/{match.group(2)}"))
+                match = re.fullmatch(
+                    r"/webface/chats/([^/]+)/messages/([^/]+)/swipes", path)
+                if match and method == "POST":
+                    body = self._json_body()
+                    content = str(body.get("content") or "").strip()
+                    if not content:
+                        return self._json(422, {
+                            "error": "a swipe alternate cannot be empty"})
+                    return self._json(200, app.engine.request(
+                        "POST", f"/api/v1/chats/{match.group(1)}/messages"
+                        f"/{match.group(2)}/swipes",
+                        json_body={"content": content}))
+                match = re.fullmatch(
+                    r"/webface/chats/([^/]+)/messages/([^/]+)/swipes/select",
+                    path)
+                if match and method == "POST":
+                    body = self._json_body()
+                    payload = {}
+                    if body.get("action"):
+                        payload["action"] = str(body["action"])
+                    if body.get("index") is not None:
+                        payload["index"] = int(body["index"])
+                    return self._json(200, app.engine.request(
+                        "POST", f"/api/v1/chats/{match.group(1)}/messages"
+                        f"/{match.group(2)}/swipes/select", json_body=payload))
+                match = re.fullmatch(
+                    r"/webface/chats/([^/]+)/messages/([^/]+)/swipes/(\d+)",
+                    path)
+                if match and method == "DELETE":
+                    return self._json(200, app.engine.request(
+                        "DELETE", f"/api/v1/chats/{match.group(1)}/messages"
+                        f"/{match.group(2)}/swipes/{match.group(3)}"))
+                match = re.fullmatch(
+                    r"/webface/chats/([^/]+)/messages/([^/]+)/pin", path)
+                if match and method in ("POST", "DELETE"):
+                    return self._json(200, w03.set_pinned(
+                        app.engine, match.group(1), match.group(2),
+                        pinned=(method == "POST")))
+                match = re.fullmatch(r"/webface/chats/([^/]+)/branches", path)
+                if match and method == "POST":
+                    body = self._json_body()
+                    payload = {}
+                    if body.get("message_id"):
+                        payload["message_id"] = str(body["message_id"])
+                    if body.get("name"):
+                        payload["name"] = str(body["name"])
+                    return self._json(200, app.engine.request(
+                        "POST", f"/api/v1/chats/{match.group(1)}/branches",
+                        json_body=payload))
+                match = re.fullmatch(
+                    r"/webface/chats/([^/]+)/authors-note", path)
+                if match and method == "POST":
+                    return self._json(200, w03.save_authors_note(
+                        app.engine, match.group(1), self._json_body()))
+                match = re.fullmatch(r"/webface/chats/([^/]+)/continue", path)
+                if match and method == "POST":
+                    body = self._json_body()
+                    payload = {"mode": str(body.get("mode") or "auto")}
+                    if body.get("instruction"):
+                        payload["instruction"] = str(body["instruction"])
+                    return self._json(200, app.engine.request(
+                        "POST", f"/api/v1/chats/{match.group(1)}/continue",
+                        json_body=payload))
+                match = re.fullmatch(
+                    r"/webface/chats/([^/]+)/impersonate", path)
+                if match and method == "POST":
+                    body = self._json_body()
+                    payload = {}
+                    if body.get("instruction"):
+                        payload["instruction"] = str(body["instruction"])
+                    return self._json(200, app.engine.request(
+                        "POST", f"/api/v1/chats/{match.group(1)}/impersonate",
+                        json_body=payload))
+                match = re.fullmatch(
+                    r"/webface/chats/([^/]+)/impersonate/(accept|discard)", path)
+                if match and method == "POST":
+                    body = self._json_body()
+                    payload = {}
+                    if match.group(2) == "accept":
+                        content = str(body.get("content") or "").strip()
+                        if not content:
+                            return self._json(422, {
+                                "error": "an accepted impersonation "
+                                         "cannot be empty"})
+                        payload["content"] = content
+                    if body.get("draft_id"):
+                        payload["draft_id"] = str(body["draft_id"])
+                    return self._json(200, app.engine.request(
+                        "POST", f"/api/v1/chats/{match.group(1)}/impersonate"
+                        f"/{match.group(2)}", json_body=payload))
+                match = re.fullmatch(
+                    r"/webface/chats/([^/]+)/checkpoints", path)
+                if match and method == "POST":
+                    body = self._json_body()
+                    payload = {}
+                    if body.get("name"):
+                        payload["name"] = str(body["name"])
+                    return self._json(200, app.engine.request(
+                        "POST", f"/api/v1/chats/{match.group(1)}/checkpoints",
+                        json_body=payload))
+                match = re.fullmatch(
+                    r"/webface/chats/([^/]+)/checkpoints/([^/]+)/restore", path)
+                if match and method == "POST":
+                    body = self._json_body()
+                    payload = {}
+                    if body.get("name"):
+                        payload["name"] = str(body["name"])
+                    return self._json(200, app.engine.request(
+                        "POST", f"/api/v1/chats/{match.group(1)}/checkpoints"
+                        f"/{match.group(2)}/restore", json_body=payload))
+                match = re.fullmatch(
+                    r"/webface/chats/([^/]+)/checkpoints/([^/]+)", path)
+                if match and method == "DELETE":
+                    return self._json(200, app.engine.request(
+                        "DELETE", f"/api/v1/chats/{match.group(1)}/checkpoints"
+                        f"/{match.group(2)}"))
+                match = re.fullmatch(r"/webface/chats/([^/]+)/undo", path)
+                if match and method == "POST":
+                    return self._json(200, app.engine.request(
+                        "POST", f"/api/v1/chats/{match.group(1)}/undo",
+                        json_body={}))
+                # ---- W-03 groups ----
+                if method == "POST" and path == "/webface/groups":
+                    body = self._json_body()
+                    name = str(body.get("name") or "").strip()
+                    members = body.get("member_character_ids")
+                    members = ([str(m) for m in members]
+                               if isinstance(members, list) else [])
+                    if not name:
+                        return self._json(422, {"error": "the room needs a name"})
+                    if not members:
+                        return self._json(422, {
+                            "error": "tick at least one character for the roster"})
+                    return self._json(200, app.engine.request(
+                        "POST", "/api/v1/groups", json_body={
+                            "name": name, "member_character_ids": members}))
+                match = re.fullmatch(r"/webface/groups/([^/]+)", path)
+                if match and method == "PATCH":
+                    body = self._json_body()
+                    payload = {}
+                    for key in ("name", "speaker_policy", "speaker_config"):
+                        if key in body:
+                            payload[key] = body[key]
+                    return self._json(200, app.engine.request(
+                        "PATCH", f"/api/v1/groups/{match.group(1)}",
+                        json_body=payload))
+                if match and method == "DELETE":
+                    return self._json(200, app.engine.request(
+                        "DELETE", f"/api/v1/groups/{match.group(1)}"))
+                match = re.fullmatch(
+                    r"/webface/groups/([^/]+)/messages", path)
+                if match and method == "POST":
+                    body = self._json_body()
+                    content = str(body.get("content") or "").strip()
+                    if not content:
+                        return self._json(422, {"error": "write something first"})
+                    return self._json(200, app.engine.request(
+                        "POST", f"/api/v1/groups/{match.group(1)}/messages",
+                        json_body={"speaker": "user", "content": content}))
+                match = re.fullmatch(
+                    r"/webface/groups/([^/]+)/members", path)
+                if match and method == "POST":
+                    body = self._json_body()
+                    return self._json(200, app.engine.request(
+                        "POST", f"/api/v1/groups/{match.group(1)}/members",
+                        json_body={"character_id": str(
+                            body.get("character_id") or "")}))
+                match = re.fullmatch(
+                    r"/webface/groups/([^/]+)/members/([^/]+)", path)
+                if match and method == "PATCH":
+                    body = self._json_body()
+                    payload = {}
+                    if body.get("talkativeness") is not None:
+                        payload["talkativeness"] = float(body["talkativeness"])
+                    if body.get("muted") is not None:
+                        payload["muted"] = bool(body["muted"])
+                    return self._json(200, app.engine.request(
+                        "PATCH", f"/api/v1/groups/{match.group(1)}/members"
+                        f"/{match.group(2)}", json_body=payload))
+                if match and method == "DELETE":
+                    return self._json(200, app.engine.request(
+                        "DELETE", f"/api/v1/groups/{match.group(1)}/members"
+                        f"/{match.group(2)}"))
+                match = re.fullmatch(
+                    r"/webface/groups/([^/]+)/members/([^/]+)/override", path)
+                if match and method == "PATCH":
+                    return self._json(200, app.engine.request(
+                        "PATCH", f"/api/v1/groups/{match.group(1)}/members"
+                        f"/{match.group(2)}/override",
+                        json_body=self._json_body()))
+                match = re.fullmatch(
+                    r"/webface/groups/([^/]+)/members/([^/]+)/(leave|return)",
+                    path)
+                if match and method == "POST":
+                    payload = {} if match.group(3) == "return" else None
+                    result = app.engine.request(
+                        "POST", f"/api/v1/groups/{match.group(1)}/members"
+                        f"/{match.group(2)}/{match.group(3)}",
+                        json_body=payload)
+                    if match.group(3) == "return":
+                        # The engine's return road IS the digest
+                        # delivery (the standalone preview only
+                        # answers while the member is away).
+                        digest = result if isinstance(result, dict) else {}
+                        return self._json(200, {
+                            "digest": digest,
+                            "words": w03.digest_words(digest)})
+                    return self._json(200, result)
+                match = re.fullmatch(
+                    r"/webface/groups/([^/]+)/deepening", path)
+                if match and method == "PUT":
+                    gid = match.group(1)
+                    stored = app.engine.request(
+                        "GET", f"/api/v1/groups/{gid}/deepening")
+                    stored = stored if isinstance(stored, dict) else {}
+                    body = self._json_body()
+                    document = w03.compose_deepening(
+                        stored,
+                        generation_mode=str(body.get("generation_mode") or "swap"),
+                        allow_self_responses=bool(body.get("allow_self_responses")),
+                        auto_enabled=bool(body.get("auto_enabled")),
+                        auto_max_turns=int(body.get("auto_max_turns", 3)),
+                        join_prefix=str(body.get("join_prefix") or ""),
+                        join_suffix=str(body.get("join_suffix") or ""),
+                        scenario_override=str(body.get("scenario_override") or ""))
+                    saved = app.engine.request(
+                        "PUT", f"/api/v1/groups/{gid}/deepening",
+                        json_body=document)
+                    return self._json(200, {
+                        "deepening": saved,
+                        "group": app.engine.request(
+                            "GET", f"/api/v1/groups/{gid}")})
+                match = re.fullmatch(r"/webface/groups/([^/]+)/(next|run)", path)
+                if match and method == "POST":
+                    body = self._json_body()
+                    if match.group(2) == "next":
+                        payload = {"generate": bool(body.get("generate"))}
+                        if body.get("user_text"):
+                            payload["user_text"] = str(body["user_text"])
+                        if body.get("manual_speaker_id"):
+                            payload["manual_speaker_id"] = str(
+                                body["manual_speaker_id"])
+                        result = app.engine.request(
+                            "POST", f"/api/v1/groups/{match.group(1)}/next",
+                            json_body=payload)
+                        result = result if isinstance(result, dict) else {}
+                        return self._json(200, {
+                            "result": result, "words": w03.turn_words(result)})
+                    payload = {"turns": int(body.get("turns", 1)),
+                               "generate": bool(body.get("generate"))}
+                    result = app.engine.request(
+                        "POST", f"/api/v1/groups/{match.group(1)}/run",
+                        json_body=payload)
+                    result = result if isinstance(result, dict) else {}
+                    return self._json(200, {
+                        "result": result, "words": w03.run_words(result)})
                 if method == "POST" and path == "/webface/characters":
                     return self._json(200, w02.create_character(
                         app.engine, self._json_body()))
@@ -360,18 +727,22 @@ def make_handler(app: WebfaceApp):
             return self._json(404, {"error": "no such road"})
 
         def do_PUT(self):  # noqa: N802 - stdlib name
+            self._json_cache = None
             return self._api_write("PUT")
 
         def do_PATCH(self):  # noqa: N802 - stdlib name
+            self._json_cache = None
             return self._api_write("PATCH")
 
         def do_DELETE(self):  # noqa: N802 - stdlib name
+            self._json_cache = None
             return self._api_write("DELETE")
 
 
         # -- POST -------------------------------------------------------------
 
         def do_POST(self):  # noqa: N802 - stdlib name
+            self._json_cache = None
             path = urlparse(self.path).path
             if path == "/register":
                 return self._register()
@@ -387,6 +758,9 @@ def make_handler(app: WebfaceApp):
             match = re.fullmatch(r"/webface/chats/([^/]+)/send", path)
             if match:
                 return self._send_turn(match.group(1))
+            match = re.fullmatch(r"/webface/chats/([^/]+)/regenerate", path)
+            if match:
+                return self._regenerate(match.group(1))
             match = re.fullmatch(r"/webface/chats/([^/]+)/cancel", path)
             if match:
                 return self._cancel(match.group(1))
@@ -452,6 +826,86 @@ def make_handler(app: WebfaceApp):
             except EngineError as exc:
                 return self._json(exc.status, {"error": exc.message})
             return self._json(200, {"cancelled": cancelled})
+
+        def _regenerate(self, chat_id):
+            """Regenerate, the desktop's lossless composition as SSE:
+            journaled-delete the last assistant reply, stream a fresh
+            composed turn, land only on a clean finish; on any other
+            ending restore the old reply (undo journal first,
+            re-append fallback) and say so in words."""
+            user = self._require_user_api()
+            if user is None:
+                return
+            body = self._json_body()
+            request_id = str(body.get("request_id") or "").strip() \
+                or uuid.uuid4().hex
+            try:
+                old = w03.regenerate_plan(app.engine, chat_id)
+                deleted = app.engine.request(
+                    "DELETE",
+                    f"/api/v1/chats/{chat_id}/messages/{old['id']}")
+                if not (isinstance(deleted, dict) and deleted.get("deleted")):
+                    return self._json(502, {
+                        "error": "the last reply could not be set aside"})
+            except EngineError as exc:
+                return self._json(exc.status, {"error": exc.message})
+            self.close_connection = True
+            self.send_response(200)
+            self.send_header("Content-Type", "text/event-stream")
+            self.send_header("Cache-Control", "no-cache")
+            self.send_header("X-Request-ID", request_id)
+            self.end_headers()
+
+            def emit(payload):
+                line = f"data: {json.dumps(payload)}\n\n"
+                self.wfile.write(line.encode("utf-8"))
+                self.wfile.flush()
+
+            text_parts: list[str] = []
+            done_clean = False
+            saw_error = False
+            try:
+                for kind, event in app.engine.stream_generate(
+                        chat_id, request_id):
+                    if kind == "started":
+                        emit({"type": "started",
+                              "backend_key": event.get("backend_key", ""),
+                              "mode": event.get("mode", ""),
+                              "request_id": request_id})
+                        continue
+                    emit(event)
+                    if kind == "token":
+                        text = event.get("text")
+                        if isinstance(text, str):
+                            text_parts.append(text)
+                    elif kind == "done":
+                        done_clean = True
+                    elif kind == "error":
+                        saw_error = True
+            except EngineError as exc:
+                saw_error = True
+                try:
+                    emit({"type": "error", "message": exc.message})
+                except OSError:
+                    pass
+            reply = "".join(text_parts)
+            if done_clean and not saw_error and reply:
+                try:
+                    saved = app.engine.append_message(
+                        chat_id, "assistant", reply)
+                    emit({"type": "landed", "message": saved})
+                except EngineError as exc:
+                    emit({"type": "error",
+                          "message": f"reply could not be saved: {exc.message}"})
+                return
+            restored = w03.restore_reply(app.engine, chat_id, old)
+            emit({"type": "restored", "restored": restored,
+                  "message": ("the regenerated stream did not finish "
+                              "cleanly, so the previous reply was "
+                              "restored" if restored else
+                              "the regenerated stream did not finish "
+                              "cleanly and the previous reply could "
+                              "NOT be restored")})
 
         def _send_turn(self, chat_id):
             """The composed send-turn, relayed as SSE.

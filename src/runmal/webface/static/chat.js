@@ -189,3 +189,307 @@ els.composer.addEventListener("keydown", (ev) => {
     setStatus("Error: " + err.message);
   }
 })();
+
+/* ---- W-03: message actions + chat actions (R-07 parity) ---- */
+const w03 = {
+  messages: [], selectedId: null,
+  msgList: document.getElementById("msg-list"),
+  msgPanel: document.getElementById("msg-panel"),
+  chatPanel: document.getElementById("chat-panel"),
+};
+
+function selectedMessage() {
+  return w03.messages.find((m) => m.id === w03.selectedId) || null;
+}
+
+function msgLabel(m) {
+  let label = (m.role || "") + ": " + (m.content || "").slice(0, 80);
+  const deck = (m.swipes || []).length;
+  if (deck > 1) label += " · swipe " + ((m.swipe_id || 0) + 1) + " of " + deck;
+  if (m.pinned) label += " · pinned";
+  return label;
+}
+
+function renderMsgList() {
+  w03.msgList.innerHTML = "";
+  for (const m of w03.messages) {
+    const li = document.createElement("li");
+    li.textContent = msgLabel(m);
+    if (m.id === w03.selectedId) li.className = "active";
+    li.addEventListener("click", () => { w03.selectedId = m.id; renderMsgList(); });
+    w03.msgList.appendChild(li);
+  }
+}
+
+const _openChatW01 = openChat;
+openChat = async function (chatId) {
+  await _openChatW01(chatId);
+  try {
+    w03.messages = await api("/webface/chats/" + chatId + "/messages");
+    if (!selectedMessage()) w03.selectedId = w03.messages.length ? w03.messages[w03.messages.length - 1].id : null;
+    renderMsgList();
+  } catch (err) { setStatus("Error: " + err.message); }
+};
+
+async function refreshChat() { if (state.chatId) await openChat(state.chatId); }
+
+function needSelection() {
+  const m = selectedMessage();
+  if (!m) { setStatus("Pick a message in the message list first."); return null; }
+  return m;
+}
+
+function panel(parent, title) {
+  parent.innerHTML = "";
+  const box = document.createElement("div");
+  box.className = "card";
+  const h = document.createElement("h3");
+  h.textContent = title;
+  box.appendChild(h);
+  parent.appendChild(box);
+  return box;
+}
+
+function panelText(box, text) {
+  const p = document.createElement("p");
+  p.textContent = text;
+  box.appendChild(p);
+  return p;
+}
+
+function panelButton(box, label, fn) {
+  const b = document.createElement("button");
+  b.className = "btn small"; b.type = "button"; b.textContent = label;
+  b.addEventListener("click", () => fn().catch((e) => setStatus("Error: " + e.message)));
+  box.appendChild(b);
+  return b;
+}
+
+function jsonOptions(method, body) {
+  return { method: method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body || {}) };
+}
+
+async function actEdit() {
+  const m = needSelection(); if (!m) return;
+  const box = panel(w03.msgPanel, "Edit message");
+  const ta = document.createElement("textarea");
+  ta.rows = 4; ta.value = m.content || ""; box.appendChild(ta);
+  panelButton(box, "Save edit", async () => {
+    await api("/webface/chats/" + state.chatId + "/messages/" + m.id, jsonOptions("PATCH", { content: ta.value }));
+    setStatus("Message edited."); w03.msgPanel.innerHTML = ""; await refreshChat();
+  });
+}
+
+async function actDelete() {
+  const m = needSelection(); if (!m) return;
+  if (!window.confirm("Delete this message? The engine journals the delete, so Undo can bring it back.")) return;
+  await api("/webface/chats/" + state.chatId + "/messages/" + m.id, { method: "DELETE" });
+  w03.selectedId = null; setStatus("Message deleted (journaled — see Checkpoints & Undo)."); await refreshChat();
+}
+
+async function actSwipe(action) {
+  const m = needSelection(); if (!m) return;
+  await api("/webface/chats/" + state.chatId + "/messages/" + m.id + "/swipes/select", jsonOptions("POST", { action: action }));
+  await refreshChat();
+}
+
+async function actSwipes() {
+  const m = needSelection(); if (!m) return;
+  const fresh = await api("/webface/chats/" + state.chatId + "/messages");
+  const cur = fresh.find((x) => x.id === m.id) || m;
+  const box = panel(w03.msgPanel, "Swipes for the selected message");
+  const deck = cur.swipes && cur.swipes.length ? cur.swipes : [cur.content || ""];
+  deck.forEach((text, idx) => {
+    const row = document.createElement("div"); row.className = "row";
+    const label = document.createElement("span");
+    label.textContent = (idx === (cur.swipe_id || 0) ? "● " : "") + "Swipe " + (idx + 1) + ": " + String(text).slice(0, 60);
+    row.appendChild(label);
+    const use = document.createElement("button"); use.className = "btn small ghost"; use.type = "button"; use.textContent = "Use";
+    use.addEventListener("click", async () => {
+      await api("/webface/chats/" + state.chatId + "/messages/" + m.id + "/swipes/select", jsonOptions("POST", { index: idx }));
+      w03.msgPanel.innerHTML = ""; await refreshChat();
+    });
+    row.appendChild(use);
+    if (deck.length > 1) {
+      const del = document.createElement("button"); del.className = "btn small ghost"; del.type = "button"; del.textContent = "Delete";
+      del.addEventListener("click", async () => {
+        await api("/webface/chats/" + state.chatId + "/messages/" + m.id + "/swipes/" + idx, { method: "DELETE" });
+        await actSwipes(); await refreshChat();
+      });
+      row.appendChild(del);
+    }
+    box.appendChild(row);
+  });
+  const ta = document.createElement("textarea"); ta.rows = 2; ta.placeholder = "New alternate text…"; box.appendChild(ta);
+  panelButton(box, "Add swipe (becomes the active one)", async () => {
+    await api("/webface/chats/" + state.chatId + "/messages/" + m.id + "/swipes", jsonOptions("POST", { content: ta.value }));
+    setStatus("Swipe added — the new alternate is now active."); await actSwipes(); await refreshChat();
+  });
+}
+
+async function actBranch() {
+  const m = needSelection(); if (!m) return;
+  const name = window.prompt("Name for the branched chat (blank keeps the engine's name):", "");
+  if (name === null) return;
+  const chat = await api("/webface/chats/" + state.chatId + "/branches", jsonOptions("POST", { message_id: m.id, name: name }));
+  setStatus("Branched into a new chat: " + (chat.title || chat.id));
+  await loadChats(chat.id);
+}
+
+async function actPin() {
+  const m = needSelection(); if (!m) return;
+  const method = m.pinned ? "DELETE" : "POST";
+  const out = await api("/webface/chats/" + state.chatId + "/messages/" + m.id + "/pin", { method: method });
+  setStatus(out.pinned ? "Pinned (verified by re-reading the pinned list)." : "Unpinned (verified by re-reading the pinned list).");
+  await refreshChat();
+}
+
+async function actCopy() {
+  const m = needSelection(); if (!m) return;
+  await navigator.clipboard.writeText(m.content || "");
+  setStatus("Message copied to the clipboard.");
+}
+
+async function streamAction(path, busyWords) {
+  if (state.sending) { setStatus("A stream is already running."); return; }
+  state.sending = true; state.requestId = newRequestId();
+  els.stop.disabled = false; setStatus(busyWords);
+  try {
+    const resp = await fetch(path, jsonOptions("POST", { request_id: state.requestId }));
+    if (!resp.ok) throw new Error("request failed (" + resp.status + ")");
+    const reader = resp.body.getReader(); const decoder = new TextDecoder();
+    let buffer = "";
+    for (;;) {
+      const chunk = await reader.read(); if (chunk.done) break;
+      buffer += decoder.decode(chunk.value, { stream: true });
+      let idx = buffer.indexOf("\n\n");
+      while (idx >= 0) {
+        const frame = buffer.slice(0, idx); buffer = buffer.slice(idx + 2);
+        for (const line of frame.split("\n")) {
+          if (!line.startsWith("data:")) continue;
+          const event = JSON.parse(line.slice(5).trim());
+          if (event.type === "started") setStatus("Streaming from " + (event.backend_key || "the engine") + "…");
+          else if (event.type === "landed") setStatus("New reply saved to the engine history.");
+          else if (event.type === "restored") setStatus(event.message);
+          else if (event.type === "error") setStatus("Error: " + (event.message || "stream failed"));
+        }
+        idx = buffer.indexOf("\n\n");
+      }
+    }
+  } finally {
+    state.sending = false; state.requestId = null; els.stop.disabled = true;
+    await refreshChat();
+  }
+}
+
+async function actContinue() {
+  if (!state.chatId) { setStatus("Open a chat first."); return; }
+  const out = await api("/webface/chats/" + state.chatId + "/continue", jsonOptions("POST", { mode: "auto" }));
+  setStatus("Continued (" + (out.mode || "auto") + ") — the engine landed the continuation.");
+  await refreshChat();
+}
+
+async function actImpersonate() {
+  if (!state.chatId) { setStatus("Open a chat first."); return; }
+  const draft = await api("/webface/chats/" + state.chatId + "/impersonate", jsonOptions("POST", {}));
+  const box = panel(w03.chatPanel, "Impersonate — draft of your next line");
+  panelText(box, "Drafted by " + (draft.backend || "the engine") + ". Nothing is stored unless you accept it.");
+  const ta = document.createElement("textarea"); ta.rows = 3; ta.value = draft.content || ""; box.appendChild(ta);
+  panelButton(box, "Accept as my message", async () => {
+    await api("/webface/chats/" + state.chatId + "/impersonate/accept", jsonOptions("POST", { content: ta.value, draft_id: draft.id }));
+    setStatus("Impersonation accepted as a real user message."); w03.chatPanel.innerHTML = ""; await refreshChat();
+  });
+  panelButton(box, "Discard (stores nothing)", async () => {
+    await api("/webface/chats/" + state.chatId + "/impersonate/discard", jsonOptions("POST", { draft_id: draft.id }));
+    setStatus("Draft discarded — nothing was stored."); w03.chatPanel.innerHTML = "";
+  });
+}
+
+async function actNote() {
+  if (!state.chatId) { setStatus("Open a chat first."); return; }
+  const note = await api("/webface/chats/" + state.chatId + "/authors-note");
+  const box = panel(w03.chatPanel, "Author's Note");
+  const ta = document.createElement("textarea"); ta.rows = 3; ta.value = note.text || ""; box.appendChild(ta);
+  const num = (label, val) => { const l = document.createElement("label"); l.textContent = label; const i = document.createElement("input"); i.type = "number"; i.value = val; l.appendChild(i); box.appendChild(l); return i; };
+  const depth = num("Depth", note.depth != null ? note.depth : 4);
+  const freq = num("Frequency", note.frequency != null ? note.frequency : 1);
+  const roleL = document.createElement("label"); roleL.textContent = "Role";
+  const role = document.createElement("select");
+  for (const r of ["system", "user", "assistant"]) { const o = document.createElement("option"); o.value = r; o.textContent = r; if (r === note.role) o.selected = true; role.appendChild(o); }
+  roleL.appendChild(role); box.appendChild(roleL);
+  const enL = document.createElement("label"); enL.className = "check";
+  const en = document.createElement("input"); en.type = "checkbox"; en.checked = note.enabled !== false;
+  enL.appendChild(en); enL.appendChild(document.createTextNode(" Enabled")); box.appendChild(enL);
+  panelButton(box, "Save note", async () => {
+    const saved = await api("/webface/chats/" + state.chatId + "/authors-note", jsonOptions("POST", { text: ta.value, depth: Number(depth.value), frequency: Number(freq.value), role: role.value, enabled: en.checked }));
+    panelText(box, "Saved. The engine now holds: \"" + (saved.text || "") + "\" (depth " + saved.depth + ", every " + saved.frequency + ", role " + saved.role + ", " + (saved.enabled ? "enabled" : "disabled") + ").");
+  });
+}
+
+async function actSearch() {
+  const q = window.prompt("Search all chats for:", "");
+  if (!q) return;
+  const out = await api("/webface/chats/search?q=" + encodeURIComponent(q));
+  const box = panel(w03.chatPanel, "Search results for \"" + q + "\"");
+  const hits = out.results || [];
+  if (!hits.length) panelText(box, "No matches.");
+  for (const hit of hits) {
+    const row = document.createElement("div"); row.className = "row";
+    const label = document.createElement("span");
+    label.textContent = (hit.chat_title || hit.chat_id) + " — " + (hit.snippet || "");
+    row.appendChild(label);
+    const open = document.createElement("button"); open.className = "btn small ghost"; open.type = "button"; open.textContent = "Open chat";
+    open.addEventListener("click", async () => { await loadChats(hit.chat_id); });
+    row.appendChild(open); box.appendChild(row);
+  }
+}
+
+async function actCheckpoints() {
+  if (!state.chatId) { setStatus("Open a chat first."); return; }
+  const box = panel(w03.chatPanel, "Checkpoints & Undo");
+  const cps = await api("/webface/chats/" + state.chatId + "/checkpoints");
+  for (const cp of cps) {
+    const row = document.createElement("div"); row.className = "row";
+    const label = document.createElement("span");
+    label.textContent = (cp.name || cp.id) + " — " + (cp.message_count || 0) + " messages, " + (cp.created_at || "");
+    row.appendChild(label);
+    const restore = document.createElement("button"); restore.className = "btn small ghost"; restore.type = "button"; restore.textContent = "Restore as new chat";
+    restore.addEventListener("click", async () => {
+      const chat = await api("/webface/chats/" + state.chatId + "/checkpoints/" + cp.id + "/restore", jsonOptions("POST", {}));
+      setStatus("Checkpoint restored as a new chat."); await loadChats(chat.id);
+    });
+    row.appendChild(restore);
+    const del = document.createElement("button"); del.className = "btn small ghost"; del.type = "button"; del.textContent = "Delete";
+    del.addEventListener("click", async () => {
+      await api("/webface/chats/" + state.chatId + "/checkpoints/" + cp.id, { method: "DELETE" });
+      await actCheckpoints();
+    });
+    row.appendChild(del); box.appendChild(row);
+  }
+  if (!cps.length) panelText(box, "No checkpoints yet.");
+  panelButton(box, "Create checkpoint", async () => {
+    await api("/webface/chats/" + state.chatId + "/checkpoints", jsonOptions("POST", {}));
+    await actCheckpoints();
+  });
+  const undo = await api("/webface/chats/" + state.chatId + "/undo");
+  const entries = undo.entries || [];
+  panelText(box, entries.length ? "Undo journal (newest first):" : "The undo journal is empty.");
+  for (const entry of entries) {
+    panelText(box, "• " + (entry.operation || "operation") + (entry.detail ? " — " + entry.detail : ""));
+  }
+  if (entries.length) {
+    panelButton(box, "Undo last", async () => {
+      await api("/webface/chats/" + state.chatId + "/undo", jsonOptions("POST", {}));
+      setStatus("Last journaled operation undone."); await actCheckpoints(); await refreshChat();
+    });
+  }
+}
+
+const on = (id, fn) => document.getElementById(id).addEventListener("click", () => fn().catch((e) => setStatus("Error: " + e.message)));
+on("m-edit", actEdit); on("m-delete", actDelete);
+on("m-prev", () => actSwipe("prev")); on("m-next", () => actSwipe("next"));
+on("m-swipes", actSwipes); on("m-branch", actBranch);
+on("m-pin", actPin); on("m-copy", actCopy);
+on("a-regen", () => streamAction("/webface/chats/" + state.chatId + "/regenerate", "Regenerating…"));
+on("a-continue", actContinue); on("a-impersonate", actImpersonate);
+on("a-note", actNote); on("a-search", actSearch); on("a-checkpoints", actCheckpoints);

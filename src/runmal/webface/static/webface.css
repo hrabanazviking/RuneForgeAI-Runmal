@@ -96,3 +96,7 @@ a { color: var(--rune); }
 .roster{list-style:none;padding:0}.roster-row{display:flex;gap:.5rem;align-items:center;padding:.35rem 0;border-bottom:1px solid var(--hatch-widget-border,#333)}
 .thumb{width:40px;height:40px;object-fit:cover}.avatar{max-width:160px;max-height:160px}
 .row{display:flex;gap:.75rem;flex-wrap:wrap;align-items:end}.check{display:flex;gap:.35rem;align-items:center}
+.card textarea,.card input[type=text],.card input:not([type]){background:var(--panel-raised);color:var(--silver);border:1px solid var(--iron);padding:6px;width:100%}
+.card label{display:block;margin:6px 0;color:var(--muted)}
+.card label.check{display:flex;width:auto}
+.turn-words{white-space:pre-wrap}
