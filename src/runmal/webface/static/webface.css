@@ -111,3 +111,7 @@ a { color: var(--rune); }
 .pw-field input { flex: 1 1 auto; width: auto; }
 .pw-toggle { text-transform: none; letter-spacing: .02em; white-space: nowrap; }
 .card input[type=password] { background: var(--panel-raised); color: var(--silver); border: 1px solid var(--iron); padding: 6px; }
+/* W-09: pre-formatted words blocks (the desktop's pane
+   text, carried whole) + the selected roster row. */
+.words { white-space: pre-wrap; font-family: inherit; margin: 8px 0; }
+.roster-row.active { color: var(--bifrost); }

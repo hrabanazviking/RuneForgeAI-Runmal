@@ -62,7 +62,8 @@ def main(argv=None) -> int:
     get_or_create_credential()
     credential = read_engine_credential(engine_data_dir)
     store = Store(Path(args.data_dir))
-    engine = EngineClient(args.engine_url, credential)
+    engine = EngineClient(args.engine_url, credential,
+                          data_dir=engine_data_dir)
     server = ThreadingHTTPServer(
         (args.host, args.port), make_handler(WebfaceApp(store, engine)))
     server.daemon_threads = True

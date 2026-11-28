@@ -25,9 +25,10 @@ TABS: list[tuple[str, str, str | None]] = [
     ("tools", "Tools", None),
     ("voice", "Voice", None),
     ("vision", "Vision", None),
-    ("backups", "Backups", "W-09"),
-    ("plugins", "Plugins", "W-09"),
-    ("appearance", "Appearance", "W-09"),
+    ("backups", "Backups", None),
+    ("plugins", "Plugins", None),
+    ("bridge", "Bridge", None),
+    ("appearance", "Appearance", None),
     ("account", "Account", None),
 ]
 
@@ -41,6 +42,14 @@ def e(value) -> str:
 
 def layout(title, body, user=None, active_tab=None, flash=None,
            flash_err=False):
+    appearance_style = ""
+    if user:
+        from . import w09 as _w09
+        prefs = _w09.normalize_appearance(user.get("appearance"))
+        css = _w09.appearance_css(prefs)
+        if css:
+            appearance_style = (
+                f'<style id="appearance-css">{css}</style>')
     if user:
         tabs = "".join(
             f'<a class="tab{" active" if slug == active_tab else ""}"'
@@ -63,6 +72,7 @@ def layout(title, body, user=None, active_tab=None, flash=None,
             "initial-scale=1\">"
             f"<title>{e(title)} — Rúnmál</title>"
             "<link rel=\"stylesheet\" href=\"/static/webface.css\">"
+            f"{appearance_style}"
             "</head><body>"
             "<header class=\"face-head\"><div class=\"wrap\">"
             "<a class=\"brand\" href=\"/\">ᚱ Rúnmál</a>"
@@ -246,7 +256,32 @@ def library_page(user):
             "<p id=\"l-census\" class=\"muted\"></p>"
             "<ul id=\"l-roster\" class=\"roster\"></ul>"
             "<p id=\"l-status\" class=\"muted\"></p></section>"
-            "<script src=\"/static/library.js\"></script>")
+            "<section class=\"card\"><h2>Library search</h2>"
+            "<p>One search across the library, as the desktop's "
+            "Library Search dialog runs it: the hub (entry "
+            "descriptions and verified pack contents) always, "
+            "and one chat's bound workspace folder when you "
+            "name the chat. Both searches are literal - the "
+            "engines' own law.</p>"
+            "<div class=\"row\"><label>Search<input id=\"ls-q\" "
+            "class=\"entry-box\"></label>"
+            "<label>Kind<select id=\"ls-kind\">"
+            "<option value=\"\">All kinds</option>"
+            "<option value=\"lorebook_pack\">Lorebook packs</option>"
+            "<option value=\"scenario_pack\">Scenario packs</option>"
+            "<option value=\"preset_bundle\">Preset bundles</option>"
+            "<option value=\"prompt_pack\">Prompt packs</option>"
+            "</select></label>"
+            "<label>Chat workspace<select id=\"ls-chat\">"
+            "<option value=\"\">No workspace</option></select></label>"
+            "<button id=\"ls-go\" class=\"btn\" type=\"button\">"
+            "Search</button></div>"
+            "<pre id=\"ls-words\" class=\"words\"></pre>"
+            "<ul id=\"ls-results\" class=\"roster\"></ul>"
+            "<p id=\"ls-faces\" class=\"muted\"></p>"
+            "<p id=\"ls-status\" class=\"muted\"></p></section>"
+            "<script src=\"/static/library.js\"></script>"
+            "<script src=\"/static/search.js\"></script>")
     return layout("Library", body, user=user, active_tab="library")
 
 
@@ -683,3 +718,219 @@ def vision_page(user):
             "<pre id=\"s-watch-out\" class=\"words\"></pre></section>"
             "<script src=\"/static/vision.js\"></script>")
     return layout("Vision", body, user=user, active_tab="vision")
+
+
+def backups_page(user):
+    body = ("<section class=\"card\"><h1>Backups</h1>"
+            "<p>The engine's backup surface, as the desktop "
+            "shows it: database backups and full bundles, "
+            "created online while Rúnmál runs, and restore-"
+            "staged - never applied.</p>"
+            "<pre id=\"b-words\" class=\"words\"></pre>"
+            "<ul id=\"b-list\" class=\"roster\"></ul>"
+            "<div class=\"row\">"
+            "<button id=\"b-create\" class=\"btn\" type=\"button\">"
+            "Back up the database</button>"
+            "<button id=\"b-create-full\" class=\"btn\" "
+            "type=\"button\">Full backup (database + assets)"
+            "</button></div>"
+            "<p id=\"b-create-status\" class=\"muted\"></p>"
+            "<pre id=\"b-created\" class=\"words\"></pre></section>"
+            "<section class=\"card\"><h2>Stage a restore</h2>"
+            "<p>Staging copies the backup to the restore area "
+            "and verifies the copy. The live installation is "
+            "not touched - staging only proves the backup can "
+            "be restored.</p>"
+            "<label class=\"check\"><input type=\"checkbox\" "
+            "id=\"b-stage-confirm\"> I understand staging "
+            "verifies a copy and does not restore anything "
+            "over the live data</label>"
+            "<div class=\"row\">"
+            "<button id=\"b-stage\" class=\"btn\" type=\"button\">"
+            "Stage restore of the selected backup</button>"
+            "<button id=\"b-stage-full\" class=\"btn ghost\" "
+            "type=\"button\">Stage full restore</button></div>"
+            "<pre id=\"b-stage-out\" class=\"words\"></pre>"
+            "<p id=\"b-stage-status\" class=\"muted\"></p></section>"
+            "<section class=\"card\"><h2>Download</h2>"
+            "<p id=\"b-download-note\" class=\"muted\"></p>"
+            "<p><a id=\"b-download\" href=\"#\" hidden>"
+            "Download the selected backup</a></p>"
+            "<h2>What this page cannot do</h2>"
+            "<p id=\"b-delete-note\" class=\"muted\"></p>"
+            "<p id=\"b-restore-note\" class=\"muted\"></p></section>"
+            "<section class=\"card\"><h2>Import an archive</h2>"
+            "<p>Import a portable .runmal archive file (on "
+            "the engine host) into a fresh staging directory. "
+            "Importing alone does not restore anything over "
+            "the live data.</p>"
+            "<label>Archive path on the engine host"
+            "<input id=\"b-import-path\" class=\"entry-box\"></label>"
+            "<label class=\"check\"><input type=\"checkbox\" "
+            "id=\"b-import-confirm\"> I understand the archive "
+            "is imported into staging only</label>"
+            "<button id=\"b-import\" class=\"btn\" type=\"button\">"
+            "Import archive</button>"
+            "<pre id=\"b-import-out\" class=\"words\"></pre>"
+            "<p id=\"b-status\" class=\"muted\"></p></section>"
+            "<script src=\"/static/backups.js\"></script>")
+    return layout("Backups", body, user=user, active_tab="backups")
+
+
+def plugins_page(user):
+    body = ("<section class=\"card\"><h1>Plugins</h1>"
+            "<p>The engine's plugin registry, as the desktop's "
+            "Plugins dialog shows it: what each plugin is, "
+            "what it declares, its permission card, and its "
+            "failure record.</p>"
+            "<pre id=\"p-manager\" class=\"words\"></pre>"
+            "<pre id=\"p-words\" class=\"words\"></pre>"
+            "<ul id=\"p-list\" class=\"roster\"></ul>"
+            "<p id=\"p-status\" class=\"muted\"></p></section>"
+            "<section class=\"card\"><h2>Selected plugin</h2>"
+            "<pre id=\"p-detail\" class=\"words\"></pre>"
+            "<pre id=\"p-card\" class=\"words\"></pre>"
+            "<p id=\"p-failure\" class=\"muted\"></p>"
+            "<div class=\"row\">"
+            "<button id=\"p-enable\" class=\"btn\" type=\"button\">"
+            "Enable</button>"
+            "<button id=\"p-disable\" class=\"btn ghost\" "
+            "type=\"button\">Disable</button>"
+            "<button id=\"p-ack\" class=\"btn ghost\" "
+            "type=\"button\">Acknowledge</button></div>"
+            "<label class=\"check\"><input type=\"checkbox\" "
+            "id=\"p-uninstall-confirm\"> I understand "
+            "uninstalling removes this plugin and its "
+            "settings, with no undo</label>"
+            "<button id=\"p-uninstall\" class=\"btn ghost\" "
+            "type=\"button\">Uninstall</button>"
+            "<pre id=\"p-action-out\" class=\"words\"></pre></section>"
+            "<section class=\"card\"><h2>Plugin settings</h2>"
+            "<p>The selected plugin's declared settings, "
+            "through the engine's own validated road - a "
+            "refused save writes nothing, and the engine's "
+            "refusal words are shown as they come.</p>"
+            "<div id=\"p-settings\"></div>"
+            "<p id=\"p-settings-status\" class=\"muted\"></p>"
+            "<div class=\"row\">"
+            "<button id=\"p-settings-save\" class=\"btn\" "
+            "type=\"button\">Save settings</button>"
+            "<label class=\"check\"><input type=\"checkbox\" "
+            "id=\"p-settings-del-confirm\"> Confirm deleting "
+            "the stored settings</label>"
+            "<button id=\"p-settings-del\" class=\"btn ghost\" "
+            "type=\"button\">Delete stored settings</button>"
+            "</div></section>"
+            "<section class=\"card\"><h2>Install a plugin pack</h2>"
+            "<p>Plugins arrive as local packs - nothing is "
+            "fetched from anywhere. Paste a pack envelope, "
+            "or name a pack file on the engine host. Preview "
+            "shows the permission card and writes nothing; "
+            "installing grants exactly the permissions the "
+            "pack's own manifest declares.</p>"
+            "<label>Pack envelope (JSON)<textarea "
+            "id=\"p-pack\" class=\"entry-box\" rows=\"5\">"
+            "</textarea></label>"
+            "<label>Or pack file path on the engine host"
+            "<input id=\"p-pack-path\" class=\"entry-box\"></label>"
+            "<div class=\"row\">"
+            "<button id=\"p-preview\" class=\"btn ghost\" "
+            "type=\"button\">Preview install</button>"
+            "<button id=\"p-install\" class=\"btn\" "
+            "type=\"button\">Install</button>"
+            "<button id=\"p-update\" class=\"btn ghost\" "
+            "type=\"button\">Update selected with this pack"
+            "</button></div>"
+            "<pre id=\"p-install-out\" class=\"words\"></pre></section>"
+            "<section class=\"card\"><h2>Failure reports</h2>"
+            "<ul id=\"p-failures\" class=\"roster\"></ul>"
+            "<h2>Also on this router</h2>"
+            "<p id=\"p-citizen-note\" class=\"muted\"></p>"
+            "<h3>Quick replies</h3>"
+            "<ul id=\"p-qr\" class=\"roster\"></ul>"
+            "<h3>Expression sets</h3>"
+            "<ul id=\"p-expr\" class=\"roster\"></ul></section>"
+            "<script src=\"/static/plugins.js\"></script>")
+    return layout("Plugins", body, user=user, active_tab="plugins")
+
+
+def bridge_page(user):
+    body = ("<section class=\"card\"><h1>Bridge</h1>"
+            "<p>The engine's bridge credentials, as the "
+            "desktop's Bridge dialog manages them: a "
+            "credential lets an external bridge act with "
+            "exactly the scopes it is granted.</p>"
+            "<pre id=\"br-words\" class=\"words\"></pre>"
+            "<ul id=\"br-list\" class=\"roster\"></ul>"
+            "<p id=\"br-w10\" class=\"muted\"></p>"
+            "<p id=\"br-status\" class=\"muted\"></p></section>"
+            "<section class=\"card\"><h2>New credential</h2>"
+            "<label>Label<input id=\"br-name\" "
+            "class=\"entry-box\"></label>"
+            "<label>Scopes (comma-separated, e.g. "
+            "chat:read:*, chat:write:*, tts:request)"
+            "<input id=\"br-scopes\" class=\"entry-box\"></label>"
+            "<button id=\"br-create\" class=\"btn\" "
+            "type=\"button\">Create credential</button>"
+            "<p id=\"br-token-note\" class=\"muted\"></p>"
+            "<label>The one-time token - copy it now"
+            "<input id=\"br-token\" readonly "
+            "placeholder=\"A new token appears here, once.\">"
+            "</label></section>"
+            "<section class=\"card\"><h2>Revoke</h2>"
+            "<label class=\"check\"><input type=\"checkbox\" "
+            "id=\"br-revoke-confirm\"> I understand revoking "
+            "stops anything using the selected credential's "
+            "token at once, with no undo</label>"
+            "<button id=\"br-revoke\" class=\"btn ghost\" "
+            "type=\"button\">Revoke selected credential</button>"
+            "<pre id=\"br-revoke-out\" class=\"words\"></pre></section>"
+            "<script src=\"/static/bridge.js\"></script>")
+    return layout("Bridge", body, user=user, active_tab="bridge")
+
+
+def appearance_page(user):
+    body = ("<section class=\"card\"><h1>Appearance</h1>"
+            "<p>How this face looks, as the desktop's "
+            "Appearance dialog offers it: theme variant, "
+            "ornament, text size, and reduced motion. "
+            "Choosing applies at once and saves.</p>"
+            "<p id=\"a-words\" class=\"muted\"></p>"
+            "<label>Theme variant<select id=\"a-variant\">"
+            "<option value=\"dark\">Dark - the void ladder</option>"
+            "<option value=\"light\">Light - pale iron &amp; "
+            "paper</option></select></label>"
+            "<p class=\"muted\">Dark or Light: the same token "
+            "ladder and accents in both; Light keeps the "
+            "accent hues, deepened where they would fail "
+            "contrast on pale surfaces.</p>"
+            "<label>Ornament<select id=\"a-ornament\">"
+            "<option value=\"quiet\">Quiet - single iron "
+            "border</option>"
+            "<option value=\"standard\">Standard - stepped "
+            "double-border frames</option>"
+            "<option value=\"ceremonial\">Ceremonial - double "
+            "frames, accent-tipped headers</option>"
+            "</select></label>"
+            "<p class=\"muted\">How much frame decoration "
+            "panels carry. Content stays calm at every level "
+            "- ornament lives on frames, never behind working "
+            "text.</p>"
+            "<label>Text size (%)<input id=\"a-scale\" "
+            "type=\"number\" min=\"100\" max=\"200\" step=\"5\">"
+            "</label>"
+            "<p class=\"muted\">Scales the text of this face "
+            "from 100% to 200%.</p>"
+            "<label class=\"check\"><input type=\"checkbox\" "
+            "id=\"a-motion\"> Reduced motion - cut animation "
+            "durations to zero</label>"
+            "<div class=\"row\">"
+            "<button id=\"a-apply\" class=\"btn\" "
+            "type=\"button\">Apply and save</button>"
+            "<button id=\"a-reset\" class=\"btn ghost\" "
+            "type=\"button\">Back to the house theme</button>"
+            "</div>"
+            "<p id=\"a-note\" class=\"muted\"></p>"
+            "<p id=\"a-status\" class=\"muted\"></p></section>"
+            "<script src=\"/static/appearance.js\"></script>")
+    return layout("Appearance", body, user=user, active_tab="appearance")

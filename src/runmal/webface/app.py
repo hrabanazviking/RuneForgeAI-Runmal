@@ -31,7 +31,7 @@ from http.server import BaseHTTPRequestHandler
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-from . import stub_guard, templates, w02, w03, w04, w05, w06, w07, w08
+from . import stub_guard, templates, w02, w03, w04, w05, w06, w07, w08, w09
 from .cards import import_report_words
 from .engine import EngineError
 from .security import hash_password, verify_password
@@ -125,7 +125,14 @@ def make_handler(app: WebfaceApp):
             token = self._session_token()
             if not token:
                 return None
-            return app.store.user_for_session(token)
+            user = app.store.user_for_session(token)
+            if user is not None:
+                # W-09: the account's appearance rides the
+                # user dict so the layout applies it on
+                # every page.
+                user["appearance"] = w09.get_appearance(
+                    app.store, user["id"])
+            return user
 
         def _session_cookie(self, token: str) -> str:
             return (f"{COOKIE_NAME}={token}; Path=/; HttpOnly; "
@@ -171,6 +178,9 @@ def make_handler(app: WebfaceApp):
                     "/static/memory.js", "/static/scenarios.js",
                     "/static/inspector.js", "/static/tools.js",
                     "/static/voice.js", "/static/vision.js",
+                    "/static/backups.js", "/static/plugins.js",
+                    "/static/bridge.js", "/static/appearance.js",
+                    "/static/search.js",
                     "/static/pwtoggle.js"):
                 return self._static(path)
             if path == "/chat":
@@ -237,6 +247,26 @@ def make_handler(app: WebfaceApp):
                 user = self._require_user_page()
                 if user is not None:
                     return self._html(200, templates.vision_page(user))
+                return
+            if path == "/backups":
+                user = self._require_user_page()
+                if user is not None:
+                    return self._html(200, templates.backups_page(user))
+                return
+            if path == "/plugins":
+                user = self._require_user_page()
+                if user is not None:
+                    return self._html(200, templates.plugins_page(user))
+                return
+            if path == "/bridge":
+                user = self._require_user_page()
+                if user is not None:
+                    return self._html(200, templates.bridge_page(user))
+                return
+            if path == "/appearance":
+                user = self._require_user_page()
+                if user is not None:
+                    return self._html(200, templates.appearance_page(user))
                 return
             if path == "/firstrun":
                 user = self._require_user_page()
@@ -549,6 +579,32 @@ def make_handler(app: WebfaceApp):
                 if match:
                     return self._json(200, w08.list_watch_ingested(
                         app.engine, match.group(1)))
+                # ---- W-09 backups / plugins / search / bridge / appearance ----
+                if path == "/webface/backups":
+                    return self._json(200, w09.list_backups(app.engine))
+                if path == "/webface/backups/download":
+                    data, filename = w09.backup_download(
+                        app.engine, q1("name"))
+                    return self._send_bytes(
+                        200, data, "application/octet-stream",
+                        filename=filename)
+                if path == "/webface/plugins":
+                    return self._json(200, w09.plugins_overview(app.engine))
+                match = re.fullmatch(r"/webface/plugins/([^/]+)", path)
+                if match:
+                    return self._json(200, w09.plugin_detail(
+                        app.engine, match.group(1)))
+                if path == "/webface/library-search":
+                    return self._json(200, w09.search_library(
+                        app.engine, q1("q"), q1("chat_id"), q1("kind")))
+                if path == "/webface/bridge/credentials":
+                    return self._json(200, w09.list_credentials(app.engine))
+                if path == "/webface/appearance":
+                    prefs = w09.get_appearance(app.store, user["id"])
+                    return self._json(200, {
+                        "appearance": prefs,
+                        "words": w09.appearance_words(prefs),
+                        "note": w09.APPEARANCE_STORE_NOTE})
                 if path == "/webface/lorebooks/schema":
                     return self._json(200, w05.census(app.engine))
                 match = re.fullmatch(
@@ -1169,6 +1225,78 @@ def make_handler(app: WebfaceApp):
                 if method == "POST" and path == "/webface/tools/compose":
                     return self._json(200, w07.compose_preview(
                         app.engine, self._json_body()))
+                # ---- W-09 writes ----
+                if method == "POST" and path == "/webface/backups":
+                    body = self._json_body()
+                    return self._json(200, w09.create_backup(
+                        app.engine, bool(body.get("full"))))
+                if method == "POST" and path == "/webface/backups/stage":
+                    body = self._json_body()
+                    return self._json(200, w09.stage_backup(
+                        app.engine, str(body.get("name") or ""),
+                        bool(body.get("full"))))
+                if method == "POST" and path == "/webface/backups/import":
+                    body = self._json_body()
+                    return self._json(200, w09.import_archive(
+                        app.engine, str(body.get("path") or ""),
+                        body.get("confirm") is True))
+                if method == "POST" and path == "/webface/plugins/install/preview":
+                    return self._json(200, w09.install_preview(
+                        app.engine, self._json_body()))
+                if method == "POST" and path == "/webface/plugins/install":
+                    return self._json(200, w09.install_plugin(
+                        app.engine, self._json_body()))
+                match = re.fullmatch(
+                    r"/webface/plugins/([^/]+)/update", path)
+                if match and method == "POST":
+                    return self._json(200, w09.update_plugin(
+                        app.engine, match.group(1), self._json_body()))
+                match = re.fullmatch(
+                    r"/webface/plugins/([^/]+)/(enable|disable|acknowledge)", path)
+                if match and method == "POST":
+                    return self._json(200, w09.plugin_action(
+                        app.engine, match.group(1), match.group(2)))
+                match = re.fullmatch(
+                    r"/webface/plugins/([^/]+)/uninstall", path)
+                if match and method == "POST":
+                    body = self._json_body()
+                    return self._json(200, w09.uninstall_plugin(
+                        app.engine, match.group(1),
+                        body.get("confirm") is True))
+                match = re.fullmatch(
+                    r"/webface/plugins/([^/]+)/settings/delete", path)
+                if match and method == "POST":
+                    body = self._json_body()
+                    return self._json(200, w09.delete_plugin_settings(
+                        app.engine, match.group(1),
+                        body.get("confirm") is True))
+                match = re.fullmatch(
+                    r"/webface/plugins/([^/]+)/settings", path)
+                if match and method == "POST":
+                    body = self._json_body()
+                    return self._json(200, w09.save_plugin_settings(
+                        app.engine, match.group(1), body.get("values")))
+                if method == "POST" and path == "/webface/bridge/credentials":
+                    return self._json(200, w09.create_credential(
+                        app.engine, self._json_body()))
+                match = re.fullmatch(
+                    r"/webface/bridge/credentials/([^/]+)/revoke", path)
+                if match and method == "POST":
+                    body = self._json_body()
+                    return self._json(200, w09.revoke_credential(
+                        app.engine, match.group(1),
+                        body.get("confirm") is True))
+                if method in ("POST", "PUT") and path == "/webface/appearance":
+                    prefs = w09.set_appearance(
+                        app.store, user["id"], self._json_body())
+                    return self._json(200, {
+                        "appearance": prefs,
+                        "words": w09.appearance_words(prefs)})
+                if method == "POST" and path == "/webface/appearance/reset":
+                    prefs = w09.reset_appearance(app.store, user["id"])
+                    return self._json(200, {
+                        "appearance": prefs,
+                        "words": w09.appearance_words(prefs)})
                 # ---- W-05 lorebooks ----
                 if method == "POST" and path == "/webface/lorebooks":
                     return self._json(200, w05.save_book(

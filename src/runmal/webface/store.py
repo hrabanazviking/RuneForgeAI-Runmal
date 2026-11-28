@@ -29,6 +29,10 @@ CREATE TABLE IF NOT EXISTS users (
         CHECK (account_type IN ('human','agent')),
     created_at REAL NOT NULL
 );
+CREATE TABLE IF NOT EXISTS user_appearance (
+    user_id INTEGER PRIMARY KEY REFERENCES users(id),
+    prefs TEXT NOT NULL
+);
 CREATE TABLE IF NOT EXISTS web_sessions (
     token_hash TEXT PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id),
@@ -128,6 +132,35 @@ class Store:
             self.db.execute(
                 "DELETE FROM web_sessions WHERE token_hash = ?",
                 (digest(token),))
+            self.db.commit()
+
+    # -- appearance (W-09: webface-local, per account) --------------
+
+    def get_appearance(self, user_id: int):
+        """The account's stored appearance prefs dict, or None
+        when none was ever saved. Stored as one JSON string;
+        validation/normalisation is the W-09 layer's job."""
+        import json as _json
+        with self._lock:
+            row = self.db.execute(
+                "SELECT prefs FROM user_appearance WHERE user_id = ?",
+                (user_id,)).fetchone()
+        if row is None:
+            return None
+        try:
+            data = _json.loads(row["prefs"])
+        except ValueError:
+            return None
+        return data if isinstance(data, dict) else None
+
+    def set_appearance(self, user_id: int, prefs: dict) -> None:
+        import json as _json
+        with self._lock:
+            self.db.execute(
+                "INSERT INTO user_appearance (user_id, prefs)"
+                " VALUES (?, ?) ON CONFLICT(user_id) DO UPDATE"
+                " SET prefs = excluded.prefs",
+                (user_id, _json.dumps(prefs)))
             self.db.commit()
 
     def close_all_sessions(self, user_id: int) -> None:

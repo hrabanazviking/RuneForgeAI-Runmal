@@ -55,8 +55,14 @@ def read_engine_credential(engine_data_dir: Path) -> str:
 
 
 class EngineClient:
-    def __init__(self, base_url: str, credential: str):
+    def __init__(self, base_url: str, credential: str,
+                 data_dir=None):
         self.base_url = base_url.rstrip("/")
+        # The engine's own data dir on this host, when the
+        # deployment is colocated (the on-demand pair is).
+        # W-09's backup download reads backup files from it:
+        # the engine has no HTTP road serving backup bytes.
+        self.data_dir = Path(data_dir) if data_dir else None
         self._http = httpx.Client(
             base_url=self.base_url,
             headers={"Authorization": f"Bearer {credential}"},
