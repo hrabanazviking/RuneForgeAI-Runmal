@@ -165,9 +165,12 @@ def test_http_auth_gating_and_entry_flow(webface):
         assert chars.status_code == 200 and chars.json()[0]["id"] == "char-1"
         # A pending tab is an honest labelled page, not a dead control.
         # (W-02 superseded the /characters placeholder with the real
-        # tab; /groups remains the pending exemplar until W-03.)
-        pending = client.get("/groups")
-        assert pending.status_code == 200 and "W-03" in pending.text
+        # tab; W-03 superseded /groups the same way, so /personas —
+        # arriving in W-05 — is the pending exemplar now.)
+        pending = client.get("/personas")
+        assert pending.status_code == 200 and "W-05" in pending.text
+        groups_page = client.get("/groups")
+        assert groups_page.status_code == 200 and "g-roster-pick" in groups_page.text
         chars_page = client.get("/characters")
         assert chars_page.status_code == 200 and "c-roster" in chars_page.text
         account = client.get("/account")
