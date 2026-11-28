@@ -31,7 +31,7 @@ from http.server import BaseHTTPRequestHandler
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-from . import stub_guard, templates, w02, w03, w04, w05, w06, w07
+from . import stub_guard, templates, w02, w03, w04, w05, w06, w07, w08
 from .cards import import_report_words
 from .engine import EngineError
 from .security import hash_password, verify_password
@@ -170,6 +170,7 @@ def make_handler(app: WebfaceApp):
                     "/static/personas.js", "/static/lorebooks.js",
                     "/static/memory.js", "/static/scenarios.js",
                     "/static/inspector.js", "/static/tools.js",
+                    "/static/voice.js", "/static/vision.js",
                     "/static/pwtoggle.js"):
                 return self._static(path)
             if path == "/chat":
@@ -226,6 +227,16 @@ def make_handler(app: WebfaceApp):
                 user = self._require_user_page()
                 if user is not None:
                     return self._html(200, templates.tools_page(user))
+                return
+            if path == "/voice":
+                user = self._require_user_page()
+                if user is not None:
+                    return self._html(200, templates.voice_page(user))
+                return
+            if path == "/vision":
+                user = self._require_user_page()
+                if user is not None:
+                    return self._html(200, templates.vision_page(user))
                 return
             if path == "/firstrun":
                 user = self._require_user_page()
@@ -485,6 +496,59 @@ def make_handler(app: WebfaceApp):
                     return self._json(200, w07.list_macros(app.engine))
                 if path == "/webface/tools/variables":
                     return self._json(200, w07.list_variables(app.engine))
+                if path == "/webface/voice/overview":
+                    return self._json(200, w08.voice_overview(app.engine))
+                match = re.fullmatch(r"/webface/voice/sessions", path)
+                if match:
+                    return self._json(200, w08.list_sessions(
+                        app.engine, q1("chat_id")))
+                match = re.fullmatch(
+                    r"/webface/voice/sessions/([^/]+)/latency", path)
+                if match:
+                    return self._json(200, w08.session_latency(
+                        app.engine, match.group(1)))
+                match = re.fullmatch(
+                    r"/webface/voice/sessions/([^/]+)/live", path)
+                if match:
+                    return self._json(200, w08.live_status(
+                        app.engine, match.group(1)))
+                match = re.fullmatch(r"/webface/voice/sessions/([^/]+)", path)
+                if match:
+                    return self._json(200, w08.session_detail(
+                        app.engine, match.group(1)))
+                if path == "/webface/vision/providers":
+                    return self._json(200, w08.providers_view(app.engine))
+                match = re.fullmatch(r"/webface/vision/attachments", path)
+                if match:
+                    return self._json(200, w08.list_attachments(
+                        app.engine, q1("chat_id")))
+                match = re.fullmatch(
+                    r"/webface/vision/attachments/([^/]+)/content", path)
+                if match:
+                    data, ctype = app.engine.request_bytes(
+                        "GET", f"/api/v1/vision/attachments"
+                        f"/{match.group(1)}/content")
+                    return self._send_bytes(200, data, ctype)
+                match = re.fullmatch(
+                    r"/webface/vision/attachments/([^/]+)/thumbnail", path)
+                if match:
+                    data, ctype = app.engine.request_bytes(
+                        "GET", f"/api/v1/vision/attachments"
+                        f"/{match.group(1)}/thumbnail")
+                    return self._send_bytes(200, data, ctype)
+                match = re.fullmatch(r"/webface/vision/descriptions", path)
+                if match:
+                    return self._json(200, w08.list_descriptions(
+                        app.engine, q1("chat_id")))
+                match = re.fullmatch(r"/webface/vision/watch-folders", path)
+                if match:
+                    return self._json(200, w08.list_watch_folders(
+                        app.engine, q1("chat_id")))
+                match = re.fullmatch(
+                    r"/webface/vision/watch-folders/([^/]+)/ingested", path)
+                if match:
+                    return self._json(200, w08.list_watch_ingested(
+                        app.engine, match.group(1)))
                 if path == "/webface/lorebooks/schema":
                     return self._json(200, w05.census(app.engine))
                 match = re.fullmatch(
@@ -552,7 +616,8 @@ def make_handler(app: WebfaceApp):
             # request on this keep-alive connection. Multipart
             # roads read their own body via _multipart().
             if not (path.endswith("/imports") or path.endswith("/import") or "/avatar" in path
-                    or path.endswith("/assets")):
+                    or path.endswith("/assets")
+                    or path.endswith("/vision/attachments")):
                 self._json_body()
             try:
                 # ---- W-03 chat actions ----
@@ -987,6 +1052,108 @@ def make_handler(app: WebfaceApp):
                     r"/webface/scenarios/bindings/([^/]+)", path)
                 if match and method == "DELETE":
                     return self._json(200, w06.unbind_scenario(
+                        app.engine, match.group(1)))
+                # ---- W-08 voice ----
+                if method == "PUT" and path == "/webface/voice/roles":
+                    body = self._json_body()
+                    return self._json(200, w08.set_role(
+                        app.engine, str(body.get("role") or ""),
+                        str(body.get("device_id") or "")))
+                match = re.fullmatch(
+                    r"/webface/voice/backends/([^/]+)/([^/]+)/install", path)
+                if match and method == "POST":
+                    return self._json(200, w08.install_backend(
+                        app.engine, match.group(1), match.group(2)))
+                if method == "PUT" and path == "/webface/voice/defaults":
+                    return self._json(200, w08.set_defaults(
+                        app.engine, self._json_body()))
+                if method == "POST" and path == "/webface/voice/sessions":
+                    body = self._json_body()
+                    return self._json(200, w08.start_session(
+                        app.engine, str(body.get("chat_id") or ""),
+                        bool(body.get("auto_project"))))
+                match = re.fullmatch(
+                    r"/webface/voice/sessions/([^/]+)/stop", path)
+                if match and method == "POST":
+                    body = self._json_body()
+                    return self._json(200, w08.stop_session(
+                        app.engine, match.group(1),
+                        str(body.get("note") or "")))
+                match = re.fullmatch(
+                    r"/webface/voice/sessions/([^/]+)/turns", path)
+                if match and method == "POST":
+                    return self._json(200, w08.record_turn(
+                        app.engine, match.group(1), self._json_body()))
+                match = re.fullmatch(
+                    r"/webface/voice/sessions/([^/]+)/project", path)
+                if match and method == "POST":
+                    return self._json(200, w08.project_session(
+                        app.engine, match.group(1)))
+                match = re.fullmatch(
+                    r"/webface/voice/sessions/([^/]+)/live/start", path)
+                if match and method == "POST":
+                    return self._json(200, w08.live_start(
+                        app.engine, match.group(1)))
+                match = re.fullmatch(
+                    r"/webface/voice/sessions/([^/]+)/live/speak", path)
+                if match and method == "POST":
+                    body = self._json_body()
+                    return self._json(200, w08.live_speak(
+                        app.engine, match.group(1),
+                        str(body.get("text") or "")))
+                match = re.fullmatch(
+                    r"/webface/voice/sessions/([^/]+)/live/interrupt", path)
+                if match and method == "POST":
+                    return self._json(200, w08.live_interrupt(
+                        app.engine, match.group(1)))
+                match = re.fullmatch(
+                    r"/webface/voice/sessions/([^/]+)/live/stop", path)
+                if match and method == "POST":
+                    return self._json(200, w08.live_stop(
+                        app.engine, match.group(1)))
+                if method == "POST" and path == "/webface/voice/transcribe":
+                    return self._json(422, w08.transcribe_attempt(
+                        self._json_body()))
+                # ---- W-08 vision ----
+                if method == "POST" and path == "/webface/vision/attachments":
+                    fields, files = self._multipart()
+                    if not files:
+                        return self._json(422, {
+                            "error": "pick a picture file"})
+                    _f, name, data = files[0]
+                    return self._json(200, w08.attach_image(
+                        app.engine, fields.get("chat_id", ""), name, data,
+                        message_id=fields.get("message_id") or None,
+                        describe=fields.get("describe") == "true",
+                        question=fields.get("question", "")))
+                match = re.fullmatch(
+                    r"/webface/vision/attachments/([^/]+)", path)
+                if match and method == "DELETE":
+                    return self._json(200, w08.delete_attachment(
+                        app.engine, match.group(1)))
+                if method == "POST" and path == "/webface/vision/describe":
+                    return self._json(200, w08.describe(
+                        app.engine, self._json_body()))
+                match = re.fullmatch(
+                    r"/webface/vision/descriptions/([^/]+)", path)
+                if match and method == "DELETE":
+                    return self._json(200, w08.delete_description(
+                        app.engine, match.group(1)))
+                if method == "POST" and path == "/webface/vision/watch-folders":
+                    return self._json(200, w08.create_watch_folder(
+                        app.engine, self._json_body()))
+                match = re.fullmatch(
+                    r"/webface/vision/watch-folders/([^/]+)/scan", path)
+                if match and method == "POST":
+                    return self._json(200, w08.scan_watch_folder(
+                        app.engine, match.group(1), self._json_body()))
+                match = re.fullmatch(
+                    r"/webface/vision/watch-folders/([^/]+)", path)
+                if match and method == "PATCH":
+                    return self._json(200, w08.update_watch_folder(
+                        app.engine, match.group(1), self._json_body()))
+                if match and method == "DELETE":
+                    return self._json(200, w08.delete_watch_folder(
                         app.engine, match.group(1)))
                 # ---- W-07 inspector trace + tools ----
                 match = re.fullmatch(r"/webface/inspector/chats/([^/]+)/trace", path)
