@@ -630,7 +630,7 @@ def test_migration_head_is_0029_p037():
     # 0025 was reserved for P-033 and P-033 took it, banking first;
     # head moved 0026 -> 0028 by P-036 (0027 is P-035's reserved
     # number, banked first), then -> 0029 by P-037. 0026 stands.
-    assert MIGRATIONS[-1][0] == "0042"  # head moved by P-065 (PROVISIONAL 0036)
+    assert MIGRATIONS[-1][0] == "0043"  # head moved by P-065 (PROVISIONAL 0036)
     assert MIGRATIONS[-13][0] == "0030"  # position moved by P-065 (PROVISIONAL 0036)
     assert MIGRATIONS[-14][0] == "0029"  # position moved by P-065 (PROVISIONAL 0036)
     assert MIGRATIONS[-15][0] == "0028"  # position moved by P-065 (PROVISIONAL 0036)
@@ -639,7 +639,7 @@ def test_migration_head_is_0029_p037():
 def test_migration_head_is_0030_provisional_p038():
     # number, banked first), then -> 0030 by P-038 (0029 is
     # P-037's reserved number, banking first). 0026 stands.
-    assert MIGRATIONS[-1][0] == "0042"  # head moved by P-065 (PROVISIONAL 0036)
+    assert MIGRATIONS[-1][0] == "0043"  # head moved by P-065 (PROVISIONAL 0036)
     assert MIGRATIONS[-18][0] == "0025"  # position moved by P-065 (PROVISIONAL 0036)
 
 

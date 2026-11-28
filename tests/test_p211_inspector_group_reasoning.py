@@ -117,7 +117,7 @@ def make_client(tmp_path, monkeypatch):
     monkeypatch.setenv("RUNMAL_DATA_DIR", str(tmp_path))
     db_path = tmp_path / "test.db"
     applied = migrate_to_head(db_path)
-    assert applied[-1] == "0042"
+    assert applied[-1] == "0043"
     engine = create_db_engine(db_path)
     factory = create_session_factory(engine)
     client = TestClient(create_app(factory))
@@ -686,9 +686,9 @@ def test_15_census_migration_and_p210_document_unmoved(
     assert "/api/v1/inspector/groups/{group_id}/reasoning" in paths
     assert "/api/v1/inspector/chats/{chat_id}/reasoning" in paths
     # Migration head stays 0042; no 0043 file exists.
-    assert MIGRATIONS[-1][0] == "0042"
+    assert MIGRATIONS[-1][0] == "0043"
     migrations_dir = REPO / "src" / "runmal" / "db" / "migrations"
-    assert not [p.name for p in migrations_dir.glob("m0043*")]
+    assert [p.name for p in migrations_dir.glob("m0043*")] == ["m0043_default_chat_profile.py"]  # W-12 banking heal: head is now 0043 (m0043_default_chat_profile)
     # The P-210 chat document for a one-to-one fixture
     # chat is byte-shaped exactly as banked: the group
     # join moved nothing it did not own.

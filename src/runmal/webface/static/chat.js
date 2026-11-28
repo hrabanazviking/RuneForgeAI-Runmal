@@ -25,6 +25,7 @@ const mindEls = { line: document.getElementById("mind-line"), box: document.getE
 const mindState = { mind: null };
 function renderMindLine() {
   if (mindEls.line) mindEls.line.textContent = mindState.mind ? (mindState.mind.words || "") : "";
+  renderModelSelect();
 }
 async function loadMind() {
   if (!state.chatId) { mindState.mind = null; renderMindLine(); return null; }
@@ -603,3 +604,70 @@ openChat = async function (chatId) { await _origOpenChat(chatId); await loadPres
 checkFirstRun();
 loadPresetQuickApply().catch(() => {});
 if (window.location.hash.length > 1) { loadChats(window.location.hash.slice(1)).catch(() => {}); }
+
+/* W-12: the Model menu — pick which profile answers this chat,
+   right where you chat. The menu renders from the mind the SERVER
+   reports (never from UI memory): its value is the chat's own pin,
+   or the "house default" entry when the chat rides the default.
+   Changing it pins (or unpins) the chat at once through the
+   engine's pin road, then the mind is re-read, so what you see is
+   what the engine holds. "Make this the house default" names the
+   selected profile as the default every unpinned chat answers
+   through. */
+const modelEls = {
+  select: document.getElementById("model-select"),
+  note: document.getElementById("model-note"),
+  makeDefault: document.getElementById("model-default"),
+};
+function renderModelSelect() {
+  const sel = modelEls.select;
+  if (!sel) return;
+  const mind = mindState.mind;
+  sel.innerHTML = "";
+  const def = mind && mind.default_profile;
+  const defOpt = document.createElement("option");
+  defOpt.value = "";
+  defOpt.textContent = def
+    ? "House default — " + (def.name || def.id) + " · " + (def.chat_model || def.chat_backend)
+    : "House default (none set)";
+  sel.appendChild(defOpt);
+  for (const p of (mind && mind.profiles) || []) {
+    const o = document.createElement("option");
+    o.value = p.id;
+    o.textContent = (p.name || p.id) + " · " + (p.chat_model || p.chat_backend) + (p.is_demo ? " (Demo — not a real model)" : "");
+    sel.appendChild(o);
+  }
+  sel.value = mind && mind.pinned_profile_id ? mind.pinned_profile_id : "";
+  sel.disabled = !state.chatId;
+  if (modelEls.note) {
+    if (!mind) modelEls.note.textContent = "";
+    else if (mind.via === "pin") modelEls.note.textContent = "Pinned to this chat.";
+    else if (mind.via === "default") modelEls.note.textContent = "This chat rides the house default.";
+    else modelEls.note.textContent = "No mind connected yet — pick a model above.";
+  }
+  if (modelEls.makeDefault) {
+    const cur = sel.value;
+    const isDefault = Boolean(def && cur && def.id === cur);
+    modelEls.makeDefault.disabled = !cur || isDefault;
+    modelEls.makeDefault.textContent = isDefault ? "This is the house default" : "Make this the house default";
+  }
+}
+if (modelEls.select) modelEls.select.addEventListener("change", async () => {
+  if (!state.chatId) return;
+  const pid = modelEls.select.value || null;
+  try {
+    await api("/webface/chats/" + state.chatId + "/backend-profile", jsonOptions("POST", { profile_id: pid }));
+    await loadMind();
+    setStatus(pid ? "Model pinned to this chat." : "Chat unpinned — it now rides the house default.");
+  } catch (e) { setStatus("Error: " + e.message); await loadMind().catch(() => {}); }
+});
+if (modelEls.makeDefault) modelEls.makeDefault.addEventListener("click", async () => {
+  const pid = modelEls.select.value;
+  if (!pid) return;
+  try {
+    await api("/webface/default-profile", jsonOptions("POST", { profile_id: pid }));
+    await loadMind();
+    setStatus("House default set — every chat without its own model now answers through it.");
+  } catch (e) { setStatus("Error: " + e.message); }
+});
+renderModelSelect();

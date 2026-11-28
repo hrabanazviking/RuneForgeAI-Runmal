@@ -48,7 +48,7 @@ def make_client(tmp_path, monkeypatch):
     monkeypatch.setenv("RUNMAL_DATA_DIR", str(tmp_path))
     db_path = tmp_path / "test.db"
     applied = migrate_to_head(db_path)
-    assert applied[-1] == "0042"
+    assert applied[-1] == "0043"
     engine = create_db_engine(db_path)
     factory = create_session_factory(engine)
     client = TestClient(create_app(factory))
@@ -178,8 +178,8 @@ async def test_07_full_document_reasoning_endpoint_unchanged(
 
 def test_17_migration_head_stays_0042(tmp_path, monkeypatch):
     client = make_client(tmp_path, monkeypatch)
-    assert MIGRATIONS[-1][0] == "0042"
-    assert current_revision(client.db_path) == "0042"
+    assert MIGRATIONS[-1][0] == "0043"
+    assert current_revision(client.db_path) == "0043"
 
 
 def test_18_route_census_equals_p205_census(tmp_path, monkeypatch):

@@ -170,6 +170,9 @@ class _StubEngine:
     def request(self, method, path, **kw):
         if path == "/api/v1/backend-profiles":
             return self.profiles
+        if path == "/api/v1/backend-profiles/default":
+            # W-12: this stub engine has no house default named.
+            return {"profile_id": "", "profile": None}
         for cid, chat in self.chats.items():
             if path == f"/api/v1/chats/{cid}":
                 return chat

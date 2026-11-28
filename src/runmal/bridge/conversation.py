@@ -23,6 +23,7 @@ from collections.abc import AsyncIterator
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from runmal.backends import default_profile
 from runmal.backends import profiles as backend_profiles
 from runmal.backends.base import ChatBackend
 from runmal.backends.messages import ChatMessage
@@ -204,11 +205,12 @@ async def compose_messages(
 
 async def resolve_chat_backend(session: AsyncSession, user_id: str, chat: Chat) -> ChatBackend:
     """Same resolution as the local /generate route: the chat's pinned
-    backend profile when set, else the offline fake default."""
-    if chat.backend_profile_id:
-        profile = await backend_profiles.get_profile(session, user_id, chat.backend_profile_id)
-        if profile is not None:
-            return await backend_profiles.build_chat_backend(session, profile)
+    backend profile when set, else the owner's default chat profile
+    when one is named (W-12), else the offline fake default."""
+    profile = await default_profile.resolve_effective_profile(
+        session, user_id, chat)
+    if profile is not None:
+        return await backend_profiles.build_chat_backend(session, profile)
     return generation_service.default_backend()
 
 
@@ -259,16 +261,19 @@ async def stream_generation(
         # FIX-STUB counterpart (W-10): the pinned-else-fake
         # resolution must never silently answer a bridge caller
         # with the fake default. A chat with no pin - or a pin
-        # that no longer resolves - has NO MIND on this road and
-        # generation refuses honestly, storing nothing. A chat
-        # pinned to an explicit fake-kind profile is the demo
-        # choice (the profile exists, so the pin was deliberate)
-        # and proceeds, disclosed by turn_started's backend field.
+        # that no longer resolves - and no house default named
+        # (W-12) has NO MIND on this road and generation refuses
+        # honestly, storing nothing. A chat pinned to an explicit
+        # fake-kind profile — or a fake-kind profile named as the
+        # house default — is the demo choice (the profile exists,
+        # so the choice was deliberate) and proceeds, disclosed by
+        # turn_started's backend field.
         if backend.backend_key == "fake":
-            profile = None
-            if chat.backend_profile_id:
-                profile = await backend_profiles.get_profile(
-                    session, user_id, chat.backend_profile_id)
+            # A fake backend is honest only when a fake-KIND profile
+            # was deliberately chosen — as the chat's pin OR as the
+            # house default (W-12). Anything else is the fall-through.
+            profile = await default_profile.resolve_effective_profile(
+                session, user_id, chat)
             if profile is None:
                 yield {
                     "type": "error",

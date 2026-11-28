@@ -304,16 +304,16 @@ async def _generation_record(session, user_id, chat, backend, *,
 async def resolve_backend(session: AsyncSession, user_id: str, chat: Chat):
     """Same resolution as the local /generate route and the
     bridge: the chat's pinned backend profile when set and
-    resolvable, else the offline fake default."""
+    resolvable, else the owner's default chat profile when one is
+    named (W-12), else the offline fake default."""
+    from runmal.backends import default_profile
     from runmal.backends import profiles as backend_profiles
     from runmal.generation import service as generation_service
 
-    if chat.backend_profile_id:
-        profile = await backend_profiles.get_profile(
-            session, user_id, chat.backend_profile_id
-        )
-        if profile is not None:
-            return await backend_profiles.build_chat_backend(session, profile)
+    profile = await default_profile.resolve_effective_profile(
+        session, user_id, chat)
+    if profile is not None:
+        return await backend_profiles.build_chat_backend(session, profile)
     return generation_service.default_backend()
 
 

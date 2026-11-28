@@ -392,6 +392,23 @@ class BackendProfile(Base):
     updated_at: Mapped[datetime | None] = mapped_column(nullable=True, default=None)
 
 
+class DefaultChatProfile(Base):
+    """The owner's DEFAULT chat backend profile (W-12, m0043) — an
+    axis independent of any chat: naming or clearing it touches no
+    chat row. Generation resolves pin -> this default -> the
+    offline fake. A plain profile id, integrity kept by
+    runmal.backends.default_profile (a dangling id reads as unset).
+    """
+
+    __tablename__ = "default_chat_profile"
+
+    user_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    )
+    profile_id: Mapped[str] = mapped_column(String(36), nullable=False, default="")
+    updated_at: Mapped[datetime] = mapped_column(nullable=False, default=_utcnow)
+
+
 class EmbeddingActivation(Base):
     """The owner's ACTIVE embedding profile (S311) — an axis independent
     of chat: switching it never touches chat backends or models."""

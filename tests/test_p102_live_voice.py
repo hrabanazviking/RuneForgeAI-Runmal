@@ -454,8 +454,8 @@ def test_boot_constructs_controller_and_migration_pin(tmp_path, monkeypatch):
     assert isinstance(controller, LiveVoiceController)
     assert controller.status() == {"sessions": []}
     db_path = tmp_path / "test.db"
-    assert MIGRATIONS[-1][0] == "0042"
-    assert current_revision(db_path) == "0042"
+    assert MIGRATIONS[-1][0] == "0043"
+    assert current_revision(db_path) == "0043"
 
 
 # ------------------------------------------- real P-101 citizen (guarded)

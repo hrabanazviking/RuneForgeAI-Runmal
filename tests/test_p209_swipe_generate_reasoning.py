@@ -55,7 +55,7 @@ def make_client(tmp_path, monkeypatch):
     monkeypatch.setenv("RUNMAL_DATA_DIR", str(tmp_path))
     db_path = tmp_path / "test.db"
     applied = migrate_to_head(db_path)
-    assert applied[-1] == "0042"
+    assert applied[-1] == "0043"
     engine = create_db_engine(db_path)
     factory = create_session_factory(engine)
     client = TestClient(create_app(factory))
@@ -336,9 +336,9 @@ def test_11_post_message_text_on_not_present_422(tmp_path, monkeypatch):
 
 
 def test_14_migration_head_stays_0042():
-    assert MIGRATIONS[-1][0] == "0042"
+    assert MIGRATIONS[-1][0] == "0043"
     migrations_dir = REPO / "src" / "runmal" / "db" / "migrations"
-    assert not [p.name for p in migrations_dir.glob("m0043*")]
+    assert [p.name for p in migrations_dir.glob("m0043*")] == ["m0043_default_chat_profile.py"]  # W-12 banking heal: head is now 0043 (m0043_default_chat_profile)
 
 
 def test_15_route_census_stays_354_437(tmp_path, monkeypatch):

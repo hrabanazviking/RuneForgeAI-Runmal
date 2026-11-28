@@ -62,7 +62,7 @@ def test_migration_0003_upgrades_from_0002(tmp_path) -> None:
         "0009", "0010", "0011", "0012",
         "0013", "0014", "0015", "0016", "0017", "0018", "0019", "0020", "0021", "0022", "0023", "0024", "0025", "0026", "0027", "0028", "0029", "0030", "0031", "0032", "0033", "0034", "0035", "0036", "0037", "0038", "0039", "0040", "0041", "0042",  # 0039 appended by P-073 (chat metadata); PROVISIONAL 0038 appended by P-068; 0037 by P-066; 0036 by P-065
     ]
-    assert current_revision(db_path) == "0042"
+    assert current_revision(db_path) == "0043"
 
 
 def test_chat_crud(app_client) -> None:

@@ -1009,6 +1009,18 @@ def make_handler(app: WebfaceApp):
                         app.engine.request("POST",
                             f"/api/v1/chats/{match.group(1)}/backend-profile",
                                 json_body={"profile_id": str(pid) if pid else None}))
+                if method == "POST" and path == "/webface/default-profile":
+                    # W-12: name (or clear) the house default profile.
+                    body = self._json_body()
+                    pid = body.get("profile_id")
+                    if pid:
+                        return self._json(200,
+                            app.engine.request("PUT",
+                                "/api/v1/backend-profiles/default",
+                                json_body={"profile_id": str(pid)}))
+                    return self._json(200,
+                        app.engine.request("DELETE",
+                            "/api/v1/backend-profiles/default"))
                 match = re.fullmatch(r"/webface/chats/([^/]+)/preset", path)
                 if match and method == "POST":
                     body = self._json_body()
@@ -1762,6 +1774,26 @@ def make_handler(app: WebfaceApp):
                     title=str(body.get("title") or ""))
             except EngineError as exc:
                 return self._json(exc.status, {"error": exc.message})
+            # W-12: a new chat starts pinned to the house default
+            # when one is named, so it opens with a mind already
+            # chosen. A failed pin never fails the creation — the
+            # engine's default fallback still answers the chat, and
+            # the mind line says which road it took.
+            if isinstance(chat, dict) and chat.get("id"):
+                try:
+                    default = stub_guard.get_default_profile(app.engine)
+                except EngineError:
+                    default = None
+                if default and not chat.get("backend_profile_id"):
+                    try:
+                        pinned = app.engine.request(
+                            "POST",
+                            f"/api/v1/chats/{chat['id']}/backend-profile",
+                            json_body={"profile_id": str(default["id"])})
+                        if isinstance(pinned, dict):
+                            chat = pinned
+                    except EngineError:
+                        pass
             return self._json(200, chat)
 
         def _cancel(self, chat_id):

@@ -18,7 +18,8 @@ Contract under test (P208_DESIGN.md):
   per-speaker {"type": "reasoning", "author": ...} events in
   arrival order and stores NOTHING. Defect D1 (stateless
   error-swallowing) is FENCED: no pin here blesses it.
-- Fences: migration head stays 0042 (no m0043), the route
+- Fences: migration head stays 0042 (no m0043; W-12 later healed
+  this pin to 0043 for its own m0043), the route
   census stays the P-207 census (354 paths / 437 operations),
   chats add_swipe still reads not_recorded, the P-071 presence
   digest never sees reasoning text, and prompt text never
@@ -102,7 +103,7 @@ def make_client(tmp_path, monkeypatch):
     monkeypatch.setenv("RUNMAL_DATA_DIR", str(tmp_path))
     db_path = tmp_path / "test.db"
     applied = migrate_to_head(db_path)
-    assert applied[-1] == "0042"
+    assert applied[-1] == "0043"  # W-12 banking heal: head advanced
     engine = create_db_engine(db_path)
     client = TestClient(create_app(create_session_factory(engine)))
     token = get_or_create_credential()
@@ -449,13 +450,18 @@ def test_13_stateless_road_stores_nothing(tmp_path, monkeypatch):
 
 
 def test_14_migration_head_stays_0042_no_m0043(tmp_path):
-    assert MIGRATIONS[-1][0] == "0042"
+    # W-12 banking heal: the head advanced past this slice's era by
+    # W-12's m0043_default_chat_profile (the owner's default chat
+    # profile) -- exactly one 0043, and it is W-12's, none from here.
+    assert MIGRATIONS[-1][0] == "0043"
     applied = migrate_to_head(tmp_path / "m.db")
-    assert applied[-1] == "0042"
-    assert all(rev != "0043" for rev, _desc, _mod in MIGRATIONS)
+    assert applied[-1] == "0043"
+    assert [rev for rev, _desc, _mod in MIGRATIONS].count("0043") == 1
+    assert MIGRATIONS[-1][2].__name__.endswith("m0043_default_chat_profile")
     import runmal.db.migrations as migrations_pkg
     names = os.listdir(os.path.dirname(migrations_pkg.__file__))
-    assert not any(name.startswith("m0043") for name in names)
+    assert [n for n in names if n.startswith("m0043")] == [
+        "m0043_default_chat_profile.py"]
 
 
 def test_15_route_census_equals_p207_census(tmp_path, monkeypatch):

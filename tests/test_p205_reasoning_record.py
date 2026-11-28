@@ -60,7 +60,7 @@ def make_client(tmp_path, monkeypatch):
     monkeypatch.setenv("RUNMAL_DATA_DIR", str(tmp_path))
     db_path = tmp_path / "test.db"
     applied = migrate_to_head(db_path)
-    assert applied[-1] == "0042"
+    assert applied[-1] == "0043"
     engine = create_db_engine(db_path)
     factory = create_session_factory(engine)
     client = TestClient(create_app(factory))
@@ -388,7 +388,7 @@ async def test_c5_prompt_marker_never_stored(tmp_path):
 
 
 def test_d1_migration_0042_head_idempotent_and_upgrade(tmp_path):
-    assert MIGRATIONS[-1][0] == "0042"
+    assert MIGRATIONS[-1][0] == "0043"
     assert MIGRATIONS[-1][2].__name__.endswith("m0042_message_reasoning")
     assert MIGRATIONS[-2][0] == "0041"
     db_path = tmp_path / "legacy.db"
@@ -422,7 +422,7 @@ def test_d1_migration_0042_head_idempotent_and_upgrade(tmp_path):
         conn.close()
     applied = migrate_to_head(db_path)
     assert applied == ["0042"]
-    assert current_revision(db_path) == "0042"
+    assert current_revision(db_path) == "0043"
     stored = None
     conn = sqlite3.connect(db_path)
     try:

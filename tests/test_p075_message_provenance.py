@@ -45,7 +45,7 @@ def make_client(tmp_path, monkeypatch):
     monkeypatch.setenv("RUNMAL_DATA_DIR", str(tmp_path))
     db_path = tmp_path / "test.db"
     applied = migrate_to_head(db_path)
-    assert applied[-1] == "0042"  # P-075 PROVISIONAL migration
+    assert applied[-1] == "0043"  # P-075 PROVISIONAL migration
     engine = create_db_engine(db_path)
     factory = create_session_factory(engine)
     client = TestClient(create_app(factory))
@@ -105,10 +105,10 @@ def test_migration_0040_shape(tmp_path):
     # P-077 banking heal: 0040 stands at [-2] beneath P-077's 0041 head.
     assert MIGRATIONS[-3][0] == "0040"
     assert "PROVISIONAL" in MIGRATIONS[-3][1]
-    assert MIGRATIONS[-1][0] == "0042"
+    assert MIGRATIONS[-1][0] == "0043"
     db_path = tmp_path / "mig.db"
     applied = migrate_to_head(db_path)
-    assert applied[-1] == "0042"
+    assert applied[-1] == "0043"
     conn = sqlite3.connect(db_path)
     try:
         cols = {row[1] for row in conn.execute("PRAGMA table_info(messages)")}

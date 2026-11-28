@@ -14,9 +14,15 @@ the rule:
   for real;
 - a chat pinned to a fake-kind profile is an explicit Demo choice
   and passes, labelled "Demo — not a real model";
-- anything else (no pin, or a pin that no longer resolves) is
-  NO MIND: generation must not run, nothing may be appended, and
-  the hall says so in words and walks the user to connect a mind.
+- a chat with no pin of its own answers through the HOUSE DEFAULT
+  profile when the owner has named one (W-12): a real default
+  answers for real and the line says "(house default)"; a
+  fake-kind default is the same deliberate Demo choice, one level
+  up;
+- anything else (no pin, or a pin that no longer resolves, and no
+  default named) is NO MIND: generation must not run, nothing may
+  be appended, and the hall says so in words and walks the user to
+  connect a mind.
 
 Backend-kind vocabulary (engine, runmal.backends.profiles):
 CHAT_BACKENDS = ("fake", "ollama", "openrouter", "aesir",
@@ -29,7 +35,8 @@ the room's own chat row (groups.chat_id), and that chat's pin is
 the room's mind, pinned through the ordinary per-chat pin road.
 The engine's group deepening seam now honours that pin (FIX-STUB
 counterpart fix); this guard refuses generation for a room whose
-chat carries no real pin, exactly as for a one-to-one chat.
+chat carries no real pin, exactly as for a one-to-one chat. The
+house default answers for a room's unpinned chat the same way.
 
 The bridge road shares the engine's resolution too; it is W-10
 scope and not guarded here, but chat_mind()/no_mind_payload() are
@@ -73,30 +80,49 @@ def disclosure_words(mind: dict) -> str:
     """The persistent 'who answers this chat' line, per state."""
     state = mind.get("state")
     profile = mind.get("profile") or {}
+    via_default = mind.get("via") == "default"
     if state == "real":
         model = profile.get("chat_model") or profile.get("chat_backend") or ""
-        return f"Answering: {profile.get('name') or profile.get('id')} · {model}"
+        words = f"Answering: {profile.get('name') or profile.get('id')} · {model}"
+        return words + " (house default)" if via_default else words
     if state == "demo":
-        return DEMO_WORDS
+        return DEMO_WORDS + " (house default)" if via_default else DEMO_WORDS
     return "No mind is connected to this chat yet."
 
 
-def mind_for_chat(chat: dict, profiles: list, *, group_id: str = "") -> dict:
-    """Pure resolution: chat row + profile rows -> the mind state."""
+def mind_for_chat(chat: dict, profiles: list, *, group_id: str = "",
+                  default: dict | None = None) -> dict:
+    """Pure resolution: chat row + profile rows -> the mind state.
+
+    `default` is the owner's named house-default profile row (or
+    None): it answers only for a chat whose own pin does not
+    resolve, and the mind records that it came `via` the default
+    so the hall can say so."""
     by_id = {str(p.get("id") or ""): p for p in profiles if isinstance(p, dict)}
     pin = chat.get("backend_profile_id")
     pinned = by_id.get(str(pin)) if pin else None
+    default_row = None
+    if isinstance(default, dict) and default.get("id"):
+        default_row = by_id.get(str(default.get("id"))) or default
     real = [profile_view(p) for p in profiles if is_real_profile(p)]
     if pinned is not None and is_real_profile(pinned):
-        state, view = "real", profile_view(pinned)
+        state, view, via = "real", profile_view(pinned), "pin"
     elif pinned is not None and is_demo_profile(pinned):
-        state, view = "demo", profile_view(pinned)
+        state, view, via = "demo", profile_view(pinned), "pin"
+    elif default_row is not None and is_real_profile(default_row):
+        state, view, via = "real", profile_view(default_row), "default"
+    elif default_row is not None and is_demo_profile(default_row):
+        state, view, via = "demo", profile_view(default_row), "default"
     else:
-        state, view = "none", None
+        state, view, via = "none", None, ""
     mind: dict[str, Any] = {
         "chat_id": str(chat.get("id") or ""),
         "state": state,
         "profile": view,
+        "via": via,
+        "pinned_profile_id": str(pin) if pinned is not None else "",
+        "default_profile": profile_view(default_row) if default_row else None,
+        "profiles": [profile_view(p) for p in profiles if isinstance(p, dict)],
         "real_profiles": real,
         "has_real_profiles": bool(real),
     }
@@ -139,6 +165,16 @@ def list_profiles(engine) -> list:
     return [r for r in rows if isinstance(r, dict)] if isinstance(rows, list) else []
 
 
+def get_default_profile(engine) -> dict | None:
+    """The owner's named house-default profile row, or None."""
+    payload = _get(engine, "/api/v1/backend-profiles/default")
+    if isinstance(payload, dict):
+        profile = payload.get("profile")
+        if isinstance(profile, dict) and profile.get("id"):
+            return profile
+    return None
+
+
 def get_chat(engine, chat_id: str) -> dict:
     chat = _get(engine, f"/api/v1/chats/{chat_id}")
     if not isinstance(chat, dict):
@@ -147,7 +183,8 @@ def get_chat(engine, chat_id: str) -> dict:
 
 
 def chat_mind(engine, chat_id: str) -> dict:
-    return mind_for_chat(get_chat(engine, chat_id), list_profiles(engine))
+    return mind_for_chat(get_chat(engine, chat_id), list_profiles(engine),
+                         default=get_default_profile(engine))
 
 
 def room_mind(engine, group_id: str) -> dict:
@@ -156,10 +193,12 @@ def room_mind(engine, group_id: str) -> dict:
         raise EngineError("group not found", status=404)
     chat_id = str(group.get("chat_id") or "")
     profiles = list_profiles(engine)
+    default = get_default_profile(engine)
     if not chat_id:
-        mind = mind_for_chat({}, profiles, group_id=group_id)
+        mind = mind_for_chat({}, profiles, group_id=group_id, default=default)
     else:
-        mind = mind_for_chat(get_chat(engine, chat_id), profiles, group_id=group_id)
+        mind = mind_for_chat(get_chat(engine, chat_id), profiles,
+                             group_id=group_id, default=default)
     mind["group_name"] = str(group.get("name") or "")
     return mind
 

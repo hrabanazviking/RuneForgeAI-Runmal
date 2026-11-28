@@ -323,7 +323,7 @@ def test_a_openapi_names_exactly_the_workspace_roads(tmp_path):
 
 
 def test_a_migration_head_stays_0041():
-    assert MIGRATIONS[-1][0] == "0042"
+    assert MIGRATIONS[-1][0] == "0043"
     assert not (REPO / "src" / "runmal" / "db" / "migrations"
                 / "m0042_message_order_index.py").exists()
     assert len([p for p in (REPO / "src" / "runmal" / "db"

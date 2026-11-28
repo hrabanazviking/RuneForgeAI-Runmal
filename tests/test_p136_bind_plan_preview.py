@@ -263,7 +263,7 @@ def test_http_existing_roads_untouched_beside_preview(
 
 
 def test_migration_head_stays_0041(tmp_path, monkeypatch):
-    assert MIGRATIONS[-1][0] == "0042"
+    assert MIGRATIONS[-1][0] == "0043"
     db_path = tmp_path / "head.db"
     migrate_to_head(db_path)
-    assert current_revision(db_path) == "0042"
+    assert current_revision(db_path) == "0043"

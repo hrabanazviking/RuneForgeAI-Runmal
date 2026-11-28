@@ -78,7 +78,7 @@ def make_client(tmp_path, monkeypatch):
     monkeypatch.setenv("RUNMAL_DATA_DIR", str(tmp_path))
     db_path = tmp_path / "test.db"
     applied = migrate_to_head(db_path)
-    assert applied[-1] == "0042"
+    assert applied[-1] == "0043"
     engine = create_db_engine(db_path)
     factory = create_session_factory(engine)
     client = TestClient(create_app(factory))
@@ -207,11 +207,11 @@ def test_13_route_census_unchanged(tmp_path, monkeypatch):
 
 def test_14_head_and_exact_control_census(tmp_path, monkeypatch):
     client = make_client(tmp_path, monkeypatch)
-    assert MIGRATIONS[-1][0] == "0042"
-    assert current_revision(client.db_path) == "0042"
-    assert all(rev != "0043" for rev, _desc, _mod in MIGRATIONS)
+    assert MIGRATIONS[-1][0] == "0043"
+    assert current_revision(client.db_path) == "0043"
+    assert [rev for rev, _desc, _mod in MIGRATIONS].count("0043") == 1  # W-12 banking heal: head is now 0043 (m0043_default_chat_profile)
     import runmal.db.migrations as migrations_pkg
     names = os.listdir(os.path.dirname(migrations_pkg.__file__))
-    assert not any(name.startswith("m0043") for name in names)
+    assert [n for n in names if n.startswith("m0043")] == ["m0043_default_chat_profile.py"]  # W-12 banking heal: head is now 0043 (m0043_default_chat_profile)
     # R-16: the group.html control census leg is scrapped
     # with the web shell; census + head fences above stand.

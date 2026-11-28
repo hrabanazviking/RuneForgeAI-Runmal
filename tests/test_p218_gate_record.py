@@ -121,7 +121,7 @@ def test_r8_migration_census_note() -> None:
     assert "census 356 / 439" in text
     assert "no movement by this slice" in text
     from runmal.db.migrations import MIGRATIONS
-    assert MIGRATIONS[-1][0] == "0042"
+    assert MIGRATIONS[-1][0] == "0043"
 
 
 def test_r9_area_c_honesty_line_present() -> None:

@@ -99,7 +99,7 @@ def make_client(tmp_path, monkeypatch):
     monkeypatch.setenv("RUNMAL_DATA_DIR", str(tmp_path))
     db_path = tmp_path / "test.db"
     applied = migrate_to_head(db_path)
-    assert applied[-1] == "0042"
+    assert applied[-1] == "0043"
     engine = create_db_engine(db_path)
     factory = create_session_factory(engine)
     client = TestClient(create_app(factory))
@@ -490,9 +490,9 @@ def test_11_group_transcript_never_in_a_chat_census(tmp_path, monkeypatch):
 
 
 def test_12_migration_head_still_0042():
-    assert MIGRATIONS[-1][0] == "0042"
+    assert MIGRATIONS[-1][0] == "0043"
     migrations_dir = REPO / "src" / "runmal" / "db" / "migrations"
-    assert not [p.name for p in migrations_dir.glob("m0043*")]
+    assert [p.name for p in migrations_dir.glob("m0043*")] == ["m0043_default_chat_profile.py"]  # W-12 banking heal: head is now 0043 (m0043_default_chat_profile)
 
 
 def test_13_route_census_grows_by_exactly_one_road(tmp_path, monkeypatch):

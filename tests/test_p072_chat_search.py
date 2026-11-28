@@ -211,7 +211,7 @@ class DimsMismatchBackend(EmbeddingBackend):
 
 
 def test_migration_head_is_0039_from_p073_none_from_p072(tmp_path):
-    assert MIGRATIONS[-1][0] == "0042"
+    assert MIGRATIONS[-1][0] == "0043"
     # The single 0039 in the registry is P-073's chat-metadata
     # migration; P-072 took no migration of its own.
     assert [rev for rev, _desc, _mod in MIGRATIONS].count("0039") == 1
@@ -222,7 +222,7 @@ def test_migration_head_is_0039_from_p073_none_from_p072(tmp_path):
     assert MIGRATIONS[-2][2].__name__.endswith("m0041_message_order_index")
     db_path = tmp_path / "m.db"
     applied = migrate_to_head(db_path)
-    assert applied[-1] == "0042"
+    assert applied[-1] == "0043"
 
 
 # ---------------- pure: tokenise ----------------

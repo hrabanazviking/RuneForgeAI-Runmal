@@ -15,8 +15,10 @@ normalized events. Two message sources, one stream shape:
   history in order).
 
 The backend is resolved from the request's `profile_id`, else the chat's
-persisted backend profile (`chat_id`), else the offline fake default —
-so the route works with no real provider configured.
+persisted backend profile (`chat_id`), else the owner's default chat
+profile when one is named (W-12, composed mode only — raw mode is
+unchanged), else the offline fake default — so the route works with
+no real provider configured.
 
 Sampling parameters (R-03, see docs/COMPOSED_TURN_2026-11-14.md for the
 full design): the effective params are merged per-key, lowest
@@ -45,6 +47,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from runmal.backends import default_profile
 from runmal.backends import profiles as backend_profiles
 from runmal.backends.base import ChatBackend
 from runmal.backends.messages import ChatMessage
@@ -94,6 +97,10 @@ async def _resolve_backend(
     elif chat is not None and chat.backend_profile_id:
         profile = await backend_profiles.get_profile(
             session, user_id, chat.backend_profile_id)
+    if profile is None and chat is not None:
+        # W-12: the house default answers a chat that names no mind
+        # of its own. Raw mode (no chat) never reaches this line.
+        profile = await default_profile.get_default_profile(session, user_id)
     if profile is None:
         return service.default_backend()
     return await backend_profiles.build_chat_backend(session, profile)

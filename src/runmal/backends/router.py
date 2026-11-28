@@ -12,6 +12,11 @@ Routes (mounted under ``/api/v1`` in ``runmal.app``):
   ``embedding_secret`` plaintext fields are accepted here as a one-shot
   convenience and stored via the secret store; they are write-only.
 - ``GET    /backend-profiles`` — list (owner-scoped, name order).
+- ``GET    /backend-profiles/default`` — the owner's default chat
+  profile (W-12): ``{profile_id, profile}``, profile null when unset.
+- ``PUT    /backend-profiles/default`` — name the default (404 when
+  the profile does not exist); ``DELETE`` clears it. Declared BEFORE
+  the ``{profile_id}`` routes so "default" is never read as an id.
 - ``GET    /backend-profiles/{profile_id}`` — detail.
 - ``PATCH  /backend-profiles/{profile_id}`` — partial update (no secrets).
 - ``DELETE /backend-profiles/{profile_id}`` — delete (+ its secrets).
@@ -45,6 +50,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from runmal.backends import default_profile
 from runmal.backends import profiles as backend_profiles
 from runmal.backends.errors import BackendError
 from runmal.db.deps import get_owner_id, get_session
@@ -81,6 +87,10 @@ class BackendProfilePatch(BaseModel):
 
 class SecretIn(BaseModel):
     value: str
+
+
+class DefaultProfileIn(BaseModel):
+    profile_id: str
 
 
 def _not_found() -> HTTPException:
@@ -137,6 +147,47 @@ async def list_backend_profiles(
 ):
     profiles = await backend_profiles.list_profiles(session, user_id)
     return [backend_profiles.profile_to_dict(p) for p in profiles]
+
+
+async def _default_view(session: AsyncSession, user_id: str) -> dict:
+    profile = await default_profile.get_default_profile(session, user_id)
+    return {
+        "profile_id": profile.id if profile is not None else "",
+        "profile": (
+            backend_profiles.profile_to_dict(profile)
+            if profile is not None else None),
+    }
+
+
+@router.get("/backend-profiles/default")
+async def get_default_backend_profile(
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    return await _default_view(session, user_id)
+
+
+@router.put("/backend-profiles/default")
+async def set_default_backend_profile(
+    body: DefaultProfileIn,
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    try:
+        await default_profile.set_default_profile(
+            session, user_id, body.profile_id)
+    except KeyError:
+        raise _not_found() from None
+    return await _default_view(session, user_id)
+
+
+@router.delete("/backend-profiles/default")
+async def clear_default_backend_profile(
+    user_id: str = Depends(get_owner_id),
+    session: AsyncSession = Depends(get_session),
+):
+    await default_profile.clear_default_profile(session, user_id)
+    return await _default_view(session, user_id)
 
 
 @router.get("/backend-profiles/{profile_id}")

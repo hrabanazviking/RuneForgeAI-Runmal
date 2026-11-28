@@ -162,6 +162,9 @@ class StubEngine:
         tail = parts[2:] if parts[:2] == ["api", "v1"] else parts
         if tail == ["backend-profiles"] and method == "GET":
             return list(self.profiles.values())
+        if tail == ["backend-profiles", "default"] and method == "GET":
+            # W-12: this stub engine has no house default named.
+            return {"profile_id": "", "profile": None}
         if len(tail) == 2 and tail[0] == "chats" and method == "GET":
             chat = self.chats.get(tail[1])
             if chat is None:
