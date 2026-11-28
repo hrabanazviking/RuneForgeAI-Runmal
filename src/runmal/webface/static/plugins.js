@@ -68,6 +68,7 @@ function renderSettings(form, settings) {
       });
     } else {
       input = el("input"); input.type = field.widget === "number" ? "number" : "text";
+      input.classList.add("entry-box");
       input.value = value == null ? "" : String(value);
     }
     input.id = "p-set-" + field.name;

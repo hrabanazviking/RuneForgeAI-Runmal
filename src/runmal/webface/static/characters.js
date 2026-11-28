@@ -105,11 +105,11 @@ const TEXT_FIELDS = [["name", "Name"], ["description", "Description"],
   ["nickname", "Nickname"]];
 
 function fieldInput(id, value) { const t = el("textarea"); t.id = id; t.rows = 3;
-  t.value = value || ""; return t; }
+  t.classList.add("entry-box"); t.value = value || ""; return t; }
 function greetingList(id, values) { const wrap = el("div"); wrap.id = id;
-  for (const g of values || []) { const t = fieldInput("", g); t.className = "greeting"; wrap.appendChild(t); }
+  for (const g of values || []) { const t = fieldInput("", g); t.classList.add("greeting"); wrap.appendChild(t); }
   const add = el("button", "Add greeting", "btn ghost small"); add.type = "button";
-  add.addEventListener("click", () => { const t = fieldInput("", ""); t.className = "greeting";
+  add.addEventListener("click", () => { const t = fieldInput("", ""); t.classList.add("greeting");
     wrap.insertBefore(t, add); });
   wrap.appendChild(add); return wrap; }
 function greetingsOf(id) { return Array.from(document.querySelectorAll("#" + id + " .greeting"))
@@ -128,9 +128,13 @@ function renderEditor(bundle) {
     s.appendChild(el("h3", title)); ed.appendChild(s); return s; };
   const cardSec = sec("Card");
   for (const [key, label] of TEXT_FIELDS) { const lab = el("label", label);
-    lab.appendChild(fieldInput("f-" + key, f[key])); cardSec.appendChild(lab); }
+    const inp = fieldInput("f-" + key, f[key]);
+    if (!bundle.create && bundle.id) inp.setAttribute("data-draft-key", "character:" + bundle.id + ":" + key);
+    lab.appendChild(inp); cardSec.appendChild(lab); }
   const tagLab = el("label", "Tags (comma separated)");
-  tagLab.appendChild(fieldInput("f-tags", (f.tags || []).join(", ")));
+  const tagInp = fieldInput("f-tags", (f.tags || []).join(", "));
+  if (!bundle.create && bundle.id) tagInp.setAttribute("data-draft-key", "character:" + bundle.id + ":tags");
+  tagLab.appendChild(tagInp);
   cardSec.appendChild(tagLab);
   const grSec = sec("Greetings");
   grSec.appendChild(el("p", "Alternate greetings:", "muted"));
@@ -179,9 +183,9 @@ function renderEditor(bundle) {
       " entr(ies) travel with this card. Entry editing lives in the Lorebooks tab (W-05)."));
     const b = bundle.binding || {};
     bookSec.appendChild(el("p", b.bound ? "Bound lorebook id: " + (b.lorebook_id || "") : "No lorebook bound."));
-    const sel = el("select"); sel.id = "bind-book";
+    const sel = el("select"); sel.id = "bind-book"; sel.classList.add("entry-box");
     for (const book of bundle.lorebooks || []) { const o = el("option", book.name || book.id); o.value = book.id; sel.appendChild(o); }
-    const prec = el("input"); prec.id = "bind-prec"; prec.placeholder = "precedence (optional)";
+    const prec = el("input"); prec.id = "bind-prec"; prec.classList.add("entry-box"); prec.placeholder = "precedence (optional)";
     const bindBtn = el("button", "Bind", "btn small"); bindBtn.type = "button";
     bindBtn.addEventListener("click", async () => {
       await api("/webface/characters/" + bundle.id + "/binding", { method: "PUT",
@@ -255,8 +259,11 @@ async function saveEditor() {
       setStatus("Created " + (created.name || created.id) + ".");
       loadTags(); loadRoster(); openEditor(created.id);
     } else {
-      renderEditor(await api("/webface/characters/" + current.id, { method: "PATCH",
-        headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }));
+      const savedBundle = await api("/webface/characters/" + current.id, { method: "PATCH",
+        headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      // W-11: a successful save retires this character's drafts.
+      if (window.RunmalEntryBox) for (const [key] of TEXT_FIELDS.concat([["tags", ""]])) { const inp = $("f-" + key); if (inp) window.RunmalEntryBox.retireDraft(inp); }
+      renderEditor(savedBundle);
       setStatus("Saved."); loadTags(); loadRoster();
     }
   } catch (err) { setStatus(err.message); }

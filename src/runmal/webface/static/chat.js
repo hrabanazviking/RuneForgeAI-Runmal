@@ -116,6 +116,9 @@ async function loadChats(selectId) {
 
 async function openChat(chatId) {
   state.chatId = chatId;
+  // W-11: the composer draft is PER CHAT.
+  if (window.RunmalEntryBox) window.RunmalEntryBox.bindDraft(els.composer, "chat:" + chatId + ":composer");
+  else els.composer.setAttribute("data-draft-key", "chat:" + chatId + ":composer");
   if (mindEls.box && mindEls.box.dataset.chatId !== chatId) mindEls.box.innerHTML = "";
   loadMind().catch(() => {});
   const messages = await api("/webface/chats/" + chatId + "/messages");
@@ -201,7 +204,7 @@ async function send() {
         idx = buffer.indexOf("\n\n");
       }
     }
-    if (!noMind) els.composer.value = "";
+    if (!noMind) { els.composer.value = ""; if (window.RunmalEntryBox) window.RunmalEntryBox.retireDraft(els.composer); }
     await openChat(state.chatId);
   } catch (err) {
     setStatus("Error: " + err.message);
@@ -326,9 +329,11 @@ async function actEdit() {
   const m = needSelection(); if (!m) return;
   const box = panel(w03.msgPanel, "Edit message");
   const ta = document.createElement("textarea");
-  ta.rows = 4; ta.value = m.content || ""; box.appendChild(ta);
+  ta.rows = 4; ta.value = m.content || ""; ta.classList.add("entry-box");
+  ta.setAttribute("data-draft-key", "chat:" + state.chatId + ":edit:" + m.id); box.appendChild(ta);
   panelButton(box, "Save edit", async () => {
     await api("/webface/chats/" + state.chatId + "/messages/" + m.id, jsonOptions("PATCH", { content: ta.value }));
+    if (window.RunmalEntryBox) window.RunmalEntryBox.retireDraft(ta);
     setStatus("Message edited."); w03.msgPanel.innerHTML = ""; await refreshChat();
   });
 }
@@ -373,7 +378,7 @@ async function actSwipes() {
     }
     box.appendChild(row);
   });
-  const ta = document.createElement("textarea"); ta.rows = 2; ta.placeholder = "New alternate text…"; box.appendChild(ta);
+  const ta = document.createElement("textarea"); ta.rows = 2; ta.placeholder = "New alternate text…"; ta.classList.add("entry-box"); box.appendChild(ta);
   panelButton(box, "Add swipe (becomes the active one)", async () => {
     await api("/webface/chats/" + state.chatId + "/messages/" + m.id + "/swipes", jsonOptions("POST", { content: ta.value }));
     setStatus("Swipe added — the new alternate is now active."); await actSwipes(); await refreshChat();
@@ -461,7 +466,7 @@ async function actImpersonate() {
   }
   const box = panel(w03.chatPanel, "Impersonate — draft of your next line");
   panelText(box, "Drafted by " + (draft.backend || "the engine") + ". Nothing is stored unless you accept it.");
-  const ta = document.createElement("textarea"); ta.rows = 3; ta.value = draft.content || ""; box.appendChild(ta);
+  const ta = document.createElement("textarea"); ta.rows = 3; ta.value = draft.content || ""; ta.classList.add("entry-box"); box.appendChild(ta);
   panelButton(box, "Accept as my message", async () => {
     await api("/webface/chats/" + state.chatId + "/impersonate/accept", jsonOptions("POST", { content: ta.value, draft_id: draft.id }));
     setStatus("Impersonation accepted as a real user message."); w03.chatPanel.innerHTML = ""; await refreshChat();
@@ -476,12 +481,13 @@ async function actNote() {
   if (!state.chatId) { setStatus("Open a chat first."); return; }
   const note = await api("/webface/chats/" + state.chatId + "/authors-note");
   const box = panel(w03.chatPanel, "Author's Note");
-  const ta = document.createElement("textarea"); ta.rows = 3; ta.value = note.text || ""; box.appendChild(ta);
-  const num = (label, val) => { const l = document.createElement("label"); l.textContent = label; const i = document.createElement("input"); i.type = "number"; i.value = val; l.appendChild(i); box.appendChild(l); return i; };
+  const ta = document.createElement("textarea"); ta.rows = 3; ta.value = note.text || ""; ta.classList.add("entry-box");
+  ta.setAttribute("data-draft-key", "chat:" + state.chatId + ":authors-note"); box.appendChild(ta);
+  const num = (label, val) => { const l = document.createElement("label"); l.textContent = label; const i = document.createElement("input"); i.type = "number"; i.classList.add("entry-box"); i.value = val; l.appendChild(i); box.appendChild(l); return i; };
   const depth = num("Depth", note.depth != null ? note.depth : 4);
   const freq = num("Frequency", note.frequency != null ? note.frequency : 1);
   const roleL = document.createElement("label"); roleL.textContent = "Role";
-  const role = document.createElement("select");
+  const role = document.createElement("select"); role.classList.add("entry-box");
   for (const r of ["system", "user", "assistant"]) { const o = document.createElement("option"); o.value = r; o.textContent = r; if (r === note.role) o.selected = true; role.appendChild(o); }
   roleL.appendChild(role); box.appendChild(roleL);
   const enL = document.createElement("label"); enL.className = "check";
@@ -489,6 +495,7 @@ async function actNote() {
   enL.appendChild(en); enL.appendChild(document.createTextNode(" Enabled")); box.appendChild(enL);
   panelButton(box, "Save note", async () => {
     const saved = await api("/webface/chats/" + state.chatId + "/authors-note", jsonOptions("POST", { text: ta.value, depth: Number(depth.value), frequency: Number(freq.value), role: role.value, enabled: en.checked }));
+    if (window.RunmalEntryBox) window.RunmalEntryBox.retireDraft(ta);
     panelText(box, "Saved. The engine now holds: \"" + (saved.text || "") + "\" (depth " + saved.depth + ", every " + saved.frequency + ", role " + saved.role + ", " + (saved.enabled ? "enabled" : "disabled") + ").");
   });
 }

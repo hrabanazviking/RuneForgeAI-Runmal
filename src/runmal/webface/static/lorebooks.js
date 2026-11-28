@@ -33,7 +33,7 @@ function activationWords(values) {
 /* Build a census form. Returns {wrap, read()} where read()
    yields the raw contract: keys as lists, bools as bools,
    everything else as text. Derived fields render read-only. */
-function censusForm(fields, values) {
+function censusForm(fields, values, draftPrefix) {
   const wrap = el("div");
   const inputs = {};
   const current = {};
@@ -61,13 +61,18 @@ function censusForm(fields, values) {
       input.value = valueToText(f, v);
     }
     input.classList.add("entry-box");
+    // W-11: prose fields of an EXISTING book/entry carry a draft key
+    // (page + book/entry + field); new entities have no stable
+    // identity yet, so their fields get parts 1-3 only.
+    if (draftPrefix && (f.kind === "longtext" || f.kind === "keys" || !f.kind))
+      input.setAttribute("data-draft-key", draftPrefix + ":" + f.name);
     inputs[f.name] = input;
     const label = el("label", f.label);
     label.appendChild(input);
     if (f.help) label.appendChild(el("span", " " + f.help, "muted"));
     wrap.appendChild(label);
   }
-  return { wrap, read() {
+  return { wrap, inputs, read() {
     const out = {};
     for (const f of fields) {
       if (f.derived) continue;
@@ -112,7 +117,7 @@ function hideDetail() {
 function bookEditor(book) {
   const box = $("lb-editor"); box.hidden = false; box.innerHTML = "";
   box.appendChild(el("h2", book ? "Edit lorebook" : "New lorebook"));
-  const form = censusForm(state.forms.book || [], book || {});
+  const form = censusForm(state.forms.book || [], book || {}, book ? "lorebook:" + book.id : null);
   box.appendChild(form.wrap);
   const save = el("button", book ? "Save book" : "Create book", "btn"); save.type = "button";
   save.addEventListener("click", async () => {
@@ -120,6 +125,7 @@ function bookEditor(book) {
       const saved = book
         ? await api("/webface/lorebooks/" + book.id, jsonOpts("PATCH", { values: form.read() }))
         : await api("/webface/lorebooks", jsonOpts("POST", { values: form.read() }));
+      if (window.RunmalEntryBox) for (const n of Object.values(form.inputs)) window.RunmalEntryBox.retireDraft(n);
       setStatus("Saved '" + saved.name + "'.");
       await loadBooks();
       openBook(saved.id);
@@ -158,7 +164,7 @@ function renderEntries() {
 function entryEditor(entry) {
   const box = $("lb-entry-editor"); box.hidden = false; box.innerHTML = "";
   box.appendChild(el("h2", entry ? "Edit entry" : "New entry"));
-  const form = censusForm(state.forms.entry || [], entry || {});
+  const form = censusForm(state.forms.entry || [], entry || {}, entry ? "lorebook:" + state.detail.book.id + ":entry:" + entry.id : null);
   box.appendChild(form.wrap);
   const save = el("button", entry ? "Save entry" : "Create entry", "btn"); save.type = "button";
   save.addEventListener("click", async () => {
@@ -167,6 +173,7 @@ function entryEditor(entry) {
       const saved = entry
         ? await api("/webface/lorebooks/" + bookId + "/entries/" + entry.id, jsonOpts("PATCH", { values: form.read() }))
         : await api("/webface/lorebooks/" + bookId + "/entries", jsonOpts("POST", { values: form.read() }));
+      if (window.RunmalEntryBox) for (const n of Object.values(form.inputs)) window.RunmalEntryBox.retireDraft(n);
       setStatus("Saved entry '" + (saved.name || saved.id) + "'.");
       openBook(bookId);
     } catch (e) { setStatus(e.message); }
@@ -202,9 +209,9 @@ function renderScopes() {
     for (const b of state.detail.bindings) bl.appendChild(el("li", b.words));
     box.appendChild(bl);
   }
-  const kind = document.createElement("select");
+  const kind = document.createElement("select"); kind.classList.add("entry-box");
   for (const k of ["global", "character", "persona", "chat"]) { const o = el("option", k); o.value = k; kind.appendChild(o); }
-  const owner = document.createElement("select");
+  const owner = document.createElement("select"); owner.classList.add("entry-box");
   const budget = document.createElement("input"); budget.type = "number"; budget.classList.add("entry-box"); budget.placeholder = "budget (blank = none)";
   const position = document.createElement("input"); position.type = "number"; position.classList.add("entry-box"); position.value = "0";
   function fillOwners() {
@@ -251,7 +258,7 @@ function renderPreviews() {
   });
   box.appendChild(bookBtn); box.appendChild(bookOut);
   box.appendChild(el("h3", "Layered preview for a chat"));
-  const chatSel = document.createElement("select");
+  const chatSel = document.createElement("select"); chatSel.classList.add("entry-box");
   for (const c of state.chats) { const o = el("option", c.title || c.id); o.value = c.id; chatSel.appendChild(o); }
   box.appendChild(chatSel);
   const chatMsgs = document.createElement("textarea"); chatMsgs.classList.add("entry-box"); chatMsgs.rows = 3;

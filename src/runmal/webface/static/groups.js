@@ -31,7 +31,7 @@ async function gapi(path, options) {
 function jopt(method, body) { return { method: method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body || {}) }; }
 function el(tag, text, cls) { const n = document.createElement(tag); if (text != null) n.textContent = text; if (cls) n.className = cls; return n; }
 function btn(label, fn, ghost) { const b = el("button", label, "btn small" + (ghost ? " ghost" : "")); b.type = "button"; b.addEventListener("click", () => fn().catch((e) => gStatus("Error: " + e.message))); return b; }
-function selectOf(options, value) { const s = document.createElement("select"); for (const [v, l] of options) { const o = el("option", l); o.value = v; if (v === value) o.selected = true; s.appendChild(o); } return s; }
+function selectOf(options, value) { const s = document.createElement("select"); s.classList.add("entry-box"); for (const [v, l] of options) { const o = el("option", l); o.value = v; if (v === value) o.selected = true; s.appendChild(o); } return s; }
 
 async function loadGroups(openId) {
   const groups = await gapi("/webface/groups");
@@ -119,9 +119,11 @@ async function renderRoom() {
   // say as user
   const sayRow = el("div", null, "row");
   const sayText = document.createElement("textarea"); sayText.rows = 2; sayText.placeholder = "Say something as yourself…";
+  sayText.classList.add("entry-box"); sayText.setAttribute("data-draft-key", "group:" + g.id + ":say");
   sayRow.appendChild(sayText);
   sayRow.appendChild(btn("Say it", async () => {
     await gapi("/webface/groups/" + g.id + "/messages", jopt("POST", { content: sayText.value }));
+    if (window.RunmalEntryBox) await window.RunmalEntryBox.retireDraft(sayText);
     await openRoom(g.id);
   }));
   room.appendChild(sayRow);
@@ -139,7 +141,7 @@ async function renderRoom() {
       await openRoom(g.id); words.textContent = out.words || ""; gels.room.querySelector(".turn-words").textContent = out.words || "";
     } catch (e) { await groupBlocked(e, g.id); }
   }));
-  const runCount = document.createElement("input"); runCount.type = "number"; runCount.value = 2; runCount.min = 1; runCount.max = 10;
+  const runCount = document.createElement("input"); runCount.type = "number"; runCount.classList.add("entry-box"); runCount.value = 2; runCount.min = 1; runCount.max = 10;
   turnRow.appendChild(runCount);
   turnRow.appendChild(btn("Run turns", async () => {
     try {
@@ -165,7 +167,7 @@ async function renderRoom() {
 function memberRow(g, m) {
   const box = el("div", null, "card");
   box.appendChild(el("h4", (m.name || m.character_id) + " · talkativeness " + m.talkativeness + (m.muted ? " · muted" : "")));
-  const talk = document.createElement("input"); talk.type = "number"; talk.step = "0.1"; talk.min = 0; talk.max = 1; talk.value = m.talkativeness;
+  const talk = document.createElement("input"); talk.type = "number"; talk.classList.add("entry-box"); talk.step = "0.1"; talk.min = 0; talk.max = 1; talk.value = m.talkativeness;
   const talkL = el("label", "Talkativeness "); talkL.appendChild(talk); box.appendChild(talkL);
   const muteL = el("label", null, "check"); const mute = document.createElement("input"); mute.type = "checkbox"; mute.checked = !!m.muted;
   muteL.appendChild(mute); muteL.appendChild(document.createTextNode(" Muted")); box.appendChild(muteL);
@@ -176,13 +178,16 @@ function memberRow(g, m) {
   // deepening override editor
   const act = selectOf(ACTIVATIONS, "default"); act.dataset.member = m.character_id;
   const actL = el("label", "Activation override "); actL.appendChild(act); box.appendChild(actL);
-  const lore = document.createElement("textarea"); lore.rows = 2; lore.placeholder = "Lore override…"; box.appendChild(lore);
-  const persona = document.createElement("textarea"); persona.rows = 2; persona.placeholder = "Persona override…"; box.appendChild(persona);
+  const lore = document.createElement("textarea"); lore.rows = 2; lore.placeholder = "Lore override…"; lore.classList.add("entry-box");
+  lore.setAttribute("data-draft-key", "group:" + g.id + ":member:" + m.character_id + ":lore"); box.appendChild(lore);
+  const persona = document.createElement("textarea"); persona.rows = 2; persona.placeholder = "Persona override…"; persona.classList.add("entry-box");
+  persona.setAttribute("data-draft-key", "group:" + g.id + ":member:" + m.character_id + ":persona"); box.appendChild(persona);
   box.appendChild(btn("Save override", async () => {
     const patch = { activation: act.value };
     if (lore.value) patch.lore_override = lore.value;
     if (persona.value) patch.persona_override = persona.value;
     await gapi("/webface/groups/" + g.id + "/members/" + m.character_id + "/override", jopt("PATCH", patch));
+    if (window.RunmalEntryBox) { window.RunmalEntryBox.retireDraft(lore); window.RunmalEntryBox.retireDraft(persona); }
     gStatus("Override saved for " + (m.name || m.character_id) + " (activation: " + act.value + ").");
   }, true));
   const peekOut = el("p", "", "muted");
@@ -208,7 +213,7 @@ function memberRow(g, m) {
 async function settingsBox(g) {
   const box = el("div", null, "card");
   box.appendChild(el("h3", "Room Settings"));
-  const nameL = el("label", "Name "); const name = document.createElement("input"); name.value = g.name || ""; nameL.appendChild(name); box.appendChild(nameL);
+  const nameL = el("label", "Name "); const name = document.createElement("input"); name.classList.add("entry-box"); name.value = g.name || ""; nameL.appendChild(name); box.appendChild(nameL);
   const policy = selectOf(POLICIES, g.speaker_policy || "natural");
   const polL = el("label", "Speaker strategy "); polL.appendChild(policy); box.appendChild(polL);
   const deep = await gapi("/webface/groups/" + g.id + "/deepening");
@@ -219,10 +224,11 @@ async function settingsBox(g) {
   const auto = deep.auto_mode || {};
   const autoL = el("label", null, "check"); const autoE = document.createElement("input"); autoE.type = "checkbox"; autoE.checked = !!auto.enabled;
   autoL.appendChild(autoE); autoL.appendChild(document.createTextNode(" Auto mode")); box.appendChild(autoL);
-  const maxL = el("label", "Auto max turns "); const maxT = document.createElement("input"); maxT.type = "number"; maxT.value = auto.max_turns || 3; maxL.appendChild(maxT); box.appendChild(maxL);
+  const maxL = el("label", "Auto max turns "); const maxT = document.createElement("input"); maxT.type = "number"; maxT.classList.add("entry-box"); maxT.value = auto.max_turns || 3; maxL.appendChild(maxT); box.appendChild(maxL);
   const fields = {};
   for (const key of ["join_prefix", "join_suffix", "scenario_override"]) {
-    const l = el("label", key + " "); const t = document.createElement("textarea"); t.rows = 2; t.value = deep[key] || ""; l.appendChild(t); box.appendChild(l); fields[key] = t;
+    const l = el("label", key + " "); const t = document.createElement("textarea"); t.rows = 2; t.classList.add("entry-box");
+    t.setAttribute("data-draft-key", "group:" + g.id + ":deepening:" + key); t.value = deep[key] || ""; l.appendChild(t); box.appendChild(l); fields[key] = t;
   }
   box.appendChild(btn("Save room settings", async () => {
     await gapi("/webface/groups/" + g.id, jopt("PATCH", { name: name.value, speaker_policy: policy.value }));
@@ -231,6 +237,7 @@ async function settingsBox(g) {
       auto_enabled: autoE.checked, auto_max_turns: Number(maxT.value),
       join_prefix: fields.join_prefix.value, join_suffix: fields.join_suffix.value,
       scenario_override: fields.scenario_override.value }));
+    if (window.RunmalEntryBox) for (const k of Object.keys(fields)) window.RunmalEntryBox.retireDraft(fields[k]);
     gStatus("Room settings saved — name, strategy and deepening composed over the stored document.");
     await openRoom(g.id);
   }));

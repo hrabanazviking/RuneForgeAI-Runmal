@@ -38,7 +38,7 @@ function choose(o) {
   box.appendChild(el("p", o.blurb, "muted"));
   const fields = {};
   function addField(label, key, value, password) {
-    const input = document.createElement("input"); input.value = value || ""; if (password) { input.type = "password"; input.setAttribute("data-pw-toggle", ""); }
+    const input = document.createElement("input"); input.classList.add("entry-box"); input.value = value || ""; if (password) { input.type = "password"; input.setAttribute("data-pw-toggle", ""); }
     const l = el("label", label); l.appendChild(input); box.appendChild(l); fields[key] = input;
   }
   if (o.needs_base_url) addField("Server address", "base_url", o.default_base_url);
@@ -69,11 +69,11 @@ async function prove(profileId) {
 }
 function buildMeet() {
   const box = $("fr-meet"); box.innerHTML = "";
-  const name = document.createElement("input");
+  const name = document.createElement("input"); name.classList.add("entry-box");
   const nameL = el("label", "Character name"); nameL.appendChild(name); box.appendChild(nameL);
-  const desc = document.createElement("textarea");
+  const desc = document.createElement("textarea"); desc.classList.add("entry-box");
   const descL = el("label", "A few lines about them"); descL.appendChild(desc); box.appendChild(descL);
-  const greet = document.createElement("input");
+  const greet = document.createElement("input"); greet.classList.add("entry-box");
   const greetL = el("label", "Their first greeting"); greetL.appendChild(greet); box.appendChild(greetL);
   const create = el("button", "Create and open our first chat", "btn"); create.type = "button";
   create.addEventListener("click", async () => {

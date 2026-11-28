@@ -71,17 +71,17 @@ async function showPinState() {
 }
 
 function field(labelText, input) { const l = el("label", labelText); l.appendChild(input); return l; }
-function textInput(value) { const i = document.createElement("input"); i.value = value || ""; return i; }
+function textInput(value) { const i = document.createElement("input"); i.classList.add("entry-box"); i.value = value || ""; return i; }
 function selectOf(labels, value) {
-  const s = document.createElement("select");
+  const s = document.createElement("select"); s.classList.add("entry-box");
   for (const k of Object.keys(labels)) { const o = el("option", labels[k]); o.value = k; s.appendChild(o); }
   s.value = value || ""; return s;
 }
 function secretControl(storedWords) {
   const wrap = el("span");
-  const sel = document.createElement("select");
+  const sel = document.createElement("select"); sel.classList.add("entry-box");
   for (const [v, t] of [["leave", "Leave as is"], ["set", "Set a new key"], ["clear", "Clear the stored key"]]) { const o = el("option", t); o.value = v; sel.appendChild(o); }
-  const input = document.createElement("input"); input.type = "password"; input.setAttribute("data-pw-toggle", ""); input.placeholder = "new key (write-only)"; input.hidden = true;
+  const input = document.createElement("input"); input.type = "password"; input.classList.add("entry-box"); input.setAttribute("data-pw-toggle", ""); input.placeholder = "new key (write-only)"; input.hidden = true;
   sel.addEventListener("change", () => { input.hidden = sel.value !== "set"; });
   wrap.appendChild(sel); wrap.appendChild(el("span", " - currently: " + storedWords, "muted")); wrap.appendChild(input);
   return { wrap, sel, input };
@@ -95,7 +95,7 @@ function openEditor(p) {
   const name = textInput(p ? p.name : "");
   const kind = selectOf(KIND_LABELS, p ? p.chat_backend : "ollama");
   const model = textInput(p ? p.chat_model : "");
-  const modelPick = document.createElement("select");
+  const modelPick = document.createElement("select"); modelPick.classList.add("entry-box");
   const embKind = selectOf(EMB_LABELS, p ? p.embedding_backend : "");
   const embModel = textInput(p ? p.embedding_model : "");
   const baseUrl = textInput(p ? p.base_url : "");

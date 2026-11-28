@@ -29,8 +29,8 @@ function samplerForm(known) {
   for (const f of state.fields) {
     if (f.group !== group) { group = f.group; box = el("fieldset"); box.appendChild(el("legend", group)); wrap.appendChild(box); }
     let input;
-    if (f.kind === "strings" || f.kind === "bias") { input = document.createElement("textarea"); input.rows = 2; }
-    else { input = document.createElement("input"); input.type = "number"; input.step = f.kind === "int" ? "1" : "any"; }
+    if (f.kind === "strings" || f.kind === "bias") { input = document.createElement("textarea"); input.rows = 2; input.classList.add("entry-box"); }
+    else { input = document.createElement("input"); input.type = "number"; input.classList.add("entry-box"); input.step = f.kind === "int" ? "1" : "any"; }
     input.value = valueToText(f, (known || {})[f.key]);
     inputs[f.key] = input;
     const l = el("label", f.label + " (" + f.key + ")"); l.appendChild(input); box.appendChild(l);
@@ -74,11 +74,11 @@ function renderPresets() {
 function presetEditor(p) {
   const box = $("g-editor"); box.hidden = false; box.innerHTML = "";
   box.appendChild(el("h2", p ? "Edit preset" : "New preset"));
-  const name = document.createElement("input"); name.value = p ? p.name : "";
+  const name = document.createElement("input"); name.classList.add("entry-box"); name.value = p ? p.name : "";
   const nameL = el("label", "Name"); nameL.appendChild(name); box.appendChild(nameL);
   const form = samplerForm(p ? p.known : {}); box.appendChild(form.wrap);
   box.appendChild(el("p", extraNote(p ? p.extra : {}), "muted"));
-  const ref = document.createElement("input"); ref.value = p ? (p.template_ref || "") : "";
+  const ref = document.createElement("input"); ref.classList.add("entry-box"); ref.value = p ? (p.template_ref || "") : "";
   const refL = el("label", "Prompt template reference"); refL.appendChild(ref); box.appendChild(refL);
   const save = el("button", "Save preset", "btn"); save.type = "button";
   save.addEventListener("click", async () => {
@@ -110,11 +110,11 @@ function bundleEditor(row) {
   const b = row ? (row.bundle || {}) : {};
   box.appendChild(el("h2", row ? "Edit bundle" : "New bundle"));
   if (row && row.carried.length) box.appendChild(el("p", "This bundle also carries, untouched: " + row.carried.join(", ") + ".", "muted"));
-  const name = document.createElement("input"); name.value = b.name || "";
+  const name = document.createElement("input"); name.classList.add("entry-box"); name.value = b.name || "";
   const nameL = el("label", "Name"); nameL.appendChild(name); box.appendChild(nameL);
   const form = samplerForm(row ? row.known : {}); box.appendChild(form.wrap);
   box.appendChild(el("p", extraNote(row ? row.extra : {}), "muted"));
-  const ref = document.createElement("input"); ref.value = b.template_ref || "";
+  const ref = document.createElement("input"); ref.classList.add("entry-box"); ref.value = b.template_ref || "";
   const refL = el("label", "Prompt template reference"); refL.appendChild(ref); box.appendChild(refL);
   const save = el("button", "Save bundle", "btn"); save.type = "button";
   save.addEventListener("click", async () => {

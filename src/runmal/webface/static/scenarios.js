@@ -66,7 +66,7 @@ async function openEditor(id) {
   const inputs = {};
   const fields = detail ? detail.fields : null;
   const fieldDefs = fields || [];
-  for (const f of fieldDefs) { const inp = textInput(def[f.name], f.long); inputs[f.name] = inp; box.appendChild(fieldRow(f.label, inp)); }
+  for (const f of fieldDefs) { const inp = textInput(def[f.name], f.long); if (id && f.long) inp.setAttribute("data-draft-key", "scenario:" + id + ":" + f.name); inputs[f.name] = inp; box.appendChild(fieldRow(f.label, inp)); }
   const sectionInputs = {};
   const sections = detail ? detail.sections : [];
   for (const s of sections) {
@@ -80,6 +80,7 @@ async function openEditor(id) {
       const values = {}; for (const k in inputs) values[k] = inputs[k].value;
       const secs = {}; for (const k in sectionInputs) secs[k] = sectionInputs[k].value;
       const r = await api(id ? "/webface/scenarios/" + id : "/webface/scenarios", jsonOpts(id ? "PUT" : "POST", { values, sections: secs }));
+      if (window.RunmalEntryBox) for (const k in inputs) window.RunmalEntryBox.retireDraft(inputs[k]);
       $("s-status").textContent = r.words; await loadList(); if (r.id) await openEditor(r.id);
     } catch (e) { $("s-status").textContent = e.message; }
   });
@@ -109,7 +110,7 @@ async function openEditor(id) {
     box.appendChild(tagBtn);
     box.appendChild(el("h3", "Start a chat from this scenario"));
     box.appendChild(el("p", "A fresh chat is made with the character you pick, then the scenario is bound to it: its opening (bootstrap) lines become the chat's first messages and its initial flags and variables are seeded. The chat is a normal chat afterwards - pin a mind in Connections before sending.", "muted"));
-    const charSel = document.createElement("select");
+    const charSel = document.createElement("select"); charSel.classList.add("entry-box");
     for (const c of state.characters) { const o = el("option", c.name || c.id); o.value = c.id; charSel.appendChild(o); }
     box.appendChild(fieldRow("Character", charSel));
     const apply = el("button", "Start chat from scenario", "btn"); apply.type = "button";
