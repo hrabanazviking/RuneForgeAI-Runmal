@@ -167,10 +167,11 @@ def test_http_auth_gating_and_entry_flow(webface):
         # (W-02 superseded the /characters placeholder with the real
         # tab; W-03 superseded /groups the same way; W-05 then
         # superseded /personas + /lorebooks; W-06 superseded /memory
-        # + /scenarios; W-07 then superseded /inspector + /tools,
-        # so /voice — arriving in W-08 — is the pending exemplar now.)
-        pending = client.get("/voice")
-        assert pending.status_code == 200 and "W-08" in pending.text
+        # + /scenarios; W-07 superseded /inspector + /tools; W-08
+        # superseded /voice + /vision, so /backups — arriving in
+        # W-09 — is the pending exemplar now.)
+        pending = client.get("/backups")
+        assert pending.status_code == 200 and "W-09" in pending.text
         groups_page = client.get("/groups")
         assert groups_page.status_code == 200 and "g-roster-pick" in groups_page.text
         chars_page = client.get("/characters")
