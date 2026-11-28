@@ -493,3 +493,39 @@ on("m-pin", actPin); on("m-copy", actCopy);
 on("a-regen", () => streamAction("/webface/chats/" + state.chatId + "/regenerate", "Regenerating…"));
 on("a-continue", actContinue); on("a-impersonate", actImpersonate);
 on("a-note", actNote); on("a-search", actSearch); on("a-checkpoints", actCheckpoints);
+
+/* W-04: preset quick-apply + first-run banner. */
+async function loadPresetQuickApply() {
+  const sel = document.getElementById("preset-select");
+  if (!sel) return;
+  const presets = await api("/webface/presets");
+  sel.innerHTML = "";
+  const none = document.createElement("option"); none.value = ""; none.textContent = "No preset (engine defaults)"; sel.appendChild(none);
+  for (const pr of presets) { const o = document.createElement("option"); o.value = pr.id; o.textContent = pr.name; sel.appendChild(o); }
+  const chats = await api("/webface/chats");
+  const chat = chats.find((c) => c.id === state.chatId);
+  sel.value = chat && chat.preset_id ? chat.preset_id : "";
+}
+async function applyPresetQuick() {
+  if (!state.chatId) { setStatus("Open a chat first, then apply a preset."); return; }
+  const sel = document.getElementById("preset-select");
+  const chat = await api("/webface/chats/" + state.chatId + "/preset", jsonOptions("POST", { preset_id: sel.value || null }));
+  setStatus(chat.preset_id ? "Preset applied to this chat." : "Preset cleared - engine defaults apply.");
+}
+async function checkFirstRun() {
+  const banner = document.getElementById("firstrun-banner");
+  if (!banner) return;
+  try {
+    const s = await api("/webface/firstrun/status");
+    banner.hidden = !(s.first_run && !sessionStorage.getItem("firstrun-dismissed"));
+  } catch (e) { banner.hidden = true; }
+}
+const _qa = document.getElementById("preset-apply");
+if (_qa) _qa.addEventListener("click", () => applyPresetQuick().catch((e) => setStatus("Error: " + e.message)));
+const _fd = document.getElementById("firstrun-dismiss");
+if (_fd) _fd.addEventListener("click", () => { sessionStorage.setItem("firstrun-dismissed", "1"); document.getElementById("firstrun-banner").hidden = true; });
+const _origOpenChat = openChat;
+openChat = async function (chatId) { await _origOpenChat(chatId); await loadPresetQuickApply().catch(() => {}); };
+checkFirstRun();
+loadPresetQuickApply().catch(() => {});
+if (window.location.hash.length > 1) { loadChats(window.location.hash.slice(1)).catch(() => {}); }

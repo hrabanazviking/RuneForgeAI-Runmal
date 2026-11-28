@@ -17,8 +17,8 @@ TABS: list[tuple[str, str, str | None]] = [
     ("library", "Library", None),
     ("personas", "Personas", "W-05"),
     ("lorebooks", "Lorebooks", "W-05"),
-    ("connections", "Connections", "W-04"),
-    ("generation", "Generation", "W-04"),
+    ("connections", "Connections", None),
+    ("generation", "Generation", None),
     ("memory", "Memory", "W-06"),
     ("scenarios", "Scenarios", "W-06"),
     ("inspector", "Inspector", "W-07"),
@@ -117,6 +117,8 @@ def account_page(user, session_expires_text):
             f"<p>Account type: <span class=\"tag\">"
             f"{e(user['account_type'])}</span></p>"
             f"<p>Session valid until: {e(session_expires_text)}</p>"
+            '<p><a href="/firstrun">First-Run Setup</a> - connect a mind, meet someone, set '
+            'your name.</p>'
             '<form method="post" action="/logout">'
             '<button class="btn ghost" type="submit">Log out</button>'
             "</form>"
@@ -140,6 +142,12 @@ def chat_page(user):
     body = ("<div class=\"chat-shell\">"
             "<aside class=\"chat-side card\">"
             "<label>Character<select id=\"char-select\"></select></label>"
+            "<div id=\"firstrun-banner\" hidden><p>New here? <a href=\"/firstrun\">Run "
+            "First-Run Setup</a> - connect a mind and meet someone. <button "
+            "id=\"firstrun-dismiss\" class=\"btn ghost small\" "
+            "type=\"button\">Dismiss</button></p></div>"
+            "<label>Preset for the open chat<select id=\"preset-select\"></select></label>"
+            "<button id=\"preset-apply\" class=\"btn ghost\" type=\"button\">Apply preset</button>"
             "<button id=\"new-chat\" class=\"btn\" type=\"button\">"
             "New chat</button>"
             "<ul id=\"chat-list\" class=\"chat-list\"></ul>"
@@ -236,3 +244,67 @@ def library_page(user):
             "<p id=\"l-status\" class=\"muted\"></p></section>"
             "<script src=\"/static/library.js\"></script>")
     return layout("Library", body, user=user, active_tab="library")
+
+
+def connections_page(user):
+    body = ("<section class=\"card\"><h1>Connections</h1>"
+            "<p>Backend profiles: the minds Runmal can think with. "
+            "API keys are write-only - you can set or clear one, and "
+            "the page only ever says whether a key is stored.</p>"
+            "<ul id=\"p-list\" class=\"roster\"></ul>"
+            "<p id=\"p-status\" class=\"muted\"></p></section>"
+            "<section class=\"card\" id=\"p-editor\" hidden></section>"
+            "<section class=\"card\"><h2>Pin a profile to a chat</h2>"
+            "<p>There is no default profile: a chat answers through "
+            "the profile pinned to it, or the engine default when "
+            "nothing is pinned.</p>"
+            "<div class=\"row\"><label>Chat<select id=\"pin-chat\"></select></label>"
+            "<label>Profile<select id=\"pin-profile\"></select></label>"
+            "<button id=\"pin-apply\" class=\"btn\" type=\"button\">Pin</button>"
+            "<button id=\"pin-clear\" class=\"btn ghost\" type=\"button\">Unpin</button></div>"
+            "<p id=\"pin-status\" class=\"muted\"></p></section>"
+            "<script src=\"/static/connections.js\"></script>")
+    return layout("Connections", body, user=user, active_tab="connections")
+
+
+def generation_page(user):
+    body = ("<section class=\"card\"><h1>Generation</h1>"
+            "<h2>Presets</h2><ul id=\"g-presets\" class=\"roster\"></ul>"
+            "<p id=\"g-status\" class=\"muted\"></p></section>"
+            "<section class=\"card\" id=\"g-editor\" hidden></section>"
+            "<section class=\"card\"><h2>Bundles</h2>"
+            "<ul id=\"g-bundles\" class=\"roster\"></ul></section>"
+            "<section class=\"card\" id=\"g-bundle-editor\" hidden></section>"
+            "<section class=\"card\"><h2>Per-chat override</h2>"
+            "<div class=\"row\"><label>Chat<select id=\"ov-chat\"></select></label>"
+            "<label>Bundle<select id=\"ov-bundle\"></select></label></div>"
+            "<div id=\"ov-form\"></div>"
+            "<div class=\"row\"><button id=\"ov-save\" class=\"btn\" type=\"button\">Save "
+            "override</button>"
+            "<button id=\"ov-delete\" class=\"btn ghost\" type=\"button\">Delete "
+            "override</button></div>"
+            "<p id=\"ov-status\" class=\"muted\"></p></section>"
+            "<section class=\"card\"><h2>Resolve preview</h2>"
+            "<div class=\"row\"><label>Chat<select id=\"rv-chat\"></select></label>"
+            "<button id=\"rv-show\" class=\"btn\" type=\"button\">Show what a send will "
+            "use</button></div>"
+            "<div id=\"rv-out\"></div></section>"
+            "<script src=\"/static/generation.js\"></script>")
+    return layout("Generation", body, user=user, active_tab="generation")
+
+
+def firstrun_page(user):
+    body = ("<section class=\"card\"><h1>First-Run Setup</h1>"
+            "<p id=\"fr-state\" class=\"muted\"></p>"
+            "<h2>1. Connect a mind</h2><div id=\"fr-minds\"></div>"
+            "<div id=\"fr-connect\"></div>"
+            "<h2>2. Prove it</h2><p id=\"fr-prove\" class=\"muted\">Connect a mind first.</p>"
+            "<h2>3. Meet someone</h2><div id=\"fr-meet\"></div>"
+            "<h2>4. Your name</h2>"
+            "<div class=\"row\"><label>Your name<input id=\"fr-name\"></label>"
+            "<button id=\"fr-name-save\" class=\"btn\" type=\"button\">Save name</button></div>"
+            "<p id=\"fr-status\" class=\"muted\"></p>"
+            "<p><button id=\"fr-finish\" class=\"btn\" type=\"button\" disabled>Finish - "
+            "open the greeted chat</button></p>"
+            "</section><script src=\"/static/firstrun.js\"></script>")
+    return layout("First-Run Setup", body, user=user, active_tab="account")

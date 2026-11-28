@@ -31,7 +31,7 @@ from http.server import BaseHTTPRequestHandler
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-from . import templates, w02, w03
+from . import templates, w02, w03, w04
 from .cards import import_report_words
 from .engine import EngineError
 from .security import hash_password, verify_password
@@ -165,7 +165,8 @@ def make_handler(app: WebfaceApp):
                 return self._html(200, templates.register_page())
             if path in ("/static/webface.css", "/static/chat.js",
                     "/static/characters.js", "/static/library.js",
-                    "/static/groups.js"):
+                    "/static/groups.js", "/static/connections.js",
+                    "/static/generation.js", "/static/firstrun.js"):
                 return self._static(path)
             if path == "/chat":
                 user = self._require_user_page()
@@ -181,6 +182,21 @@ def make_handler(app: WebfaceApp):
                 user = self._require_user_page()
                 if user is not None:
                     return self._html(200, templates.characters_page(user))
+                return
+            if path == "/connections":
+                user = self._require_user_page()
+                if user is not None:
+                    return self._html(200, templates.connections_page(user))
+                return
+            if path == "/generation":
+                user = self._require_user_page()
+                if user is not None:
+                    return self._html(200, templates.generation_page(user))
+                return
+            if path == "/firstrun":
+                user = self._require_user_page()
+                if user is not None:
+                    return self._html(200, templates.firstrun_page(user))
                 return
             if path == "/library":
                 user = self._require_user_page()
@@ -336,6 +352,48 @@ def make_handler(app: WebfaceApp):
                     digest = digest if isinstance(digest, dict) else {}
                     return self._json(200, {
                         "digest": digest, "words": w03.digest_words(digest)})
+                if path == "/webface/profiles":
+                    rows = app.engine.request("GET", "/api/v1/backend-profiles")
+                    rows = rows if isinstance(rows, list) else []
+                    return self._json(200,
+                        [w04.public_profile(r) for r in rows if isinstance(r, dict)])
+                match = re.fullmatch(r"/webface/profiles/([^/]+)/probe", path)
+                if match:
+                    return self._json(200, w04.probe(app.engine, match.group(1)))
+                if path == "/webface/presets":
+                    rows = app.engine.request("GET", "/api/v1/presets")
+                    rows = rows if isinstance(rows, list) else []
+                    return self._json(200,
+                        [w04.preset_view(r) for r in rows if isinstance(r, dict)])
+                if path == "/webface/sampler-form":
+                    return self._json(200, w04.sampler_form_model())
+                if path == "/webface/bundles":
+                    rows = app.engine.request("GET", "/api/v1/presets/bundles")
+                    rows = rows if isinstance(rows, list) else []
+                    return self._json(200,
+                        [w04.bundle_view(r) for r in rows if isinstance(r, dict)])
+                if path == "/webface/overrides":
+                    return self._json(200, app.engine.request("GET", "/api/v1/presets/overrides"))
+                if path == "/webface/resolve":
+                    chat_id = q1("chat_id")
+                    if not chat_id:
+                        return self._json(422, {"error": "chat_id is required"})
+                    return self._json(200, w04.resolve_preview(app.engine, chat_id))
+                if path == "/webface/firstrun/status":
+                    return self._json(200, w04.first_run_status(app.engine))
+                if path == "/webface/firstrun/options":
+                    options = [{
+                        "kind": o.kind, "title": o.title,
+                        "blurb": o.blurb,
+                        "profile_name": o.profile_name,
+                        "needs_api_key": o.needs_api_key,
+                        "needs_base_url": o.needs_base_url,
+                        "default_base_url": o.default_base_url,
+                        "default_model": o.default_model}
+                        for o in w04.BACKEND_OPTIONS]
+                    return self._json(200, options)
+                if path == "/webface/user-name":
+                    return self._json(200, app.engine.request("GET", "/api/v1/user-name"))
                 match = re.fullmatch(
                     r"/webface/characters/([^/]+)/editor", path)
                 if match:
@@ -376,7 +434,7 @@ def make_handler(app: WebfaceApp):
             # branches): a body left unread corrupts the next
             # request on this keep-alive connection. Multipart
             # roads read their own body via _multipart().
-            if not (path.endswith("/imports") or "/avatar" in path
+            if not (path.endswith("/imports") or path.endswith("/import") or "/avatar" in path
                     or path.endswith("/assets")):
                 self._json_body()
             try:
@@ -652,6 +710,116 @@ def make_handler(app: WebfaceApp):
                     result = result if isinstance(result, dict) else {}
                     return self._json(200, {
                         "result": result, "words": w03.run_words(result)})
+                # ---- W-04 connections ----
+                if method == "POST" and path == "/webface/profiles":
+                    return self._json(200, w04.save_profile(app.engine, None, self._json_body()))
+                match = re.fullmatch(r"/webface/profiles/([^/]+)", path)
+                if match and method == "PATCH":
+                    return self._json(200,
+                        w04.save_profile(app.engine, match.group(1), self._json_body()))
+                if match and method == "DELETE":
+                    return self._json(200,
+                        app.engine.request("DELETE", f"/api/v1/backend-profiles/{match.group(1)}"))
+                match = re.fullmatch(r"/webface/chats/([^/]+)/backend-profile", path)
+                if match and method == "POST":
+                    body = self._json_body()
+                    pid = body.get("profile_id")
+                    return self._json(200,
+                        app.engine.request("POST",
+                            f"/api/v1/chats/{match.group(1)}/backend-profile",
+                                json_body={"profile_id": str(pid) if pid else None}))
+                match = re.fullmatch(r"/webface/chats/([^/]+)/preset", path)
+                if match and method == "POST":
+                    body = self._json_body()
+                    pid = body.get("preset_id")
+                    return self._json(200,
+                        app.engine.request("POST", f"/api/v1/chats/{match.group(1)}/preset",
+                            json_body={"preset_id": str(pid) if pid else None}))
+                # ---- W-04 generation ----
+                if method == "POST" and path == "/webface/presets":
+                    return self._json(200,
+                        w04.preset_view(w04.save_preset(app.engine, None, self._json_body())))
+                match = re.fullmatch(r"/webface/presets/([^/]+)", path)
+                if match and method == "PATCH":
+                    return self._json(200,
+                        w04.preset_view(w04.save_preset(app.engine, match.group(1),
+                            self._json_body())))
+                if match and method == "DELETE":
+                    return self._json(200,
+                        app.engine.request("DELETE", f"/api/v1/presets/{match.group(1)}"))
+                if method == "POST" and path == "/webface/bundles":
+                    body = self._json_body()
+                    doc = w04.compose_bundle(None, name=str(body.get("name") or ""),
+                        sampler_values=body.get("sampler") or {}, extra=body.get("extra") or {},
+                            template_ref=str(body.get("template_ref") or ""))
+                    return self._json(200,
+                        app.engine.request("POST", "/api/v1/presets/bundles",
+                            json_body={"bundle": doc}))
+                match = re.fullmatch(r"/webface/bundles/([^/]+)", path)
+                if match and method == "PATCH":
+                    body = self._json_body()
+                    row = app.engine.request("GET", f"/api/v1/presets/bundles/{match.group(1)}")
+                    stored = row.get("bundle") if isinstance(row, dict) else {}
+                    doc = w04.compose_bundle(stored if isinstance(stored, dict) else {},
+                        name=str(body.get("name") or (stored or {}).get("name") or ""),
+                            sampler_values=body.get("sampler") or {},
+                                extra=body.get("extra") or {},
+                                    template_ref=str(body.get("template_ref") or ""))
+                    return self._json(200,
+                        app.engine.request("PATCH", f"/api/v1/presets/bundles/{match.group(1)}",
+                            json_body={"bundle": doc}))
+                if match and method == "DELETE":
+                    return self._json(200,
+                        app.engine.request("DELETE", f"/api/v1/presets/bundles/{match.group(1)}"))
+                match = re.fullmatch(r"/webface/overrides/(chat|character)/([^/]+)", path)
+                if match and method == "PUT":
+                    body = self._json_body()
+                    known = w04.parse_sampler_form(body.get("sampler") or {})
+                    extra = body.get("extra") or {}
+                    extra = {k: v for k,
+                        v in (extra if isinstance(extra,
+                            dict) else {}).items() if k not in w04.SAMPLER_FIELD_BY_KEY}
+                    delta = {}
+                    sampler = w04.merge_bag(known, extra)
+                    if sampler:
+                        delta["sampler"] = sampler
+                    return self._json(200,
+                        app.engine.request("PUT",
+                            f"/api/v1/presets/overrides/{match.group(1)}/{match.group(2)}",
+                                json_body={"bundle_id": str(body.get("bundle_id") or ""),
+                                    "overrides": delta}))
+                if match and method == "DELETE":
+                    return self._json(200,
+                        app.engine.request("DELETE",
+                            f"/api/v1/presets/overrides/{match.group(1)}/{match.group(2)}"))
+                # ---- W-04 first-run ----
+                if method == "POST" and path == "/webface/firstrun/connect":
+                    body = self._json_body()
+                    return self._json(200,
+                        w04.connect_mind(app.engine, body,
+                            draft_id=str(body.get("draft_id") or "")))
+                if method == "POST" and path == "/webface/firstrun/prove":
+                    body = self._json_body()
+                    return self._json(200, w04.probe(app.engine, str(body.get("profile_id") or "")))
+                if method == "POST" and path == "/webface/firstrun/meet":
+                    body = self._json_body()
+                    character = w04.meet_someone(app.engine, body)
+                    greeted = w04.open_greeted_chat(app.engine, str(character.get("id") or ""),
+                        profile_id=str(body.get("profile_id") or ""))
+                    return self._json(200, {"character": character, **greeted})
+                if method == "POST" and path == "/webface/firstrun/import":
+                    _fields, files = self._multipart()
+                    if not files:
+                        return self._json(422, {"error": "pick a card file"})
+                    report = app.engine.request("POST", "/api/v1/library/imports",
+                        files=[("files", (name, data)) for _f, name, data in files],
+                            data={"dry_run": "false"})
+                    return self._json(200,
+                        import_report_words(report if isinstance(report, dict) else {}))
+                if method == "PUT" and path == "/webface/user-name":
+                    body = self._json_body()
+                    return self._json(200,
+                        w04.set_user_name(app.engine, str(body.get("user_name") or "")))
                 if method == "POST" and path == "/webface/characters":
                     return self._json(200, w02.create_character(
                         app.engine, self._json_body()))
