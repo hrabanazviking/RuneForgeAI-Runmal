@@ -29,6 +29,7 @@ import httpx
 import pytest
 
 from runmal.webface import security
+from runmal.webface import templates
 from runmal.webface.app import WebfaceApp, make_handler
 from runmal.webface.store import SESSION_TTL_SECONDS, Store
 
@@ -163,15 +164,23 @@ def test_http_auth_gating_and_entry_flow(webface):
             assert label in chat.text
         chars = client.get("/webface/characters")
         assert chars.status_code == 200 and chars.json()[0]["id"] == "char-1"
-        # A pending tab is an honest labelled page, not a dead control.
-        # (W-02 superseded the /characters placeholder with the real
-        # tab; W-03 superseded /groups the same way; W-05 then
-        # superseded /personas + /lorebooks; W-06 superseded /memory
-        # + /scenarios; W-07 superseded /inspector + /tools; W-08
-        # superseded /voice + /vision, so /backups — arriving in
-        # W-09 — is the pending exemplar now.)
-        pending = client.get("/backups")
-        assert pending.status_code == 200 and "W-09" in pending.text
+        # W-09 graduated the LAST feature tabs (/backups +
+        # /plugins + /appearance, and the Bridge tab with
+        # them): no feature tab is pending any more, and
+        # /backups is the real tab now, not a labelled
+        # placeholder. The shell's one remaining honest
+        # placeholder is the Account page's own W-10 note
+        # (password change, recovery codes and agent API
+        # tokens arrive in W-10) - that is the pending
+        # exemplar now.
+        assert templates.PENDING == {}
+        backups_page = client.get("/backups")
+        assert backups_page.status_code == 200
+        assert "b-list" in backups_page.text
+        assert "arrives in slice" not in backups_page.text
+        account_pending = client.get("/account")
+        assert account_pending.status_code == 200
+        assert "W-10" in account_pending.text
         groups_page = client.get("/groups")
         assert groups_page.status_code == 200 and "g-roster-pick" in groups_page.text
         chars_page = client.get("/characters")
