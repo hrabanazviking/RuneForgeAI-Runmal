@@ -42,6 +42,11 @@ def _world(client):
     warden = client.post("/api/v1/characters", json={"card": CARD}).json()
     ferryman = client.post("/api/v1/characters", json={"card": FERRYMAN}).json()
     chat = client.post("/api/v1/chats", json={"title": "t", "character_id": warden["id"]}).json()
+    # W-10 heal: bridge generation now refuses an UNPINNED chat
+    # (no-mind, FIX-STUB counterpart); these worlds pin an explicit
+    # fake-kind demo profile, which is the disclosed demo choice.
+    _demo = client.post("/api/v1/backend-profiles", json={"name": "demo-mind", "chat_backend": "fake"}).json()
+    client.post(f"/api/v1/chats/{chat['id']}/backend-profile", json={"profile_id": _demo["id"]})
     return warden, ferryman, chat
 
 

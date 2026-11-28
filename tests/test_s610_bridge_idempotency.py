@@ -39,6 +39,9 @@ def world(app_client):
     chat = app_client.post(
         "/api/v1/chats", json={"title": "t", "character_id": character["id"]}
     ).json()
+    # W-10 heal: pin an explicit fake-kind demo profile (see s602).
+    _demo = app_client.post("/api/v1/backend-profiles", json={"name": "demo-mind", "chat_backend": "fake"}).json()
+    app_client.post(f"/api/v1/chats/{chat['id']}/backend-profile", json={"profile_id": _demo["id"]})
     scopes = [
         f"chat:read:{chat['id']}",
         f"chat:write:{chat['id']}",

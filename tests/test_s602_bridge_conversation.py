@@ -55,6 +55,11 @@ def _world(client, with_persona=True):
         # greeting seeding so the world starts with an empty chat.
         body["greeting_mode"] = "quiet"
     chat = client.post("/api/v1/chats", json=body).json()
+    # W-10 heal: bridge generation now refuses an UNPINNED chat
+    # (no-mind, FIX-STUB counterpart); these worlds pin an explicit
+    # fake-kind demo profile, which is the disclosed demo choice.
+    _demo = client.post("/api/v1/backend-profiles", json={"name": "demo-mind", "chat_backend": "fake"}).json()
+    client.post(f"/api/v1/chats/{chat['id']}/backend-profile", json={"profile_id": _demo["id"]})
     return character, chat
 
 
@@ -202,7 +207,11 @@ def test_generate_streams_and_stores_persona_turn(app_client) -> None:
     state = app_client.get(f"/api/v1/bridge/chats/{chat['id']}", headers=headers).json()
     assistant = [m for m in state["messages"] if m["role"] == "assistant"]
     assert len(assistant) == 1
-    assert assistant[0]["content"] == "Rúnmál hears you. This is a stub."
+    # W-10 heal: the world pins an explicit fake-kind demo profile;
+    # its FakeChatBackend answers "Rúnmál hears you." The longer
+    # "... This is a stub." script belonged to the UNPINNED default
+    # backend, which the FIX-STUB counterpart guard now refuses.
+    assert assistant[0]["content"] == "Rúnmál hears you."
     assert assistant[0]["speaker_id"] == character["id"]
     assert assistant[0]["speaker_name"] == "Bridge Warden"
     assert assistant[0]["id"] == events[-1]["message_id"]

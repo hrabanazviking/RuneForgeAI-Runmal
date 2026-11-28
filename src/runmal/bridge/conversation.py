@@ -256,6 +256,27 @@ async def stream_generation(
             }
             return
         backend = await resolve_chat_backend(session, user_id, chat)
+        # FIX-STUB counterpart (W-10): the pinned-else-fake
+        # resolution must never silently answer a bridge caller
+        # with the fake default. A chat with no pin - or a pin
+        # that no longer resolves - has NO MIND on this road and
+        # generation refuses honestly, storing nothing. A chat
+        # pinned to an explicit fake-kind profile is the demo
+        # choice (the profile exists, so the pin was deliberate)
+        # and proceeds, disclosed by turn_started's backend field.
+        if backend.backend_key == "fake":
+            profile = None
+            if chat.backend_profile_id:
+                profile = await backend_profiles.get_profile(
+                    session, user_id, chat.backend_profile_id)
+            if profile is None:
+                yield {
+                    "type": "error",
+                    "code": "no_mind",
+                    "message": "No mind is connected to this chat yet",
+                    "retryable": False,
+                }
+                return
         messages = await compose_messages(session, user_id, chat)
         persona_id = chat.character_id
         persona_name = None
