@@ -167,7 +167,8 @@ def make_handler(app: WebfaceApp):
                     "/static/characters.js", "/static/library.js",
                     "/static/groups.js", "/static/connections.js",
                     "/static/generation.js", "/static/firstrun.js",
-                    "/static/personas.js", "/static/lorebooks.js"):
+                    "/static/personas.js", "/static/lorebooks.js",
+                    "/static/pwtoggle.js"):
                 return self._static(path)
             if path == "/chat":
                 user = self._require_user_page()

@@ -104,3 +104,10 @@ a { color: var(--rune); }
 .mind-line { font-weight: 600; margin: 0.25rem 0 0.5rem; }
 .no-mind-card { border: 1px solid var(--border, #888); padding: 0.75rem; margin: 0.5rem 0; }
 .no-mind-card .btn, .no-mind-card a { margin-right: 0.5rem; }
+/* W-05B: shared password show/hide toggle (shell control).
+   .pw-field wraps a hooked password input + its .pw-toggle
+   button; styling follows the shell's small ghost controls. */
+.pw-field { display: inline-flex; gap: 6px; align-items: stretch; width: 100%; }
+.pw-field input { flex: 1 1 auto; width: auto; }
+.pw-toggle { text-transform: none; letter-spacing: .02em; white-space: nowrap; }
+.card input[type=password] { background: var(--panel-raised); color: var(--silver); border: 1px solid var(--iron); padding: 6px; }

@@ -70,7 +70,9 @@ def layout(title, body, user=None, active_tab=None, flash=None,
             f"<main class=\"wrap\">{flash_html}{body}</main>"
             "<footer class=\"face-foot wrap\">Rúnmál web face — "
             "the same engine, the same history, on every device."
-            "</footer></body></html>")
+            "</footer>"
+            "<script src=\"/static/pwtoggle.js\"></script>"
+            "</body></html>")
 
 
 def _auth_form(action, heading, button, error=None):
@@ -79,7 +81,7 @@ def _auth_form(action, heading, button, error=None):
             f'<form method="post" action="{action}">'
             '<label>Username<input name="username" required '
             'autocomplete="username"></label>'
-            '<label>Password<input name="password" type="password" '
+            '<label>Password<input name="password" type="password" data-pw-toggle '
             'required autocomplete="current-password"></label>'
             f'<button class="btn" type="submit">{e(button)}</button>'
             "</form></section>")
