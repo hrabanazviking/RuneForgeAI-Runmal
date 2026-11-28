@@ -81,7 +81,7 @@ function secretControl(storedWords) {
   const wrap = el("span");
   const sel = document.createElement("select");
   for (const [v, t] of [["leave", "Leave as is"], ["set", "Set a new key"], ["clear", "Clear the stored key"]]) { const o = el("option", t); o.value = v; sel.appendChild(o); }
-  const input = document.createElement("input"); input.type = "password"; input.placeholder = "new key (write-only)"; input.hidden = true;
+  const input = document.createElement("input"); input.type = "password"; input.setAttribute("data-pw-toggle", ""); input.placeholder = "new key (write-only)"; input.hidden = true;
   sel.addEventListener("change", () => { input.hidden = sel.value !== "set"; });
   wrap.appendChild(sel); wrap.appendChild(el("span", " - currently: " + storedWords, "muted")); wrap.appendChild(input);
   return { wrap, sel, input };

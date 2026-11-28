@@ -38,7 +38,7 @@ function choose(o) {
   box.appendChild(el("p", o.blurb, "muted"));
   const fields = {};
   function addField(label, key, value, password) {
-    const input = document.createElement("input"); input.value = value || ""; if (password) input.type = "password";
+    const input = document.createElement("input"); input.value = value || ""; if (password) { input.type = "password"; input.setAttribute("data-pw-toggle", ""); }
     const l = el("label", label); l.appendChild(input); box.appendChild(l); fields[key] = input;
   }
   if (o.needs_base_url) addField("Server address", "base_url", o.default_base_url);
