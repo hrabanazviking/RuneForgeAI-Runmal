@@ -100,3 +100,7 @@ a { color: var(--rune); }
 .card label{display:block;margin:6px 0;color:var(--muted)}
 .card label.check{display:flex;width:auto}
 .turn-words{white-space:pre-wrap}
+/* FIX-STUB: who answers this chat + the no-mind walk. */
+.mind-line { font-weight: 600; margin: 0.25rem 0 0.5rem; }
+.no-mind-card { border: 1px solid var(--border, #888); padding: 0.75rem; margin: 0.5rem 0; }
+.no-mind-card .btn, .no-mind-card a { margin-right: 0.5rem; }

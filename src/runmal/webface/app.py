@@ -31,7 +31,7 @@ from http.server import BaseHTTPRequestHandler
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-from . import templates, w02, w03, w04, w05
+from . import stub_guard, templates, w02, w03, w04, w05
 from .cards import import_report_words
 from .engine import EngineError
 from .security import hash_password, verify_password
@@ -271,6 +271,14 @@ def make_handler(app: WebfaceApp):
                 if match:
                     return self._json(
                         200, app.engine.list_messages(match.group(1)))
+                match = re.fullmatch(r"/webface/chats/([^/]+)/mind", path)
+                if match:
+                    return self._json(200, stub_guard.chat_mind(
+                        app.engine, match.group(1)))
+                match = re.fullmatch(r"/webface/groups/([^/]+)/mind", path)
+                if match:
+                    return self._json(200, stub_guard.room_mind(
+                        app.engine, match.group(1)))
                 if path == "/webface/library/cards":
                     params = {"tag_mode": "any", "sort": "name",
                               "limit": 200, "offset": 0,
@@ -552,6 +560,11 @@ def make_handler(app: WebfaceApp):
                         app.engine, match.group(1), self._json_body()))
                 match = re.fullmatch(r"/webface/chats/([^/]+)/continue", path)
                 if match and method == "POST":
+                    blocked = stub_guard.blocked_chat_payload(
+                        app.engine, match.group(1))
+                    if blocked is not None:
+                        return self._json(409, {
+                            "error": blocked["words"], "no_mind": blocked})
                     body = self._json_body()
                     payload = {"mode": str(body.get("mode") or "auto")}
                     if body.get("instruction"):
@@ -562,6 +575,11 @@ def make_handler(app: WebfaceApp):
                 match = re.fullmatch(
                     r"/webface/chats/([^/]+)/impersonate", path)
                 if match and method == "POST":
+                    blocked = stub_guard.blocked_chat_payload(
+                        app.engine, match.group(1))
+                    if blocked is not None:
+                        return self._json(409, {
+                            "error": blocked["words"], "no_mind": blocked})
                     body = self._json_body()
                     payload = {}
                     if body.get("instruction"):
@@ -731,6 +749,13 @@ def make_handler(app: WebfaceApp):
                 match = re.fullmatch(r"/webface/groups/([^/]+)/(next|run)", path)
                 if match and method == "POST":
                     body = self._json_body()
+                    if body.get("generate"):
+                        blocked = stub_guard.blocked_room_payload(
+                            app.engine, match.group(1))
+                        if blocked is not None:
+                            return self._json(409, {
+                                "error": blocked["words"],
+                                "no_mind": blocked})
                     if match.group(2) == "next":
                         payload = {"generate": bool(body.get("generate"))}
                         if body.get("user_text"):
@@ -1137,6 +1162,22 @@ def make_handler(app: WebfaceApp):
             request_id = str(body.get("request_id") or "").strip() \
                 or uuid.uuid4().hex
             try:
+                mind = stub_guard.chat_mind(app.engine, chat_id)
+            except EngineError as exc:
+                return self._json(exc.status, {"error": exc.message})
+            if mind["state"] == "none":
+                # FIX-STUB pre-guard: nothing set aside, nothing generated.
+                self.close_connection = True
+                self.send_response(200)
+                self.send_header("Content-Type", "text/event-stream")
+                self.send_header("Cache-Control", "no-cache")
+                self.send_header("X-Request-ID", request_id)
+                self.end_headers()
+                self.wfile.write(
+                    f"data: {json.dumps(mind['no_mind'])}\n\n".encode())
+                self.wfile.flush()
+                return
+            try:
                 old = w03.regenerate_plan(app.engine, chat_id)
                 deleted = app.engine.request(
                     "DELETE",
@@ -1161,10 +1202,24 @@ def make_handler(app: WebfaceApp):
             text_parts: list[str] = []
             done_clean = False
             saw_error = False
+            stubbed = False
             try:
                 for kind, event in app.engine.stream_generate(
                         chat_id, request_id):
                     if kind == "started":
+                        if (event.get("backend_key")
+                                == stub_guard.FAKE_BACKEND_KIND
+                                and mind["state"] != "demo"):
+                            # FIX-STUB safety net: a fake stream for
+                            # a chat that is not explicitly Demo must
+                            # never land — cancel it and say so.
+                            stubbed = True
+                            try:
+                                app.engine.cancel_generate(request_id)
+                            except EngineError:
+                                pass
+                            emit(stub_guard.no_mind_payload(mind))
+                            break
                         emit({"type": "started",
                               "backend_key": event.get("backend_key", ""),
                               "mode": event.get("mode", ""),
@@ -1186,6 +1241,14 @@ def make_handler(app: WebfaceApp):
                 except OSError:
                     pass
             reply = "".join(text_parts)
+            if stubbed:
+                restored = w03.restore_reply(app.engine, chat_id, old)
+                if not restored:
+                    emit({"type": "error",
+                          "message": "the fake stream was refused and "
+                                     "the previous reply could NOT be "
+                                     "restored"})
+                return
             if done_clean and not saw_error and reply:
                 try:
                     saved = app.engine.append_message(
@@ -1223,6 +1286,22 @@ def make_handler(app: WebfaceApp):
             request_id = str(body.get("request_id") or "").strip() \
                 or uuid.uuid4().hex
             try:
+                mind = stub_guard.chat_mind(app.engine, chat_id)
+            except EngineError as exc:
+                return self._json(exc.status, {"error": exc.message})
+            if mind["state"] == "none":
+                # FIX-STUB pre-guard: user message NOT appended, nothing generated.
+                self.close_connection = True
+                self.send_response(200)
+                self.send_header("Content-Type", "text/event-stream")
+                self.send_header("Cache-Control", "no-cache")
+                self.send_header("X-Request-ID", request_id)
+                self.end_headers()
+                self.wfile.write(
+                    f"data: {json.dumps(mind['no_mind'])}\n\n".encode())
+                self.wfile.flush()
+                return
+            try:
                 app.engine.append_message(chat_id, "user", content)
             except EngineError as exc:
                 return self._json(exc.status, {"error": exc.message})
@@ -1242,10 +1321,24 @@ def make_handler(app: WebfaceApp):
             text_parts: list[str] = []
             done_clean = False
             saw_error = False
+            stubbed = False
             try:
                 for kind, event in app.engine.stream_generate(
                         chat_id, request_id):
                     if kind == "started":
+                        if (event.get("backend_key")
+                                == stub_guard.FAKE_BACKEND_KIND
+                                and mind["state"] != "demo"):
+                            # FIX-STUB safety net: a fake stream for
+                            # a chat that is not explicitly Demo must
+                            # never land — cancel it and say so.
+                            stubbed = True
+                            try:
+                                app.engine.cancel_generate(request_id)
+                            except EngineError:
+                                pass
+                            emit(stub_guard.no_mind_payload(mind))
+                            break
                         emit({"type": "started",
                               "backend_key": event.get("backend_key", ""),
                               "mode": event.get("mode", ""),
@@ -1267,7 +1360,7 @@ def make_handler(app: WebfaceApp):
                 except OSError:
                     pass
             reply = "".join(text_parts)
-            if done_clean and not saw_error and reply:
+            if done_clean and not saw_error and not stubbed and reply:
                 try:
                     saved = app.engine.append_message(
                         chat_id, "assistant", reply)
@@ -1275,7 +1368,7 @@ def make_handler(app: WebfaceApp):
                 except EngineError as exc:
                     emit({"type": "error",
                           "message": f"reply could not be saved: {exc.message}"})
-            elif not saw_error:
+            elif not saw_error and not stubbed:
                 emit({"type": "error",
                       "message": "the stream ended without a clean done; "
                                  "no reply was saved"})

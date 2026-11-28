@@ -17,6 +17,52 @@ const state = { chatId: null, sending: false, requestId: null };
 
 function setStatus(text) { els.status.textContent = text || ""; }
 
+/* FIX-STUB: who answers this chat, and the honest no-mind walk.
+   The disclosure line is refreshed whenever the chat or its pin
+   changes; a no-mind outcome renders IN the chat with one Connect
+   button per real profile — connecting never touches the composer. */
+const mindEls = { line: document.getElementById("mind-line"), box: document.getElementById("no-mind") };
+const mindState = { mind: null };
+function renderMindLine() {
+  if (mindEls.line) mindEls.line.textContent = mindState.mind ? (mindState.mind.words || "") : "";
+}
+async function loadMind() {
+  if (!state.chatId) { mindState.mind = null; renderMindLine(); return null; }
+  const mind = await api("/webface/chats/" + state.chatId + "/mind");
+  mindState.mind = mind;
+  renderMindLine();
+  return mind;
+}
+function renderNoMind(payload, container) {
+  const box = container || mindEls.box;
+  if (!box) { setStatus(payload.words || "No mind is connected to this chat yet"); return; }
+  box.innerHTML = "";
+  box.dataset.chatId = payload.chat_id || state.chatId || "";
+  const card = document.createElement("div"); card.className = "card no-mind-card";
+  const p = document.createElement("p"); p.textContent = payload.words || "No mind is connected to this chat yet"; card.appendChild(p);
+  for (const c of payload.connect || []) {
+    const b = document.createElement("button"); b.className = "btn small"; b.type = "button";
+    b.textContent = "Connect " + (c.name || c.profile_id);
+    b.addEventListener("click", async () => {
+      try {
+        await api("/webface/chats/" + (payload.chat_id || state.chatId) + "/backend-profile", jsonOptions("POST", { profile_id: c.profile_id }));
+        box.innerHTML = "";
+        await loadMind();
+        setStatus("Connected " + (c.name || c.profile_id) + " — your typed message is still in the composer; press Send when ready.");
+      } catch (e) { setStatus("Error: " + e.message); }
+    });
+    card.appendChild(b);
+  }
+  const link = document.createElement("a"); link.href = payload.connections_url || "/connections"; link.textContent = "Connections"; card.appendChild(link);
+  if (!payload.has_real_profiles) {
+    const p2 = document.createElement("p"); p2.className = "muted";
+    p2.textContent = "No real mind exists yet — connect one in Connections or First-Run Setup.";
+    card.appendChild(p2);
+    const link2 = document.createElement("a"); link2.href = payload.firstrun_url || "/firstrun"; link2.textContent = "First-Run Setup"; card.appendChild(link2);
+  }
+  box.appendChild(card);
+}
+
 async function api(path, options) {
   const resp = await fetch(path, options || {});
   if (!resp.ok) {
@@ -70,6 +116,8 @@ async function loadChats(selectId) {
 
 async function openChat(chatId) {
   state.chatId = chatId;
+  if (mindEls.box && mindEls.box.dataset.chatId !== chatId) mindEls.box.innerHTML = "";
+  loadMind().catch(() => {});
   const messages = await api("/webface/chats/" + chatId + "/messages");
   els.messages.innerHTML = "";
   for (const msg of messages) els.messages.appendChild(renderMessage(msg));
@@ -121,6 +169,7 @@ async function send() {
     const decoder = new TextDecoder();
     let buffer = "";
     let backend = "";
+    let noMind = null;
     for (;;) {
       const chunk = await reader.read();
       if (chunk.done) break;
@@ -143,12 +192,16 @@ async function send() {
               " — no reply was saved.");
           } else if (event.type === "landed") {
             setStatus("Reply saved to the engine history.");
+          } else if (event.type === "no_mind") {
+            noMind = event;
+            renderNoMind(event);
+            setStatus(event.words || "No mind is connected to this chat yet");
           }
         }
         idx = buffer.indexOf("\n\n");
       }
     }
-    els.composer.value = "";
+    if (!noMind) els.composer.value = "";
     await openChat(state.chatId);
   } catch (err) {
     setStatus("Error: " + err.message);
@@ -371,6 +424,7 @@ async function streamAction(path, busyWords) {
           if (event.type === "started") setStatus("Streaming from " + (event.backend_key || "the engine") + "…");
           else if (event.type === "landed") setStatus("New reply saved to the engine history.");
           else if (event.type === "restored") setStatus(event.message);
+          else if (event.type === "no_mind") { renderNoMind(event, w03.chatPanel); setStatus(event.words || "No mind is connected to this chat yet"); }
           else if (event.type === "error") setStatus("Error: " + (event.message || "stream failed"));
         }
         idx = buffer.indexOf("\n\n");
@@ -384,14 +438,27 @@ async function streamAction(path, busyWords) {
 
 async function actContinue() {
   if (!state.chatId) { setStatus("Open a chat first."); return; }
-  const out = await api("/webface/chats/" + state.chatId + "/continue", jsonOptions("POST", { mode: "auto" }));
-  setStatus("Continued (" + (out.mode || "auto") + ") — the engine landed the continuation.");
-  await refreshChat();
+  try {
+    const out = await api("/webface/chats/" + state.chatId + "/continue", jsonOptions("POST", { mode: "auto" }));
+    setStatus("Continued (" + (out.mode || "auto") + ") — the engine landed the continuation.");
+    await refreshChat();
+  } catch (e) {
+    const mind = await loadMind().catch(() => null);
+    if (mind && mind.state === "none" && mind.no_mind) { renderNoMind(mind.no_mind, w03.chatPanel); setStatus(mind.no_mind.words); }
+    else setStatus("Error: " + e.message);
+  }
 }
 
 async function actImpersonate() {
   if (!state.chatId) { setStatus("Open a chat first."); return; }
-  const draft = await api("/webface/chats/" + state.chatId + "/impersonate", jsonOptions("POST", {}));
+  let draft;
+  try {
+    draft = await api("/webface/chats/" + state.chatId + "/impersonate", jsonOptions("POST", {}));
+  } catch (e) {
+    const mind = await loadMind().catch(() => null);
+    if (mind && mind.state === "none" && mind.no_mind) { renderNoMind(mind.no_mind, w03.chatPanel); setStatus(mind.no_mind.words); return; }
+    throw e;
+  }
   const box = panel(w03.chatPanel, "Impersonate — draft of your next line");
   panelText(box, "Drafted by " + (draft.backend || "the engine") + ". Nothing is stored unless you accept it.");
   const ta = document.createElement("textarea"); ta.rows = 3; ta.value = draft.content || ""; box.appendChild(ta);

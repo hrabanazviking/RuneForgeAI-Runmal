@@ -64,6 +64,33 @@ async function createRoom() {
   await loadGroups(group.id);
 }
 
+function renderGroupNoMind(payload) {
+  const box = gstate.noMindBox; if (!box) { gStatus(payload.words || ""); return; }
+  box.innerHTML = "";
+  const card = el("div", null, "card no-mind-card");
+  card.appendChild(el("p", payload.words || "No mind is connected to this chat yet"));
+  for (const c of payload.connect || []) {
+    card.appendChild(btn("Connect " + (c.name || c.profile_id), async () => {
+      await gapi("/webface/chats/" + payload.chat_id + "/backend-profile", jopt("POST", { profile_id: c.profile_id }));
+      gStatus("Connected " + (c.name || c.profile_id) + " to this room.");
+      await openRoom(gstate.groupId);
+    }));
+  }
+  const link = el("a", "Connections"); link.href = payload.connections_url || "/connections"; card.appendChild(link);
+  if (!payload.has_real_profiles) {
+    card.appendChild(el("p", "No real mind exists yet — connect one in Connections or First-Run Setup.", "muted"));
+    const l2 = el("a", "First-Run Setup"); l2.href = payload.firstrun_url || "/firstrun"; card.appendChild(l2);
+  }
+  box.appendChild(card);
+}
+async function groupBlocked(err, groupId) {
+  try {
+    const mind = await gapi("/webface/groups/" + groupId + "/mind");
+    if (mind && mind.state === "none" && mind.no_mind) { renderGroupNoMind(mind.no_mind); gStatus(mind.no_mind.words); return; }
+  } catch (e) { /* fall through to the plain error */ }
+  gStatus("Error: " + err.message);
+}
+
 async function openRoom(groupId) {
   gstate.groupId = groupId;
   gstate.group = await gapi("/webface/groups/" + groupId);
@@ -75,6 +102,15 @@ async function renderRoom() {
   const room = gels.room; room.hidden = false; room.innerHTML = "";
   room.appendChild(el("h2", g.name || "Untitled room"));
   room.appendChild(el("p", "Strategy: " + (g.speaker_policy || "natural"), "muted"));
+  // FIX-STUB: the room's mind is its own chat's pinned profile.
+  const noMindBox = el("div", null, "no-mind-box");
+  try {
+    const mind = await gapi("/webface/groups/" + g.id + "/mind");
+    gstate.mind = mind;
+    room.appendChild(el("p", mind.words || "", "mind-line"));
+  } catch (e) { /* the guard still refuses honestly without the line */ }
+  room.appendChild(noMindBox);
+  gstate.noMindBox = noMindBox;
   const data = await gapi("/webface/groups/" + g.id + "/messages");
   const transcript = el("div", null, "messages");
   for (const line of data.lines || []) transcript.appendChild(el("p", line));
@@ -97,15 +133,19 @@ async function renderRoom() {
   genLabel.appendChild(gen); genLabel.appendChild(document.createTextNode(" Generate the reply")); turnRow.appendChild(genLabel);
   const words = el("p", "", "muted");
   turnRow.appendChild(btn("Next turn", async () => {
-    const out = await gapi("/webface/groups/" + g.id + "/next", jopt("POST", { generate: gen.checked, manual_speaker_id: speakerPick.value || undefined }));
-    words.textContent = out.words || "";
-    await openRoom(g.id); words.textContent = out.words || ""; gels.room.querySelector(".turn-words").textContent = out.words || "";
+    try {
+      const out = await gapi("/webface/groups/" + g.id + "/next", jopt("POST", { generate: gen.checked, manual_speaker_id: speakerPick.value || undefined }));
+      words.textContent = out.words || "";
+      await openRoom(g.id); words.textContent = out.words || ""; gels.room.querySelector(".turn-words").textContent = out.words || "";
+    } catch (e) { await groupBlocked(e, g.id); }
   }));
   const runCount = document.createElement("input"); runCount.type = "number"; runCount.value = 2; runCount.min = 1; runCount.max = 10;
   turnRow.appendChild(runCount);
   turnRow.appendChild(btn("Run turns", async () => {
-    const out = await gapi("/webface/groups/" + g.id + "/run", jopt("POST", { turns: Number(runCount.value), generate: gen.checked }));
-    await openRoom(g.id); gels.room.querySelector(".turn-words").textContent = out.words || "";
+    try {
+      const out = await gapi("/webface/groups/" + g.id + "/run", jopt("POST", { turns: Number(runCount.value), generate: gen.checked }));
+      await openRoom(g.id); gels.room.querySelector(".turn-words").textContent = out.words || "";
+    } catch (e) { await groupBlocked(e, g.id); }
   }, true));
   room.appendChild(turnRow);
   words.className = "turn-words muted"; room.appendChild(words);
