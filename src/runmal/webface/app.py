@@ -31,7 +31,7 @@ from http.server import BaseHTTPRequestHandler
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-from . import stub_guard, templates, w02, w03, w04, w05, w06, w07, w08, w09, w10
+from . import stub_guard, templates, w02, w03, w04, w05, w06, w07, w08, w09, w10, w11
 from .cards import import_report_words
 from .engine import EngineError
 from .security import hash_password, verify_password
@@ -187,7 +187,7 @@ def make_handler(app: WebfaceApp):
                     "/static/backups.js", "/static/plugins.js",
                     "/static/bridge.js", "/static/appearance.js",
                     "/static/search.js",
-                    "/static/pwtoggle.js"):
+                    "/static/pwtoggle.js", "/static/entrybox.js"):
                 return self._static(path)
             if path == "/chat":
                 user = self._require_user_page()
@@ -607,6 +607,13 @@ def make_handler(app: WebfaceApp):
                         app.engine, q1("q"), q1("chat_id"), q1("kind")))
                 if path == "/webface/bridge/credentials":
                     return self._json(200, w09.list_credentials(app.engine))
+                # ---- W-11 drafts (session-only roads) ----
+                if path == "/webface/drafts":
+                    return self._json(200, w11.list_drafts(
+                        app.store, user["id"]))
+                if path == "/webface/draft":
+                    return self._json(200, w11.get_draft(
+                        app.store, user["id"], q1("key")))
                 if path == "/webface/appearance":
                     prefs = w09.get_appearance(app.store, user["id"])
                     return self._json(200, {
@@ -671,18 +678,22 @@ def make_handler(app: WebfaceApp):
 
         def _api_write(self, method):
             """W-02 write roads (POST/PUT/PATCH/DELETE under /webface/)."""
-            user = self._require_user_api()
-            if user is None:
-                return
             path = urlparse(self.path).path
             # Drain the request body up front (cached for the
             # branches): a body left unread corrupts the next
-            # request on this keep-alive connection. Multipart
-            # roads read their own body via _multipart().
+            # request on this keep-alive connection - including
+            # an UNAUTHENTICATED write's body, which is why the
+            # drain runs BEFORE the auth check (W-11 find: an
+            # anon PUT left its body in the stream and the next
+            # request parsed as garbage). Multipart roads read
+            # their own body via _multipart().
             if not (path.endswith("/imports") or path.endswith("/import") or "/avatar" in path
                     or path.endswith("/assets")
                     or path.endswith("/vision/attachments")):
                 self._json_body()
+            user = self._require_user_api()
+            if user is None:
+                return
             try:
                 # ---- W-03 chat actions ----
                 match = re.fullmatch(
@@ -1294,6 +1305,21 @@ def make_handler(app: WebfaceApp):
                     return self._json(200, w09.revoke_credential(
                         app.engine, match.group(1),
                         body.get("confirm") is True))
+                # ---- W-11 drafts (session-only roads) ----
+                if method in ("POST", "PUT") and path == "/webface/draft":
+                    body = self._json_body()
+                    ok, payload = w11.save_draft(
+                        app.store, user["id"], body.get("key"),
+                        body.get("text"))
+                    return self._json(200 if ok else 422, payload)
+                if method == "DELETE" and path == "/webface/draft":
+                    body = self._json_body()
+                    key = body.get("key")
+                    if not key:
+                        qs = parse_qs(urlparse(self.path).query)
+                        key = (qs.get("key") or [None])[0]
+                    return self._json(200, w11.retire_draft(
+                        app.store, user["id"], key))
                 if method in ("POST", "PUT") and path == "/webface/appearance":
                     prefs = w09.set_appearance(
                         app.store, user["id"], self._json_body())

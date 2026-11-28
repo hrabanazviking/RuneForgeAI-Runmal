@@ -115,3 +115,18 @@ a { color: var(--rune); }
    text, carried whole) + the selected roster row. */
 .words { white-space: pre-wrap; font-family: inherit; margin: 8px 0; }
 .roster-row.active { color: var(--bifrost); }
+/* W-11: shared entry-box control set (entrybox.js).
+   .entrybox-wrap wraps an enhanced .entry-box field + its
+   companion toolbar (Copy / Paste / Clear ghost buttons and
+   the subtle status word: "Draft saved", "Copied", ...).
+   Textareas auto-grow in JS up to a 480px cap; past the cap
+   the box scrolls internally only as a last resort and the
+   page keeps the writing in view. */
+.entrybox-wrap { display: block; width: 100%; }
+.entrybox-wrap > .entry-box { width: 100%; }
+.entrybox-tools { display: inline-flex; gap: 6px; align-items: center;
+  margin: 3px 0 6px; }
+.entrybox-tools .btn { text-transform: none; letter-spacing: .02em;
+  white-space: nowrap; }
+.entrybox-status { font-size: .82rem; }
+textarea.entry-box { resize: vertical; overflow-y: hidden; }

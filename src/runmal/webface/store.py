@@ -50,6 +50,13 @@ CREATE TABLE IF NOT EXISTS recovery_attempts (
     username TEXT NOT NULL,
     ts REAL NOT NULL
 );
+CREATE TABLE IF NOT EXISTS drafts (
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    draft_key TEXT NOT NULL,
+    text TEXT NOT NULL,
+    updated_at REAL NOT NULL,
+    PRIMARY KEY (user_id, draft_key)
+);
 CREATE TABLE IF NOT EXISTS agent_tokens (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL REFERENCES users(id),
@@ -315,3 +322,46 @@ class Store:
                     ("id", "name", "created_at", "revoked_at",
                      "last_used_at")}
         return view, self.get_user(row["user_id"])
+
+    # -- W-11: entry-box drafts (per account, per key) --------------
+
+    def get_draft(self, user_id: int, draft_key: str):
+        """The saved draft text for (user, key), or None."""
+        with self._lock:
+            row = self.db.execute(
+                "SELECT text FROM drafts WHERE user_id = ?"
+                " AND draft_key = ?", (user_id, draft_key)).fetchone()
+        return row["text"] if row else None
+
+    def set_draft(self, user_id: int, draft_key: str, text: str) -> None:
+        """Save a draft. An empty text retires the draft outright:
+        an empty draft is no draft (no ghost rows)."""
+        with self._lock:
+            if text == "":
+                self.db.execute(
+                    "DELETE FROM drafts WHERE user_id = ?"
+                    " AND draft_key = ?", (user_id, draft_key))
+            else:
+                self.db.execute(
+                    "INSERT INTO drafts (user_id, draft_key, text,"
+                    " updated_at) VALUES (?, ?, ?, ?) ON CONFLICT"
+                    "(user_id, draft_key) DO UPDATE SET text ="
+                    " excluded.text, updated_at = excluded.updated_at",
+                    (user_id, draft_key, text, time.time()))
+            self.db.commit()
+
+    def delete_draft(self, user_id: int, draft_key: str) -> bool:
+        with self._lock:
+            cur = self.db.execute(
+                "DELETE FROM drafts WHERE user_id = ?"
+                " AND draft_key = ?", (user_id, draft_key))
+            self.db.commit()
+        return cur.rowcount == 1
+
+    def list_draft_keys(self, user_id: int):
+        with self._lock:
+            rows = self.db.execute(
+                "SELECT draft_key, updated_at FROM drafts"
+                " WHERE user_id = ? ORDER BY draft_key",
+                (user_id,)).fetchall()
+        return [dict(r) for r in rows]

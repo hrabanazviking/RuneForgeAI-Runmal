@@ -82,6 +82,7 @@ def layout(title, body, user=None, active_tab=None, flash=None,
             "the same engine, the same history, on every device."
             "</footer>"
             "<script src=\"/static/pwtoggle.js\"></script>"
+            "<script src=\"/static/entrybox.js\"></script>"
             "</body></html>")
 
 
@@ -652,12 +653,15 @@ def tools_page(user):
             "<p>Compose a prompt from parts, under a token budget, "
             "and see the messages it would send plus its token "
             "account - the engine composes; nothing is sent.</p>"
-            "<label>System<textarea id=\"t-c-system\" class=\"entry-box\" "
+            "<label>System<textarea id=\"t-c-system\" class=\"entry-box\""
+            " data-draft-key=\"tools:context:system\" "
             "rows=\"2\"></textarea></label>"
-            "<label>Persona<textarea id=\"t-c-persona\" class=\"entry-box\" "
+            "<label>Persona<textarea id=\"t-c-persona\" class=\"entry-box\""
+            " data-draft-key=\"tools:context:persona\" "
             "rows=\"2\"></textarea></label>"
             "<label>History (one line per line)"
-            "<textarea id=\"t-c-history\" class=\"entry-box\" rows=\"3\"></textarea></label>"
+            "<textarea id=\"t-c-history\" class=\"entry-box\""
+            " data-draft-key=\"tools:context:history\" rows=\"3\"></textarea></label>"
             "<div class=\"row\"><label>Author's note"
             "<input id=\"t-c-note\" class=\"entry-box\"></label>"
             "<label>Note depth<input id=\"t-c-depth\" class=\"entry-box\" "
