@@ -19,6 +19,38 @@ async function api(path, options) {
   return ct.includes("json") ? resp.json() : resp.text();
 }
 function setStatus(t) { els.status.textContent = t || ""; }
+/* Upload with real progress (FIX-AVATAR): fetch cannot report
+   upload progress, so uploads go through XMLHttpRequest. The
+   status element names the file and shows progress; failures
+   surface the server's own words -- never a silent rejection. */
+function uploadWithProgress(path, fd, statusEl, btn, file) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", path);
+    if (btn) btn.disabled = true;
+    const label = "Uploading " + (file ? file.name : "file") + "…";
+    if (statusEl) statusEl.textContent = label;
+    xhr.upload.addEventListener("progress", (ev) => {
+      if (!statusEl) return;
+      statusEl.textContent = ev.lengthComputable
+        ? label + " " + Math.round((ev.loaded / ev.total) * 100) + "%"
+        : label + " " + ev.loaded + " bytes sent";
+    });
+    xhr.addEventListener("load", () => {
+      if (btn) btn.disabled = false;
+      let body = null;
+      try { body = JSON.parse(xhr.responseText); } catch (e) {}
+      if (xhr.status >= 200 && xhr.status < 300) { resolve(body); return; }
+      reject(new Error((body && body.error) ||
+        ("upload failed (" + xhr.status + ")")));
+    });
+    xhr.addEventListener("error", () => { if (btn) btn.disabled = false;
+      reject(new Error("upload failed -- the connection dropped")); });
+    xhr.addEventListener("abort", () => { if (btn) btn.disabled = false;
+      reject(new Error("upload cancelled")); });
+    xhr.send(fd);
+  });
+}
 function el(tag, text, cls) { const n = document.createElement(tag);
   if (text != null) n.textContent = text; if (cls) n.className = cls; return n; }
 
@@ -112,22 +144,34 @@ function renderEditor(bundle) {
       img.src = "/webface/characters/" + bundle.id + "/avatar"; avSec.appendChild(img); }
     const avFile = el("input"); avFile.type = "file"; avFile.id = "avatar-file";
     const avBtn = el("button", "Upload avatar", "btn small"); avBtn.type = "button";
-    avBtn.addEventListener("click", async () => { if (!avFile.files.length) return;
+    const avStatus = el("span", "", "upload-status"); avStatus.id = "avatar-status";
+    avBtn.addEventListener("click", async () => {
+      if (!avFile.files.length) { avStatus.textContent = "Pick an avatar file first."; return; }
       const fd = new FormData(); fd.append("file", avFile.files[0]);
-      await api("/webface/characters/" + bundle.id + "/avatar", { method: "POST", body: fd });
-      setStatus("Avatar saved."); openEditor(bundle.id); });
-    avSec.appendChild(avFile); avSec.appendChild(avBtn);
+      try {
+        await uploadWithProgress("/webface/characters/" + bundle.id + "/avatar",
+          fd, avStatus, avBtn, avFile.files[0]);
+        avStatus.textContent = "Avatar saved."; setStatus("Avatar saved.");
+        openEditor(bundle.id);
+      } catch (err) { avStatus.textContent = err.message; setStatus(err.message); } });
+    avSec.appendChild(avFile); avSec.appendChild(avBtn); avSec.appendChild(avStatus);
     const list = el("ul");
     for (const a of bundle.assets || []) list.appendChild(el("li",
       (a.name || a.id) + " · " + (a.kind || "") + " · " + (a.byte_size || 0) + " bytes"));
     avSec.appendChild(list);
     const asFile = el("input"); asFile.type = "file"; asFile.id = "asset-file";
     const asBtn = el("button", "Upload asset", "btn small"); asBtn.type = "button";
-    asBtn.addEventListener("click", async () => { if (!asFile.files.length) return;
+    const asStatus = el("span", "", "upload-status"); asStatus.id = "asset-status";
+    asBtn.addEventListener("click", async () => {
+      if (!asFile.files.length) { asStatus.textContent = "Pick an asset file first."; return; }
       const fd = new FormData(); fd.append("file", asFile.files[0]);
-      await api("/webface/characters/" + bundle.id + "/assets", { method: "POST", body: fd });
-      setStatus("Asset uploaded."); openEditor(bundle.id); });
-    avSec.appendChild(asFile); avSec.appendChild(asBtn);
+      try {
+        await uploadWithProgress("/webface/characters/" + bundle.id + "/assets",
+          fd, asStatus, asBtn, asFile.files[0]);
+        asStatus.textContent = "Asset uploaded."; setStatus("Asset uploaded.");
+        openEditor(bundle.id);
+      } catch (err) { asStatus.textContent = err.message; setStatus(err.message); } });
+    avSec.appendChild(asFile); avSec.appendChild(asBtn); avSec.appendChild(asStatus);
   } else avSec.appendChild(el("p", "Save the character first, then add an avatar and assets.", "muted"));
   const bookSec = sec("Book & Binding");
   if (!bundle.create) {

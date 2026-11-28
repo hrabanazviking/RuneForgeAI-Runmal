@@ -59,15 +59,47 @@ async function loadRoster() {
   }
   if (!items.length) els.roster.appendChild(el("li", "No cards match.", "muted"));
 }
+/* Upload with real progress (FIX-AVATAR): XMLHttpRequest, since
+   fetch cannot report upload progress. The result line names the
+   files and shows progress; failures show the server's words. */
+function uploadWithProgress(path, fd, statusEl, btn, label) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", path);
+    if (btn) btn.disabled = true;
+    if (statusEl) statusEl.textContent = label;
+    xhr.upload.addEventListener("progress", (ev) => {
+      if (!statusEl) return;
+      statusEl.textContent = ev.lengthComputable
+        ? label + " " + Math.round((ev.loaded / ev.total) * 100) + "%"
+        : label + " " + ev.loaded + " bytes sent";
+    });
+    xhr.addEventListener("load", () => {
+      if (btn) btn.disabled = false;
+      let body = null;
+      try { body = JSON.parse(xhr.responseText); } catch (e) {}
+      if (xhr.status >= 200 && xhr.status < 300) { resolve(body); return; }
+      reject(new Error((body && body.error) ||
+        ("import failed (" + xhr.status + ")")));
+    });
+    xhr.addEventListener("error", () => { if (btn) btn.disabled = false;
+      reject(new Error("import failed -- the connection dropped")); });
+    xhr.addEventListener("abort", () => { if (btn) btn.disabled = false;
+      reject(new Error("import cancelled")); });
+    xhr.send(fd);
+  });
+}
 els.importBtn.addEventListener("click", async () => {
   if (!els.files.files.length) { els.result.textContent = "Pick at least one card file first."; return; }
   const fd = new FormData();
-  for (const file of els.files.files) fd.append("files", file);
+  const names = [];
+  for (const file of els.files.files) { fd.append("files", file); names.push(file.name); }
   try {
-    const report = await api("/webface/library/imports", { method: "POST", body: fd });
-    els.result.textContent = report.words || "Import finished.";
+    const report = await uploadWithProgress("/webface/library/imports", fd,
+      els.result, els.importBtn, "Importing " + names.join(", ") + "…");
+    els.result.textContent = (report && report.words) || "Import finished.";
     els.lines.innerHTML = "";
-    for (const line of report.lines || []) els.lines.appendChild(el("li", line));
+    for (const line of (report && report.lines) || []) els.lines.appendChild(el("li", line));
     loadTags(); loadRoster();
   } catch (err) { els.result.textContent = err.message; }
 });
