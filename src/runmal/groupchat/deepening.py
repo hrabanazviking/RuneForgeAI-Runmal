@@ -36,9 +36,14 @@ mention / round-robin / broadcast strategies. What this module adds:
   persona -> chat), scanned on the last user text. A member's
   ``lore_enabled=False`` drops the character layer for that member.
 
-Honest boundaries: generation runs through the generation service's
-default backend seam (the deterministic fake when unconfigured —
-the S305 precedent) and does NOT route through the prompt composer
+Honest boundaries: generation resolves through the room chat's
+pinned backend profile (the continue/impersonate resolution,
+FIX-STUB: this seam previously ignored the room chat's pin and
+always fell to the fake default, so a pinned room was still
+answered by the stub) and falls back to the generation service's
+default backend seam when the room chat pins nothing (the
+deterministic fake when unconfigured — the S305 precedent); it
+does NOT route through the prompt composer
 / inspector; auto-mode is a driven, bounded loop behind an explicit
 call, never a background daemon; activation state lives in
 ``speaker_config``, so concurrent next/run calls are
@@ -648,11 +653,18 @@ async def next_turn(
         lore_enabled=override.get("lore_enabled", True),
     )
     prompt_messages = build_prompt_messages(picked, roster, deepening, history, lore_texts)
-    text, reasoning_record = await _generate(prompt_messages)
+    # FIX-STUB: resolve the room's mind — the room chat's pinned
+    # backend profile, the same resolution every other chat road
+    # uses. No pin -> resolve_backend returns the generation
+    # service's default backend, exactly as before this fix.
+    from runmal.chats.continue_impersonate import resolve_backend
+
+    backend = await resolve_backend(session, user_id, chat) if chat is not None else None
+    text, reasoning_record = await _generate(prompt_messages, backend=backend)
     from runmal.generation import service as _gen_service
 
     _backend_key, _model_id = prov_mod.backend_model_fields(
-        _gen_service.default_backend())
+        backend if backend is not None else _gen_service.default_backend())
     prov_record = prov_mod.build_record(
         origin_kind="group_generated",
         origin={"strategy": group.speaker_policy, "speaker_id": picked},
@@ -679,7 +691,7 @@ async def next_turn(
     return result
 
 
-async def _generate(prompt_messages: list[dict]) -> tuple[str, dict]:
+async def _generate(prompt_messages: list[dict], backend=None) -> tuple[str, dict]:
     """Collect one generation's text and reasoning record through
     the generation service (P-208). Reasoning dicts are collected
     in arrival order, exactly as the bridge loop and the P-207 seam
@@ -696,7 +708,8 @@ async def _generate(prompt_messages: list[dict]) -> tuple[str, dict]:
     finish: str | None = None
     error_message: str | None = None
     request_id = generation.new_request_id()
-    async for event in generation.generate_events(request_id, prompt_text, plugin_events=False):
+    async for event in generation.generate_events(
+            request_id, prompt_text, backend=backend, plugin_events=False):
         kind = event.get("type")
         if kind == "token":
             parts.append(event["text"])
