@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import posixpath
+import re
 import shutil
 from datetime import UTC, datetime
 from pathlib import Path
@@ -47,23 +48,69 @@ class UnsafeFilenameError(ValueError):
 
 
 def validate_asset_filename(filename: str, allowed_extensions: set[str]) -> str:
-    """Return a safe filename or raise UnsafeFilenameError."""
-    if not filename or len(filename) > MAX_FILENAME_LEN:
-        raise UnsafeFilenameError(f"bad filename: {filename!r}")
+    """Return a safe stored filename for an uploaded image.
+
+    FIX-AVATAR contract: ordinary realistic photo names LAND. The
+    basename stem is sanitised -- every character outside the safe
+    set becomes "_", leading dots are stripped, and an over-long
+    stem is truncated so the whole name fits MAX_FILENAME_LEN with
+    its (lowercased) extension intact. Sanitising an already-safe
+    name returns it unchanged, so stored names re-validate.
+
+    Still REFUSED, in plain words: traversal-shaped names (any path
+    separator, NUL, "."/".."), an empty name, a name that
+    sanitises to nothing usable, and an unsupported extension.
+    """
+    if not filename or not filename.strip():
+        raise UnsafeFilenameError(
+            "no file name was given -- pick an image file to upload")
     if (
         "/" in filename
         or "\\" in filename
         or "\x00" in filename
-        or posixpath.normpath(filename) != filename
-        or filename in (".", "..")
+        or filename.strip() in (".", "..")
     ):
-        raise UnsafeFilenameError(f"bad filename: {filename!r}")
-    if any(ch not in _FILENAME_ALLOWED for ch in filename):
-        raise UnsafeFilenameError(f"bad filename: {filename!r}")
-    ext = Path(filename).suffix.lower()
+        raise UnsafeFilenameError(
+            f"that file name is not allowed: {filename!r} looks like a "
+            "file path, not a plain file name -- rename the file and "
+            "try again")
+    stem_raw, dot, ext_raw = filename.strip().rpartition(".")
+    ext = ("." + ext_raw.lower()) if dot else ""
     if ext not in allowed_extensions:
-        raise UnsafeFilenameError(f"extension not allowed: {filename!r}")
-    return filename
+        accepted = ", ".join(sorted(allowed_extensions))
+        if ext in (".heic", ".heif"):
+            raise UnsafeFilenameError(
+                "HEIC photos (.heic) cannot be used yet: web browsers "
+                "cannot display them. Export or convert the photo as "
+                f"JPG or PNG and upload that instead (accepted: {accepted})")
+        if not ext:
+            raise UnsafeFilenameError(
+                f"the file {filename!r} has no image extension -- "
+                f"accepted image types are: {accepted}")
+        raise UnsafeFilenameError(
+            f"the file type {ext} is not an accepted image type -- "
+            f"accepted image types are: {accepted}")
+    stem = "".join(
+        ch if ch in _FILENAME_ALLOWED else "_" for ch in stem_raw)
+    stem = stem.strip(".")
+    stem = re.sub(r"\.+", ".", stem)
+    if not any(ch.isalnum() for ch in stem):
+        raise UnsafeFilenameError(
+            f"the file name {filename!r} has no usable name part -- "
+            "rename the file with letters or numbers and try again")
+    max_stem = MAX_FILENAME_LEN - len(ext)
+    if len(stem) > max_stem:
+        stem = stem[:max_stem].rstrip("._-")
+    safe = stem + ext
+    if (
+        len(safe) > MAX_FILENAME_LEN
+        or any(ch not in _FILENAME_ALLOWED for ch in safe)
+        or posixpath.normpath(safe) != safe
+    ):  # pragma: no cover - sanitiser invariant
+        raise UnsafeFilenameError(
+            f"the file name {filename!r} could not be made safe -- "
+            "rename the file and try again")
+    return safe
 
 
 def character_asset_dir(character_id: str) -> Path:
