@@ -536,6 +536,13 @@ def make_handler(app: WebfaceApp):
                     return self._json(200, w07.list_variables(app.engine))
                 if path == "/webface/voice/overview":
                     return self._json(200, w08.voice_overview(app.engine))
+                if path == "/webface/voice/service-voices":
+                    return self._json(200, w08.list_service_voices(app.engine))
+                match = re.fullmatch(
+                    r"/webface/characters/([^/]+)/voice", path)
+                if match:
+                    return self._json(200, w08.character_voice(
+                        app.engine, match.group(1)))
                 match = re.fullmatch(r"/webface/voice/sessions", path)
                 if match:
                     return self._json(200, w08.list_sessions(
@@ -1142,6 +1149,29 @@ def make_handler(app: WebfaceApp):
                 if method == "PUT" and path == "/webface/voice/defaults":
                     return self._json(200, w08.set_defaults(
                         app.engine, self._json_body()))
+                if method == "POST" and path == "/webface/voice/service-voices":
+                    fields, files = self._multipart()
+                    if not files:
+                        return self._json(422, {
+                            "error": "pick a reference audio file"})
+                    _f, _name, data = files[0]
+                    return self._json(201, w08.register_service_voice(
+                        app.engine, fields.get("name", ""),
+                        fields.get("transcript", ""), data))
+                match = re.fullmatch(
+                    r"/webface/characters/([^/]+)/voice", path)
+                if match and method == "PUT":
+                    body = self._json_body()
+                    return self._json(200, w08.set_character_voice(
+                        app.engine, match.group(1),
+                        str(body.get("voice_id") or "")))
+                match = re.fullmatch(
+                    r"/webface/characters/([^/]+)/audition", path)
+                if match and method == "POST":
+                    body = self._json_body()
+                    return self._json(200, w08.character_audition(
+                        app.engine, match.group(1),
+                        str(body.get("text") or "")))
                 if method == "POST" and path == "/webface/voice/sessions":
                     body = self._json_body()
                     return self._json(200, w08.start_session(

@@ -198,6 +198,19 @@ function renderEditor(bundle) {
       setStatus("Lorebook unbound."); openEditor(bundle.id); });
     bookSec.appendChild(sel); bookSec.appendChild(prec); bookSec.appendChild(bindBtn); bookSec.appendChild(unBtn);
   }
+  const voiceSec = sec("Voice");
+  if (!bundle.create) {
+    const prof = bundle.voice_profile || {}; const res = prof.resolved || {};
+    voiceSec.appendChild(el("p", "Resolved voice now: " + (res.voice_id || "default") + " via " + (res.tts_backend || "default") + ". Pick a registered voice and save - it writes this character's stored voice profile."));
+    const vsel = el("select"); vsel.id = "f-voice"; vsel.classList.add("entry-box");
+    const names = ["default"].concat((bundle.voice_names || []).filter((n) => n !== "default"));
+    for (const n of names) { const o = el("option", n); o.value = n; if ((prof.stored && prof.stored.voice_id) === n) o.selected = true; vsel.appendChild(o); }
+    voiceSec.appendChild(vsel);
+    const vBtn = el("button", "Save voice", "btn small"); vBtn.type = "button";
+    const vStatus = el("span", "", "muted");
+    vBtn.addEventListener("click", async () => { try { const out = await api("/webface/characters/" + bundle.id + "/voice", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ voice_id: vsel.value }) }); vStatus.textContent = " Voice saved: " + ((out.resolved || {}).voice_id || vsel.value); setStatus("Voice saved."); } catch (err) { vStatus.textContent = " " + err.message; } });
+    voiceSec.appendChild(vBtn); voiceSec.appendChild(vStatus);
+  } else voiceSec.appendChild(el("p", "Save the character first, then choose its voice.", "muted"));
   const verSec = sec("Versions");
   if (!bundle.create) {
     const versions = (bundle.versions && bundle.versions.versions) || [];

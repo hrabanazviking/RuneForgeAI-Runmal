@@ -82,6 +82,15 @@ def editor_bundle(engine, cid) -> dict:
     versions = engine.request("GET", f"/api/v1/characters/{cid}/versions")
     lorebooks = engine.request("GET", "/api/v1/lorebooks")
     editor = engine.request("GET", f"/api/v1/characters/{cid}/editor")
+    # Amendment 1: the character's voice - S512 profile + the
+    # speech service's registered voices for the picker. A voice
+    # road failure degrades to an empty picker, never a dead editor.
+    try:
+        from . import w08 as _w08
+        voice_profile = _w08.character_voice(engine, cid)
+        voice_names = _w08.list_service_voices(engine)["names"]
+    except Exception:
+        voice_profile, voice_names = {}, []
     return {
         "id": cid, "summary": summary, "fields": fields,
         "raw_card": card, "organisation": org,
@@ -92,6 +101,8 @@ def editor_bundle(engine, cid) -> dict:
         "versions": versions if isinstance(versions, dict) else {},
         "lorebooks": lorebooks if isinstance(lorebooks, list) else [],
         "editor_view": editor if isinstance(editor, dict) else {},
+        "voice_profile": voice_profile,
+        "voice_names": voice_names,
         "has_avatar": bool(summary.get("has_avatar", False)),
     }
 

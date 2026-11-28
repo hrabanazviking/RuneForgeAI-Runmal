@@ -252,6 +252,120 @@ def _session_store(request: Request) -> voice_session.VoiceSessionStore:
     return voice_session.VoiceSessionStore(data_dir / voice_session.SESSIONS_FILENAME)
 
 
+# --------------------------------------- Amendment 1: service voices
+# The registered-voice registry of the configured speech service
+# (the on-demand CosyVoice waiter), proxied so the webface never
+# talks to the waiter directly, plus the S512 per-character voice
+# profile roads the W-08 tab honestly lacked, plus an audition road
+# that synthesizes WITH a character's resolved profile engaged.
+
+import base64 as _base64  # noqa: E402
+
+from runmal.voice import service_voices as _service_voices  # noqa: E402
+from runmal.voice.profiles import (  # noqa: E402
+    delete_character_voice as _delete_character_voice,
+    get_character_voice as _get_character_voice,
+    resolve_character_voice as _resolve_character_voice_am1,
+    set_character_voice as _set_character_voice,
+)
+
+
+def _service_error(exc: Exception) -> HTTPException:
+    return HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc))
+
+
+@router.get("/voice/service-voices")
+async def list_service_voices() -> dict:
+    try:
+        voices = _service_voices.list_service_voices()
+    except _service_voices.SpeechServiceError as exc:
+        raise _service_error(exc) from None
+    return {"voices": voices, "names": [str(v.get("name") or "") for v in voices]}
+
+
+@router.post("/voice/service-voices", status_code=status.HTTP_201_CREATED)
+async def register_service_voice(payload: dict) -> dict:
+    try:
+        created = _service_voices.register_service_voice(
+            str(payload.get("name") or ""),
+            str(payload.get("transcript") or ""),
+            str(payload.get("audio_b64") or ""))
+    except _service_voices.SpeechServiceError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail=str(exc)) from None
+    return created
+
+
+def _profile_payload(row, resolved) -> dict:
+    import json as _json
+    stored = None
+    if row is not None:
+        try:
+            params = _json.loads(row.params_json or "{}")
+        except ValueError:
+            params = {}
+        stored = {"tts_backend": row.tts_backend, "voice_id": row.voice_id,
+                  "language": row.language, "params": params if isinstance(params, dict) else {},
+                  "updated_at": row.updated_at}
+    return {"stored": stored,
+            "resolved": {"tts_backend": resolved.tts_backend, "voice_id": resolved.voice_id,
+                         "language": resolved.language, "params": resolved.params}}
+
+
+@router.get("/voice/characters/{character_id}/voice-profile")
+async def get_character_voice_profile(character_id: str, session=Depends(get_session), owner_id: str = Depends(get_owner_id)) -> dict:
+    row = await _get_character_voice(session, owner_id, character_id)
+    resolved = await _resolve_character_voice_am1(session, owner_id, character_id)
+    return _profile_payload(row, resolved)
+
+
+@router.put("/voice/characters/{character_id}/voice-profile")
+async def put_character_voice_profile(character_id: str, payload: dict, session=Depends(get_session), owner_id: str = Depends(get_owner_id)) -> dict:
+    params = payload.get("params") if isinstance(payload.get("params"), dict) else {}
+    try:
+        row = await _set_character_voice(
+            session, owner_id, character_id,
+            tts_backend=str(payload.get("tts_backend") or ""),
+            voice_id=str(payload.get("voice_id") or ""),
+            language=str(payload.get("language") or "en-us"),
+            params=params)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from None
+    resolved = await _resolve_character_voice_am1(session, owner_id, character_id)
+    return _profile_payload(row, resolved)
+
+
+@router.delete("/voice/characters/{character_id}/voice-profile")
+async def delete_character_voice_profile(character_id: str, session=Depends(get_session), owner_id: str = Depends(get_owner_id)) -> dict:
+    removed = await _delete_character_voice(session, owner_id, character_id)
+    resolved = await _resolve_character_voice_am1(session, owner_id, character_id)
+    return {"removed": removed, "resolved": {"tts_backend": resolved.tts_backend, "voice_id": resolved.voice_id, "language": resolved.language, "params": resolved.params}}
+
+
+@router.post("/voice/characters/{character_id}/audition")
+async def audition_character_voice(character_id: str, payload: dict, session=Depends(get_session), owner_id: str = Depends(get_owner_id)) -> dict:
+    """Synthesize text with the character's resolved voice profile.
+
+    This is the character-context synthesis road: S512 resolution
+    first, then the resolved backend synthesizes the resolved
+    voice. Returns the PCM bytes (base64) plus the resolution, so
+    a caller can hear exactly which voice spoke."""
+    from runmal.voice.backends import build_tts_backend
+    text = str(payload.get("text") or "").strip()
+    if not text:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="audition needs text")
+    resolved = await _resolve_character_voice_am1(session, owner_id, character_id)
+    backend = build_tts_backend(resolved.tts_backend)
+    chunks = backend.synthesize_all(text, resolved.to_voice_info())
+    pcm = b"".join(c.pcm for c in chunks if c.pcm)
+    sample_rate = chunks[0].sample_rate if chunks else 24000
+    return {"character_id": character_id,
+            "resolved": {"tts_backend": resolved.tts_backend, "voice_id": resolved.voice_id, "language": resolved.language},
+            "sample_rate": sample_rate, "pcm_bytes": len(pcm),
+            "duration_s": round(len(pcm) / 2 / sample_rate, 3) if sample_rate else 0,
+            "audio_b64": _base64.b64encode(pcm).decode()}
+
+
 @router.post("/voice/sessions", status_code=status.HTTP_201_CREATED)
 async def start_voice_session(
     payload: dict,

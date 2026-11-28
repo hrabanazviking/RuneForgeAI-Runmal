@@ -28,6 +28,8 @@ async function loadOverview() {
   $("v-synth-note").textContent = overview.notes.synthesis;
   $("v-transcribe-note").textContent = overview.notes.transcription;
   $("v-char-note").textContent = overview.notes.character_voice;
+  const vl = $("v-voices"); if (vl) { vl.innerHTML = ""; (overview.service_voice_lines || []).forEach((line) => vl.appendChild(el("li", line))); }
+  const ve = $("v-voices-error"); if (ve) ve.textContent = overview.service_voices_error || "";
   const devs = $("v-devices"); devs.innerHTML = "";
   overview.device_lines.forEach((line) => devs.appendChild(el("li", line)));
   const roles = $("v-roles"); roles.innerHTML = "";
@@ -160,3 +162,12 @@ $("v-transcribe").addEventListener("click", () => {
 });
 setupMic();
 loadOverview().then(loadChats).catch((e) => { $("v-status-line").textContent = e.message; });
+
+const regBtn = $("v-reg-btn");
+if (regBtn) regBtn.addEventListener("click", async () => {
+  const file = $("v-reg-file").files[0];
+  if (!file) { $("v-reg-status").textContent = "Pick a reference audio file first."; return; }
+  const fd = new FormData();
+  fd.append("name", $("v-reg-name").value); fd.append("transcript", $("v-reg-transcript").value); fd.append("file", file);
+  try { const r = await fetch("/webface/voice/service-voices", { method: "POST", body: fd }); const b = await r.json(); if (!r.ok) throw new Error(b.error || ("request failed (" + r.status + ")")); $("v-reg-status").textContent = "Saved voice: " + (b.name || $("v-reg-name").value); await loadOverview(); } catch (e) { $("v-reg-status").textContent = e.message; }
+});

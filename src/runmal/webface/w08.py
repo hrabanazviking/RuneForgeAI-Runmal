@@ -26,9 +26,11 @@ pretends otherwise:
   own microphone capture. A transcript reaches a chat by
   recording the session's turns and projecting them (the
   engine's own roads) - both wired here.
-- NO road reads or writes a character's stored voice
-  profile; the profile resolves at session start (S512)
-  and the resolved voice is what the session record shows.
+- Amendment 1: the engine now carries roads for the speech
+  service's registered voices (list + register) and for a
+  character's stored S512 voice profile (read + write); the
+  register form below and the Characters-tab voice picker
+  ride them. The profile still resolves at session start.
 - The live engine's device provider is its fixture provider
   until a deployment wires real audio hardware: the device
   names below are the engine's own, labelled as such.
@@ -86,11 +88,12 @@ MIC_SECURE_NOTE = (
 )
 
 CHARACTER_VOICE_NOTE = (
-    "A character's voice is chosen on the character (its "
-    "stored voice profile) and resolves when a voice session "
-    "starts - the engine has no road to read or change that "
-    "profile from here, so this page shows the resolved "
-    "voice on each session and offers no editor for it."
+    "A character's voice is chosen on the character itself "
+    "(Characters tab: its stored S512 voice profile, fed by "
+    "the registered voices below) and resolves when a voice "
+    "session starts - this page shows the resolved voice on "
+    "each session. Register a new voice below and it is "
+    "pickable on every character at once."
 )
 
 VISION_SEND_NOTE = (
@@ -382,6 +385,13 @@ def voice_overview(engine) -> dict:
     backends = backends if isinstance(backends, dict) else {}
     defaults = engine.request("GET", "/api/v1/voice/settings/defaults")
     defaults = defaults if isinstance(defaults, dict) else {}
+    try:
+        svc = engine.request("GET", "/api/v1/voice/service-voices")
+        svc_voices = svc.get("voices") if isinstance(svc, dict) else []
+        svc_voices = [v for v in svc_voices or [] if isinstance(v, dict)]
+        svc_error = ""
+    except Exception as exc:  # registry down must not kill the overview
+        svc_voices, svc_error = [], str(exc)
     backend_rows: dict[str, list] = {}
     line_rows: dict[str, list] = {}
     audit: dict[str, str] = {}
@@ -402,6 +412,9 @@ def voice_overview(engine) -> dict:
         "backends": backend_rows, "backend_lines": line_rows,
         "audit": audit, "defaults": defaults,
         "state": backend_state(backends),
+        "service_voices": svc_voices,
+        "service_voice_lines": [service_voice_line(v) for v in svc_voices],
+        "service_voices_error": svc_error,
         "notes": {
             "synthesis": SYNTH_ROAD_NOTE,
             "transcription": TRANSCRIBE_ROAD_NOTE,
@@ -544,6 +557,65 @@ def transcribe_attempt(payload: dict) -> dict:
     webface refuses in plain words instead of accepting an
     upload it cannot honour. Nothing is stored."""
     return {"error": TRANSCRIBE_ROAD_NOTE, "no_road": True}
+
+# ------------------------------------------- Amendment 1: voices
+
+def service_voice_line(voice: dict) -> str:
+    voice = voice if isinstance(voice, dict) else {}
+    bits = [str(voice.get("name") or "")]
+    if voice.get("duration_s") is not None:
+        bits.append(f"reference {voice['duration_s']} s")
+    if voice.get("transcript"):
+        bits.append(f"says: {_excerpt(str(voice['transcript']), 60)}")
+    return " · ".join(b for b in bits if b)
+
+
+def list_service_voices(engine) -> dict:
+    payload = engine.request("GET", "/api/v1/voice/service-voices")
+    payload = payload if isinstance(payload, dict) else {}
+    voices = [v for v in payload.get("voices") or [] if isinstance(v, dict)]
+    return {"voices": voices, "lines": [service_voice_line(v) for v in voices],
+            "names": [str(v.get("name") or "") for v in voices]}
+
+
+def register_service_voice(engine, name: str, transcript: str, audio: bytes) -> dict:
+    """Register a voice INTO the speech service, through the engine."""
+    if not audio:
+        from .engine import EngineError
+        raise EngineError("pick a reference audio file", status=422)
+    payload = engine.request("POST", "/api/v1/voice/service-voices", json_body={
+        "name": str(name or ""), "transcript": str(transcript or ""),
+        "audio_b64": base64.b64encode(audio).decode()})
+    return payload if isinstance(payload, dict) else {}
+
+
+def character_voice(engine, character_id: str) -> dict:
+    payload = engine.request(
+        "GET", f"/api/v1/voice/characters/{character_id}/voice-profile")
+    return payload if isinstance(payload, dict) else {}
+
+
+def set_character_voice(engine, character_id: str, voice_id: str) -> dict:
+    """Write the S512 profile that routes this character through
+    the on-demand service: backend openai + the saved voice name.
+    An empty voice_id clears to the service default profile."""
+    voice_id = str(voice_id or "").strip()
+    body = ({"tts_backend": "openai", "voice_id": voice_id}
+            if voice_id else {"tts_backend": "openai", "voice_id": "default"})
+    payload = engine.request(
+        "PUT", f"/api/v1/voice/characters/{character_id}/voice-profile",
+        json_body=body)
+    return payload if isinstance(payload, dict) else {}
+
+
+def character_audition(engine, character_id: str, text: str) -> dict:
+    payload = engine.request(
+        "POST", f"/api/v1/voice/characters/{character_id}/audition",
+        json_body={"text": str(text or "")})
+    payload = payload if isinstance(payload, dict) else {}
+    return {k: v for k, v in payload.items() if k != "audio_b64"} | {
+        "has_audio": bool(payload.get("audio_b64"))}
+
 
 # ------------------------------------------------------ vision words
 # Ported from runmal.desktop.vision_logic (R-13), unchanged

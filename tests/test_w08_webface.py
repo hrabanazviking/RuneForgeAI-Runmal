@@ -173,7 +173,9 @@ def test_no_road_contracts_are_plain():
     assert "No engine road transcribes an uploaded audio file" in attempt["error"]
     assert "secure context" in w08.MIC_SECURE_NOTE
     assert "plain HTTP" in w08.MIC_SECURE_NOTE
-    assert "no road to read or change" in w08.CHARACTER_VOICE_NOTE
+    # Amendment 1 superseded the no-road note: a profile road now exists.
+    assert "stored S512 voice profile" in w08.CHARACTER_VOICE_NOTE
+    assert "Register a new voice" in w08.CHARACTER_VOICE_NOTE
     assert "does not see an attached picture" in w08.VISION_SEND_NOTE
 
 
