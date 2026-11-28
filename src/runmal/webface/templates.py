@@ -19,8 +19,8 @@ TABS: list[tuple[str, str, str | None]] = [
     ("lorebooks", "Lorebooks", None),
     ("connections", "Connections", None),
     ("generation", "Generation", None),
-    ("memory", "Memory", "W-06"),
-    ("scenarios", "Scenarios", "W-06"),
+    ("memory", "Memory", None),
+    ("scenarios", "Scenarios", None),
     ("inspector", "Inspector", "W-07"),
     ("tools", "Tools", "W-07"),
     ("voice", "Voice", "W-08"),
@@ -381,3 +381,52 @@ def lorebooks_page(user):
             "<div id=\"lb-transfer-out\"></div></section>"
             "<script src=\"/static/lorebooks.js\"></script>")
     return layout("Lorebooks", body, user=user, active_tab="lorebooks")
+
+
+def memory_page(user):
+    body = ("<section class=\"card\"><h1>Memory</h1>"
+            "<p>What the engine remembers, with where each memory "
+            "came from. Memories are read here - the engine offers "
+            "no road to create, edit or delete one by hand.</p>"
+            "<div class=\"row\"><label>Search<input id=\"m-search\" class=\"entry-box\"></label>"
+            "<label>State<select id=\"m-state\">"
+            "<option value=\"\">Any state</option></select></label>"
+            "<label>Kind<select id=\"m-kind\"><option value=\"\">Any kind</option></select></label>"
+            "<button id=\"m-go\" class=\"btn\" type=\"button\">Search</button></div>"
+            "<p id=\"m-count\" class=\"muted\"></p>"
+            "<ul id=\"m-list\" class=\"roster\"></ul>"
+            "<p id=\"m-status\" class=\"muted\"></p></section>"
+            "<section class=\"card\" id=\"m-detail\" hidden></section>"
+            "<section class=\"card\"><h2>Embedding</h2>"
+            "<p id=\"m-embed-note\" class=\"muted\"></p></section>"
+            "<script src=\"/static/memory.js\"></script>")
+    return layout("Memory", body, user=user, active_tab="memory")
+
+
+def scenarios_page(user):
+    body = ("<section class=\"card\"><h1>Scenarios</h1>"
+            "<div class=\"row\"><label>Search<input id=\"s-search\" class=\"entry-box\"></label>"
+            "<label class=\"check\"><input type=\"checkbox\" id=\"s-fav\"> Favourites only</label>"
+            "<button id=\"s-new\" class=\"btn\" type=\"button\">New scenario</button></div>"
+            "<p id=\"s-count\" class=\"muted\"></p>"
+            "<ul id=\"s-list\" class=\"roster\"></ul>"
+            "<p id=\"s-status\" class=\"muted\"></p></section>"
+            "<section class=\"card\" id=\"s-editor\" hidden></section>"
+            "<section class=\"card\"><h2>Bindings</h2>"
+            "<p>Chats a scenario has been bound to. Unbinding removes "
+            "only the binding record - seeded lines stay.</p>"
+            "<ul id=\"s-bindings\" class=\"roster\"></ul>"
+            "<p id=\"s-bind-status\" class=\"muted\"></p></section>"
+            "<section class=\"card\"><h2>Import a scenario file</h2>"
+            "<p>Checking a file parses it and reports what mapped "
+            "and what was unmappable - nothing is stored. Storing "
+            "keeps the parsed scenario as a new definition.</p>"
+            "<label>Scenario file<input id=\"s-file\" type=\"file\" accept=\".json\"></label>"
+            "<div class=\"row\"><button id=\"s-check\" class=\"btn ghost\" "
+            "type=\"button\">Check file</button>"
+            "<button id=\"s-store\" class=\"btn\" type=\"button\">"
+            "Store this scenario</button></div>"
+            "<p id=\"s-import-status\" class=\"muted\"></p>"
+            "<div id=\"s-import-out\"></div></section>"
+            "<script src=\"/static/scenarios.js\"></script>")
+    return layout("Scenarios", body, user=user, active_tab="scenarios")

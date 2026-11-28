@@ -31,7 +31,7 @@ from http.server import BaseHTTPRequestHandler
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-from . import stub_guard, templates, w02, w03, w04, w05
+from . import stub_guard, templates, w02, w03, w04, w05, w06
 from .cards import import_report_words
 from .engine import EngineError
 from .security import hash_password, verify_password
@@ -168,6 +168,7 @@ def make_handler(app: WebfaceApp):
                     "/static/groups.js", "/static/connections.js",
                     "/static/generation.js", "/static/firstrun.js",
                     "/static/personas.js", "/static/lorebooks.js",
+                    "/static/memory.js", "/static/scenarios.js",
                     "/static/pwtoggle.js"):
                 return self._static(path)
             if path == "/chat":
@@ -204,6 +205,16 @@ def make_handler(app: WebfaceApp):
                 user = self._require_user_page()
                 if user is not None:
                     return self._html(200, templates.lorebooks_page(user))
+                return
+            if path == "/memory":
+                user = self._require_user_page()
+                if user is not None:
+                    return self._html(200, templates.memory_page(user))
+                return
+            if path == "/scenarios":
+                user = self._require_user_page()
+                if user is not None:
+                    return self._html(200, templates.scenarios_page(user))
                 return
             if path == "/firstrun":
                 user = self._require_user_page()
@@ -418,6 +429,37 @@ def make_handler(app: WebfaceApp):
                     r"/webface/chats/([^/]+)/persona", path)
                 if match:
                     return self._json(200, w05.persona_view(
+                        app.engine, match.group(1)))
+                if path == "/webface/memories":
+                    return self._json(200, w06.list_memories(
+                        app.engine, q=q1("q"), state=q1("state") or None,
+                        kind=q1("kind") or None))
+                match = re.fullmatch(r"/webface/memories/([^/]+)", path)
+                if match:
+                    return self._json(200, w06.memory_detail(
+                        app.engine, match.group(1)))
+                if path == "/webface/scenarios":
+                    return self._json(200, w06.list_scenarios(
+                        app.engine, q=q1("q"),
+                        favourites_only=q1("favourites_only") == "true"))
+                if path == "/webface/scenarios/editor-model":
+                    return self._json(200, w06.editor_model())
+                if path == "/webface/scenarios/bindings":
+                    return self._json(200, w06.list_bindings(app.engine))
+                match = re.fullmatch(
+                    r"/webface/scenarios/([^/]+)/export-file", path)
+                if match:
+                    fmt = q1("format", "native") or "native"
+                    env = app.engine.request(
+                        "GET", f"/api/v1/scenarios/{match.group(1)}/export",
+                        params={"format": fmt})
+                    doc = env.get("file") if isinstance(env, dict) else {}
+                    return self._send_bytes(
+                        200, json.dumps(doc).encode(), "application/json",
+                        filename=f"runmal-scenario-{match.group(1)}.json")
+                match = re.fullmatch(r"/webface/scenarios/([^/]+)", path)
+                if match:
+                    return self._json(200, w06.scenario_detail(
                         app.engine, match.group(1)))
                 if path == "/webface/lorebooks/schema":
                     return self._json(200, w05.census(app.engine))
@@ -873,6 +915,55 @@ def make_handler(app: WebfaceApp):
                     return self._json(200, w05.set_persona(
                         app.engine, match.group(1),
                         body.get("character_id")))
+                # ---- W-06 scenarios ----
+                if method == "POST" and path == "/webface/scenarios":
+                    return self._json(200, w06.save_scenario(
+                        app.engine, None, self._json_body()))
+                if method == "POST" and path == "/webface/scenarios/import-check":
+                    body = self._json_body()
+                    return self._json(200, w06.check_import(
+                        app.engine, body.get("document")))
+                if method == "POST" and path == "/webface/scenarios/export":
+                    body = self._json_body()
+                    return self._json(200, w06.export_document(
+                        app.engine, body.get("definition") or {},
+                        str(body.get("format") or "native")))
+                match = re.fullmatch(r"/webface/scenarios/([^/]+)", path)
+                if match and method == "PUT":
+                    return self._json(200, w06.save_scenario(
+                        app.engine, match.group(1), self._json_body()))
+                if match and method == "DELETE":
+                    return self._json(200, w06.delete_scenario(
+                        app.engine, match.group(1)))
+                match = re.fullmatch(
+                    r"/webface/scenarios/([^/]+)/duplicate", path)
+                if match and method == "POST":
+                    return self._json(200, w06.duplicate_scenario(
+                        app.engine, match.group(1)))
+                match = re.fullmatch(
+                    r"/webface/scenarios/([^/]+)/favourite", path)
+                if match and method == "PUT":
+                    body = self._json_body()
+                    return self._json(200, w06.set_favourite(
+                        app.engine, match.group(1),
+                        bool(body.get("is_favourite"))))
+                match = re.fullmatch(r"/webface/scenarios/([^/]+)/tags", path)
+                if match and method == "PUT":
+                    body = self._json_body()
+                    tags = body.get("tags")
+                    return self._json(200, w06.set_tags(
+                        app.engine, match.group(1), tags or []))
+                match = re.fullmatch(r"/webface/scenarios/([^/]+)/apply", path)
+                if match and method == "POST":
+                    body = self._json_body()
+                    return self._json(200, w06.apply_scenario(
+                        app.engine, match.group(1),
+                        str(body.get("character_id") or "")))
+                match = re.fullmatch(
+                    r"/webface/scenarios/bindings/([^/]+)", path)
+                if match and method == "DELETE":
+                    return self._json(200, w06.unbind_scenario(
+                        app.engine, match.group(1)))
                 # ---- W-05 lorebooks ----
                 if method == "POST" and path == "/webface/lorebooks":
                     return self._json(200, w05.save_book(
