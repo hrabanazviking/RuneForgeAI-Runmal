@@ -15,8 +15,8 @@ TABS: list[tuple[str, str, str | None]] = [
     ("groups", "Groups", None),
     ("characters", "Characters", None),
     ("library", "Library", None),
-    ("personas", "Personas", "W-05"),
-    ("lorebooks", "Lorebooks", "W-05"),
+    ("personas", "Personas", None),
+    ("lorebooks", "Lorebooks", None),
     ("connections", "Connections", None),
     ("generation", "Generation", None),
     ("memory", "Memory", "W-06"),
@@ -308,3 +308,72 @@ def firstrun_page(user):
             "open the greeted chat</button></p>"
             "</section><script src=\"/static/firstrun.js\"></script>")
     return layout("First-Run Setup", body, user=user, active_tab="account")
+
+
+def personas_page(user):
+    body = ("<section class=\"card\"><h1>Personas</h1>"
+            "<h2>Your name</h2>"
+            "<p id=\"pn-current\" class=\"muted\">Loading...</p>"
+            "<div class=\"row\"><label>Your name in chats"
+            "<input id=\"pn-name\" class=\"entry-box\"></label>"
+            "<button id=\"pn-save\" class=\"btn\" type=\"button\">Save name</button>"
+            "<button id=\"pn-clear\" class=\"btn ghost\" type=\"button\">Clear name</button></div>"
+            "<p class=\"muted\">An empty field never clears the name - "
+            "clearing is the Clear button's own act, and it returns "
+            "you to the built-in default.</p>"
+            "<p id=\"pn-status\" class=\"muted\"></p></section>"
+            "<section class=\"card\"><h2>Per-chat persona</h2>"
+            "<p>A chat's persona is the character that chat speaks "
+            "with. Pick a chat, see its persona, switch it or clear "
+            "it.</p>"
+            "<div class=\"row\"><label>Chat<select id=\"pp-chat\"></select></label>"
+            "<label>Persona character<select id=\"pp-char\"></select></label></div>"
+            "<p id=\"pp-current\" class=\"muted\"></p>"
+            "<div class=\"row\"><button id=\"pp-switch\" class=\"btn\" "
+            "type=\"button\">Switch persona</button>"
+            "<button id=\"pp-clear\" class=\"btn ghost\" "
+            "type=\"button\">Clear persona</button></div>"
+            "<p class=\"muted\">Switching a chat's persona shapes "
+            "FUTURE turns only; messages already stored keep the "
+            "speaker they were written with. The Chat tab reads the "
+            "same engine record, so both views agree.</p>"
+            "<p id=\"pp-status\" class=\"muted\"></p></section>"
+            "<section class=\"card\"><h2>Persona files</h2>"
+            "<p>The engine library defines a persona-file format, "
+            "but no engine route serves it, so this page offers no "
+            "persona import or export - there is nothing honest to "
+            "wire a button to.</p></section>"
+            "<script src=\"/static/personas.js\"></script>")
+    return layout("Personas", body, user=user, active_tab="personas")
+
+
+def lorebooks_page(user):
+    body = ("<section class=\"card\"><h1>Lorebooks</h1>"
+            "<ul id=\"lb-list\" class=\"roster\"></ul>"
+            "<p id=\"lb-status\" class=\"muted\"></p></section>"
+            "<section class=\"card\" id=\"lb-editor\" hidden></section>"
+            "<section class=\"card\" id=\"lb-entries\" hidden></section>"
+            "<section class=\"card\" id=\"lb-entry-editor\" hidden></section>"
+            "<section class=\"card\" id=\"lb-scopes\" hidden></section>"
+            "<section class=\"card\" id=\"lb-previews\" hidden></section>"
+            "<section class=\"card\"><h2>Import, packs and upgrades</h2>"
+            "<p>Import a lorebook document (native or world-info "
+            "shape), inspect or import a sharing pack, or check / "
+            "upgrade an older lorebook file. Upgrading a file "
+            "changes only the file - download the result, then "
+            "import it if you want it in the library.</p>"
+            "<label>Lorebook / pack file<input id=\"lb-file\" "
+            "type=\"file\" accept=\".json\"></label>"
+            "<div class=\"row\">"
+            "<button id=\"lb-import\" class=\"btn\" type=\"button\">Import document</button>"
+            "<button id=\"lb-pack-inspect\" class=\"btn ghost\" "
+            "type=\"button\">Inspect pack</button>"
+            "<button id=\"lb-pack-import\" class=\"btn ghost\" type=\"button\">Import pack</button>"
+            "<button id=\"lb-upgrade-inspect\" class=\"btn ghost\" "
+            "type=\"button\">Inspect upgrade</button>"
+            "<button id=\"lb-upgrade\" class=\"btn ghost\" "
+            "type=\"button\">Upgrade file</button></div>"
+            "<p id=\"lb-transfer-status\" class=\"muted\"></p>"
+            "<div id=\"lb-transfer-out\"></div></section>"
+            "<script src=\"/static/lorebooks.js\"></script>")
+    return layout("Lorebooks", body, user=user, active_tab="lorebooks")

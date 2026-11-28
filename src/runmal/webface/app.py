@@ -31,7 +31,7 @@ from http.server import BaseHTTPRequestHandler
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-from . import templates, w02, w03, w04
+from . import templates, w02, w03, w04, w05
 from .cards import import_report_words
 from .engine import EngineError
 from .security import hash_password, verify_password
@@ -166,7 +166,8 @@ def make_handler(app: WebfaceApp):
             if path in ("/static/webface.css", "/static/chat.js",
                     "/static/characters.js", "/static/library.js",
                     "/static/groups.js", "/static/connections.js",
-                    "/static/generation.js", "/static/firstrun.js"):
+                    "/static/generation.js", "/static/firstrun.js",
+                    "/static/personas.js", "/static/lorebooks.js"):
                 return self._static(path)
             if path == "/chat":
                 user = self._require_user_page()
@@ -192,6 +193,16 @@ def make_handler(app: WebfaceApp):
                 user = self._require_user_page()
                 if user is not None:
                     return self._html(200, templates.generation_page(user))
+                return
+            if path == "/personas":
+                user = self._require_user_page()
+                if user is not None:
+                    return self._html(200, templates.personas_page(user))
+                return
+            if path == "/lorebooks":
+                user = self._require_user_page()
+                if user is not None:
+                    return self._html(200, templates.lorebooks_page(user))
                 return
             if path == "/firstrun":
                 user = self._require_user_page()
@@ -392,6 +403,37 @@ def make_handler(app: WebfaceApp):
                         "default_model": o.default_model}
                         for o in w04.BACKEND_OPTIONS]
                     return self._json(200, options)
+                if path == "/webface/persona/user-name":
+                    return self._json(200, w05.user_name_state(app.engine))
+                match = re.fullmatch(
+                    r"/webface/chats/([^/]+)/persona", path)
+                if match:
+                    return self._json(200, w05.persona_view(
+                        app.engine, match.group(1)))
+                if path == "/webface/lorebooks/schema":
+                    return self._json(200, w05.census(app.engine))
+                match = re.fullmatch(
+                    r"/webface/lorebooks/([^/]+)/export", path)
+                if match:
+                    doc = app.engine.request(
+                        "GET", f"/api/v1/lorebooks/{match.group(1)}/export")
+                    return self._send_bytes(
+                        200, json.dumps(doc).encode(),
+                        "application/json",
+                        filename=f"runmal-lorebook-{match.group(1)}.json")
+                match = re.fullmatch(
+                    r"/webface/lorebooks/([^/]+)/pack", path)
+                if match:
+                    doc = app.engine.request(
+                        "GET", f"/api/v1/lorebooks/{match.group(1)}/pack")
+                    return self._send_bytes(
+                        200, json.dumps(doc).encode(),
+                        "application/json",
+                        filename=f"runmal-lorebook-pack-{match.group(1)}.json")
+                match = re.fullmatch(r"/webface/lorebooks/([^/]+)", path)
+                if match:
+                    return self._json(200, w05.book_detail(
+                        app.engine, match.group(1)))
                 if path == "/webface/user-name":
                     return self._json(200, app.engine.request("GET", "/api/v1/user-name"))
                 match = re.fullmatch(
@@ -792,6 +834,93 @@ def make_handler(app: WebfaceApp):
                     return self._json(200,
                         app.engine.request("DELETE",
                             f"/api/v1/presets/overrides/{match.group(1)}/{match.group(2)}"))
+                # ---- W-05 personas ----
+                if method == "PUT" and path == "/webface/persona/user-name":
+                    body = self._json_body()
+                    return self._json(200, w05.set_user_name(
+                        app.engine, str(body.get("user_name") or ""),
+                        clear=bool(body.get("clear"))))
+                match = re.fullmatch(
+                    r"/webface/chats/([^/]+)/persona", path)
+                if match and method == "POST":
+                    body = self._json_body()
+                    return self._json(200, w05.set_persona(
+                        app.engine, match.group(1),
+                        body.get("character_id")))
+                # ---- W-05 lorebooks ----
+                if method == "POST" and path == "/webface/lorebooks":
+                    return self._json(200, w05.save_book(
+                        app.engine, None, self._json_body()))
+                if method == "POST" and path == "/webface/lorebooks/import":
+                    body = self._json_body()
+                    return self._json(200, w05.import_book(
+                        app.engine, body.get("document")))
+                if method == "POST" and path == "/webface/lorebooks/import-pack":
+                    body = self._json_body()
+                    return self._json(200, w05.import_pack(
+                        app.engine, body.get("document"),
+                        str(body.get("on_conflict") or "create_new")))
+                if method == "POST" and path == "/webface/lorebooks/pack/inspect":
+                    body = self._json_body()
+                    return self._json(200, w05.inspect_pack(
+                        app.engine, body.get("document")))
+                if method == "POST" and path == "/webface/lorebooks/upgrade/inspect":
+                    body = self._json_body()
+                    return self._json(200, w05.inspect_upgrade(
+                        app.engine, body.get("document")))
+                if method == "POST" and path == "/webface/lorebooks/upgrade":
+                    body = self._json_body()
+                    return self._json(200, w05.upgrade_book(
+                        app.engine, body.get("document")))
+                match = re.fullmatch(r"/webface/lorebooks/([^/]+)", path)
+                if match and method == "PATCH":
+                    return self._json(200, w05.save_book(
+                        app.engine, match.group(1), self._json_body()))
+                if match and method == "DELETE":
+                    return self._json(200, w05.delete_book(
+                        app.engine, match.group(1)))
+                match = re.fullmatch(
+                    r"/webface/lorebooks/([^/]+)/entries", path)
+                if match and method == "POST":
+                    return self._json(200, w05.save_entry(
+                        app.engine, match.group(1), None,
+                        self._json_body()))
+                match = re.fullmatch(
+                    r"/webface/lorebooks/([^/]+)/entries/([^/]+)", path)
+                if match and method == "PATCH":
+                    return self._json(200, w05.save_entry(
+                        app.engine, match.group(1), match.group(2),
+                        self._json_body()))
+                if match and method == "DELETE":
+                    return self._json(200, w05.delete_entry(
+                        app.engine, match.group(1), match.group(2)))
+                match = re.fullmatch(
+                    r"/webface/lorebooks/([^/]+)/scope", path)
+                if match and method == "PUT":
+                    return self._json(200, w05.assign_scope(
+                        app.engine, match.group(1), self._json_body()))
+                if match and method == "DELETE":
+                    query = parse_qs(urlparse(self.path).query)
+                    kind = (query.get("scope_kind") or [""])[0]
+                    owner = (query.get("owner_id") or [None])[0]
+                    return self._json(200, w05.unassign_scope(
+                        app.engine, match.group(1), kind, owner))
+                match = re.fullmatch(
+                    r"/webface/lorebooks/([^/]+)/preview", path)
+                if match and method == "POST":
+                    body = self._json_body()
+                    msgs = body.get("messages")
+                    msgs = msgs if isinstance(msgs, list) else []
+                    return self._json(200, w05.preview_book(
+                        app.engine, match.group(1), msgs))
+                match = re.fullmatch(
+                    r"/webface/chats/([^/]+)/lore-preview", path)
+                if match and method == "POST":
+                    body = self._json_body()
+                    msgs = body.get("messages")
+                    msgs = msgs if isinstance(msgs, list) else []
+                    return self._json(200, w05.preview_chat(
+                        app.engine, match.group(1), msgs))
                 # ---- W-04 first-run ----
                 if method == "POST" and path == "/webface/firstrun/connect":
                     body = self._json_body()
