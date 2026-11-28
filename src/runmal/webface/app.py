@@ -31,7 +31,7 @@ from http.server import BaseHTTPRequestHandler
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-from . import stub_guard, templates, w02, w03, w04, w05, w06, w07, w08, w09
+from . import stub_guard, templates, w02, w03, w04, w05, w06, w07, w08, w09, w10
 from .cards import import_report_words
 from .engine import EngineError
 from .security import hash_password, verify_password
@@ -158,6 +158,12 @@ def make_handler(app: WebfaceApp):
         def do_GET(self):  # noqa: N802 - stdlib name
             self._json_cache = None
             path = urlparse(self.path).path
+            if path.startswith("/agent/v1/"):
+                return self._agent_get(path)
+            if path == "/recover":
+                if self._user() is not None:
+                    return self._redirect("/chat")
+                return self._html(200, templates.recover_page())
             if path == "/":
                 if self._user() is not None:
                     return self._redirect("/chat")
@@ -285,7 +291,9 @@ def make_handler(app: WebfaceApp):
                 row = app.store.session_row(self._session_token() or "")
                 expires = _fmt_ts(row["expires"]) if row else "unknown"
                 return self._html(
-                    200, templates.account_page(user, expires))
+                    200, templates.account_page(
+                        user, expires,
+                        data=w10.account_data(app.store, user)))
             if path.startswith("/webface/"):
                 return self._api_get(path)
             slug = path.lstrip("/")
@@ -1491,10 +1499,26 @@ def make_handler(app: WebfaceApp):
         def do_POST(self):  # noqa: N802 - stdlib name
             self._json_cache = None
             path = urlparse(self.path).path
+            if path.startswith("/agent/v1/"):
+                return self._agent_post(path)
             if path == "/register":
                 return self._register()
             if path == "/login":
                 return self._login()
+            if path == "/recover":
+                return self._recover()
+            if path == "/account/password":
+                return self._change_password()
+            if path == "/account/recovery-codes":
+                return self._gen_recovery_codes()
+            if path == "/account/sign-out-everywhere":
+                return self._sign_out_everywhere()
+            if path == "/account/agent-tokens":
+                return self._create_agent_token()
+            match = re.fullmatch(
+                r"/account/agent-tokens/([0-9]+)/revoke", path)
+            if match:
+                return self._revoke_agent_token(int(match.group(1)))
             if path == "/logout":
                 token = self._session_token()
                 if token:
@@ -1514,6 +1538,130 @@ def make_handler(app: WebfaceApp):
             if path.startswith("/webface/"):
                 return self._api_write("POST")
             return self._json(404, {"error": "no such road"})
+
+        # -- W-10 account hardening ----------------------------------
+
+        def _account_page(self, user, **kw):
+            row = app.store.session_row(self._session_token() or "")
+            expires = _fmt_ts(row["expires"]) if row else "unknown"
+            return self._html(200, templates.account_page(
+                user, expires,
+                data=w10.account_data(app.store, user), **kw))
+
+        def _change_password(self):
+            form = self._form()
+            user = self._require_user_page()
+            if user is None:
+                return
+            ok, words = w10.change_password(
+                app.store, user, form.get("current_password") or "",
+                form.get("new_password") or "")
+            if ok:
+                return self._redirect("/", set_cookie=self._clear_cookie())
+            return self._account_page(user, flash=words, flash_err=True)
+
+        def _gen_recovery_codes(self):
+            self._form()
+            user = self._require_user_page()
+            if user is None:
+                return
+            codes = w10.generate_recovery_codes(app.store, user["id"])
+            return self._account_page(user, codes_once=codes)
+
+        def _sign_out_everywhere(self):
+            self._form()
+            user = self._require_user_page()
+            if user is None:
+                return
+            app.store.close_all_sessions(user["id"])
+            return self._redirect("/", set_cookie=self._clear_cookie())
+
+        def _create_agent_token(self):
+            form = self._form()
+            user = self._require_user_page()
+            if user is None:
+                return
+            view, result = w10.create_agent_token(
+                app.store, user["id"], form.get("name") or "")
+            if view is None:
+                return self._account_page(user, flash=result, flash_err=True)
+            return self._account_page(user, token_once=result)
+
+        def _revoke_agent_token(self, token_id):
+            self._form()
+            user = self._require_user_page()
+            if user is None:
+                return
+            app.store.revoke_agent_token(user["id"], token_id)
+            return self._redirect("/account")
+
+        def _recover(self):
+            form = self._form()
+            ok, words = w10.recover_account(
+                app.store, form.get("username") or "",
+                form.get("code") or "", form.get("new_password") or "")
+            if ok:
+                return self._html(200, templates.login_page(note=words))
+            return self._html(200, templates.recover_page(words))
+
+        # -- W-10 agent door ------------------------------------------
+
+        def _agent_auth(self):
+            """(token view, user) for a live agent Bearer token,
+            else None (the caller answers 401). An agent token is
+            NOT a session and opens no account road."""
+            header = self.headers.get("Authorization") or ""
+            if not header.startswith("Bearer "):
+                return None
+            return app.store.agent_for_token(header[len("Bearer "):].strip())
+
+        def _agent_get(self, path):
+            auth = self._agent_auth()
+            if auth is None:
+                return self._json(401, {"error": "agent token missing, invalid, or revoked"})
+            view, user = auth
+            try:
+                if path == "/agent/v1/whoami":
+                    return self._json(200, {
+                        "agent": view["name"], "token_id": view["id"],
+                        "account": user["username"],
+                        "scope": "characters: talk to characters only; "
+                                 "this token does not administer the account"})
+                if path == "/agent/v1/characters":
+                    return self._json(200, app.engine.list_characters())
+                if path == "/agent/v1/chats":
+                    return self._json(200, app.engine.list_chats())
+                match = re.fullmatch(r"/agent/v1/chats/([^/]+)/messages", path)
+                if match:
+                    return self._json(200, app.engine.list_messages(match.group(1)))
+            except EngineError as exc:
+                return self._json(exc.status, {"error": exc.message})
+            return self._json(404, {"error": "no such agent road"})
+
+        def _agent_post(self, path):
+            auth = self._agent_auth()
+            if auth is None:
+                return self._json(401, {"error": "agent token missing, invalid, or revoked"})
+            view, user = auth
+            body = self._json_body()
+            try:
+                if path == "/agent/v1/chats":
+                    character_id = str(body.get("character_id") or "").strip()
+                    if not character_id:
+                        return self._json(422, {"error": "a chat is always bound to a character"})
+                    chat = app.engine.create_chat(
+                        character_id=character_id,
+                        title=str(body.get("title") or ""))
+                    return self._json(200, chat)
+                match = re.fullmatch(r"/agent/v1/chats/([^/]+)/send", path)
+                if match:
+                    payload = w10.agent_send(
+                        app.engine, match.group(1),
+                        str(body.get("content") or ""))
+                    return self._json(200, payload)
+            except EngineError as exc:
+                return self._json(exc.status, {"error": exc.message})
+            return self._json(404, {"error": "no such agent road"})
 
         def _register(self):
             form = self._form()

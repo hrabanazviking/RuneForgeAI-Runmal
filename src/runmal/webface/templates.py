@@ -89,9 +89,10 @@ def _auth_form(action, heading, button, error=None):
     err = f'<div class="flash err">{e(error)}</div>' if error else ""
     return (f"<section class=\"card auth\"><h1>{e(heading)}</h1>{err}"
             f'<form method="post" action="{action}">'
-            '<label>Username<input name="username" required '
+            '<label>Username<input name="username" class=\"entry-box\" required '
             'autocomplete="username"></label>'
             '<label>Password<input name="password" type="password" data-pw-toggle '
+            'class=\"entry-box\" '
             'required autocomplete="current-password"></label>'
             f'<button class="btn" type="submit">{e(button)}</button>'
             "</form></section>")
@@ -107,13 +108,17 @@ def landing_page(error=None):
             "</section>"
             + _auth_form("/login", "Log in", "Log in", error)
             + '<p class="muted center">New here? '
-            '<a href="/register">Register an account</a>.</p>')
+            '<a href="/register">Register an account</a>. Locked out? '
+            '<a href="/recover">Recover your account</a>.</p>')
     return layout("Welcome", body, user=None)
 
 
-def login_page(error=None):
-    return layout("Log in", _auth_form("/login", "Log in", "Log in", error),
-                  user=None)
+def login_page(error=None, note=None):
+    note_html = f'<div class="flash">{e(note)}</div>' if note else ""
+    body = (note_html + _auth_form("/login", "Log in", "Log in", error)
+            + '<p class="muted center">Locked out? '
+            '<a href="/recover">Recover your account</a>.</p>')
+    return layout("Log in", body, user=None)
 
 
 def register_page(error=None):
@@ -123,20 +128,127 @@ def register_page(error=None):
     return layout("Register", body, user=None)
 
 
-def account_page(user, session_expires_text):
-    body = ("<section class=\"card\"><h1>Account</h1>"
-            f"<p>Username: <b>{e(user['username'])}</b></p>"
-            f"<p>Account type: <span class=\"tag\">"
-            f"{e(user['account_type'])}</span></p>"
-            f"<p>Session valid until: {e(session_expires_text)}</p>"
-            '<p><a href="/firstrun">First-Run Setup</a> - connect a mind, meet someone, set '
-            'your name.</p>'
-            '<form method="post" action="/logout">'
-            '<button class="btn ghost" type="submit">Log out</button>'
-            "</form>"
-            "<p class=\"muted\">Password change, recovery codes and "
-            "agent API tokens arrive in W-10.</p></section>")
-    return layout("Account", body, user=user, active_tab="account")
+def account_page(user, session_expires_text, data=None, flash=None,
+                 flash_err=False, codes_once=None, token_once=None):
+    from . import w10 as _w10
+    data = data or {"sessions": [], "tokens": []}
+    parts = ["<section class=\"card\"><h1>Account</h1>"]
+    if flash:
+        parts.append(
+            f'<div class="flash{" err" if flash_err else ""}">{e(flash)}</div>')
+    parts.append(f"<p>Username: <b>{e(user['username'])}</b></p>")
+    parts.append(
+        f"<p>Account type: <span class=\"tag\">"
+        f"{e(user['account_type'])}</span></p>")
+    parts.append(f"<p>Session valid until: {e(session_expires_text)}</p>")
+    parts.append(
+        '<p><a href="/firstrun">First-Run Setup</a> - connect a mind, '
+        'meet someone, set your name.</p>')
+    # -- change password --
+    parts.append("<h2>Change password</h2>")
+    parts.append(f"<p class=\"muted\">{e(_w10.CHANGE_WORDS)}</p>")
+    parts.append(
+        '<form method="post" action="/account/password">'
+        '<label>Current password<input name="current_password" '
+        'type="password" data-pw-toggle class=\"entry-box\" required '
+        'autocomplete="current-password"></label>'
+        '<label>New password<input name="new_password" '
+        'type="password" data-pw-toggle class=\"entry-box\" required '
+        'autocomplete="new-password"></label>'
+        '<button class="btn" type="submit">Change password</button>'
+        "</form>")
+    # -- recovery codes --
+    parts.append("<h2>Recovery codes</h2>")
+    parts.append(
+        "<p class=\"muted\">One-time codes that set a new password "
+        "from the recovery page when you are locked out. Generating "
+        "a set replaces any earlier set.</p>")
+    if codes_once:
+        listing = "".join(f"<li><code>{e(c)}</code></li>" for c in codes_once)
+        parts.append(
+            f"<p><b>{e(_w10.RECOVERY_ONCE_WORDS)}</b></p>"
+            f"<ul class=\"roster\">{listing}</ul>")
+    parts.append(
+        '<form method="post" action="/account/recovery-codes">'
+        '<button class="btn ghost" type="submit">Generate recovery '
+        "codes</button></form>")
+    # -- sessions --
+    parts.append("<h2>Sessions</h2>")
+    if data["sessions"]:
+        rows = "".join(
+            f"<li>Started {e(_fmt(row['created_at']))} - valid until "
+            f"{e(_fmt(row['expires']))}</li>" for row in data["sessions"])
+        parts.append(f"<ul class=\"roster\">{rows}</ul>")
+    else:
+        parts.append("<p class=\"muted\">No live sessions.</p>")
+    parts.append(
+        '<form method="post" action="/account/sign-out-everywhere">'
+        '<button class="btn ghost" type="submit">Sign out '
+        "everywhere</button></form>")
+    # -- agent tokens --
+    parts.append("<h2>Agent API tokens</h2>")
+    parts.append(f"<p class=\"muted\">{e(_w10.AGENT_SCOPE_WORDS)}</p>")
+    if token_once:
+        parts.append(
+            f"<p><b>{e(_w10.TOKEN_ONCE_WORDS)}</b></p>"
+            f"<p><code>{e(token_once)}</code></p>")
+    if data["tokens"]:
+        rows = ""
+        for t in data["tokens"]:
+            rows += (
+                f"<li>{e(t['name'])} - {e(t['state'])} - created "
+                f"{e(_fmt(t['created_at']))}")
+            if t["state"] == "active":
+                rows += (
+                    f' <form method="post" class="inline" '
+                    f'action="/account/agent-tokens/{t["id"]}/revoke">'
+                    '<button class="btn ghost small" type="submit">'
+                    "Revoke</button></form>")
+            rows += "</li>"
+        parts.append(f"<ul class=\"roster\">{rows}</ul>")
+    else:
+        parts.append("<p class=\"muted\">No agent tokens yet.</p>")
+    parts.append(
+        '<form method="post" action="/account/agent-tokens">'
+        '<label>Token name<input name="name" class=\"entry-box\" '
+        'required></label>'
+        '<button class="btn" type="submit">Create agent token</button>'
+        "</form>")
+    parts.append(
+        '<form method="post" action="/logout">'
+        '<button class="btn ghost" type="submit">Log out</button>'
+        "</form></section>")
+    return layout("Account", "".join(parts), user=user,
+                  active_tab="account")
+
+
+def _fmt(ts):
+    from datetime import UTC, datetime
+    try:
+        return datetime.fromtimestamp(float(ts), tz=UTC).strftime(
+            "%Y-%m-%d %H:%M UTC")
+    except (TypeError, ValueError, OSError):
+        return str(ts)
+
+
+def recover_page(error=None):
+    err = f'<div class="flash err">{e(error)}</div>' if error else ""
+    body = ("<section class=\"card auth\"><h1>Recover your account</h1>"
+            f"{err}"
+            "<p>Enter your username, one recovery code, and a new "
+            "password. The code works once; every session for the "
+            "account is closed and you log in fresh.</p>"
+            '<form method="post" action="/recover">'
+            '<label>Username<input name="username" class=\"entry-box\" '
+            'required autocomplete="username"></label>'
+            '<label>Recovery code<input name="code" class=\"entry-box\" '
+            'required autocomplete="one-time-code"></label>'
+            '<label>New password<input name="new_password" '
+            'type="password" data-pw-toggle class=\"entry-box\" required '
+            'autocomplete="new-password"></label>'
+            '<button class="btn" type="submit">Set new password</button>'
+            "</form></section>")
+    return layout("Recover", body, user=None)
 
 
 def pending_page(user, slug):
@@ -153,12 +265,13 @@ def pending_page(user, slug):
 def chat_page(user):
     body = ("<div class=\"chat-shell\">"
             "<aside class=\"chat-side card\">"
-            "<label>Character<select id=\"char-select\"></select></label>"
+            "<label>Character<select id=\"char-select\" class=\"entry-box\"></select></label>"
             "<div id=\"firstrun-banner\" hidden><p>New here? <a href=\"/firstrun\">Run "
             "First-Run Setup</a> - connect a mind and meet someone. <button "
             "id=\"firstrun-dismiss\" class=\"btn ghost small\" "
             "type=\"button\">Dismiss</button></p></div>"
-            "<label>Preset for the open chat<select id=\"preset-select\"></select></label>"
+            "<label>Preset for the open chat<select id=\"preset-select\" class=\"entry-box\">"
+            "</select></label>"
             "<button id=\"preset-apply\" class=\"btn ghost\" type=\"button\">Apply preset</button>"
             "<button id=\"new-chat\" class=\"btn\" type=\"button\">"
             "New chat</button>"
@@ -170,7 +283,7 @@ def chat_page(user):
             "<div id=\"no-mind\"></div>"
             "<div class=\"composer\">"
             "<textarea id=\"composer\" rows=\"3\" "
-            "placeholder=\"Write a message…\"></textarea>"
+            "placeholder=\"Write a message…\" class=\"entry-box\"></textarea>"
             "<button id=\"send\" class=\"btn\" type=\"button\">Send</button>"
             "<button id=\"stop\" class=\"btn ghost\" type=\"button\" "
             "disabled>Stop</button>"
@@ -213,7 +326,7 @@ def chat_page(user):
 def groups_page(user):
     body = ("<section class=\"card\"><h1>Groups</h1>"
             "<div class=\"row\">"
-            "<label>Room name<input id=\"g-name\"></label>"
+            "<label>Room name<input id=\"g-name\" class=\"entry-box\"></label>"
             "<button id=\"g-create\" class=\"btn\" type=\"button\">Create room</button></div>"
             "<p class=\"muted\">Tick the roster for the new room:</p>"
             "<div id=\"g-roster-pick\"></div>"
@@ -225,8 +338,9 @@ def groups_page(user):
 def characters_page(user):
     body = ("<section class=\"card\"><h1>Characters</h1>"
             "<div class=\"row\">"
-            "<label>Search<input id=\"c-search\"></label>"
-            "<label>Tag<select id=\"c-tag\"><option value=\"\">All tags</option></select></label>"
+            "<label>Search<input id=\"c-search\" class=\"entry-box\"></label>"
+            "<label>Tag<select id=\"c-tag\" class=\"entry-box\">"
+            "<option value=\"\">All tags</option></select></label>"
             "<label class=\"check\"><input type=\"checkbox\" id=\"c-fav\"> Favourites only</label>"
             "<button id=\"c-new\" class=\"btn\" type=\"button\">New character</button></div>"
             "<p id=\"c-census\" class=\"muted\"></p>"
@@ -249,8 +363,9 @@ def library_page(user):
             "<p id=\"l-result\" class=\"muted\"></p>"
             "<ul id=\"l-lines\"></ul>"
             "<h2>Cards</h2>"
-            "<div class=\"row\"><label>Search<input id=\"l-search\"></label>"
-            "<label>Tag<select id=\"l-tag\"><option value=\"\">All tags</option></select></label>"
+            "<div class=\"row\"><label>Search<input id=\"l-search\" class=\"entry-box\"></label>"
+            "<label>Tag<select id=\"l-tag\" class=\"entry-box\">"
+            "<option value=\"\">All tags</option></select></label>"
             "<label class=\"check\"><input type=\"checkbox\" id=\"l-fav\"> "
             "Favourites only</label></div>"
             "<p id=\"l-census\" class=\"muted\"></p>"
@@ -265,14 +380,14 @@ def library_page(user):
             "engines' own law.</p>"
             "<div class=\"row\"><label>Search<input id=\"ls-q\" "
             "class=\"entry-box\"></label>"
-            "<label>Kind<select id=\"ls-kind\">"
+            "<label>Kind<select id=\"ls-kind\" class=\"entry-box\">"
             "<option value=\"\">All kinds</option>"
             "<option value=\"lorebook_pack\">Lorebook packs</option>"
             "<option value=\"scenario_pack\">Scenario packs</option>"
             "<option value=\"preset_bundle\">Preset bundles</option>"
             "<option value=\"prompt_pack\">Prompt packs</option>"
             "</select></label>"
-            "<label>Chat workspace<select id=\"ls-chat\">"
+            "<label>Chat workspace<select id=\"ls-chat\" class=\"entry-box\">"
             "<option value=\"\">No workspace</option></select></label>"
             "<button id=\"ls-go\" class=\"btn\" type=\"button\">"
             "Search</button></div>"
@@ -297,8 +412,9 @@ def connections_page(user):
             "<p>There is no default profile: a chat answers through "
             "the profile pinned to it, or the engine default when "
             "nothing is pinned.</p>"
-            "<div class=\"row\"><label>Chat<select id=\"pin-chat\"></select></label>"
-            "<label>Profile<select id=\"pin-profile\"></select></label>"
+            "<div class=\"row\"><label>Chat<select id=\"pin-chat\" class=\"entry-box\"></select>"
+            "</label>"
+            "<label>Profile<select id=\"pin-profile\" class=\"entry-box\"></select></label>"
             "<button id=\"pin-apply\" class=\"btn\" type=\"button\">Pin</button>"
             "<button id=\"pin-clear\" class=\"btn ghost\" type=\"button\">Unpin</button></div>"
             "<p id=\"pin-status\" class=\"muted\"></p></section>"
@@ -315,8 +431,9 @@ def generation_page(user):
             "<ul id=\"g-bundles\" class=\"roster\"></ul></section>"
             "<section class=\"card\" id=\"g-bundle-editor\" hidden></section>"
             "<section class=\"card\"><h2>Per-chat override</h2>"
-            "<div class=\"row\"><label>Chat<select id=\"ov-chat\"></select></label>"
-            "<label>Bundle<select id=\"ov-bundle\"></select></label></div>"
+            "<div class=\"row\"><label>Chat<select id=\"ov-chat\" class=\"entry-box\"></select>"
+            "</label>"
+            "<label>Bundle<select id=\"ov-bundle\" class=\"entry-box\"></select></label></div>"
             "<div id=\"ov-form\"></div>"
             "<div class=\"row\"><button id=\"ov-save\" class=\"btn\" type=\"button\">Save "
             "override</button>"
@@ -324,7 +441,8 @@ def generation_page(user):
             "override</button></div>"
             "<p id=\"ov-status\" class=\"muted\"></p></section>"
             "<section class=\"card\"><h2>Resolve preview</h2>"
-            "<div class=\"row\"><label>Chat<select id=\"rv-chat\"></select></label>"
+            "<div class=\"row\"><label>Chat<select id=\"rv-chat\" class=\"entry-box\"></select>"
+            "</label>"
             "<button id=\"rv-show\" class=\"btn\" type=\"button\">Show what a send will "
             "use</button></div>"
             "<div id=\"rv-out\"></div></section>"
@@ -340,7 +458,7 @@ def firstrun_page(user):
             "<h2>2. Prove it</h2><p id=\"fr-prove\" class=\"muted\">Connect a mind first.</p>"
             "<h2>3. Meet someone</h2><div id=\"fr-meet\"></div>"
             "<h2>4. Your name</h2>"
-            "<div class=\"row\"><label>Your name<input id=\"fr-name\"></label>"
+            "<div class=\"row\"><label>Your name<input id=\"fr-name\" class=\"entry-box\"></label>"
             "<button id=\"fr-name-save\" class=\"btn\" type=\"button\">Save name</button></div>"
             "<p id=\"fr-status\" class=\"muted\"></p>"
             "<p><button id=\"fr-finish\" class=\"btn\" type=\"button\" disabled>Finish - "
@@ -365,8 +483,10 @@ def personas_page(user):
             "<p>A chat's persona is the character that chat speaks "
             "with. Pick a chat, see its persona, switch it or clear "
             "it.</p>"
-            "<div class=\"row\"><label>Chat<select id=\"pp-chat\"></select></label>"
-            "<label>Persona character<select id=\"pp-char\"></select></label></div>"
+            "<div class=\"row\"><label>Chat<select id=\"pp-chat\" class=\"entry-box\"></select>"
+            "</label>"
+            "<label>Persona character<select id=\"pp-char\" class=\"entry-box\"></select></label>"
+            "</div>"
             "<p id=\"pp-current\" class=\"muted\"></p>"
             "<div class=\"row\"><button id=\"pp-switch\" class=\"btn\" "
             "type=\"button\">Switch persona</button>"
@@ -424,9 +544,10 @@ def memory_page(user):
             "came from. Memories are read here - the engine offers "
             "no road to create, edit or delete one by hand.</p>"
             "<div class=\"row\"><label>Search<input id=\"m-search\" class=\"entry-box\"></label>"
-            "<label>State<select id=\"m-state\">"
+            "<label>State<select id=\"m-state\" class=\"entry-box\">"
             "<option value=\"\">Any state</option></select></label>"
-            "<label>Kind<select id=\"m-kind\"><option value=\"\">Any kind</option></select></label>"
+            "<label>Kind<select id=\"m-kind\" class=\"entry-box\">"
+            "<option value=\"\">Any kind</option></select></label>"
             "<button id=\"m-go\" class=\"btn\" type=\"button\">Search</button></div>"
             "<p id=\"m-count\" class=\"muted\"></p>"
             "<ul id=\"m-list\" class=\"roster\"></ul>"
@@ -473,7 +594,8 @@ def inspector_page(user):
             "would contain, slot by slot, and why - plus the "
             "chat's overview, events and reasoning records, and "
             "the recorded provenance of any landed reply.</p>"
-            "<div class=\"row\"><label>Chat<select id=\"i-chat\"></select></label>"
+            "<div class=\"row\"><label>Chat<select id=\"i-chat\" class=\"entry-box\"></select>"
+            "</label>"
             "<button id=\"i-load\" class=\"btn\" type=\"button\">Inspect</button>"
             "<button id=\"i-trace\" class=\"btn ghost\" type=\"button\">"
             "Run the trace</button></div>"
@@ -566,8 +688,8 @@ def voice_page(user):
             "<p>Provider: <span id=\"v-provider\"></span></p>"
             "<ul id=\"v-devices\" class=\"roster\"></ul>"
             "<ul id=\"v-roles\" class=\"roster\"></ul>"
-            "<div class=\"row\"><label>Role<select id=\"v-role-pick\">"
-            "</select></label><label>Device<select id=\"v-device-pick\">"
+            "<div class=\"row\"><label>Role<select id=\"v-role-pick\" class=\"entry-box\">"
+            "</select></label><label>Device<select id=\"v-device-pick\" class=\"entry-box\">"
             "</select></label>"
             "<button id=\"v-assign\" class=\"btn\" type=\"button\">"
             "Assign role</button></div>"
@@ -578,9 +700,9 @@ def voice_page(user):
             "<h3>Speech to text (hearing)</h3>"
             "<ul id=\"v-stt\" class=\"roster\"></ul>"
             "<div class=\"row\"><label>Default speaking backend"
-            "<select id=\"v-tts-default\"></select></label>"
+            "<select id=\"v-tts-default\" class=\"entry-box\"></select></label>"
             "<label>Default hearing backend"
-            "<select id=\"v-stt-default\"></select></label>"
+            "<select id=\"v-stt-default\" class=\"entry-box\"></select></label>"
             "<button id=\"v-save-defaults\" class=\"btn\" type=\"button\">"
             "Save defaults</button></div>"
             "<p id=\"v-backend-status\" class=\"muted\"></p>"
@@ -588,7 +710,7 @@ def voice_page(user):
             "<p id=\"v-transcribe-note\" class=\"muted\"></p></section>"
             "<section class=\"card\"><h2>Voice sessions</h2>"
             "<p id=\"v-char-note\" class=\"muted\"></p>"
-            "<div class=\"row\"><label>Chat<select id=\"v-chat\">"
+            "<div class=\"row\"><label>Chat<select id=\"v-chat\" class=\"entry-box\">"
             "</select></label>"
             "<button id=\"v-start\" class=\"btn\" type=\"button\">"
             "Start a voice session</button></div>"
@@ -658,7 +780,7 @@ def vision_page(user):
             "<p id=\"s-send-note\" class=\"muted\"></p>"
             "<p id=\"s-status\" class=\"muted\"></p></section>"
             "<section class=\"card\"><h2>A chat's pictures</h2>"
-            "<div class=\"row\"><label>Chat<select id=\"s-chat\">"
+            "<div class=\"row\"><label>Chat<select id=\"s-chat\" class=\"entry-box\">"
             "</select></label>"
             "<button id=\"s-load\" class=\"btn\" type=\"button\">"
             "Show the chat</button></div>"
@@ -875,7 +997,7 @@ def bridge_page(user):
             "<p id=\"br-token-note\" class=\"muted\"></p>"
             "<label>The one-time token - copy it now"
             "<input id=\"br-token\" readonly "
-            "placeholder=\"A new token appears here, once.\">"
+            "placeholder=\"A new token appears here, once.\" class=\"entry-box\">"
             "</label></section>"
             "<section class=\"card\"><h2>Revoke</h2>"
             "<label class=\"check\"><input type=\"checkbox\" "
@@ -896,7 +1018,7 @@ def appearance_page(user):
             "ornament, text size, and reduced motion. "
             "Choosing applies at once and saves.</p>"
             "<p id=\"a-words\" class=\"muted\"></p>"
-            "<label>Theme variant<select id=\"a-variant\">"
+            "<label>Theme variant<select id=\"a-variant\" class=\"entry-box\">"
             "<option value=\"dark\">Dark - the void ladder</option>"
             "<option value=\"light\">Light - pale iron &amp; "
             "paper</option></select></label>"
@@ -904,7 +1026,7 @@ def appearance_page(user):
             "ladder and accents in both; Light keeps the "
             "accent hues, deepened where they would fail "
             "contrast on pale surfaces.</p>"
-            "<label>Ornament<select id=\"a-ornament\">"
+            "<label>Ornament<select id=\"a-ornament\" class=\"entry-box\">"
             "<option value=\"quiet\">Quiet - single iron "
             "border</option>"
             "<option value=\"standard\">Standard - stepped "
@@ -917,7 +1039,7 @@ def appearance_page(user):
             "- ornament lives on frames, never behind working "
             "text.</p>"
             "<label>Text size (%)<input id=\"a-scale\" "
-            "type=\"number\" min=\"100\" max=\"200\" step=\"5\">"
+            "type=\"number\" min=\"100\" max=\"200\" step=\"5\" class=\"entry-box\">"
             "</label>"
             "<p class=\"muted\">Scales the text of this face "
             "from 100% to 200%.</p>"
