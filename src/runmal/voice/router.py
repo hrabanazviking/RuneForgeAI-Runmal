@@ -350,13 +350,26 @@ async def audition_character_voice(character_id: str, payload: dict, session=Dep
     first, then the resolved backend synthesizes the resolved
     voice. Returns the PCM bytes (base64) plus the resolution, so
     a caller can hear exactly which voice spoke."""
+    from starlette.concurrency import run_in_threadpool
     from runmal.voice.backends import build_tts_backend
     text = str(payload.get("text") or "").strip()
     if not text:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="audition needs text")
     resolved = await _resolve_character_voice_am1(session, owner_id, character_id)
-    backend = build_tts_backend(resolved.tts_backend)
-    chunks = backend.synthesize_all(text, resolved.to_voice_info())
+    # The openai-compatible adapter's 60 s default timeout is a
+    # cloud-shaped assumption: a local on-demand service on CPU
+    # legitimately takes minutes. Give that backend a local-service
+    # timeout, and synthesize in a thread so a slow voice never
+    # blocks the engine's event loop.
+    kwargs = {"timeout_s": 900.0} if resolved.tts_backend == "openai" else {}
+    def _synth():
+        backend = build_tts_backend(resolved.tts_backend, **kwargs)
+        return backend.synthesize_all(text, resolved.to_voice_info())
+    try:
+        chunks = await run_in_threadpool(_synth)
+    except Exception as exc:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY,
+                            detail=f"synthesis failed: {exc}") from None
     pcm = b"".join(c.pcm for c in chunks if c.pcm)
     sample_rate = chunks[0].sample_rate if chunks else 24000
     return {"character_id": character_id,
