@@ -168,11 +168,11 @@ def test_http_auth_gating_and_entry_flow(webface):
         # /plugins + /appearance, and the Bridge tab with
         # them): no feature tab is pending any more, and
         # /backups is the real tab now, not a labelled
-        # placeholder. The shell's one remaining honest
-        # placeholder is the Account page's own W-10 note
-        # (password change, recovery codes and agent API
-        # tokens arrive in W-10) - that is the pending
-        # exemplar now.
+        # placeholder. W-10 then built the Account page's own
+        # hardening (password change, recovery codes, agent
+        # API tokens): the "arrives in W-10" note retired -
+        # healed pin, reason: the exemplar it asserted is now
+        # the built feature itself (test_w10_webface.py).
         assert templates.PENDING == {}
         backups_page = client.get("/backups")
         assert backups_page.status_code == 200
@@ -180,7 +180,10 @@ def test_http_auth_gating_and_entry_flow(webface):
         assert "arrives in slice" not in backups_page.text
         account_pending = client.get("/account")
         assert account_pending.status_code == 200
-        assert "W-10" in account_pending.text
+        assert "Change password" in account_pending.text
+        assert "Recovery codes" in account_pending.text
+        assert "Agent API tokens" in account_pending.text
+        assert "arrive in W-10" not in account_pending.text
         groups_page = client.get("/groups")
         assert groups_page.status_code == 200 and "g-roster-pick" in groups_page.text
         chars_page = client.get("/characters")
