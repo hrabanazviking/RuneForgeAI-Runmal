@@ -411,6 +411,16 @@ def test_live_chat_actions_and_groups(live_pair):
         assert room.status_code == 200, room.text
         gid = room.json()["id"]
         assert room.json()["member_count"] == 2
+        # FIX-STUB heal (contract change, listed in the slice report):
+        # a room generates through its own chat's pinned profile, so
+        # pin the w03-live profile to the room chat — the same pin
+        # the 1:1 chat above carries — or the guard honestly refuses
+        # and these turns would be stub replies (they were, silently,
+        # before FIX-STUB: deepening ignored every pin).
+        pin = web.post(
+            f"/webface/chats/{room.json()['chat_id']}/backend-profile",
+            json={"profile_id": profile_id})
+        assert pin.status_code == 200, pin.text
         # In-order strategy, then the user speaks.
         patched = web.patch(f"/webface/groups/{gid}",
                             json={"speaker_policy": "list"})
@@ -426,6 +436,8 @@ def test_live_chat_actions_and_groups(live_pair):
             assert turn.status_code == 200, turn.text
             speakers.append(turn.json()["result"]["speaker_id"])
             assert turn.json()["words"].startswith("Next speaker:")
+            content = turn.json()["result"]["message"]["content"]
+            assert "This is a stub" not in content
         assert speakers == [chars["ann"], chars["bo"]], speakers
         # Manual pick honoured.
         manual = web.post(f"/webface/groups/{gid}/next", json={
